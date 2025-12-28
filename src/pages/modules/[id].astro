@@ -1,0 +1,32 @@
+---
+import modules from '../../../WRFrontiersDB-Data/archive/2025-03-04/Objects/Module.json';
+
+export async function getStaticPaths() {
+  return Object.keys(modules).map((id) => {
+    return { params: { id } };
+  });
+}
+
+const module = (modules as any)[Astro.params.id];
+
+if (!module) {
+  throw new Error('Module not found');
+}
+---
+
+<html>
+  <head>
+    <title>{module.id}</title>
+  </head>
+  <body>
+    <p>Back to <a href="/WRFrontiersDB-Site/modules">Modules</a></p>
+    <h1>{module.id}</h1>
+
+    <div id="stats">stats</div>
+    
+    <!-- Embed JSON -->
+    <script type="application/json" id="module-data" set:html={JSON.stringify(module)}></script>
+
+    <script is:inline src="/js/module_page.js"></script>
+  </body>
+</html>

@@ -1,0 +1,19 @@
+---
+import modules from '../../WRFrontiersDB-Data/archive/2025-03-04/Objects/Module.json';
+---
+
+<html>
+  <head>
+    <title>Modules</title>
+  </head>
+  <body>
+    <p>Back to <a href="/WRFrontiersDB-Site/">Home</a></p>
+    <h1>Modules</h1>
+
+    <ul>
+      {Object.keys(modules).map((id) => (
+        <li><a href={`/WRFrontiersDB-Site/modules/${id}`}>{id}</a></li>
+      ))}
+    </ul>
+  </body>
+</html>
