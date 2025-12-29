@@ -72,6 +72,14 @@ const versionsPath = path.join(process.cwd(), 'WRFrontiersDB-Data/versions.json'
 const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8'));
 const versionInfo = versions[version];
 
+// Extract icon filename from inventory_icon_path
+let iconSrc = null;
+if (module.inventory_icon_path) {
+  // Remove the leading slash and extract the path after "WRFrontiers/"
+  const iconPath = module.inventory_icon_path;
+  iconSrc = `/WRFrontiersDB-Site/WRFrontiersDB-Data/textures${iconPath}.png`;
+}
+
 ---
 
 <html>
@@ -81,6 +89,9 @@ const versionInfo = versions[version];
   <body>
     <p>Back to <a href="/WRFrontiersDB-Site/modules">Modules</a></p>
     <h1>{module.id}</h1>
+    {iconSrc && (
+      <img src={iconSrc} alt={`${module.id} icon`} style="width: 64px; height: 64px;" />
+    )}
     <p>Version: {versionInfo?.title || version} ({version})</p>
 
     <div id="stats">stats</div>
