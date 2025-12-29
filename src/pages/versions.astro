@@ -1,0 +1,24 @@
+---
+import fs from 'fs';
+import path from 'path';
+
+// Load version metadata
+const versionsPath = path.join(process.cwd(), 'WRFrontiersDB-Data/versions.json');
+const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8'));
+---
+
+<html>
+  <head>
+    <title>Versions</title>
+  </head>
+  <body>
+    <p>Back to <a href="/WRFrontiersDB-Site/">Home</a></p>
+    <h1>Versions</h1>
+
+    <ul>
+      {Object.entries(versions).map(([version, info]) => (
+        <li>{info.title} ({version})</li>
+      ))}
+    </ul>
+  </body>
+</html>
