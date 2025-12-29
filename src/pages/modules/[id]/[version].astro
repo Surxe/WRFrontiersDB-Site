@@ -1,0 +1,100 @@
+---
+import fs from 'fs';
+import path from 'path';
+
+export async function getStaticPaths() {
+  const versionsPath = path.join(process.cwd(), 'WRFrontiersDB-Data/versions.json');
+  const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8'));
+  
+  const paths = [];
+  const moduleVersionsMap = new Map(); // Build lookup table once
+  
+  // For each version, load its modules and create paths
+  for (const version of Object.keys(versions)) {
+    try {
+      const modulesPath = path.join(process.cwd(), `WRFrontiersDB-Data/archive/${version}/Objects/Module.json`);
+      if (fs.existsSync(modulesPath)) {
+        const modules = JSON.parse(fs.readFileSync(modulesPath, 'utf8'));
+        
+        // For each module in this version, create a path and track versions
+        for (const moduleId of Object.keys(modules)) {
+          paths.push({ 
+            params: { id: moduleId, version },
+            props: { 
+              moduleVersions: moduleVersionsMap.get(moduleId) || [] 
+            }
+          });
+          
+          // Build reverse lookup: which versions have this module
+          if (!moduleVersionsMap.has(moduleId)) {
+            moduleVersionsMap.set(moduleId, []);
+          }
+          moduleVersionsMap.get(moduleId).push(version);
+        }
+      }
+    } catch (error) {
+      console.warn(`Could not load modules for version ${version}`);
+    }
+  }
+  
+  // Update paths with complete version lists
+  return paths.map(path => ({
+    ...path,
+    props: {
+      moduleVersions: moduleVersionsMap.get(path.params.id) || []
+    }
+  }));
+}
+
+const { id, version } = Astro.params;
+const { moduleVersions } = Astro.props;
+
+let module;
+try {
+  const modulesPath = path.join(process.cwd(), `WRFrontiersDB-Data/archive/${version}/Objects/Module.json`);
+  const modules = JSON.parse(fs.readFileSync(modulesPath, 'utf8'));
+  module = modules[id];
+} catch (error) {
+  throw new Error(`Module not found for version ${version}`);
+}
+
+if (!module) {
+  throw new Error('Module not found');
+}
+
+// Load version metadata (only once per page)
+const versionsPath = path.join(process.cwd(), 'WRFrontiersDB-Data/versions.json');
+const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8'));
+const versionInfo = versions[version];
+
+---
+
+<html>
+  <head>
+    <title>{module.id} - {version}</title>
+  </head>
+  <body>
+    <p>Back to <a href="/WRFrontiersDB-Site/modules">Modules</a></p>
+    <h1>{module.id}</h1>
+    <p>Version: {versionInfo?.title || version} ({version})</p>
+
+    <div id="stats">stats</div>
+    
+    <h2>Available Versions</h2>
+    <ul>
+      {moduleVersions.map((v) => (
+        <li>
+          <a href={`/WRFrontiersDB-Site/modules/${id}/${v}`}>
+            {versions[v]?.title || v} ({v})
+          </a>
+        </li>
+      ))}
+    </ul>
+    
+    
+    <!-- Embed JSON -->
+    <script type="application/json" id="module-data" set:html={JSON.stringify(module)}></script>
+
+    <script is:inline src="/WRFrontiersDB-Site/js/module_page.js"></script>
+  </body>
+</html>
