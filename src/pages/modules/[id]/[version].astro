@@ -76,8 +76,8 @@ const versionInfo = versions[version];
 let iconSrc = null;
 if (module.inventory_icon_path) {
   // Remove the leading slash and extract the path after "WRFrontiers/"
-  const pathAfterWRFrontiers = module.inventory_icon_path.replace(/^\/WRFrontiers\//, '');
-  iconSrc = `/WRFrontiersDB-Site/WRFrontiersDB-Data/textures/WRFrontiers/${pathAfterWRFrontiers}.png`;
+  const iconPath = module.inventory_icon_path;
+  iconSrc = `/WRFrontiersDB-Site/WRFrontiersDB-Data/textures${iconPath}.png`;
 }
 
 ---
