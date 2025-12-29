@@ -17,7 +17,12 @@ export async function getStaticPaths() {
         const modules = JSON.parse(fs.readFileSync(modulesPath, 'utf8'));
         
         // For each module in this version, create a path and track versions
-        for (const moduleId of Object.keys(modules)) {
+        for (const [moduleId, module] of Object.entries(modules)) {
+          // Skip modules that are not ready for production
+          if (!module.production_status || module.production_status === false) {
+            continue;
+          }
+          
           paths.push({ 
             params: { id: moduleId, version },
             props: { 
