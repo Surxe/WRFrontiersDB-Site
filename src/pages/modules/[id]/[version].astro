@@ -93,6 +93,7 @@ if (module.inventory_icon_path) {
       <img src={iconSrc} alt={`${module.id} icon`} style="width: 64px; height: 64px;" />
     )}
     <p>Version: {versionInfo?.title || version} ({version})</p>
+    <p>Language: <span id="current-lang">en</span></p>
 
     <div id="stats">stats</div>
     
@@ -110,6 +111,15 @@ if (module.inventory_icon_path) {
     
     <!-- Embed JSON -->
     <script type="application/json" id="module-data" set:html={JSON.stringify(module)}></script>
+
+    <script is:inline>
+      // Display current language from localStorage
+      const currentLang = localStorage.getItem('selectedLang') || 'en';
+      const langSpan = document.getElementById('current-lang');
+      if (langSpan) {
+        langSpan.textContent = currentLang;
+      }
+    </script>
 
     <script is:inline src="/WRFrontiersDB-Site/js/module_page.js"></script>
   </body>
