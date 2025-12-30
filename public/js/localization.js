@@ -1,3 +1,8 @@
+/**
+ * @typedef {import('../../src/types/localization').LocalizationKey} LocalizationKey
+ * @typedef {import('../../src/types/localization').LocalizationData} LocalizationData
+ */
+
 // Localization cache shared across all pages
 const localizationCache = {};
 
@@ -5,7 +10,7 @@ const localizationCache = {};
  * Loads localization data for a specific language and version
  * @param {string} lang - Language code (e.g., 'en', 'ru', 'ja')
  * @param {string} version - Game version date (e.g., '2025-12-09')
- * @returns {Promise<Object|null>} Localization data or null if failed
+ * @returns {Promise<LocalizationData|null>} Localization data or null if failed
  */
 export async function loadLanguage(lang, version) {
   const cacheKey = `${version}-${lang}`;
@@ -26,7 +31,7 @@ export async function loadLanguage(lang, version) {
 
 /**
  * Gets localized text from loaded localization data
- * @param {Object} locData - Loaded localization data
+ * @param {LocalizationData} locData - Loaded localization data
  * @param {string} namespace - TableNamespace (e.g., 'Ability_name')
  * @param {string} key - Localization key (e.g., 'ABL_name_ArmorShield')
  * @param {string} fallback - Fallback text if not found
@@ -54,7 +59,7 @@ export function setCurrentLanguage(lang) {
 
 /**
  * Updates DOM elements with localization data attributes
- * @param {Object} locData - Loaded localization data
+ * @param {LocalizationData} locData - Loaded localization data
  * @param {string|string[]} selectors - CSS selector(s) for elements to update
  */
 export function updateLocalizedElements(locData, selectors) {

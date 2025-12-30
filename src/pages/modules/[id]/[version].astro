@@ -1,6 +1,7 @@
 ---
 import fs from 'fs';
 import path from 'path';
+import type { Module } from '../../../types/module';
 
 export async function getStaticPaths() {
   const versionsPath = path.join(process.cwd(), 'WRFrontiersDB-Data/versions.json');
@@ -19,7 +20,7 @@ export async function getStaticPaths() {
         // For each module in this version, create a path and track versions
         for (const [moduleId, module] of Object.entries(modules)) {
           // Skip modules that are not ready for production
-          if (!(module as any).production_status || (module as any).production_status === false) {
+          if (!(module as Module).production_status || (module as Module).production_status === false) {
             continue;
           }
           
@@ -54,7 +55,7 @@ export async function getStaticPaths() {
 const { id, version } = Astro.params;
 const { moduleVersions } = Astro.props;
 
-let module;
+let module: Module;
 try {
   const modulesPath = path.join(process.cwd(), `WRFrontiersDB-Data/archive/${version}/Objects/Module.json`);
   const modules = JSON.parse(fs.readFileSync(modulesPath, 'utf8'));
