@@ -80,6 +80,16 @@ if (module.inventory_icon_path) {
   iconSrc = `/WRFrontiersDB-Site/WRFrontiersDB-Data/textures${iconPath}.png`;
 }
 
+// Extract English text as fallback
+const defaultName = module.name?.en || module.id;
+const defaultDesc = module.description?.en || '';
+
+// Store localization keys for dynamic loading
+const locKeys = {
+  name: { key: module.name?.Key, namespace: module.name?.TableNamespace },
+  description: { key: module.description?.Key, namespace: module.description?.TableNamespace }
+};
+
 ---
 
 <html>
@@ -88,10 +98,19 @@ if (module.inventory_icon_path) {
   </head>
   <body>
     <p>Back to <a href="/WRFrontiersDB-Site/modules">Modules</a></p>
-    <h1>{module.id}</h1>
+    <h1 id="module-name" 
+        data-loc-key={locKeys.name.key} 
+        data-loc-namespace={locKeys.name.namespace}>
+      {defaultName}
+    </h1>
     {iconSrc && (
-      <img src={iconSrc} alt={`${module.id} icon`} style="width: 64px; height: 64px;" />
+      <img src={iconSrc} alt={`${defaultName} icon`} style="width: 64px; height: 64px;" />
     )}
+    <p id="module-desc" 
+       data-loc-key={locKeys.description.key} 
+       data-loc-namespace={locKeys.description.namespace}>
+      {defaultDesc}
+    </p>
     <p>Version: {versionInfo?.title || version} ({version})</p>
     <p>Language: <span id="current-lang">en</span></p>
 
@@ -113,12 +132,69 @@ if (module.inventory_icon_path) {
     <script type="application/json" id="module-data" set:html={JSON.stringify(module)}></script>
 
     <script is:inline>
-      // Display current language from localStorage
-      const currentLang = localStorage.getItem('selectedLang') || 'en';
-      const langSpan = document.getElementById('current-lang');
-      if (langSpan) {
-        langSpan.textContent = currentLang;
+      // Localization cache
+      const locCache = {};
+      
+      async function loadLanguage(lang, version) {
+        const cacheKey = `${version}-${lang}`;
+        if (locCache[cacheKey]) return locCache[cacheKey];
+        
+        try {
+          const response = await fetch(`/WRFrontiersDB-Site/WRFrontiersDB-Data/archive/${version}/Localization/${lang}.json`);
+          locCache[cacheKey] = await response.json();
+          return locCache[cacheKey];
+        } catch (error) {
+          console.warn(`Failed to load language ${lang}:`, error);
+          return null;
+        }
       }
+      
+      function getLocalizedText(locData, namespace, key) {
+        return locData?.[namespace]?.[key] || key;
+      }
+      
+      async function updateLocalization() {
+        const currentLang = localStorage.getItem('selectedLang') || 'en';
+        const langSpan = document.getElementById('current-lang');
+        if (langSpan) {
+          langSpan.textContent = currentLang;
+        }
+        
+        // Skip if English (already embedded)
+        if (currentLang === 'en') return;
+        
+        // Get current version from page
+        const version = window.location.pathname.split('/').pop();
+        
+        // Load language file
+        const locData = await loadLanguage(currentLang, version);
+        if (!locData) return;
+        
+        // Update module name
+        const nameEl = document.getElementById('module-name');
+        if (nameEl) {
+          const namespace = nameEl.dataset.locNamespace;
+          const key = nameEl.dataset.locKey;
+          if (namespace && key) {
+            const localizedName = getLocalizedText(locData, namespace, key);
+            nameEl.textContent = localizedName;
+          }
+        }
+        
+        // Update module description
+        const descEl = document.getElementById('module-desc');
+        if (descEl) {
+          const namespace = descEl.dataset.locNamespace;
+          const key = descEl.dataset.locKey;
+          if (namespace && key) {
+            const localizedDesc = getLocalizedText(locData, namespace, key);
+            descEl.textContent = localizedDesc;
+          }
+        }
+      }
+      
+      // Run on page load
+      updateLocalization();
     </script>
 
     <script is:inline src="/WRFrontiersDB-Site/js/module_page.js"></script>
