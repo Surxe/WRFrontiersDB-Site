@@ -22,20 +22,11 @@ import langs from '../../public/langs.json';
 			<li><a href="/WRFrontiersDB-Site/modules">Modules</a></li>
 		</ul>
 
-		<script is:inline>
-			// Load saved language or default to 'en'
-			const savedLang = localStorage.getItem('selectedLang') || 'en';
+		<script type="module">
+			import { initLanguageSelector } from '/WRFrontiersDB-Site/js/language-selector.js';
 			
-			// Set the selector to saved language on page load
-			const selector = document.getElementById('lang-selector');
-			if (selector) {
-				selector.value = savedLang;
-				
-				// Save when changed
-				selector.addEventListener('change', (e) => {
-					localStorage.setItem('selectedLang', e.target.value);
-				});
-			}
+			// Initialize language selector with default behavior (reload on change)
+			initLanguageSelector();
 		</script>
 	</body>
 </html>
