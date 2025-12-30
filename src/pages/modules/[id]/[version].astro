@@ -131,70 +131,14 @@ const locKeys = {
     <!-- Embed JSON -->
     <script type="application/json" id="module-data" set:html={JSON.stringify(module)}></script>
 
-    <script is:inline>
-      // Localization cache
-      const locCache = {};
+    <script type="module">
+      import { initializeLocalization } from '/WRFrontiersDB-Site/js/localization.js';
       
-      async function loadLanguage(lang, version) {
-        const cacheKey = `${version}-${lang}`;
-        if (locCache[cacheKey]) return locCache[cacheKey];
-        
-        try {
-          const response = await fetch(`/WRFrontiersDB-Site/WRFrontiersDB-Data/archive/${version}/Localization/${lang}.json`);
-          locCache[cacheKey] = await response.json();
-          return locCache[cacheKey];
-        } catch (error) {
-          console.warn(`Failed to load language ${lang}:`, error);
-          return null;
-        }
-      }
+      // Extract version from URL
+      const version = window.location.pathname.split('/').pop();
       
-      function getLocalizedText(locData, namespace, key) {
-        return locData?.[namespace]?.[key] || key;
-      }
-      
-      async function updateLocalization() {
-        const currentLang = localStorage.getItem('selectedLang') || 'en';
-        const langSpan = document.getElementById('current-lang');
-        if (langSpan) {
-          langSpan.textContent = currentLang;
-        }
-        
-        // Skip if English (already embedded)
-        if (currentLang === 'en') return;
-        
-        // Get current version from page
-        const version = window.location.pathname.split('/').pop();
-        
-        // Load language file
-        const locData = await loadLanguage(currentLang, version);
-        if (!locData) return;
-        
-        // Update module name
-        const nameEl = document.getElementById('module-name');
-        if (nameEl) {
-          const namespace = nameEl.dataset.locNamespace;
-          const key = nameEl.dataset.locKey;
-          if (namespace && key) {
-            const localizedName = getLocalizedText(locData, namespace, key);
-            nameEl.textContent = localizedName;
-          }
-        }
-        
-        // Update module description
-        const descEl = document.getElementById('module-desc');
-        if (descEl) {
-          const namespace = descEl.dataset.locNamespace;
-          const key = descEl.dataset.locKey;
-          if (namespace && key) {
-            const localizedDesc = getLocalizedText(locData, namespace, key);
-            descEl.textContent = localizedDesc;
-          }
-        }
-      }
-      
-      // Run on page load
-      updateLocalization();
+      // Initialize localization for all elements with data-loc-key
+      initializeLocalization(version);
     </script>
 
     <script is:inline src="/WRFrontiersDB-Site/js/module_page.js"></script>
