@@ -1,5 +1,5 @@
 ---
-
+import langs from '../../public/langs.json';
 ---
 
 <html lang="en">
@@ -11,6 +11,12 @@
 		<title>Astro</title>
 	</head>
 	<body>
+		<select id="lang-selector">
+			{Object.entries(langs).map(([code, names]) => (
+				<option value={code} selected={code === 'en'}>{(names as any)[code]}</option>
+			))}
+		</select>
+		
 		<h1>Astro</h1>
 		<ul>
 			<li><a href="/WRFrontiersDB-Site/modules">Modules</a></li>
