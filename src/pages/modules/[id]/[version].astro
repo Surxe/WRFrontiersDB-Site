@@ -5,21 +5,21 @@ import type { Module } from '../../../types/module';
 import Icon from '../../../components/Icon.astro';
 import LocalizedText from '../../../components/LocalizedText.astro';
 import VersionList from '../../../components/VersionList.astro';
-import { generateObjectStaticPaths, getParseObject } from '../../../utils/parse_object';
+import { generateObjectStaticPaths, getParseObject, getVersionsData } from '../../../utils/parse_object';
+
+const parse_object_path = "Objects/Module.json";
 
 export async function getStaticPaths() {
-  return await generateObjectStaticPaths("Objects/Module.json", true);
+  return await generateObjectStaticPaths(parse_object_path, true);
 }
 
 const { id, version } = Astro.params;
 const { moduleVersions } = Astro.props;
 
-const module = getParseObject<Module>(id, version, "Objects/Module.json");
+const module = getParseObject<Module>(id, version, parse_object_path);
 
-// Load version metadata (only once per page)
-const versionsPath = path.join(process.cwd(), 'WRFrontiersDB-Data/versions.json');
-const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8'));
-const versionInfo = versions[version];
+// Load version metadata
+const { versions, versionInfo } = getVersionsData(version);
 
 // Extract English text as fallback
 const defaultName = module.name?.en || module.id;

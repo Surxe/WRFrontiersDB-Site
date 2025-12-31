@@ -6,6 +6,19 @@ export interface StaticPathsResult {
   props: { moduleVersions: string[] };
 }
 
+export interface VersionsData {
+  versions: Record<string, any>;
+  versionInfo: any;
+}
+
+export function getVersionsData(version: string): VersionsData {
+  const versionsPath = path.join(process.cwd(), 'WRFrontiersDB-Data/versions.json');
+  const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8'));
+  const versionInfo = versions[version];
+  
+  return { versions, versionInfo };
+}
+
 export function getParseObject<T = any>(
   id: string,
   version: string,
