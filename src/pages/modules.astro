@@ -34,7 +34,7 @@ try {
 
     <ul>
       {Object.entries(modules)
-        .filter(([id, module]) => (module as Module).production_status && (module as Module).production_status !== false)
+        .filter(([id, module]) => (module as Module).production_status && (module as Module).production_status == 'Ready')
         .map(([id, module]) => (
         <li><a href={`/WRFrontiersDB-Site/modules/${id}/${latestVersion}`}>{id}</a></li>
       ))}

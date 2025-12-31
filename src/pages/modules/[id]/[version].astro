@@ -20,7 +20,7 @@ export async function getStaticPaths() {
         // For each module in this version, create a path and track versions
         for (const [moduleId, module] of Object.entries(modules)) {
           // Skip modules that are not ready for production
-          if (!(module as Module).production_status || (module as Module).production_status === false) {
+          if (!(module as Module).production_status || (module as Module).production_status !== 'Ready') {
             continue;
           }
           
