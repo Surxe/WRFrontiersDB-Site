@@ -2,6 +2,7 @@
 import fs from 'fs';
 import path from 'path';
 import type { Module } from '../../../types/module';
+import Icon from '../../../components/Icon.astro';
 
 export async function getStaticPaths() {
   const versionsPath = path.join(process.cwd(), 'WRFrontiersDB-Data/versions.json');
@@ -73,14 +74,6 @@ const versionsPath = path.join(process.cwd(), 'WRFrontiersDB-Data/versions.json'
 const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8'));
 const versionInfo = versions[version];
 
-// Extract icon filename from inventory_icon_path
-let iconSrc = null;
-if (module.inventory_icon_path) {
-  // Remove the leading slash and extract the path after "WRFrontiers/"
-  const iconPath = module.inventory_icon_path;
-  iconSrc = `/WRFrontiersDB-Site/WRFrontiersDB-Data/textures${iconPath}.png`;
-}
-
 // Extract English text as fallback
 const defaultName = module.name?.en || module.id;
 const defaultDesc = module.description?.en || '';
@@ -104,9 +97,12 @@ const locKeys = {
         data-loc-namespace={locKeys.name.namespace}>
       {defaultName}
     </h1>
-    {iconSrc && (
-      <img src={iconSrc} alt={`${defaultName} icon`} style="width: 64px; height: 64px;" />
-    )}
+
+    <Icon 
+      iconPath={module.inventory_icon_path}
+      altText={`${defaultName} icon`}
+    />
+    
     <p id="module-desc" 
        data-loc-key={locKeys.description.key} 
        data-loc-namespace={locKeys.description.namespace}>
