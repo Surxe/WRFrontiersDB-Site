@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import type { Module } from '../../../types/module';
 import Icon from '../../../components/Icon.astro';
+import LocalizedText from '../../../components/LocalizedText.astro';
 
 export async function getStaticPaths() {
   const versionsPath = path.join(process.cwd(), 'WRFrontiersDB-Data/versions.json');
@@ -76,13 +77,6 @@ const versionInfo = versions[version];
 
 // Extract English text as fallback
 const defaultName = module.name?.en || module.id;
-const defaultDesc = module.description?.en || '';
-
-// Store localization keys for dynamic loading
-const locKeys = {
-  name: { key: module.name?.Key, namespace: module.name?.TableNamespace },
-  description: { key: module.description?.Key, namespace: module.description?.TableNamespace }
-};
 
 ---
 
@@ -92,22 +86,22 @@ const locKeys = {
   </head>
   <body>
     <p>Back to <a href="/WRFrontiersDB-Site/modules">Modules</a></p>
-    <h1 id="module-name" 
-        data-loc-key={locKeys.name.key} 
-        data-loc-namespace={locKeys.name.namespace}>
-      {defaultName}
-    </h1>
+    <LocalizedText 
+      id="module-name"
+      tag="h1"
+      localizationKey={module.name}
+    />
 
     <Icon 
       iconPath={module.inventory_icon_path}
       altText={`${defaultName} icon`}
     />
-    
-    <p id="module-desc" 
-       data-loc-key={locKeys.description.key} 
-       data-loc-namespace={locKeys.description.namespace}>
-      {defaultDesc}
-    </p>
+
+    <LocalizedText 
+      id="module-desc"
+      tag="p"
+      localizationKey={module.description}
+    />
     <p>Version: {versionInfo?.title || version} ({version})</p>
     <p>Language: <span id="current-lang">en</span></p>
 

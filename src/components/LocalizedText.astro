@@ -1,0 +1,24 @@
+---
+import type { LocalizationKey } from '../types/localization';
+
+export interface Props {
+  id?: string;
+  tag: string;
+  localizationKey?: LocalizationKey;
+}
+
+const { id, tag, localizationKey } = Astro.props;
+const Tag = tag as any;
+
+const namespace = localizationKey?.TableNamespace;
+const key = localizationKey?.Key;
+const defaultText = localizationKey?.en || '';
+---
+
+<Tag 
+  id={id}
+  data-loc-key={key} 
+  data-loc-namespace={namespace}
+>
+  {defaultText}
+</Tag>
