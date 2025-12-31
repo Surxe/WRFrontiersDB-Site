@@ -1,6 +1,7 @@
 ---
 import fs from 'fs';
 import path from 'path';
+import type { Module } from '../types/module';
 
 // Load version metadata to find the latest version
 const versionsPath = path.join(process.cwd(), 'WRFrontiersDB-Data/versions.json');
@@ -33,7 +34,7 @@ try {
 
     <ul>
       {Object.entries(modules)
-        .filter(([id, module]) => module.production_status && module.production_status !== false)
+        .filter(([id, module]) => (module as Module).production_status && (module as Module).production_status !== false)
         .map(([id, module]) => (
         <li><a href={`/WRFrontiersDB-Site/modules/${id}/${latestVersion}`}>{id}</a></li>
       ))}

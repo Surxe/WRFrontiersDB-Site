@@ -1,6 +1,7 @@
 ---
 import fs from 'fs';
 import path from 'path';
+import type { Module } from '../../../types/module';
 
 export async function getStaticPaths() {
   const versionsPath = path.join(process.cwd(), 'WRFrontiersDB-Data/versions.json');
@@ -19,7 +20,7 @@ export async function getStaticPaths() {
         // For each module in this version, create a path and track versions
         for (const [moduleId, module] of Object.entries(modules)) {
           // Skip modules that are not ready for production
-          if (!module.production_status || module.production_status === false) {
+          if (!(module as Module).production_status || (module as Module).production_status === false) {
             continue;
           }
           
@@ -54,7 +55,7 @@ export async function getStaticPaths() {
 const { id, version } = Astro.params;
 const { moduleVersions } = Astro.props;
 
-let module;
+let module: Module;
 try {
   const modulesPath = path.join(process.cwd(), `WRFrontiersDB-Data/archive/${version}/Objects/Module.json`);
   const modules = JSON.parse(fs.readFileSync(modulesPath, 'utf8'));
@@ -80,6 +81,16 @@ if (module.inventory_icon_path) {
   iconSrc = `/WRFrontiersDB-Site/WRFrontiersDB-Data/textures${iconPath}.png`;
 }
 
+// Extract English text as fallback
+const defaultName = module.name?.en || module.id;
+const defaultDesc = module.description?.en || '';
+
+// Store localization keys for dynamic loading
+const locKeys = {
+  name: { key: module.name?.Key, namespace: module.name?.TableNamespace },
+  description: { key: module.description?.Key, namespace: module.description?.TableNamespace }
+};
+
 ---
 
 <html>
@@ -88,17 +99,27 @@ if (module.inventory_icon_path) {
   </head>
   <body>
     <p>Back to <a href="/WRFrontiersDB-Site/modules">Modules</a></p>
-    <h1>{module.id}</h1>
+    <h1 id="module-name" 
+        data-loc-key={locKeys.name.key} 
+        data-loc-namespace={locKeys.name.namespace}>
+      {defaultName}
+    </h1>
     {iconSrc && (
-      <img src={iconSrc} alt={`${module.id} icon`} style="width: 64px; height: 64px;" />
+      <img src={iconSrc} alt={`${defaultName} icon`} style="width: 64px; height: 64px;" />
     )}
+    <p id="module-desc" 
+       data-loc-key={locKeys.description.key} 
+       data-loc-namespace={locKeys.description.namespace}>
+      {defaultDesc}
+    </p>
     <p>Version: {versionInfo?.title || version} ({version})</p>
+    <p>Language: <span id="current-lang">en</span></p>
 
     <div id="stats">stats</div>
     
     <h2>Available Versions</h2>
     <ul>
-      {moduleVersions.map((v) => (
+      {moduleVersions.map((v: string) => (
         <li>
           <a href={`/WRFrontiersDB-Site/modules/${id}/${v}`}>
             {versions[v]?.title || v} ({v})
@@ -110,6 +131,16 @@ if (module.inventory_icon_path) {
     
     <!-- Embed JSON -->
     <script type="application/json" id="module-data" set:html={JSON.stringify(module)}></script>
+
+    <script type="module">
+      import { initializeLocalization } from '/WRFrontiersDB-Site/js/localization.js';
+      
+      // Extract version from URL
+      const version = window.location.pathname.split('/').pop();
+      
+      // Initialize localization for all elements with data-loc-key
+      initializeLocalization(version);
+    </script>
 
     <script is:inline src="/WRFrontiersDB-Site/js/module_page.js"></script>
   </body>
