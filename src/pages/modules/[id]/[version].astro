@@ -5,6 +5,7 @@ import type { Module } from '../../../types/module';
 import Icon from '../../../components/Icon.astro';
 import LocalizedText from '../../../components/LocalizedText.astro';
 import VersionList from '../../../components/VersionList.astro';
+import ObjectPageScripts from '../../../components/ObjectPageScripts.astro';
 import { generateObjectStaticPaths, getParseObject, getVersionsData } from '../../../utils/parse_object';
 
 const parse_object_path = "Objects/Module.json";
@@ -60,20 +61,10 @@ const defaultName = module.name?.en || module.id;
       versionsData={versions}
     />
     
-    
-    <!-- Embed JSON -->
-    <script type="application/json" id="module-data" set:html={JSON.stringify(module)}></script>
-
-    <script type="module">
-      import { initializeLocalization } from '/WRFrontiersDB-Site/js/localization.js';
-      
-      // Extract version from URL
-      const version = window.location.pathname.split('/').pop();
-      
-      // Initialize localization for all elements with data-loc-key
-      initializeLocalization(version);
-    </script>
-
-    <script is:inline src="/WRFrontiersDB-Site/js/module_page.js"></script>
+    <ObjectPageScripts 
+      version={version}
+      objectData={module}
+      jsFileName="module_page.js"
+    />
   </body>
 </html>
