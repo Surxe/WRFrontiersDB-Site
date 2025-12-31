@@ -4,6 +4,7 @@ import path from 'path';
 import type { Module } from '../../../types/module';
 import Icon from '../../../components/Icon.astro';
 import LocalizedText from '../../../components/LocalizedText.astro';
+import VersionList from '../../../components/VersionList.astro';
 
 export async function getStaticPaths() {
   const versionsPath = path.join(process.cwd(), 'WRFrontiersDB-Data/versions.json');
@@ -107,16 +108,12 @@ const defaultName = module.name?.en || module.id;
 
     <div id="stats">stats</div>
     
-    <h2>Available Versions</h2>
-    <ul>
-      {moduleVersions.map((v: string) => (
-        <li>
-          <a href={`/WRFrontiersDB-Site/modules/${id}/${v}`}>
-            {versions[v]?.title || v} ({v})
-          </a>
-        </li>
-      ))}
-    </ul>
+    <VersionList 
+      parseObjectClass="modules"
+      id={id}
+      myVersions={moduleVersions}
+      versionsData={versions}
+    />
     
     
     <!-- Embed JSON -->
