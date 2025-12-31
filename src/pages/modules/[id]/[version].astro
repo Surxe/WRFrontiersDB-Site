@@ -8,16 +8,14 @@ import VersionList from '../../../components/VersionList.astro';
 import ObjectPageScripts from '../../../components/ObjectPageScripts.astro';
 import { generateObjectStaticPaths, getParseObject, getVersionsData } from '../../../utils/parse_object';
 
-const parse_object_path = "Objects/Module.json";
-
 export async function getStaticPaths() {
-  return await generateObjectStaticPaths(parse_object_path, true);
+  return await generateObjectStaticPaths("Objects/Module.json", true);
 }
 
 const { id, version } = Astro.params;
 const { moduleVersions } = Astro.props;
 
-const module = getParseObject<Module>(id, version, parse_object_path);
+const module = getParseObject<Module>(id, version, "Objects/Module.json");
 
 // Load version metadata
 const { versions, versionInfo } = getVersionsData(version);
