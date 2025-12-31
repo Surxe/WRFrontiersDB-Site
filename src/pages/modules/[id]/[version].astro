@@ -5,7 +5,7 @@ import type { Module } from '../../../types/module';
 import Icon from '../../../components/Icon.astro';
 import LocalizedText from '../../../components/LocalizedText.astro';
 import VersionList from '../../../components/VersionList.astro';
-import { generateObjectStaticPaths, getParseObject } from '../../../utils/generateStaticPaths';
+import { generateObjectStaticPaths, getParseObject } from '../../../utils/parse_object';
 
 export async function getStaticPaths() {
   return await generateObjectStaticPaths("Objects/Module.json", true);
