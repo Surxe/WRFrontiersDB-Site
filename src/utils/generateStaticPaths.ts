@@ -6,6 +6,26 @@ export interface StaticPathsResult {
   props: { moduleVersions: string[] };
 }
 
+export function getParseObject<T = any>(
+  id: string,
+  version: string,
+  parseObjectPath: string = "Objects/Module.json"
+): T {
+  try {
+    const objectsPath = path.join(process.cwd(), `WRFrontiersDB-Data/archive/${version}/${parseObjectPath}`);
+    const objects = JSON.parse(fs.readFileSync(objectsPath, 'utf8'));
+    const object = objects[id];
+    
+    if (!object) {
+      throw new Error(`Object ${id} not found`);
+    }
+    
+    return object as T;
+  } catch (error) {
+    throw new Error(`Object not found for version ${version}: ${error}`);
+  }
+}
+
 export async function generateObjectStaticPaths(
   parseObjectPath: string = "Objects/Module.json",
   prodReadyOnly: boolean = true

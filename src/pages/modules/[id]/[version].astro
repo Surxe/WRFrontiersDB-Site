@@ -5,7 +5,7 @@ import type { Module } from '../../../types/module';
 import Icon from '../../../components/Icon.astro';
 import LocalizedText from '../../../components/LocalizedText.astro';
 import VersionList from '../../../components/VersionList.astro';
-import { generateObjectStaticPaths } from '../../../utils/generateStaticPaths';
+import { generateObjectStaticPaths, getParseObject } from '../../../utils/generateStaticPaths';
 
 export async function getStaticPaths() {
   return await generateObjectStaticPaths("Objects/Module.json", true);
@@ -14,18 +14,7 @@ export async function getStaticPaths() {
 const { id, version } = Astro.params;
 const { moduleVersions } = Astro.props;
 
-let module: Module;
-try {
-  const modulesPath = path.join(process.cwd(), `WRFrontiersDB-Data/archive/${version}/Objects/Module.json`);
-  const modules = JSON.parse(fs.readFileSync(modulesPath, 'utf8'));
-  module = modules[id];
-} catch (error) {
-  throw new Error(`Module not found for version ${version}`);
-}
-
-if (!module) {
-  throw new Error('Module not found');
-}
+const module = getParseObject<Module>(id, version, "Objects/Module.json");
 
 // Load version metadata (only once per page)
 const versionsPath = path.join(process.cwd(), 'WRFrontiersDB-Data/versions.json');
