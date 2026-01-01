@@ -13,7 +13,7 @@ export async function getStaticPaths() {
 const { id, version } = Astro.params;
 const { moduleVersions } = Astro.props;
 
-const module = getParseObject<Module>(id, version, "Objects/Module.json");
+const module = getParseObject<Module>(id, version, "Module");
 
 // Load version metadata
 const { versions, versionInfo } = getVersionsData(version);

@@ -43,21 +43,16 @@ export function getVersionsData(version: string): VersionsData {
 export function getParseObject<T = any>(
   id: string,
   version: string,
-  parseObjectPath: string = "Objects/Module.json"
+  parseObjectClass: string = "Module"
 ): T {
-  try {
-    const objectsPath = path.join(process.cwd(), `WRFrontiersDB-Data/archive/${version}/${parseObjectPath}`);
-    const objects = JSON.parse(fs.readFileSync(objectsPath, 'utf8'));
-    const parseObject = objects[id];
-    
-    if (!parseObject) {
-      throw new Error(`Object ${id} not found`);
-    }
-    
-    return parseObject as T;
-  } catch (error) {
-    throw new Error(`Object not found for version ${version}: ${error}`);
+  const objects = getParseObjects(parseObjectClass, version);
+  const parseObject = objects[id];
+  
+  if (!parseObject) {
+    throw new Error(`Object ${id} not found in ${parseObjectClass} for version ${version}`);
   }
+  
+  return parseObject as T;
 }
 
 // Generate static paths for all parse objects across versions
