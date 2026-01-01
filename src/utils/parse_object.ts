@@ -3,7 +3,7 @@ import path from 'path';
 
 export interface StaticPathsResult {
   params: { id: string; version: string };
-  props: { moduleVersions: string[] };
+  props: { objectVersions: string[] };
 }
 
 export interface VersionsData {
@@ -67,7 +67,7 @@ export function getParseObject<T = any>(
 // Generate static paths for all parse objects across versions
 export async function generateObjectStaticPaths(
   parseObjectPath: string = "Objects/Module.json",
-  prodReadyOnly: boolean = true
+  prodReadyOnly: boolean = false
 ): Promise<StaticPathsResult[]> {
   const versionsPath = path.join(process.cwd(), 'WRFrontiersDB-Data/versions.json');
   const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8'));
@@ -92,7 +92,7 @@ export async function generateObjectStaticPaths(
           paths.push({ 
             params: { id: objectId, version },
             props: { 
-              moduleVersions: objectVersionsMap.get(objectId) || [] 
+              objectVersions: objectVersionsMap.get(objectId) || [] 
             }
           });
           
@@ -112,7 +112,7 @@ export async function generateObjectStaticPaths(
   return paths.map(pathItem => ({
     ...pathItem,
     props: {
-      moduleVersions: objectVersionsMap.get(pathItem.params.id) || []
+      objectVersions: objectVersionsMap.get(pathItem.params.id) || []
     }
   }));
 }

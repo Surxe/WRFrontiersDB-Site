@@ -11,7 +11,7 @@ export async function getStaticPaths() {
 }
 
 const { id, version } = Astro.params;
-const { moduleVersions } = Astro.props;
+const { objectVersions } = Astro.props;
 
 const module = getParseObject<Module>(id, version, "Objects/Module.json");
 
@@ -53,7 +53,7 @@ const defaultName = module.name?.en || module.id;
     <VersionList 
       parseObjectUrl="modules"
       id={id}
-      myVersions={moduleVersions}
+      myVersions={objectVersions}
       versionsData={versions}
     />
     
