@@ -2,6 +2,7 @@
 import fs from 'fs';
 import path from 'path';
 import type { Module } from '../types/module';
+import { getParseObjects } from '../utils/parse_object';
 
 // Load version metadata to find the latest version
 const versionsPath = path.join(process.cwd(), 'WRFrontiersDB-Data/versions.json');
@@ -11,15 +12,7 @@ const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8'));
 const latestVersion = Object.keys(versions)[0];
 
 // Load modules from latest version
-let modules = {};
-try {
-  const modulesPath = path.join(process.cwd(), `WRFrontiersDB-Data/archive/${latestVersion}/Objects/Module.json`);
-  if (fs.existsSync(modulesPath)) {
-    modules = JSON.parse(fs.readFileSync(modulesPath, 'utf8'));
-  }
-} catch (error) {
-  console.warn(`Could not load modules for latest version ${latestVersion}`);
-}
+const modules = getParseObjects('Module', latestVersion);
 ---
 
 <html>

@@ -11,6 +11,24 @@ export interface VersionsData {
   versionInfo: any;
 }
 
+/**
+ * Load parse objects from a specific version
+ * @param parseObjectClass - The object type (e.g., "Module", "Pilot")
+ * @param version - The version date string (e.g., "2025-03-04")
+ * @returns Object containing parse objects, or empty object if loading fails
+ */
+export function getParseObjects(parseObjectClass: string, version: string): Record<string, any> {
+  try {
+    const objectsPath = path.join(process.cwd(), `WRFrontiersDB-Data/archive/${version}/Objects/${parseObjectClass}.json`);
+    if (fs.existsSync(objectsPath)) {
+      return JSON.parse(fs.readFileSync(objectsPath, 'utf8'));
+    }
+  } catch (error) {
+    console.warn(`Could not load ${parseObjectClass} for version ${version}`);
+  }
+  return {};
+}
+
 // Get all versions data from versions.json and the specific version element
 // Having all versions is necessary for listing the versions the ParseObject exists in
 export function getVersionsData(version: string): VersionsData {
@@ -30,13 +48,13 @@ export function getParseObject<T = any>(
   try {
     const objectsPath = path.join(process.cwd(), `WRFrontiersDB-Data/archive/${version}/${parseObjectPath}`);
     const objects = JSON.parse(fs.readFileSync(objectsPath, 'utf8'));
-    const object = objects[id];
+    const parseObject = objects[id];
     
-    if (!object) {
+    if (!parseObject) {
       throw new Error(`Object ${id} not found`);
     }
     
-    return object as T;
+    return parseObject as T;
   } catch (error) {
     throw new Error(`Object not found for version ${version}: ${error}`);
   }
