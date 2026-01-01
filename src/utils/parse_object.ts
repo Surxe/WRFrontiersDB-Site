@@ -11,6 +11,8 @@ export interface VersionsData {
   versionInfo: any;
 }
 
+// Get all versions data from versions.json and the specific version element
+// Having all versions is necessary for listing the versions the ParseObject exists in
 export function getVersionsData(version: string): VersionsData {
   const versionsPath = path.join(process.cwd(), 'WRFrontiersDB-Data/versions.json');
   const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8'));
@@ -19,6 +21,7 @@ export function getVersionsData(version: string): VersionsData {
   return { versions, versionInfo };
 }
 
+// Get a specific parse object by ID and version
 export function getParseObject<T = any>(
   id: string,
   version: string,
@@ -39,6 +42,7 @@ export function getParseObject<T = any>(
   }
 }
 
+// Generate static paths for all parse objects across versions
 export async function generateObjectStaticPaths(
   parseObjectPath: string = "Objects/Module.json",
   prodReadyOnly: boolean = true
