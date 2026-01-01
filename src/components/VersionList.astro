@@ -1,15 +1,15 @@
 ---
 export interface Props {
-  parseObjectClass: string;
+  parseObjectUrl: string;
   id: string;
   myVersions: string[];
   versionsData: Record<string, any>;
 }
 
-const { parseObjectClass, id, myVersions, versionsData } = Astro.props;
+const { parseObjectUrl, id, myVersions, versionsData } = Astro.props;
 
-// Generate the base URL based on parseObjectClass
-const baseUrl = `/WRFrontiersDB-Site/${parseObjectClass}/${id}`;
+// Generate the base URL based on parseObjectUrl
+const baseUrl = `/WRFrontiersDB-Site/${parseObjectUrl}/${id}`;
 ---
 
 <h2>Available Versions</h2>

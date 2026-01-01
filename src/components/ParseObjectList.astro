@@ -2,16 +2,16 @@
 import { getParseObjects } from '../utils/parse_object';
 
 export interface Props {
-  parseObjectClass: string;
+  parseObjectFile: string;
   parseObjectUrl: string;
   version: string;
   baseUrl?: string;
   prodReadyOnly?: boolean;
 }
 
-const { parseObjectClass, parseObjectUrl, version, baseUrl = "/WRFrontiersDB-Site", prodReadyOnly = false } = Astro.props;
+const { parseObjectFile, parseObjectUrl, version, baseUrl = "/WRFrontiersDB-Site", prodReadyOnly = false } = Astro.props;
 
-const objects = getParseObjects(parseObjectClass, version);
+const objects = getParseObjects(parseObjectFile, version);
 let entries = Object.entries(objects);
 
 if (prodReadyOnly) {
