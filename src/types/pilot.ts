@@ -68,3 +68,28 @@ export interface PilotTalent {
         [key: string]: any;
     };
 }
+
+export interface Pilot {
+    id: string;
+    first_name: LocalizationKey;
+    second_name?: LocalizationKey;
+    image_path: string;
+    bio: LocalizationKey;
+    pilot_type_id: string;
+    pilot_class_id: string;
+    personality_id: string;
+    faction_id: string; // TODO
+    sell_price: {
+        currency_id: string; // TODO
+        amount: number;
+    };
+    levels: {
+        talent_type_id: string;
+        talents: string[];
+        reputation_cost?: number;
+        upgrade_cost: {
+            currency_id: string; // TODO
+            amount: number;
+        }; // Not used in game
+    }[];
+}

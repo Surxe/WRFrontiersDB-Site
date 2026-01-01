@@ -1,0 +1,98 @@
+---
+import type { Pilot } from '../../../types/pilot';
+import Icon from '../../../components/Icon.astro';
+import LocalizedText from '../../../components/LocalizedText.astro';
+import VersionList from '../../../components/VersionList.astro';
+import ObjectPageScripts from '../../../components/ObjectPageScripts.astro';
+import { generateObjectStaticPaths, getParseObject, getVersionsData } from '../../../utils/parse_object';
+
+export async function getStaticPaths() {
+  return await generateObjectStaticPaths("Objects/Pilot.json");
+}
+
+const { id, version } = Astro.params;
+const { objectVersions } = Astro.props;
+
+const pilot = getParseObject<Pilot>(id, version, "Objects/Pilot.json");
+
+// Load version metadata
+const { versions, versionInfo } = getVersionsData(version);
+
+// Extract English text as fallback
+const defaultName = pilot.first_name?.en || pilot.id;
+
+---
+
+<html>
+  <head>
+    <LocalizedText 
+      id="pilot-name-title"
+      tag="title"
+      localizationKey={pilot.first_name}
+    />
+  </head>
+  <body>
+    <p>Back to <a href="/WRFrontiersDB-Site/pilots">Pilots</a></p>
+    <p>
+      <LocalizedText 
+        id="pilot-first-name"
+        tag="span"
+        localizationKey={pilot.first_name}
+      />
+      {' '}
+      <LocalizedText 
+        id="pilot-second-name"
+        tag="span"
+        localizationKey={pilot.second_name}
+      />
+    </p>
+
+    <LocalizedText 
+      id="pilot-bio"
+      tag="p"
+      localizationKey={pilot.bio}
+    />
+
+    <Icon 
+      iconPath={pilot.image_path}
+      altText={`${defaultName} portrait`}
+    />
+
+    <p>sell_price placeholder</p>
+
+    <p>levels placeholder</p>
+
+    <!-- Hyperlinks to the referenced ids pilot_type_id, pilot_class_id, personality_id -->
+    <p>Pilot Type 
+        <a href={`/WRFrontiersDB-Site/pilot_types/${pilot.pilot_type_id}/${version}`}>
+            {pilot.pilot_type_id}
+        </a>
+    </p>
+    <p>Pilot Class 
+        <a href={`/WRFrontiersDB-Site/pilot_classes/${pilot.pilot_class_id}/${version}`}>
+            {pilot.pilot_class_id}
+        </a>
+    </p>
+    <p>Pilot Personality 
+        <a href={`/WRFrontiersDB-Site/pilot_personalities/${pilot.personality_id}/${version}`}>
+            {pilot.personality_id}
+        </a>
+    </p>
+    <p>faction_id placeholder</p>
+
+    <p>Version: {versionInfo?.title || version} ({version})</p>
+    <p>Language: <span id="current-lang">en</span></p>
+    
+    <VersionList 
+      parseObjectUrl="pilot_types"
+      id={id}
+      myVersions={objectVersions}
+      versionsData={versions}
+    />
+    
+    <ObjectPageScripts 
+      version={version}
+      objectData={pilot}
+    />
+  </body>
+</html>
