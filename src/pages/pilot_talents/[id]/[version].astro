@@ -1,0 +1,84 @@
+---
+import type { PilotTalent } from '../../../types/pilot';
+import Icon from '../../../components/Icon.astro';
+import LocalizedText from '../../../components/LocalizedText.astro';
+import VersionList from '../../../components/VersionList.astro';
+import ObjectPageScripts from '../../../components/ObjectPageScripts.astro';
+import { generateObjectStaticPaths, getParseObject, getVersionsData } from '../../../utils/parse_object';
+
+export async function getStaticPaths() {
+  return await generateObjectStaticPaths("Objects/PilotTalent.json");
+}
+
+const { id, version } = Astro.params;
+const { objectVersions } = Astro.props;
+
+const pilotTalent = getParseObject<PilotTalent>(id, version, "Objects/PilotTalent.json");
+
+// Load version metadata
+const { versions, versionInfo } = getVersionsData(version);
+
+// Extract English text as fallback
+const defaultName = pilotTalent.name?.en || pilotTalent.id;
+
+---
+
+<html>
+  <head>
+    <LocalizedText 
+      id="pilot-talent-name-title"
+      tag="title"
+      localizationKey={pilotTalent.name}
+    />
+  </head>
+  <body>
+    <p>Back to <a href="/WRFrontiersDB-Site/pilot_talents">Pilot Talents</a></p>
+    <LocalizedText 
+      id="pilot-talent-name"
+      tag="h1"
+      localizationKey={pilotTalent.name}
+    />
+
+    <LocalizedText 
+      id="pilot-talent-desc"
+      tag="p"
+      localizationKey={pilotTalent.description}
+    />
+
+    <LocalizedText 
+      id="pilot-talent-ui-desc"
+      tag="p"
+      localizationKey={pilotTalent.ui_description}
+    />
+
+    <LocalizedText 
+      id="pilot-talent-short-ui-desc"
+      tag="p"
+      localizationKey={pilotTalent.short_ui_description}
+    />
+
+    <Icon 
+      iconPath={pilotTalent.image_path}
+      altText={`${defaultName} icon`}
+    />
+
+    <p>stats placeholder</p> <!-- TODO -->
+
+    <p>buffs placeholder</p> <!-- TODO -->
+
+    <p>Version: {versionInfo?.title || version} ({version})</p>
+    <p>Language: <span id="current-lang">en</span></p>
+    
+    <VersionList 
+      parseObjectUrl="pilot_types"
+      id={id}
+      myVersions={objectVersions}
+      versionsData={versions}
+    />
+    
+    <ObjectPageScripts 
+      version={version}
+      objectData={pilotTalent}
+    />
+  </body>
+</html>

@@ -31,3 +31,40 @@ export interface PilotClass {
         hex: string;
     }
 }
+
+export interface PilotTalent {
+    id: string;
+    name: LocalizationKey;
+    description: LocalizationKey;
+    ui_description: LocalizationKey;
+    short_ui_description: LocalizationKey;
+    image_path: string;
+    stats: {
+        stat_id: string; // TODO
+        value: number;
+    }[];
+    buffs: {
+        Modifier?: number;
+        Modifiers?: {
+            what: string;
+            operator: "Grow" | "Multiply";
+            value: number; 
+        }[];
+        AbilitySelectors?: {
+            allowed_placement_types: string[];
+            module_tags?: {
+                module_tag_id: string;
+            }[];
+        }[];
+        module_tag_selector?: {
+            list_operator: string;
+            module_tags: {
+                module_tag_id: string; // TODO
+            }[];
+        }
+        [key: string]: any;
+    }[];
+    default_properties?: {
+        [key: string]: any;
+    };
+}
