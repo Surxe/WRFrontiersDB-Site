@@ -1,0 +1,25 @@
+---
+import ParseObjectList from '../components/ParseObjectList.astro';
+import BackToHome from '../components/BackToHome.astro';
+import { getAllVersions } from '../utils/parse_object';
+
+const { versions, latestVersion } = getAllVersions();
+---
+
+<html>
+  <head>
+    <title>Pilot Talent Types</title>
+  </head>
+  <body>
+    <BackToHome />
+    <h1>Pilot Talent Types</h1>
+    
+    <p>Showing pilot talent types from latest version: {versions[latestVersion].title} ({latestVersion})</p>
+
+    <ParseObjectList 
+      parseObjectFile="Objects/PilotTalentType.json" 
+      parseObjectUrl="pilot_talent_types" 
+      version={latestVersion}
+    />
+  </body>
+</html>

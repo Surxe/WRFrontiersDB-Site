@@ -1,0 +1,63 @@
+---
+import type { PilotTalentType } from '../../../types/pilot_talent_type';
+import Icon from '../../../components/Icon.astro';
+import LocalizedText from '../../../components/LocalizedText.astro';
+import VersionList from '../../../components/VersionList.astro';
+import ObjectPageScripts from '../../../components/ObjectPageScripts.astro';
+import { generateObjectStaticPaths, getParseObject, getVersionsData } from '../../../utils/parse_object';
+
+export async function getStaticPaths() {
+  return await generateObjectStaticPaths("Objects/PilotTalentType.json");
+}
+
+const { id, version } = Astro.params;
+const { objectVersions } = Astro.props;
+
+const pilotTalentType = getParseObject<PilotTalentType>(id, version, "Objects/PilotTalentType.json");
+
+// Load version metadata
+const { versions, versionInfo } = getVersionsData(version);
+
+// Extract English text as fallback
+const defaultName = pilotTalentType.name?.en || pilotTalentType.id;
+
+---
+
+<html>
+  <head>
+    <title>{pilotTalentType.id} - {version}</title>
+  </head>
+  <body>
+    <p>Back to <a href="/WRFrontiersDB-Site/pilot_talent_types">Pilot Talent Types</a></p>
+    <LocalizedText 
+      id="pilot-talent-type-name"
+      tag="h1"
+      localizationKey={pilotTalentType.name}
+    />
+
+    <Icon 
+      iconPath={pilotTalentType.image_path}
+      altText={`${defaultName} icon`}
+    />
+
+    <LocalizedText 
+      id="pilot-talent-type-desc"
+      tag="p"
+      localizationKey={pilotTalentType.description}
+    />
+    <p>Version: {versionInfo?.title || version} ({version})</p>
+    <p>Language: <span id="current-lang">en</span></p>
+    
+    <VersionList 
+      parseObjectUrl="pilot_talent_types"
+      id={id}
+      myVersions={objectVersions}
+      versionsData={versions}
+    />
+    
+    <ObjectPageScripts 
+      version={version}
+      objectData={pilotTalentType}
+    />
+  </body>
+</html>
