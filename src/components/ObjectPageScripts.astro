@@ -2,7 +2,7 @@
 export interface Props {
   version: string;
   objectData: any;
-  jsFileName: string;
+  jsFileName?: string;
 }
 
 const { version, objectData, jsFileName } = Astro.props;
@@ -19,5 +19,5 @@ const { version, objectData, jsFileName } = Astro.props;
   initializeLocalization(version);
 </script>
 
-<!--Load the specific JS file for this object page-->
-<script is:inline src={`/WRFrontiersDB-Site/js/${jsFileName}`}></script>
+<!--Load the specific JS file for this object page, only if jsFileName is provided-->
+{jsFileName && <script is:inline src={`/WRFrontiersDB-Site/js/${jsFileName}`}></script>}
