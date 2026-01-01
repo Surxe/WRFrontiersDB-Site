@@ -22,3 +22,12 @@ export interface PilotPersonality {
     icon_path: string;
     name: LocalizationKey;
 }
+
+export interface PilotClass {
+    id: string;
+    name: LocalizationKey;
+    badge: {
+        image_path: string;
+        hex: string;
+    }
+}
