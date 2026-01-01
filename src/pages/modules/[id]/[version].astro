@@ -25,7 +25,11 @@ const defaultName = module.name?.en || module.id;
 
 <html>
   <head>
-    <title>{module.id} - {version}</title>
+    <LocalizedText 
+      id="module-name-title"
+      tag="title"
+      localizationKey={module.name}
+    />
   </head>
   <body>
     <p>Back to <a href="/WRFrontiersDB-Site/modules">Modules</a></p>
