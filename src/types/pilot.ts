@@ -9,10 +9,16 @@ export interface PilotTalentType {
 
 export interface PilotType {
     id: string;
-    rarity_id: string;
+    rarity_id: string; // TODO
     name?: LocalizationKey;
-    group_reward_id: string;
+    group_reward_id: string; // TODO
     has_extended_bio?: boolean;
     can_change_talents?: boolean;
     sort_order?: number;
+}
+
+export interface PilotPersonality {
+    id: string;
+    icon_path: string;
+    name: LocalizationKey;
 }
