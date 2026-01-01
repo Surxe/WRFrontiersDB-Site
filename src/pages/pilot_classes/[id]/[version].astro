@@ -42,6 +42,7 @@ const defaultName = pilotClass.name?.en || pilotClass.id;
     <Icon 
       iconPath={pilotClass.badge.image_path}
       altText={`${defaultName} icon`}
+      color={pilotClass.badge.hex}
     />
 
     <p>Version: {versionInfo?.title || version} ({version})</p>

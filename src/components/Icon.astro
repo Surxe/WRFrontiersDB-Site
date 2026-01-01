@@ -3,9 +3,10 @@ export interface Props {
   iconPath?: string;
   altText: string;
   size?: number;
+  color?: string;
 }
 
-const { iconPath, altText, size = 64 } = Astro.props;
+const { iconPath, altText, size = 64, color } = Astro.props;
 
 let iconSrc = null;
 if (iconPath) {
@@ -14,6 +15,24 @@ if (iconPath) {
 }
 ---
 
-{iconSrc && (
+{iconSrc && color && (
+  <div 
+    style={`
+      width: ${size}px; 
+      height: ${size}px; 
+      background-color: #${color}; 
+      -webkit-mask-image: url(${iconSrc}); 
+      mask-image: url(${iconSrc}); 
+      -webkit-mask-size: contain; 
+      mask-size: contain;
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+    `}
+    role="img"
+    aria-label={altText}
+  />
+)}
+
+{iconSrc && !color && (
   <img src={iconSrc} alt={altText} style={`width: ${size}px; height: ${size}px;`} />
 )}
