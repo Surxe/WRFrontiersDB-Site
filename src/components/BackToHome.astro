@@ -1,0 +1,9 @@
+---
+export interface Props {
+  baseUrl?: string;
+}
+
+const { baseUrl = "/WRFrontiersDB-Site" } = Astro.props;
+---
+
+<p>Back to <a href={`${baseUrl}/`}>Home</a></p>

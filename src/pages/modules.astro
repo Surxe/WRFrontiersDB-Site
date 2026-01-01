@@ -2,6 +2,7 @@
 import fs from 'fs';
 import path from 'path';
 import ParseObjectList from '../components/ParseObjectList.astro';
+import BackToHome from '../components/BackToHome.astro';
 
 // Load version metadata to find the latest version
 const versionsPath = path.join(process.cwd(), 'WRFrontiersDB-Data/versions.json');
@@ -16,7 +17,7 @@ const latestVersion = Object.keys(versions)[0];
     <title>Modules</title>
   </head>
   <body>
-    <p>Back to <a href="/WRFrontiersDB-Site/">Home</a></p>
+    <BackToHome />
     <h1>Modules</h1>
     
     <p>Showing modules from latest version: {versions[latestVersion].title} ({latestVersion})</p>
