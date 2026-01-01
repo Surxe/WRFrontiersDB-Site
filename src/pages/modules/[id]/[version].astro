@@ -1,95 +1,25 @@
 ---
-import fs from 'fs';
-import path from 'path';
 import type { Module } from '../../../types/module';
+import Icon from '../../../components/Icon.astro';
+import LocalizedText from '../../../components/LocalizedText.astro';
+import VersionList from '../../../components/VersionList.astro';
+import ObjectPageScripts from '../../../components/ObjectPageScripts.astro';
+import { generateObjectStaticPaths, getParseObject, getVersionsData } from '../../../utils/parse_object';
 
 export async function getStaticPaths() {
-  const versionsPath = path.join(process.cwd(), 'WRFrontiersDB-Data/versions.json');
-  const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8'));
-  
-  const paths = [];
-  const moduleVersionsMap = new Map(); // Build lookup table once
-  
-  // For each version, load its modules and create paths
-  for (const version of Object.keys(versions)) {
-    try {
-      const modulesPath = path.join(process.cwd(), `WRFrontiersDB-Data/archive/${version}/Objects/Module.json`);
-      if (fs.existsSync(modulesPath)) {
-        const modules = JSON.parse(fs.readFileSync(modulesPath, 'utf8'));
-        
-        // For each module in this version, create a path and track versions
-        for (const [moduleId, module] of Object.entries(modules)) {
-          // Skip modules that are not ready for production
-          if (!(module as Module).production_status || (module as Module).production_status === false) {
-            continue;
-          }
-          
-          paths.push({ 
-            params: { id: moduleId, version },
-            props: { 
-              moduleVersions: moduleVersionsMap.get(moduleId) || [] 
-            }
-          });
-          
-          // Build reverse lookup: which versions have this module
-          if (!moduleVersionsMap.has(moduleId)) {
-            moduleVersionsMap.set(moduleId, []);
-          }
-          moduleVersionsMap.get(moduleId).push(version);
-        }
-      }
-    } catch (error) {
-      console.warn(`Could not load modules for version ${version}`);
-    }
-  }
-  
-  // Update paths with complete version lists
-  return paths.map(path => ({
-    ...path,
-    props: {
-      moduleVersions: moduleVersionsMap.get(path.params.id) || []
-    }
-  }));
+  return await generateObjectStaticPaths("Objects/Module.json", true);
 }
 
 const { id, version } = Astro.params;
 const { moduleVersions } = Astro.props;
 
-let module: Module;
-try {
-  const modulesPath = path.join(process.cwd(), `WRFrontiersDB-Data/archive/${version}/Objects/Module.json`);
-  const modules = JSON.parse(fs.readFileSync(modulesPath, 'utf8'));
-  module = modules[id];
-} catch (error) {
-  throw new Error(`Module not found for version ${version}`);
-}
+const module = getParseObject<Module>(id, version, "Objects/Module.json");
 
-if (!module) {
-  throw new Error('Module not found');
-}
-
-// Load version metadata (only once per page)
-const versionsPath = path.join(process.cwd(), 'WRFrontiersDB-Data/versions.json');
-const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8'));
-const versionInfo = versions[version];
-
-// Extract icon filename from inventory_icon_path
-let iconSrc = null;
-if (module.inventory_icon_path) {
-  // Remove the leading slash and extract the path after "WRFrontiers/"
-  const iconPath = module.inventory_icon_path;
-  iconSrc = `/WRFrontiersDB-Site/WRFrontiersDB-Data/textures${iconPath}.png`;
-}
+// Load version metadata
+const { versions, versionInfo } = getVersionsData(version);
 
 // Extract English text as fallback
 const defaultName = module.name?.en || module.id;
-const defaultDesc = module.description?.en || '';
-
-// Store localization keys for dynamic loading
-const locKeys = {
-  name: { key: module.name?.Key, namespace: module.name?.TableNamespace },
-  description: { key: module.description?.Key, namespace: module.description?.TableNamespace }
-};
 
 ---
 
@@ -99,49 +29,38 @@ const locKeys = {
   </head>
   <body>
     <p>Back to <a href="/WRFrontiersDB-Site/modules">Modules</a></p>
-    <h1 id="module-name" 
-        data-loc-key={locKeys.name.key} 
-        data-loc-namespace={locKeys.name.namespace}>
-      {defaultName}
-    </h1>
-    {iconSrc && (
-      <img src={iconSrc} alt={`${defaultName} icon`} style="width: 64px; height: 64px;" />
-    )}
-    <p id="module-desc" 
-       data-loc-key={locKeys.description.key} 
-       data-loc-namespace={locKeys.description.namespace}>
-      {defaultDesc}
-    </p>
+    <LocalizedText 
+      id="module-name"
+      tag="h1"
+      localizationKey={module.name}
+    />
+
+    <Icon 
+      iconPath={module.inventory_icon_path}
+      altText={`${defaultName} icon`}
+    />
+
+    <LocalizedText 
+      id="module-desc"
+      tag="p"
+      localizationKey={module.description}
+    />
     <p>Version: {versionInfo?.title || version} ({version})</p>
     <p>Language: <span id="current-lang">en</span></p>
 
     <div id="stats">stats</div>
     
-    <h2>Available Versions</h2>
-    <ul>
-      {moduleVersions.map((v: string) => (
-        <li>
-          <a href={`/WRFrontiersDB-Site/modules/${id}/${v}`}>
-            {versions[v]?.title || v} ({v})
-          </a>
-        </li>
-      ))}
-    </ul>
+    <VersionList 
+      parseObjectUrl="modules"
+      id={id}
+      myVersions={moduleVersions}
+      versionsData={versions}
+    />
     
-    
-    <!-- Embed JSON -->
-    <script type="application/json" id="module-data" set:html={JSON.stringify(module)}></script>
-
-    <script type="module">
-      import { initializeLocalization } from '/WRFrontiersDB-Site/js/localization.js';
-      
-      // Extract version from URL
-      const version = window.location.pathname.split('/').pop();
-      
-      // Initialize localization for all elements with data-loc-key
-      initializeLocalization(version);
-    </script>
-
-    <script is:inline src="/WRFrontiersDB-Site/js/module_page.js"></script>
+    <ObjectPageScripts 
+      version={version}
+      objectData={module}
+      jsFileName="module_page.js"
+    />
   </body>
 </html>

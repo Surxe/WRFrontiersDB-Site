@@ -1,0 +1,30 @@
+---
+import { getParseObjects } from '../utils/parse_object';
+
+export interface Props {
+  parseObjectFile: string;
+  parseObjectUrl: string;
+  version: string;
+  prodReadyOnly?: boolean;
+}
+
+const { parseObjectFile, parseObjectUrl, version, prodReadyOnly = false } = Astro.props;
+
+const objects = getParseObjects(parseObjectFile, version);
+let entries = Object.entries(objects);
+
+if (prodReadyOnly) {
+  entries = entries.filter(([_, obj]) => obj.production_status === 'Ready');
+}
+
+const items = entries.map(([id, _]) => ({
+  id,
+  url: `/WRFrontiersDB-Site/${parseObjectUrl}/${id}/${version}`
+}));
+---
+
+<ul>
+  {items.map(({ id, url }) => (
+    <li><a href={url}>{id}</a></li>
+  ))}
+</ul>

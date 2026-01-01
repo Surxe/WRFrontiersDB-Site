@@ -1,0 +1,19 @@
+---
+export interface Props {
+  iconPath?: string;
+  altText: string;
+  size?: number;
+}
+
+const { iconPath, altText, size = 64 } = Astro.props;
+
+let iconSrc = null;
+if (iconPath) {
+  // Remove the leading slash and extract the path after "WRFrontiers/"
+  iconSrc = `/WRFrontiersDB-Site/WRFrontiersDB-Data/textures${iconPath}.png`;
+}
+---
+
+{iconSrc && (
+  <img src={iconSrc} alt={altText} style={`width: ${size}px; height: ${size}px;`} />
+)}

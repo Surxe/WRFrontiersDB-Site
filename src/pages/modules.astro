@@ -1,7 +1,7 @@
 ---
 import fs from 'fs';
 import path from 'path';
-import type { Module } from '../types/module';
+import ParseObjectList from '../components/ParseObjectList.astro';
 
 // Load version metadata to find the latest version
 const versionsPath = path.join(process.cwd(), 'WRFrontiersDB-Data/versions.json');
@@ -9,17 +9,6 @@ const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8'));
 
 // Get the latest version (first in the object since they're sorted by date DESC)
 const latestVersion = Object.keys(versions)[0];
-
-// Load modules from latest version
-let modules = {};
-try {
-  const modulesPath = path.join(process.cwd(), `WRFrontiersDB-Data/archive/${latestVersion}/Objects/Module.json`);
-  if (fs.existsSync(modulesPath)) {
-    modules = JSON.parse(fs.readFileSync(modulesPath, 'utf8'));
-  }
-} catch (error) {
-  console.warn(`Could not load modules for latest version ${latestVersion}`);
-}
 ---
 
 <html>
@@ -32,12 +21,11 @@ try {
     
     <p>Showing modules from latest version: {versions[latestVersion].title} ({latestVersion})</p>
 
-    <ul>
-      {Object.entries(modules)
-        .filter(([id, module]) => (module as Module).production_status && (module as Module).production_status !== false)
-        .map(([id, module]) => (
-        <li><a href={`/WRFrontiersDB-Site/modules/${id}/${latestVersion}`}>{id}</a></li>
-      ))}
-    </ul>
+    <ParseObjectList 
+      parseObjectFile="Objects/Module.json" 
+      parseObjectUrl="modules" 
+      version={latestVersion}
+      prodReadyOnly={true} 
+    />
   </body>
 </html>
