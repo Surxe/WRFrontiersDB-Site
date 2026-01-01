@@ -1,7 +1,6 @@
 ---
 import fs from 'fs';
 import path from 'path';
-import type { Module } from '../types/module';
 import ParseObjectList from '../components/ParseObjectList.astro';
 
 // Load version metadata to find the latest version
@@ -25,8 +24,7 @@ const latestVersion = Object.keys(versions)[0];
     <ParseObjectList 
       parseObjectFile="Objects/Module.json" 
       parseObjectUrl="modules" 
-      version={latestVersion} 
-      baseUrl="/WRFrontiersDB-Site" 
+      version={latestVersion}
       prodReadyOnly={true} 
     />
   </body>
