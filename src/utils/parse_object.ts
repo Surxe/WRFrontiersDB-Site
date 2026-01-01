@@ -29,6 +29,15 @@ export function getParseObjects(parseObjectFile: string, version: string): Recor
   return {};
 }
 
+// Get all versions and the latest version
+export function getAllVersions(): { versions: Record<string, any>; latestVersion: string } {
+  const versionsPath = path.join(process.cwd(), 'WRFrontiersDB-Data/versions.json');
+  const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8'));
+  const latestVersion = Object.keys(versions)[0]; // First in the object since they're sorted by date DESC
+  
+  return { versions, latestVersion };
+}
+
 // Get all versions data from versions.json and the specific version element
 // Having all versions is necessary for listing the versions the ParseObject exists in
 export function getVersionsData(version: string): VersionsData {

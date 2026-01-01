@@ -1,15 +1,9 @@
 ---
-import fs from 'fs';
-import path from 'path';
 import ParseObjectList from '../components/ParseObjectList.astro';
 import BackToHome from '../components/BackToHome.astro';
+import { getAllVersions } from '../utils/parse_object';
 
-// Load version metadata to find the latest version
-const versionsPath = path.join(process.cwd(), 'WRFrontiersDB-Data/versions.json');
-const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8'));
-
-// Get the latest version (first in the object since they're sorted by date DESC)
-const latestVersion = Object.keys(versions)[0];
+const { versions, latestVersion } = getAllVersions();
 ---
 
 <html>
