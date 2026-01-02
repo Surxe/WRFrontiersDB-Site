@@ -17,7 +17,7 @@ export interface VersionsData {
  * @param version - The version date string (e.g., "2025-03-04")
  * @returns Object containing parse objects, or empty object if loading fails
  */
-export function getParseObjects(parseObjectFile: string, version: string): Record<string, any> {
+export function getParseObjects<T = any>(parseObjectFile: string, version: string): Record<string, T> {
   try {
     const objectsPath = path.join(process.cwd(), `WRFrontiersDB-Data/archive/${version}/${parseObjectFile}`);
     if (fs.existsSync(objectsPath)) {
