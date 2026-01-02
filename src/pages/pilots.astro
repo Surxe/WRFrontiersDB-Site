@@ -1,16 +1,13 @@
 ---
 import ParseObjectList from '../components/ParseObjectList.astro';
 import BackToHome from '../components/BackToHome.astro';
+import ParseObjectListPage from '../components/ParseObjectListPage.astro';
 import { getAllVersions } from '../utils/parse_object';
 
 const { versions, latestVersion } = getAllVersions();
 ---
 
-<html>
-  <head>
-    <title>Pilot</title>
-  </head>
-  <body>
+<ParseObjectListPage title="Pilot">
     <BackToHome />
     <h1>Pilot</h1>
     
@@ -21,5 +18,4 @@ const { versions, latestVersion } = getAllVersions();
       parseObjectUrl="pilots" 
       version={latestVersion}
     />
-  </body>
-</html>
+</ParseObjectListPage>
