@@ -75,7 +75,7 @@ const defaultName = pilot.first_name?.en || pilot.id;
       <thead>
         <tr>
           <th>Level</th>
-          <th>Talent Type ID</th>
+          <th>Talent Type</th>
           <th>Reputation Cost</th>
           <th>Talents</th>
         </tr>
@@ -92,6 +92,11 @@ const defaultName = pilot.first_name?.en || pilot.id;
                   localizationKey={pilotTalentTypes[level.talent_type_id].name}
                 />
               </a>
+              <Icon 
+                iconPath={pilotTalentTypes[level.talent_type_id].image_path}
+                altText={`${pilotTalentTypes[level.talent_type_id].name?.en} portrait`}
+                size={24}
+              />
             </td>
             <td>{level.reputation_cost || 'N/A'}</td>
             <td>
@@ -107,6 +112,11 @@ const defaultName = pilot.first_name?.en || pilot.id;
                           localizationKey={talent.name}
                         />
                       </a>
+                      <Icon 
+                        iconPath={pilotTalents[talent_id].image_path}
+                        altText={`${pilotTalents[talent_id].name?.en} portrait`}
+                        size={24}
+                      />
                     </span>
                   );
                 })}
@@ -135,6 +145,12 @@ const defaultName = pilot.first_name?.en || pilot.id;
             localizationKey={pilotClass.name}
           />
       </a>
+      <Icon 
+        iconPath={pilotClass.badge.image_path}
+        altText={`${pilotClass.name?.en} portrait`}
+        color={pilotClass.badge.hex}
+        size={32}
+      />
     </p>
     <p>Pilot Personality 
       <a href={`/WRFrontiersDB-Site/pilot_personalities/${pilot.personality_id}/${version}`}>
@@ -144,6 +160,11 @@ const defaultName = pilot.first_name?.en || pilot.id;
             localizationKey={pilotPersonality.name}
           />
       </a>
+      <Icon 
+        iconPath={pilotPersonality.icon_path}
+        altText={`${pilotPersonality.name?.en} portrait`}
+        size={32}
+      />
     </p>
     <p>faction_id placeholder</p>
 
