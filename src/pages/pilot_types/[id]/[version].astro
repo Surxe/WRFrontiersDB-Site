@@ -3,6 +3,7 @@ import type { PilotType } from '../../../types/pilot';
 import LocalizedText from '../../../components/LocalizedText.astro';
 import VersionList from '../../../components/VersionList.astro';
 import ObjectPageScripts from '../../../components/ObjectPageScripts.astro';
+import ParseObjectPage from '../../../components/ParseObjectPage.astro';
 import { generateObjectStaticPaths, getParseObject, getVersionsData } from '../../../utils/parse_object';
 
 export async function getStaticPaths() {
@@ -22,15 +23,13 @@ const defaultName = pilotType.name?.en || pilotType.id;
 
 ---
 
-<html>
-  <head>
-    <LocalizedText 
-      id="pilot-type-name-title"
-      tag="title"
-      localizationKey={pilotType.name}
-    />
-  </head>
-  <body>
+<ParseObjectPage>
+  <LocalizedText 
+    id="pilot-type-name-title"
+    tag="title"
+    localizationKey={pilotType.name}
+    slot="head"
+  />
     <p>Back to <a href="/WRFrontiersDB-Site/pilot_types">Pilot Types</a></p>
     <LocalizedText 
       id="pilot-type-name"
@@ -54,5 +53,4 @@ const defaultName = pilotType.name?.en || pilotType.id;
       version={version}
       objectData={pilotType}
     />
-  </body>
-</html>
+</ParseObjectPage>

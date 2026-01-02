@@ -4,6 +4,7 @@ import Icon from '../../../components/Icon.astro';
 import LocalizedText from '../../../components/LocalizedText.astro';
 import VersionList from '../../../components/VersionList.astro';
 import ObjectPageScripts from '../../../components/ObjectPageScripts.astro';
+import ParseObjectPage from '../../../components/ParseObjectPage.astro';
 import { generateObjectStaticPaths, getParseObject, getVersionsData } from '../../../utils/parse_object';
 
 export async function getStaticPaths() {
@@ -23,15 +24,13 @@ const defaultName = module.name?.en || module.id;
 
 ---
 
-<html>
-  <head>
-    <LocalizedText 
-      id="module-name-title"
-      tag="title"
-      localizationKey={module.name}
-    />
-  </head>
-  <body>
+<ParseObjectPage>
+  <LocalizedText 
+    id="module-name-title"
+    tag="title"
+    localizationKey={module.name}
+    slot="head"
+  />
     <p>Back to <a href="/WRFrontiersDB-Site/modules">Modules</a></p>
     <LocalizedText 
       id="module-name"
@@ -66,5 +65,4 @@ const defaultName = module.name?.en || module.id;
       objectData={module}
       jsFileName="module_page.js"
     />
-  </body>
-</html>
+</ParseObjectPage>

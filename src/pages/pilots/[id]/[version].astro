@@ -4,6 +4,7 @@ import Icon from '../../../components/Icon.astro';
 import LocalizedText from '../../../components/LocalizedText.astro';
 import VersionList from '../../../components/VersionList.astro';
 import ObjectPageScripts from '../../../components/ObjectPageScripts.astro';
+import ParseObjectPage from '../../../components/ParseObjectPage.astro';
 import { generateObjectStaticPaths, getParseObjects, getParseObject, getVersionsData } from '../../../utils/parse_object';
 
 export async function getStaticPaths() {
@@ -28,15 +29,13 @@ const defaultName = pilot.first_name?.en || pilot.id;
 
 ---
 
-<html>
-  <head>
-    <LocalizedText 
-      id="pilot-name-title"
-      tag="title"
-      localizationKey={pilot.first_name}
-    />
-  </head>
-  <body>
+<ParseObjectPage>
+  <LocalizedText 
+    id="pilot-name-title"
+    tag="title"
+    localizationKey={pilot.first_name}
+    slot="head"
+  />
     <p>Back to <a href="/WRFrontiersDB-Site/pilots">Pilots</a></p>
     <p>
       <LocalizedText 
@@ -182,5 +181,4 @@ const defaultName = pilot.first_name?.en || pilot.id;
       version={version}
       objectData={pilot}
     />
-  </body>
-</html>
+</ParseObjectPage>
