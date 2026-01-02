@@ -58,25 +58,64 @@ const defaultName = pilot.first_name?.en || pilot.id;
       altText={`${defaultName} portrait`}
     />
 
-    <p>sell_price placeholder</p>
+    <p id="pilot-sell-price-currency">
+      Sell Price Currency: {pilot.sell_price.currency_id}
+    </p>
+    <p id="pilot-sell-price-amount">
+      Sell Price Amount: {pilot.sell_price.amount}
+    </p>
 
-    <p>levels placeholder</p>
+    <h3>Levels</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Level</th>
+          <th>Talent Type ID</th>
+          <th>Reputation Cost</th>
+          <th>Talents</th>
+        </tr>
+      </thead>
+      <tbody>
+        {pilot.levels?.map((level, index) => (
+          <tr>
+            <td>{index + 1}</td>
+            <td>
+              <a href={`/WRFrontiersDB-Site/pilot_talent_types/${level.talent_type_id}/${version}`}>
+                {level.talent_type_id}
+              </a>
+            </td>
+            <td>{level.reputation_cost || 'N/A'}</td>
+            <td>
+              <div>
+                {level.talents?.map((talent) => (
+                  <span>
+                    <a href={'/WRFrontiersDB-Site/pilot_talents/' + talent + '/' + version}>
+                      {talent}
+                    </a>
+                  </span>
+                ))}
+              </div>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
 
     <!-- Hyperlinks to the referenced ids pilot_type_id, pilot_class_id, personality_id -->
     <p>Pilot Type 
-        <a href={`/WRFrontiersDB-Site/pilot_types/${pilot.pilot_type_id}/${version}`}>
-            {pilot.pilot_type_id}
-        </a>
+      <a href={`/WRFrontiersDB-Site/pilot_types/${pilot.pilot_type_id}/${version}`}>
+          {pilot.pilot_type_id}
+      </a>
     </p>
     <p>Pilot Class 
-        <a href={`/WRFrontiersDB-Site/pilot_classes/${pilot.pilot_class_id}/${version}`}>
-            {pilot.pilot_class_id}
-        </a>
+      <a href={`/WRFrontiersDB-Site/pilot_classes/${pilot.pilot_class_id}/${version}`}>
+          {pilot.pilot_class_id}
+      </a>
     </p>
     <p>Pilot Personality 
-        <a href={`/WRFrontiersDB-Site/pilot_personalities/${pilot.personality_id}/${version}`}>
-            {pilot.personality_id}
-        </a>
+      <a href={`/WRFrontiersDB-Site/pilot_personalities/${pilot.personality_id}/${version}`}>
+          {pilot.personality_id}
+      </a>
     </p>
     <p>faction_id placeholder</p>
 
