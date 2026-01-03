@@ -72,7 +72,7 @@ const sortedGroups = sortGroups(grouped, (a, b) => Number(a) - Number(b));
             {pilotTalentEntries.map(([id, talent]) => (
               <tr>
                 <td>
-                  <a href={`/WRFrontiersDB-Site/modules/${id}/${latestVersion}`}>
+                  <a href={`/WRFrontiersDB-Site/pilot_talents/${id}/${latestVersion}`}>
                     <LocalizedText
                       tag="span"
                       localizationKey={talent.name}
@@ -91,7 +91,7 @@ const sortedGroups = sortGroups(grouped, (a, b) => Number(a) - Number(b));
                     altText={`${pilotTalentTypes[(talent as any).talent_type_id].name.en} icon`}
                     size={24}
                   />
-                  <a href={`/WRFrontiersDB-Site/modules/${id}/${latestVersion}`}>
+                  <a href={`/WRFrontiersDB-Site/pilot_talent_types/${(talent as any).talent_type_id}/${latestVersion}`}>
                     <LocalizedText
                       tag="span"
                       localizationKey={pilotTalentTypes[(talent as any).talent_type_id].name}
