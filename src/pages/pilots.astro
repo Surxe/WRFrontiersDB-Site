@@ -61,50 +61,56 @@ const sortedGroups = sortGroups(grouped, (a, b) => {
             </tr>
           </thead>
           <tbody>
-            {pilotEntries.map(([id, pilot]) => (
-              <tr>
-                <td>
-                  <a href={`/WRFrontiersDB-Site/pilots/${id}/${latestVersion}`}>
-                    <LocalizedText
-                      tag="span"
-                      localizationKey={pilot.first_name}
-                    />
-                  </a>
-                </td>
-                <td>
-                  <Icon 
-                    iconPath={pilot.image_path}
-                    altText={`${pilot.first_name.en} icon`}
-                    size={48}
-                  />
-                </td>
-                {[0, 1, 2, 3, 4].map(levelIndex => (
-                  <td>
-                    {pilot.levels[levelIndex]?.talents && (
-                      <div>
-                        {pilot.levels[levelIndex].talents.map((talentId: string) => (
-                          <div>
-                            {pilotTalents[talentId] && (
-                              <a href={`/WRFrontiersDB-Site/pilot_talents/${talentId}/${latestVersion}`}>
-                                <Icon 
-                                  iconPath={pilotTalents[talentId].image_path}
-                                  altText={`${pilotTalents[talentId].name.en} icon`}
-                                  size={24}
-                                />
-                                <LocalizedText
-                                  tag="span"
-                                  localizationKey={pilotTalents[talentId].name}
-                                />
-                              </a>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </td>
-                ))}
-              </tr>
-            ))}
+            {pilotEntries.map(([id, pilot]) => {
+              // Calculate max talents across all levels for this pilot
+              const maxTalents = Math.max(
+                ...pilot.levels.map(level => level?.talents?.length || 0)
+              );
+              
+              return Array.from({ length: Math.max(1, maxTalents) }).map((_, talentIndex) => (
+                <tr>
+                  {talentIndex === 0 && (
+                    <>
+                      <td rowspan={maxTalents}>
+                        <a href={`/WRFrontiersDB-Site/pilots/${id}/${latestVersion}`}>
+                          <LocalizedText
+                            tag="span"
+                            localizationKey={pilot.first_name}
+                          />
+                        </a>
+                      </td>
+                      <td rowspan={maxTalents}>
+                        <Icon 
+                          iconPath={pilot.image_path}
+                          altText={`${pilot.first_name.en} icon`}
+                          size={48}
+                        />
+                      </td>
+                    </>
+                  )}
+                  {[0, 1, 2, 3, 4].map(levelIndex => {
+                    const talentId = pilot.levels[levelIndex]?.talents?.[talentIndex];
+                    return (
+                      <td>
+                        {talentId && pilotTalents[talentId] && (
+                          <a href={`/WRFrontiersDB-Site/pilot_talents/${talentId}/${latestVersion}`}>
+                            <Icon 
+                              iconPath={pilotTalents[talentId].image_path}
+                              altText={`${pilotTalents[talentId].name.en} icon`}
+                              size={24}
+                            />
+                            <LocalizedText
+                              tag="span"
+                              localizationKey={pilotTalents[talentId].name}
+                            />
+                          </a>
+                        )}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ));
+            })}
           </tbody>
         </table>
       </section>
