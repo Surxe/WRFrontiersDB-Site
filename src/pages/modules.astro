@@ -1,10 +1,24 @@
 ---
-import ParseObjectList from '../components/ParseObjectList.astro';
 import BackToHome from '../components/BackToHome.astro';
 import ParseObjectListPage from '../components/ParseObjectListPage.astro';
-import { getAllVersions } from '../utils/parse_object';
+import LocalizedText from '../components/LocalizedText.astro';
+import { getAllVersions, getParseObjects } from '../utils/parse_object';
+import { prepareObjectList, groupBy, sortGroups } from '../utils/list_helpers';
+import type { Module } from '../types/module';
 
 const { versions, latestVersion } = getAllVersions();
+
+// Load all modules
+const modules = getParseObjects<Module>("Objects/Module.json", latestVersion);
+
+// Prepare and filter modules
+const entries = prepareObjectList(modules, { prodReadyOnly: true });
+
+// Group by module_type_id
+const grouped = groupBy(entries, ([_, module]) => module.module_type_id || 'Unknown');
+
+// Sort groups alphabetically
+const sortedGroups = sortGroups(grouped);
 ---
 
 <ParseObjectListPage title="Modules">
@@ -13,10 +27,21 @@ const { versions, latestVersion } = getAllVersions();
     
     <p>Showing modules from latest version: {versions[latestVersion].title} ({latestVersion})</p>
 
-    <ParseObjectList 
-      parseObjectFile="Objects/Module.json" 
-      parseObjectUrl="modules" 
-      version={latestVersion}
-      prodReadyOnly={true} 
-    />
+    {sortedGroups.map(([moduleTypeId, moduleEntries]) => (
+      <section>
+        <h2>{moduleTypeId}</h2>
+        <ul>
+          {moduleEntries.map(([id, module]) => (
+            <li>
+              <a href={`/WRFrontiersDB-Site/modules/${id}/${latestVersion}`}>
+                <LocalizedText
+                  tag="span"
+                  localizationKey={module.name}
+                />
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))}
 </ParseObjectListPage>
