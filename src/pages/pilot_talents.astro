@@ -59,37 +59,49 @@ const sortedGroups = sortGroups(grouped, (a, b) => Number(a) - Number(b));
 
     {sortedGroups.map(([levelNum, pilotTalentEntries]) => (
       <section>
-        <h2>{levelNum}</h2>
-        <ul>
-          {pilotTalentEntries.map(([id, talent]) => (
-            <li>
-              <a href={`/WRFrontiersDB-Site/modules/${id}/${latestVersion}`}>
-                <LocalizedText
-                  tag="span"
-                  localizationKey={talent.name}
-                />
-              </a>
-              { ' - '}
-              <LocalizedText
-                tag="span"
-                localizationKey={talent.description}
-              />
-              { ' - '}
-              <a href={`/WRFrontiersDB-Site/modules/${id}/${latestVersion}`}>
-                <LocalizedText
-                  tag="span"
-                  localizationKey={pilotTalentTypes[(talent as any).talent_type_id].name}
-                />
-              </a>
-              { ' - '}
-              <Icon 
-                  iconPath={pilotTalentTypes[(talent as any).talent_type_id].image_path}
-                  altText={`${pilotTalentTypes[(talent as any).talent_type_id].name.en} icon`}
-                  size={24}
-                />
-            </li>
-          ))}
-        </ul>
+        <h2>Level {levelNum}</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Talent Name</th>
+              <th>Description</th>
+              <th>Talent Type</th>
+            </tr>
+          </thead>
+          <tbody>
+            {pilotTalentEntries.map(([id, talent]) => (
+              <tr>
+                <td>
+                  <a href={`/WRFrontiersDB-Site/modules/${id}/${latestVersion}`}>
+                    <LocalizedText
+                      tag="span"
+                      localizationKey={talent.name}
+                    />
+                  </a>
+                </td>
+                <td>
+                  <LocalizedText
+                    tag="span"
+                    localizationKey={talent.description}
+                  />
+                </td>
+                <td>
+                  <Icon 
+                    iconPath={pilotTalentTypes[(talent as any).talent_type_id].image_path}
+                    altText={`${pilotTalentTypes[(talent as any).talent_type_id].name.en} icon`}
+                    size={24}
+                  />
+                  <a href={`/WRFrontiersDB-Site/modules/${id}/${latestVersion}`}>
+                    <LocalizedText
+                      tag="span"
+                      localizationKey={pilotTalentTypes[(talent as any).talent_type_id].name}
+                    />
+                  </a>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </section>
     ))}
 </ParseObjectListPage>
