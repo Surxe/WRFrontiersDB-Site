@@ -1,7 +1,7 @@
 import type { LocalizationKey } from './localization';
+import type { ParseObject } from './parse_object';
 
-export interface Module {
-  id: string;
+export interface Module extends ParseObject {
   production_status?: string;
   inventory_icon_path?: string;
   module_rarity_id?: string;

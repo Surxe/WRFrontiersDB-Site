@@ -1,14 +1,13 @@
 import type { LocalizationKey } from './localization';
+import type { ParseObject } from './parse_object';
 
-export interface PilotTalentType {
-    id: string;
+export interface PilotTalentType extends ParseObject {
     name?: LocalizationKey;
     description?: LocalizationKey;
     image_path?: string;
 }
 
-export interface PilotType {
-    id: string;
+export interface PilotType extends ParseObject {
     rarity_id: string; // TODO
     name?: LocalizationKey;
     group_reward_id: string; // TODO
@@ -17,14 +16,12 @@ export interface PilotType {
     sort_order?: number;
 }
 
-export interface PilotPersonality {
-    id: string;
+export interface PilotPersonality extends ParseObject {
     icon_path: string;
     name: LocalizationKey;
 }
 
-export interface PilotClass {
-    id: string;
+export interface PilotClass extends ParseObject {
     name: LocalizationKey;
     badge: {
         image_path: string;
@@ -32,8 +29,7 @@ export interface PilotClass {
     }
 }
 
-export interface PilotTalent {
-    id: string;
+export interface PilotTalent extends ParseObject {
     name: LocalizationKey;
     description: LocalizationKey;
     ui_description: LocalizationKey;
@@ -69,8 +65,7 @@ export interface PilotTalent {
     };
 }
 
-export interface Pilot {
-    id: string;
+export interface Pilot extends ParseObject {
     first_name: LocalizationKey;
     second_name?: LocalizationKey;
     image_path: string;
