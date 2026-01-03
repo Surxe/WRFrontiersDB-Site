@@ -30,7 +30,7 @@ Static Astro site displaying War Robots Frontiers game data from versioned JSON 
 
 ## Key Conventions
 ### Parse Object Pages Pattern
-See more in [docs.md](docs.md)'s "Parse Objects" section.
+See more in [feature_docs.md](feature_docs.md)'s "Parse Objects" section.
 **List Page** (e.g., [modules.astro](src/pages/modules.astro)):
 - Uses `ParseObjectListPage` wrapper component
 - Shows `ParseObjectList` component with latest version data
@@ -43,7 +43,7 @@ See more in [docs.md](docs.md)'s "Parse Objects" section.
 - Shows object data, version info, and `VersionList` component for navigating versions
 
 ### Localization System
-See more in [docs.md](docs.md)'s "Localization" section.
+See more in [feature_docs.md](feature_docs.md)'s "Localization" section.
 **Server-side (build)**:
 - Localization keys stored in JSON objects: `{ Key: string, TableNamespace: string, en: string }`
 - `en` value used as default/fallback text in SSR HTML
@@ -72,7 +72,7 @@ See more in [docs.md](docs.md)'s "Localization" section.
 5. Add link to homepage ([index.astro](src/pages/index.astro))
 
 ### Working with Icons/Textures
-See more in [docs.md](docs.md)'s "Textures" section.
+See more in [feature_docs.md](feature_docs.md)'s "Textures" section.
 - Texture paths in objects: `"inventory_icon_path": "WRFrontiers/Content/Sparrow/UI/Textures/Abilities/T_Icon"`
 - Physical files: `WRFrontiersDB-Data/textures/WRFrontiers/Content/.../T_Icon.png`
 - Use `Icon` component with `iconPath` prop (no `.png` extension)
