@@ -3,7 +3,7 @@ import BackToHome from '../components/BackToHome.astro';
 import ParseObjectListPage from '../components/ParseObjectListPage.astro';
 import { getAllVersions, getParseObjects } from '../utils/parse_object';
 import { prepareObjectList, groupBy, sortGroups } from '../utils/list_helpers';
-import type { Pilot, PilotType, PilotTalent } from '../types/pilot';
+import type { Pilot, PilotType, PilotTalent, PilotTalentType } from '../types/pilot';
 import LocalizedText from '../components/LocalizedText.astro';
 import Icon from '../components/Icon.astro';
 
@@ -13,6 +13,7 @@ const { versions, latestVersion } = getAllVersions();
 const pilots = getParseObjects<Pilot>("Objects/Pilot.json", latestVersion);
 const pilotTypes = getParseObjects<PilotType>("Objects/PilotType.json", latestVersion);
 const pilotTalents = getParseObjects<PilotTalent>("Objects/PilotTalent.json", latestVersion);
+const pilotTalentTypes = getParseObjects<PilotTalentType>("Objects/PilotTalentType.json", latestVersion);
 
 // Prepare and filter pilots
 const entries = prepareObjectList(pilots, { prodReadyOnly: false });
@@ -32,6 +33,9 @@ const sortedGroups = sortGroups(grouped, (a, b) => {
   const orderB = pilotTypeOrder[b] || 999;
   return orderA - orderB;
 });
+
+const levelOneTalentTypeId = 'DA_TalentType_General.0';
+const levelFiveTalentTypeId = 'DA_TalentType_Ult.0';
 ---
 
 <ParseObjectListPage title="Pilots">
@@ -40,6 +44,10 @@ const sortedGroups = sortGroups(grouped, (a, b) => {
     
     <p>Showing pilots from latest version: {versions[latestVersion].title} ({latestVersion})</p>
 
+    <!-- 
+    Create table. Levels 1 through 4 may have multiple talents in them, so 
+    the other columns have rowspan to center them within their group of rows
+    -->
     {sortedGroups.map(([pilotTypeId, pilotEntries]) => (
       <section>
         <h2>
@@ -53,11 +61,33 @@ const sortedGroups = sortGroups(grouped, (a, b) => {
             <tr>
               <th>Name</th>
               <th>Icon</th>
-              <th>Level 1</th>
+              <th>
+                Level 1
+                <LocalizedText
+                  tag="span"
+                  localizationKey={pilotTalentTypes[levelOneTalentTypeId].name}
+                />
+                <Icon 
+                  iconPath={pilotTalentTypes[levelOneTalentTypeId].image_path}
+                  altText={`${pilotTalentTypes[levelOneTalentTypeId].name.en} icon`}
+                  size={24}
+                />
+                </th>
               <th>Level 2</th>
               <th>Level 3</th>
               <th>Level 4</th>
-              <th>Level 5</th>
+              <th>
+                Level 5
+                <LocalizedText
+                  tag="span"
+                  localizationKey={pilotTalentTypes[levelFiveTalentTypeId].name}
+                />
+                <Icon 
+                  iconPath={pilotTalentTypes[levelFiveTalentTypeId].image_path}
+                  altText={`${pilotTalentTypes[levelFiveTalentTypeId].name.en} icon`}
+                  size={24}
+                />
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -88,7 +118,7 @@ const sortedGroups = sortGroups(grouped, (a, b) => {
                       </td>
                     </>
                   )}
-                  {[0, 1, 2, 3, 4].map(levelIndex => {
+                  {[0, 1, 2, 3].map(levelIndex => {
                     const talentId = pilot.levels[levelIndex]?.talents?.[talentIndex];
                     return (
                       <td>
@@ -108,6 +138,23 @@ const sortedGroups = sortGroups(grouped, (a, b) => {
                       </td>
                     );
                   })}
+                  {talentIndex === 0 && (
+                    <td rowspan={maxTalents}>
+                      {pilot.levels[4]?.talents?.[0] && pilotTalents[pilot.levels[4].talents[0]] && (
+                        <a href={`/WRFrontiersDB-Site/pilot_talents/${pilot.levels[4].talents[0]}/${latestVersion}`}>
+                          <Icon 
+                            iconPath={pilotTalents[pilot.levels[4].talents[0]].image_path}
+                            altText={`${pilotTalents[pilot.levels[4].talents[0]].name.en} icon`}
+                            size={24}
+                          />
+                          <LocalizedText
+                            tag="span"
+                            localizationKey={pilotTalents[pilot.levels[4].talents[0]].name}
+                          />
+                        </a>
+                      )}
+                    </td>
+                  )}
                 </tr>
               ));
             })}
