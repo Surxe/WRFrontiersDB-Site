@@ -3,8 +3,18 @@ import ParseObjectList from '../components/ParseObjectList.astro';
 import BackToHome from '../components/BackToHome.astro';
 import ParseObjectListPage from '../components/ParseObjectListPage.astro';
 import { getAllVersions } from '../utils/parse_object';
+import type { PilotClass } from '../types/pilot';
+import { getParseObjects } from '../utils/parse_object';
+import { prepareObjectList } from '../utils/list_helpers';
+import LocalizedText from '../components/LocalizedText.astro';
+import Icon from '../components/Icon.astro';
 
 const { versions, latestVersion } = getAllVersions();
+
+const pilotClasses = getParseObjects<PilotClass>("Objects/PilotClass.json", latestVersion);
+
+// Prepare and filter modules
+const entries = prepareObjectList(pilotClasses, { prodReadyOnly: false });
 ---
 
 <ParseObjectListPage title="Pilot Classes">
@@ -13,9 +23,22 @@ const { versions, latestVersion } = getAllVersions();
     
     <p>Showing pilot classes from latest version: {versions[latestVersion].title} ({latestVersion})</p>
 
-    <ParseObjectList 
-      parseObjectFile="Objects/PilotClass.json" 
-      parseObjectUrl="pilot_classes" 
-      version={latestVersion}
-    />
+    <ul>
+      {entries.map(([id, pilotClass]) => (
+        <li>
+          <Icon
+            iconPath={pilotClass.badge.image_path}
+            altText={pilotClass.name.en + " icon"}
+            color={pilotClass.badge.hex}
+            size={24}
+          />
+          <a href={`/WRFrontiersDB-Site/pilot_classes/${id}/${latestVersion}`}>
+            <LocalizedText
+              tag="span"
+              localizationKey={pilotClass.name}
+            />
+          </a>
+        </li>
+      ))}
+    </ul>    
 </ParseObjectListPage>

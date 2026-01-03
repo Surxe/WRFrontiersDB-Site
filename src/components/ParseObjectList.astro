@@ -1,15 +1,18 @@
 ---
 import { getParseObjects } from '../utils/parse_object';
 import LocalizedText from './LocalizedText.astro';
+import Icon from './Icon.astro';
 
 export interface Props {
   parseObjectFile: string;
   parseObjectUrl: string;
   version: string;
   prodReadyOnly?: boolean;
+  nameAttr?: string;
+  iconAttr?: string;
 }
 
-const { parseObjectFile, parseObjectUrl, version, prodReadyOnly = false } = Astro.props;
+const { parseObjectFile, parseObjectUrl, version, prodReadyOnly = false, nameAttr = 'name', iconAttr } = Astro.props;
 
 const objects = getParseObjects(parseObjectFile, version);
 let entries = Object.entries(objects);
@@ -29,10 +32,17 @@ const items = entries.map(([id, _]) => ({
 <ul>
   {items.map(({ id, url }) => (
     <li>
+      {iconAttr && objects[id][iconAttr] && (
+        <Icon 
+          iconPath={objects[id][iconAttr]}
+          altText={`${objects[id][nameAttr]?.en || id} icon`}
+          size={24}
+        />
+      )}
       <a href={url}>
         <LocalizedText
           tag="span"
-          localizationKey={objects[id].name}
+          localizationKey={objects[id][nameAttr]}
         />
       </a>
     </li>
