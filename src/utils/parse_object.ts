@@ -1,23 +1,7 @@
 import fs from 'fs';
 import path from 'path';
-
-export interface StaticPathsResult {
-  params: { id: string; version: string };
-  props: { objectVersions: string[] };
-}
-
-export interface VersionsData {
-  versions: Record<string, any>;
-  versionInfo: VersionInfo;
-}
-
-export interface VersionInfo {
-  title: string;
-  date_utc: string;
-  manifest_id: string;
-  patch_notes_url?: string;
-  is_season_release?: boolean;
-}
+import type { VersionsData } from '../types/version';
+import type { StaticPathsResult } from '../types/parse_object';
 
 /**
  * Load parse objects from a specific version

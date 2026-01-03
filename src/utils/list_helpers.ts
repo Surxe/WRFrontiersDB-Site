@@ -1,10 +1,4 @@
-import type { LocalizationKey } from '../types/localization';
-
-export interface ParseObject {
-  production_status?: string;
-  name?: LocalizationKey;
-  [key: string]: any;
-}
+import type { ParseObject } from '../types/parse_object';
 
 /**
  * Filters and prepares parse objects for list display
