@@ -1,17 +1,16 @@
 ---
 import fs from 'fs';
 import path from 'path';
+import Page from '../components/Page.astro';
+
+import type { VersionInfo } from '../utils/parse_object';
 
 // Load version metadata
 const versionsPath = path.join(process.cwd(), 'WRFrontiersDB-Data/versions.json');
-const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8'));
+const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8')) as Record<string, VersionInfo>;
 ---
 
-<html>
-  <head>
-    <title>Versions</title>
-  </head>
-  <body>
+<Page title="Versions">
     <p>Back to <a href="/WRFrontiersDB-Site/">Home</a></p>
     <h1>Versions</h1>
 
@@ -20,5 +19,4 @@ const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8'));
         <li>{info.title} ({version})</li>
       ))}
     </ul>
-  </body>
-</html>
+</Page>

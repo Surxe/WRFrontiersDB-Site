@@ -1,6 +1,5 @@
 ---
-import type { Module } from '../../../types/module';
-import Icon from '../../../components/Icon.astro';
+import type { PilotType } from '../../../types/pilot';
 import LocalizedText from '../../../components/LocalizedText.astro';
 import VersionList from '../../../components/VersionList.astro';
 import ObjectPageScripts from '../../../components/ObjectPageScripts.astro';
@@ -8,53 +7,43 @@ import ParseObjectPage from '../../../components/ParseObjectPage.astro';
 import { generateObjectStaticPaths, getParseObject, getVersionsData } from '../../../utils/parse_object';
 
 export async function getStaticPaths() {
-  return await generateObjectStaticPaths("Objects/Module.json", true);
+  return await generateObjectStaticPaths("Objects/PilotType.json");
 }
 
 const { id, version } = Astro.params;
 const { objectVersions } = Astro.props;
 
-const module = getParseObject<Module>(id, version, "Objects/Module.json");
+const pilotType = getParseObject<PilotType>(id, version, "Objects/PilotType.json");
 
 // Load version metadata
 const { versions, versionInfo } = getVersionsData(version);
 
 // Extract English text as fallback
-const defaultName = module.name?.en || module.id;
+const defaultName = pilotType.name?.en || pilotType.id;
 
 ---
 
 <ParseObjectPage>
   <LocalizedText 
-    id="module-name-title"
+    id="pilot-type-name-title"
     tag="title"
-    localizationKey={module.name}
+    localizationKey={pilotType.name}
     slot="head"
   />
-    <p>Back to <a href="/WRFrontiersDB-Site/modules">Modules</a></p>
+    <p>Back to <a href="/WRFrontiersDB-Site/pilot_types">Pilot Types</a></p>
     <LocalizedText 
-      id="module-name"
+      id="pilot-type-name"
       tag="h1"
-      localizationKey={module.name}
+      localizationKey={pilotType.name}
     />
 
-    <Icon 
-      iconPath={module.inventory_icon_path}
-      altText={`${defaultName} icon`}
-    />
+    {pilotType.can_change_talents && <p>Can change talents</p>}
 
-    <LocalizedText 
-      id="module-desc"
-      tag="p"
-      localizationKey={module.description}
-    />
     <p>Version: {versionInfo?.title || version} ({version})</p>
     <p>Language: <span id="current-lang">en</span></p>
-
-    <div id="stats">stats</div>
     
     <VersionList 
-      parseObjectUrl="modules"
+      parseObjectUrl="pilot_types"
       id={id}
       myVersions={objectVersions}
       versionsData={versions}
@@ -62,7 +51,6 @@ const defaultName = module.name?.en || module.id;
     
     <ObjectPageScripts 
       version={version}
-      objectData={module}
-      jsFileName="module_page.js"
+      objectData={pilotType}
     />
 </ParseObjectPage>

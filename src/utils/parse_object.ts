@@ -3,12 +3,20 @@ import path from 'path';
 
 export interface StaticPathsResult {
   params: { id: string; version: string };
-  props: { moduleVersions: string[] };
+  props: { objectVersions: string[] };
 }
 
 export interface VersionsData {
   versions: Record<string, any>;
-  versionInfo: any;
+  versionInfo: VersionInfo;
+}
+
+export interface VersionInfo {
+  title: string;
+  date_utc: string;
+  manifest_id: string;
+  patch_notes_url?: string;
+  is_season_release?: boolean;
 }
 
 /**
@@ -17,7 +25,7 @@ export interface VersionsData {
  * @param version - The version date string (e.g., "2025-03-04")
  * @returns Object containing parse objects, or empty object if loading fails
  */
-export function getParseObjects(parseObjectFile: string, version: string): Record<string, any> {
+export function getParseObjects<T = any>(parseObjectFile: string, version: string): Record<string, T> {
   try {
     const objectsPath = path.join(process.cwd(), `WRFrontiersDB-Data/archive/${version}/${parseObjectFile}`);
     if (fs.existsSync(objectsPath)) {
@@ -27,6 +35,15 @@ export function getParseObjects(parseObjectFile: string, version: string): Recor
     console.warn(`Could not load ${parseObjectFile} for version ${version}`);
   }
   return {};
+}
+
+// Get all versions and the latest version
+export function getAllVersions(): { versions: Record<string, any>; latestVersion: string } {
+  const versionsPath = path.join(process.cwd(), 'WRFrontiersDB-Data/versions.json');
+  const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8'));
+  const latestVersion = Object.keys(versions)[0]; // First in the object since they're sorted by date DESC
+  
+  return { versions, latestVersion };
 }
 
 // Get all versions data from versions.json and the specific version element
@@ -58,7 +75,7 @@ export function getParseObject<T = any>(
 // Generate static paths for all parse objects across versions
 export async function generateObjectStaticPaths(
   parseObjectPath: string = "Objects/Module.json",
-  prodReadyOnly: boolean = true
+  prodReadyOnly: boolean = false
 ): Promise<StaticPathsResult[]> {
   const versionsPath = path.join(process.cwd(), 'WRFrontiersDB-Data/versions.json');
   const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8'));
@@ -83,7 +100,7 @@ export async function generateObjectStaticPaths(
           paths.push({ 
             params: { id: objectId, version },
             props: { 
-              moduleVersions: objectVersionsMap.get(objectId) || [] 
+              objectVersions: objectVersionsMap.get(objectId) || [] 
             }
           });
           
@@ -103,7 +120,7 @@ export async function generateObjectStaticPaths(
   return paths.map(pathItem => ({
     ...pathItem,
     props: {
-      moduleVersions: objectVersionsMap.get(pathItem.params.id) || []
+      objectVersions: objectVersionsMap.get(pathItem.params.id) || []
     }
   }));
 }

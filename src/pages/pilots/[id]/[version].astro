@@ -1,0 +1,184 @@
+---
+import { type PilotClass, type PilotPersonality, type PilotType, type Pilot, type PilotTalent, type PilotTalentType } from '../../../types/pilot';
+import Icon from '../../../components/Icon.astro';
+import LocalizedText from '../../../components/LocalizedText.astro';
+import VersionList from '../../../components/VersionList.astro';
+import ObjectPageScripts from '../../../components/ObjectPageScripts.astro';
+import ParseObjectPage from '../../../components/ParseObjectPage.astro';
+import { generateObjectStaticPaths, getParseObjects, getParseObject, getVersionsData } from '../../../utils/parse_object';
+
+export async function getStaticPaths() {
+  return await generateObjectStaticPaths("Objects/Pilot.json");
+}
+
+const { id, version } = Astro.params;
+const { objectVersions } = Astro.props;
+
+const pilot = getParseObject<Pilot>(id, version, "Objects/Pilot.json");
+const pilotTalents = getParseObjects<PilotTalent>("Objects/PilotTalent.json", version);
+const pilotTalentTypes = getParseObjects<PilotTalentType>("Objects/PilotTalentType.json", version);
+const pilotType = getParseObject<PilotType>(pilot.pilot_type_id, version, "Objects/PilotType.json");
+const pilotClass = getParseObject<PilotClass>(pilot.pilot_class_id, version, "Objects/PilotClass.json");
+const pilotPersonality = getParseObject<PilotPersonality>(pilot.personality_id, version, "Objects/PilotPersonality.json");
+
+// Load version metadata
+const { versions, versionInfo } = getVersionsData(version);
+
+// Extract English text as fallback
+const defaultName = pilot.first_name?.en || pilot.id;
+
+---
+
+<ParseObjectPage>
+  <LocalizedText 
+    id="pilot-name-title"
+    tag="title"
+    localizationKey={pilot.first_name}
+    slot="head"
+  />
+    <p>Back to <a href="/WRFrontiersDB-Site/pilots">Pilots</a></p>
+    <p>
+      <LocalizedText 
+        id="pilot-first-name"
+        tag="span"
+        localizationKey={pilot.first_name}
+      />
+      {' '}
+      <LocalizedText 
+        id="pilot-second-name"
+        tag="span"
+        localizationKey={pilot.second_name}
+      />
+    </p>
+
+    <LocalizedText 
+      id="pilot-bio"
+      tag="p"
+      localizationKey={pilot.bio}
+    />
+
+    <Icon 
+      iconPath={pilot.image_path}
+      altText={`${defaultName} portrait`}
+    />
+
+    <p id="pilot-sell-price-currency">
+      Sell Price Currency: {pilot.sell_price.currency_id}
+    </p>
+    <p id="pilot-sell-price-amount">
+      Sell Price Amount: {pilot.sell_price.amount}
+    </p>
+
+    <h3>Levels</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Level</th>
+          <th>Talent Type</th>
+          <th>Reputation Cost</th>
+          <th>Talents</th>
+        </tr>
+      </thead>
+      <tbody>
+        {pilot.levels?.map((level, index) => (
+          <tr>
+            <td>{index + 1}</td>
+            <td>
+              <a href={`/WRFrontiersDB-Site/pilot_talent_types/${level.talent_type_id}/${version}`}>
+                <LocalizedText
+                  id={`pilot-talent-type-${level.talent_type_id}-name`}
+                  tag="span"
+                  localizationKey={pilotTalentTypes[level.talent_type_id].name}
+                />
+              </a>
+              <Icon 
+                iconPath={pilotTalentTypes[level.talent_type_id].image_path}
+                altText={`${pilotTalentTypes[level.talent_type_id].name?.en} portrait`}
+                size={24}
+              />
+            </td>
+            <td>{level.reputation_cost || 'N/A'}</td>
+            <td>
+              <div>
+                {level.talents?.map((talent_id) => {
+                  const talent = pilotTalents[talent_id];
+                  return (
+                    <span>
+                      <a href={'/WRFrontiersDB-Site/pilot_talents/' + talent_id + '/' + version}>
+                        <LocalizedText 
+                          id={`talent-${talent_id}-name`}
+                          tag="span"
+                          localizationKey={talent.name}
+                        />
+                      </a>
+                      <Icon 
+                        iconPath={pilotTalents[talent_id].image_path}
+                        altText={`${pilotTalents[talent_id].name?.en} portrait`}
+                        size={24}
+                      />
+                    </span>
+                  );
+                })}
+              </div>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+
+    <!-- Hyperlinks to the referenced ids pilot_type_id, pilot_class_id, personality_id -->
+    <p>Pilot Type 
+      <a href={`/WRFrontiersDB-Site/pilot_types/${pilot.pilot_type_id}/${version}`}>
+          <LocalizedText
+            id='pilot-type-name'
+            tag='span'
+            localizationKey={pilotType.name}
+          />
+      </a>
+    </p>
+    <p>Pilot Class 
+      <a href={`/WRFrontiersDB-Site/pilot_classes/${pilot.pilot_class_id}/${version}`}>
+          <LocalizedText
+            id='pilot-class-name'
+            tag='span'
+            localizationKey={pilotClass.name}
+          />
+      </a>
+      <Icon 
+        iconPath={pilotClass.badge.image_path}
+        altText={`${pilotClass.name?.en} portrait`}
+        color={pilotClass.badge.hex}
+        size={32}
+      />
+    </p>
+    <p>Pilot Personality 
+      <a href={`/WRFrontiersDB-Site/pilot_personalities/${pilot.personality_id}/${version}`}>
+          <LocalizedText
+            id='pilot-personality-name'
+            tag='span'
+            localizationKey={pilotPersonality.name}
+          />
+      </a>
+      <Icon 
+        iconPath={pilotPersonality.icon_path}
+        altText={`${pilotPersonality.name?.en} portrait`}
+        size={32}
+      />
+    </p>
+    <p>faction_id placeholder</p>
+
+    <p>Version: {versionInfo?.title || version} ({version})</p>
+    <p>Language: <span id="current-lang">en</span></p>
+    
+    <VersionList 
+      parseObjectUrl="pilot_types"
+      id={id}
+      myVersions={objectVersions}
+      versionsData={versions}
+    />
+    
+    <ObjectPageScripts 
+      version={version}
+      objectData={pilot}
+    />
+</ParseObjectPage>
