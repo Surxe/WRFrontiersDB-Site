@@ -2,9 +2,9 @@ import type { LocalizationKey } from './localization';
 import type { ParseObject } from './parse_object';
 
 export interface PilotTalentType extends ParseObject {
-    name?: LocalizationKey;
+    name: LocalizationKey;
     description?: LocalizationKey;
-    image_path?: string;
+    image_path: string;
 }
 
 export interface PilotType extends ParseObject {

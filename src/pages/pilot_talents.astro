@@ -1,10 +1,54 @@
 ---
-import ParseObjectList from '../components/ParseObjectList.astro';
 import BackToHome from '../components/BackToHome.astro';
 import ParseObjectListPage from '../components/ParseObjectListPage.astro';
-import { getAllVersions } from '../utils/parse_object';
+import { getAllVersions, getParseObjects } from '../utils/parse_object';
+import { prepareObjectList, groupBy, sortGroups } from '../utils/list_helpers';
+import type { PilotTalent, PilotTalentType, Pilot } from '../types/pilot';
+import LocalizedText from '../components/LocalizedText.astro';
+import Icon from '../components/Icon.astro';
 
 const { versions, latestVersion } = getAllVersions();
+
+// Load all modules
+const pilotTalents = getParseObjects<PilotTalent>("Objects/PilotTalent.json", latestVersion);
+const pilotTalentTypes = getParseObjects<PilotTalentType>("Objects/PilotTalentType.json", latestVersion);
+const pilots = getParseObjects<Pilot>("Objects/Pilot.json", latestVersion);
+
+// For each pilot talent, 
+//  find all pilots that offer it and track the levels
+//  and the talent type, since its not actually defined per-talent
+for (const [talentId, talent] of Object.entries(pilotTalents)) {
+    let levelFound: number = -1;
+
+    // Search through all pilots
+    for (const [_, pilot] of Object.entries(pilots)) {
+        // Check each level in the pilot
+        for (const [levelIndex, levelEntry] of pilot.levels.entries()) {
+            (talent as any).talent_type_id = levelEntry.talent_type_id;
+            if (levelEntry.talents.includes(talentId)) {
+                levelFound = levelIndex + 1; // Levels are 1-based
+                // Exit both for loops
+                break;
+            }
+        }
+        if (levelFound !== -1) {
+            break;
+        }
+    }
+    
+    // Set the level and talent type
+    (talent as any).level = levelFound;
+}
+
+
+// Prepare and filter modules
+const entries = prepareObjectList(pilotTalents, { prodReadyOnly: false });
+
+// Group by level
+const grouped = groupBy(entries, ([_, talent]) => (talent as any).level || 'Unknown');
+
+// Sort groups numerically
+const sortedGroups = sortGroups(grouped, (a, b) => Number(a) - Number(b));
 ---
 
 <ParseObjectListPage title="Pilot Talents">
@@ -13,9 +57,39 @@ const { versions, latestVersion } = getAllVersions();
     
     <p>Showing pilot talents from latest version: {versions[latestVersion].title} ({latestVersion})</p>
 
-    <ParseObjectList 
-      parseObjectFile="Objects/PilotTalent.json" 
-      parseObjectUrl="pilot_talents" 
-      version={latestVersion}
-    />
+    {sortedGroups.map(([levelNum, pilotTalentEntries]) => (
+      <section>
+        <h2>{levelNum}</h2>
+        <ul>
+          {pilotTalentEntries.map(([id, talent]) => (
+            <li>
+              <a href={`/WRFrontiersDB-Site/modules/${id}/${latestVersion}`}>
+                <LocalizedText
+                  tag="span"
+                  localizationKey={talent.name}
+                />
+              </a>
+              { ' - '}
+              <LocalizedText
+                tag="span"
+                localizationKey={talent.description}
+              />
+              { ' - '}
+              <a href={`/WRFrontiersDB-Site/modules/${id}/${latestVersion}`}>
+                <LocalizedText
+                  tag="span"
+                  localizationKey={pilotTalentTypes[(talent as any).talent_type_id].name}
+                />
+              </a>
+              { ' - '}
+              <Icon 
+                  iconPath={pilotTalentTypes[(talent as any).talent_type_id].image_path}
+                  altText={`${pilotTalentTypes[(talent as any).talent_type_id].name.en} icon`}
+                  size={24}
+                />
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))}
 </ParseObjectListPage>

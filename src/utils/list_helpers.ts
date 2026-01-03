@@ -57,7 +57,7 @@ export function sortGroups<T>(
   if (compareFn) {
     entries.sort((a, b) => compareFn(a[0], b[0]));
   } else {
-    entries.sort((a, b) => a[0].localeCompare(b[0]));
+    entries.sort((a, b) => String(a[0]).localeCompare(String(b[0])));
   }
   
   return entries;
