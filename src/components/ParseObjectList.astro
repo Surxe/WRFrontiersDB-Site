@@ -1,50 +1,29 @@
 ---
 import { getParseObjects } from '../utils/parse_object';
-import LocalizedText from './LocalizedText.astro';
-import Icon from './Icon.astro';
+import PageRef from './PageRef.astro';
+import { prepareObjectList } from '../utils/list_helpers';
 
 export interface Props {
   parseObjectFile: string;
-  parseObjectUrl: string;
   version: string;
   prodReadyOnly?: boolean;
-  nameAttr?: string;
-  iconAttr?: string;
 }
 
-const { parseObjectFile, parseObjectUrl, version, prodReadyOnly = false, nameAttr = 'name', iconAttr } = Astro.props;
+const { parseObjectFile, version, prodReadyOnly = false } = Astro.props;
 
 const objects = getParseObjects(parseObjectFile, version);
-let entries = Object.entries(objects);
-
-if (prodReadyOnly) {
-  entries = entries.filter(([_, obj]) => obj.production_status === 'Ready');
-}
-
-const items = entries.map(([id, _]) => ({
-  id,
-  url: `/WRFrontiersDB-Site/${parseObjectUrl}/${id}/${version}`
-}));
+let entries = prepareObjectList(objects, { prodReadyOnly });
 
 // Creates list of links to parse objects. Not to be confused with a ParseObjectListPage, which is a full page wrapper.
 ---
 
 <ul>
-  {items.map(({ id, url }) => (
+  {entries.map(([_, obj]) => (
     <li>
-      {iconAttr && objects[id][iconAttr] && (
-        <Icon 
-          iconPath={objects[id][iconAttr]}
-          altText={`${objects[id][nameAttr]?.en || id} icon`}
-          size={24}
-        />
-      )}
-      <a href={url}>
-        <LocalizedText
-          tag="span"
-          localizationKey={objects[id][nameAttr]}
-        />
-      </a>
+      <PageRef 
+        obj={obj} 
+        version={version}
+      />
     </li>
   ))}
 </ul>

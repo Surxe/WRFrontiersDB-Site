@@ -34,12 +34,13 @@ const pagePath = getPagePath(obj.parseObjectClass);
 const pageUrl = `/WRFrontiersDB-Site/${pagePath}/${obj.id}/${version}`;
 ---
 
-<a href={pageUrl} style={pageData.hexColor ? `color: ${pageData.hexColor}` : undefined}>
+<a href={pageUrl}}>
   {showIcon && (
     <Icon 
       iconPath={pageData.iconPath} 
       altText={`${pageData.localizationKey.en} icon`}
       size={iconSize}
+      color={pageData.hexColor}
     />
   )}
   <LocalizedText 

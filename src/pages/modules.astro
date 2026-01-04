@@ -5,6 +5,7 @@ import LocalizedText from '../components/LocalizedText.astro';
 import { getAllVersions, getParseObjects } from '../utils/parse_object';
 import { prepareObjectList, groupBy, sortGroups } from '../utils/list_helpers';
 import type { Module } from '../types/module';
+import PageRef from '../components/PageRef.astro';
 
 const { versions, latestVersion } = getAllVersions();
 
@@ -33,12 +34,10 @@ const sortedGroups = sortGroups(grouped);
         <ul>
           {moduleEntries.map(([id, module]) => (
             <li>
-              <a href={`/WRFrontiersDB-Site/modules/${id}/${latestVersion}`}>
-                <LocalizedText
-                  tag="span"
-                  localizationKey={module.name}
-                />
-              </a>
+              <PageRef
+                obj={module} 
+                version={latestVersion}
+              />
             </li>
           ))}
         </ul>

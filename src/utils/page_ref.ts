@@ -35,12 +35,12 @@ export function getPageRefData(
       if (!obj.name) { // a small # of modules don't have a name, like DA_Module_Weapon_RetributionAutoAim.0
         return {
           localizationKey: { Key: 'NoName', TableNamespace: '', en: 'NoName' },
-          iconPath: obj.icon_path
+          iconPath: obj.inventory_icon_path
         };
       }
       return {
         localizationKey: obj.name,
-        iconPath: obj.icon_path
+        iconPath: obj.inventory_icon_path
       };
     case 'PilotClass':
       return {

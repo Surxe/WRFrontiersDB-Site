@@ -5,7 +5,7 @@ import { getAllVersions, getParseObjects } from '../utils/parse_object';
 import { prepareObjectList, groupBy, sortGroups } from '../utils/list_helpers';
 import type { PilotTalentType, Pilot } from '../types/pilot';
 import LocalizedText from '../components/LocalizedText.astro';
-import Icon from '../components/Icon.astro';
+import PageRef from '../components/PageRef.astro';
 
 const { versions, latestVersion } = getAllVersions();
 
@@ -58,7 +58,6 @@ const sortedGroups = sortGroups(grouped, (a, b) => Number(a) - Number(b));
         <table>
           <thead>
             <tr>
-              <th>Icon</th>
               <th>Name</th>
               <th>Description</th>
             </tr>
@@ -67,19 +66,10 @@ const sortedGroups = sortGroups(grouped, (a, b) => Number(a) - Number(b));
             {pilotTalentTypeEntries.map(([id, talentType]) => (
               <tr>
                 <td>
-                  <Icon 
-                    iconPath={talentType.image_path}
-                    altText={`${talentType.name.en} icon`}
-                    size={24}
+                  <PageRef 
+                    obj={talentType} 
+                    version={latestVersion}
                   />
-                </td>
-                <td>
-                  <a href={`/WRFrontiersDB-Site/pilot_talent_types/${id}/${latestVersion}`}>
-                    <LocalizedText
-                      tag="span"
-                      localizationKey={talentType.name}
-                    />
-                  </a>
                 </td>
                 <td>
                   <LocalizedText

@@ -1,13 +1,11 @@
 ---
-import ParseObjectList from '../components/ParseObjectList.astro';
 import BackToHome from '../components/BackToHome.astro';
 import ParseObjectListPage from '../components/ParseObjectListPage.astro';
 import { getAllVersions } from '../utils/parse_object';
 import type { PilotClass } from '../types/pilot';
 import { getParseObjects } from '../utils/parse_object';
 import { prepareObjectList } from '../utils/list_helpers';
-import LocalizedText from '../components/LocalizedText.astro';
-import Icon from '../components/Icon.astro';
+import PageRef from '../components/PageRef.astro';
 
 const { versions, latestVersion } = getAllVersions();
 
@@ -26,18 +24,10 @@ const entries = prepareObjectList(pilotClasses, { prodReadyOnly: false });
     <ul>
       {entries.map(([id, pilotClass]) => (
         <li>
-          <Icon
-            iconPath={pilotClass.badge.image_path}
-            altText={pilotClass.name.en + " icon"}
-            color={pilotClass.badge.hex}
-            size={24}
+          <PageRef 
+            obj={pilotClass} 
+            version={latestVersion}
           />
-          <a href={`/WRFrontiersDB-Site/pilot_classes/${id}/${latestVersion}`}>
-            <LocalizedText
-              tag="span"
-              localizationKey={pilotClass.name}
-            />
-          </a>
         </li>
       ))}
     </ul>    

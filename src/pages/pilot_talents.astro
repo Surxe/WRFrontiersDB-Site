@@ -5,7 +5,7 @@ import { getAllVersions, getParseObjects } from '../utils/parse_object';
 import { prepareObjectList, groupBy, sortGroups } from '../utils/list_helpers';
 import type { PilotTalent, PilotTalentType, Pilot } from '../types/pilot';
 import LocalizedText from '../components/LocalizedText.astro';
-import Icon from '../components/Icon.astro';
+import PageRef from '../components/PageRef.astro';
 
 const { versions, latestVersion } = getAllVersions();
 
@@ -72,12 +72,10 @@ const sortedGroups = sortGroups(grouped, (a, b) => Number(a) - Number(b));
             {pilotTalentEntries.map(([id, talent]) => (
               <tr>
                 <td>
-                  <a href={`/WRFrontiersDB-Site/pilot_talents/${id}/${latestVersion}`}>
-                    <LocalizedText
-                      tag="span"
-                      localizationKey={talent.name}
-                    />
-                  </a>
+                  <PageRef
+                    obj={talent} 
+                    version={latestVersion}
+                  />
                 </td>
                 <td>
                   <LocalizedText
@@ -86,17 +84,10 @@ const sortedGroups = sortGroups(grouped, (a, b) => Number(a) - Number(b));
                   />
                 </td>
                 <td>
-                  <Icon 
-                    iconPath={pilotTalentTypes[(talent as any).talent_type_id].image_path}
-                    altText={`${pilotTalentTypes[(talent as any).talent_type_id].name.en} icon`}
-                    size={24}
+                  <PageRef
+                    obj={pilotTalentTypes[(talent as any).talent_type_id]}
+                    version={latestVersion}
                   />
-                  <a href={`/WRFrontiersDB-Site/pilot_talent_types/${(talent as any).talent_type_id}/${latestVersion}`}>
-                    <LocalizedText
-                      tag="span"
-                      localizationKey={pilotTalentTypes[(talent as any).talent_type_id].name}
-                    />
-                  </a>
                 </td>
               </tr>
             ))}
