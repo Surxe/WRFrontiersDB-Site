@@ -32,11 +32,8 @@ export function getPageRefData(
 ): PageRefData {
   switch (obj.parseObjectClass) {
     case 'Module':
-      if (!obj.name) { // a small # of modules don't have a name, like DA_Module_Weapon_RetributionAutoAim.0
-        return {
-          localizationKey: { Key: 'NoName', TableNamespace: '', en: 'NoName' },
-          iconPath: obj.inventory_icon_path
-        };
+      if (!obj.name) { // The only modules without names are ones without production_status=Ready, which are never display
+        throw new Error('Module object has no name');
       }
       return {
         localizationKey: obj.name,
