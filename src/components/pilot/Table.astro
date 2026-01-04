@@ -1,19 +1,17 @@
 ---
 import PageRef from '../PageRef.astro';
 import LevelTableData from './LevelTableData.astro';
-import type { Pilot, PilotTalent, PilotTalentType } from '../../types/pilot';
+import type { Pilot, PilotTalent } from '../../types/pilot';
 
 interface Props {
   pilots: [string, Pilot][];
   pilotTalents: Record<string, PilotTalent>;
-  pilotTalentTypes: Record<string, PilotTalentType>;
   version: string;
 }
 
 const { 
   pilots,  
   pilotTalents, 
-  pilotTalentTypes, 
   version,
 } = Astro.props;
 ---
@@ -22,26 +20,11 @@ const {
   <thead>
     <tr>
       <th>Pilot Name</th>
-      <th>
-        Level 1
-        <PageRef 
-          obj={pilotTalentTypes['DA_TalentType_General.0']} 
-          version={version}
-        />
-      </th>
-      <th></th>
+      <th>Level 1</th>
       <th>Level 2</th>
-      <th></th>
       <th>Level 3</th>
-      <th></th>
       <th>Level 4</th>
-      <th>
-        Level 5
-        <PageRef 
-          obj={pilotTalentTypes['DA_TalentType_Ult.0']} 
-          version={version}
-        />
-      </th>
+      <th>Level 5</th>
     </tr>
   </thead>
   <tbody>
@@ -73,7 +56,6 @@ const {
               talentIndex={talentIndex}
               maxTalents={maxTalents}
               pilotTalents={pilotTalents}
-              pilotTalentTypes={pilotTalentTypes}
               version={version}
             />
           ))}

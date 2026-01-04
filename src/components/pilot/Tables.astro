@@ -3,7 +3,7 @@ import LocalizedText from '../LocalizedText.astro';
 import PilotTable from './Table.astro';
 import { getParseObjects } from '../../utils/parse_object';
 import { prepareObjectList, groupBy, sortGroups } from '../../utils/list_helpers';
-import type { Pilot, PilotType, PilotTalent, PilotTalentType } from '../../types/pilot';
+import type { Pilot, PilotType, PilotTalent } from '../../types/pilot';
 
 interface Props {
   pilots: Record<string, Pilot>;
@@ -15,7 +15,6 @@ const { pilots, version } = Astro.props;
 // Load pilot types, and pilot talents
 const pilotTypes = getParseObjects<PilotType>("Objects/PilotType.json", version);
 const pilotTalents = getParseObjects<PilotTalent>("Objects/PilotTalent.json", version);
-const pilotTalentTypes = getParseObjects<PilotTalentType>("Objects/PilotTalentType.json", version);
 
 // Prepare and filter pilots
 const entries = prepareObjectList(pilots, { prodReadyOnly: false });
@@ -52,7 +51,6 @@ the other columns have rowspan to center them within their group of rows
     <PilotTable 
       pilots={pilotEntries}
       pilotTalents={pilotTalents}
-      pilotTalentTypes={pilotTalentTypes}
       version={version}
     />
   </section>

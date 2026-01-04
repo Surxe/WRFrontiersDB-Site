@@ -1,6 +1,6 @@
 ---
 import PageRef from '../PageRef.astro';
-import type { PilotTalent, PilotTalentType } from '../../types/pilot';
+import type { PilotTalent } from '../../types/pilot';
 
 interface Props {
   levelIndex: number; // 0 for level 1, 1 for level 2, 2 for level 3, 3 for level 4, 4 for level 5
@@ -11,9 +11,7 @@ interface Props {
   talentIndex: number;
   maxTalents: number;
   pilotTalents: Record<string, PilotTalent>;
-  pilotTalentTypes: Record<string, PilotTalentType>;
   version: string;
-  neverShowTalentType?: boolean;
 }
 
 /*
@@ -43,30 +41,15 @@ const {
   talentIndex, 
   maxTalents, 
   pilotTalents, 
-  pilotTalentTypes, 
-  version,
-  neverShowTalentType = false
+  version
 } = Astro.props;
 
-// Level 1 (levelIndex 0) and Level 5 (levelIndex 4) don't show talent type column
-const showTalentType = levelIndex >= 1 && levelIndex <= 3 && !neverShowTalentType;
 // For level 5, always use the first talent; for others, use the current talentIndex
 // because level 5 only has one talent slot
 const talentId = levelIndex === 4
   ? level?.talents?.[0]
   : level?.talents?.[talentIndex];
-const talentTypeId = level?.talent_type_id;
 ---
-
-{/* Type column (only on first talent row, and only for levels 2-4) */}
-{showTalentType && talentIndex === 0 && talentTypeId && (
-  <td rowspan={maxTalents}>
-    <PageRef 
-      obj={pilotTalentTypes[talentTypeId]} 
-      version={version}
-    />
-  </td>
-)}
 
 {/* Talent column */}
 {/* For level 5, use rowspan and only render on first talent row */}
