@@ -5,6 +5,7 @@ import type { StaticPathsResult } from '../types/parse_object';
 
 /**
  * Load parse objects from a specific version
+ * Set each object's parseObjectClass attr based on the file name
  * @param parseObjectFile - The object file (e.g., "Objects/Module.json")
  * @param version - The version date string (e.g., "2025-03-04")
  * @returns Object containing parse objects, or empty object if loading fails
@@ -13,7 +14,19 @@ export function getParseObjects<T = any>(parseObjectFile: string, version: strin
   try {
     const objectsPath = path.join(process.cwd(), `WRFrontiersDB-Data/archive/${version}/${parseObjectFile}`);
     if (fs.existsSync(objectsPath)) {
-      return JSON.parse(fs.readFileSync(objectsPath, 'utf8'));
+      const data = JSON.parse(fs.readFileSync(objectsPath, 'utf8'));
+      
+      // Extract parseObjectClass from parseObjectFile (e.g., "Objects/Module.json" -> "Module")
+      const fileName = parseObjectFile.split('/').pop() || '';
+      const parseObjectClass = fileName.split('.')[0];
+      
+      // Add parseObjectClass to each object
+      const objectsWithType: Record<string, T> = {};
+      for (const [key, value] of Object.entries(data)) {
+        objectsWithType[key] = { ...(value as object), parseObjectClass } as T;
+      }
+      
+      return objectsWithType;
     }
   } catch (error) {
     console.warn(`Could not load ${parseObjectFile} for version ${version}`);
