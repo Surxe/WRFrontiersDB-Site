@@ -93,6 +93,7 @@ const levelFiveTalentTypeId = 'DA_TalentType_Ult.0';
               
               return Array.from({ length: Math.max(1, maxTalents) }).map((_, talentIndex) => (
                 <tr>
+                  {/* Pilot Name */}
                   {talentIndex === 0 && (
                     <>
                       <td rowspan={maxTalents}>
@@ -106,61 +107,18 @@ const levelFiveTalentTypeId = 'DA_TalentType_Ult.0';
                       </td>
                     </>
                   )}
-                  {/* Level 1 */}
-                  {(() => {
-                    const talentId = pilot.levels[0]?.talents?.[talentIndex];
-                    return (
-                      <td>
-                        {talentId && pilotTalents[talentId] && (
-                          <PageRef 
-                            obj={pilotTalents[talentId]} 
-                            version={latestVersion}
-                          />
-                        )}
-                      </td>
-                    );
-                  })()}
-                  {/* Level 2 */}
-                  <LevelTableData 
-                    levelIndex={1}
-                    level={pilot.levels[1]}
-                    talentIndex={talentIndex}
-                    maxTalents={maxTalents}
-                    pilotTalents={pilotTalents}
-                    pilotTalentTypes={pilotTalentTypes}
-                    version={latestVersion}
-                  />
-                  {/* Level 3 */}
-                  <LevelTableData 
-                    levelIndex={2}
-                    level={pilot.levels[2]}
-                    talentIndex={talentIndex}
-                    maxTalents={maxTalents}
-                    pilotTalents={pilotTalents}
-                    pilotTalentTypes={pilotTalentTypes}
-                    version={latestVersion}
-                  />
-                  {/* Level 4 */}
-                  <LevelTableData 
-                    levelIndex={3}
-                    level={pilot.levels[3]}
-                    talentIndex={talentIndex}
-                    maxTalents={maxTalents}
-                    pilotTalents={pilotTalents}
-                    pilotTalentTypes={pilotTalentTypes}
-                    version={latestVersion}
-                  />
-                  {/* Level 5 */}
-                  {talentIndex === 0 && (
-                    <td rowspan={maxTalents}>
-                      {pilot.levels[4]?.talents?.[0] && pilotTalents[pilot.levels[4].talents[0]] && (
-                        <PageRef 
-                          obj={pilotTalents[pilot.levels[4].talents[0]]} 
-                          version={latestVersion}
-                        />
-                      )}
-                    </td>
-                  )}
+                  {/* Levels 1-5 */}
+                  {[0, 1, 2, 3, 4].map(levelIndex => (
+                    <LevelTableData 
+                      levelIndex={levelIndex}
+                      level={pilot.levels[levelIndex]}
+                      talentIndex={talentIndex}
+                      maxTalents={maxTalents}
+                      pilotTalents={pilotTalents}
+                      pilotTalentTypes={pilotTalentTypes}
+                      version={latestVersion}
+                    />
+                  ))}
                 </tr>
               ));
             })}

@@ -3,7 +3,7 @@ import PageRef from '../PageRef.astro';
 import type { PilotTalent, PilotTalentType } from '../../types/pilot';
 
 interface Props {
-  levelIndex: number; // 1 for level 2, 2 for level 3, 3 for level 4
+  levelIndex: number; // 0 for level 1, 1 for level 2, 2 for level 3, 3 for level 4, 4 for level 5
   level?: {
     talents?: string[];
     talent_type_id?: string;
@@ -15,6 +15,27 @@ interface Props {
   version: string;
 }
 
+/*
+Create table data cells that look like this for the respective levels:
+Level 1: (column header will contain the Type)
+Talent1
+Talent2
+Talent3
+
+Level 2-4:
+        | Talent1
+Type1   | Talent2 (rowspan=maxTalents)
+        | Talent3
+
+Level 5: (column header will contain the Type)
+(blank)
+        | Talent1 (rowspan=maxTalents)
+(blank)
+
+To summarize: Levels 1-4 have 3 talents, level 5 has 1 talent. 
+    Level 1 and 5 do not show the Type column. Levels 2-4 show the Type column only on the first talent row, with rowspan=maxTalents.
+*/
+
 const { 
   levelIndex, 
   level, 
@@ -22,15 +43,22 @@ const {
   maxTalents, 
   pilotTalents, 
   pilotTalentTypes, 
-  version 
+  version
 } = Astro.props;
 
-const talentId = level?.talents?.[talentIndex];
+// Level 1 (levelIndex 0) and Level 5 (levelIndex 4) don't show talent type column
+const showTalentType = levelIndex >= 1 && levelIndex <= 3;
+
+// For level 5, always use the first talent; for others, use the current talentIndex
+// because level 5 only has one talent slot
+const talentId = levelIndex === 4
+  ? level?.talents?.[0]
+  : level?.talents?.[talentIndex];
 const talentTypeId = level?.talent_type_id;
 ---
 
-{/* Type column (only on first talent row) */}
-{talentIndex === 0 && talentTypeId && (
+{/* Type column (only on first talent row, and only for levels 2-4) */}
+{showTalentType && talentIndex === 0 && talentTypeId && (
   <td rowspan={maxTalents}>
     <PageRef 
       obj={pilotTalentTypes[talentTypeId]} 
@@ -40,11 +68,26 @@ const talentTypeId = level?.talent_type_id;
 )}
 
 {/* Talent column */}
-<td>
-  {talentId && pilotTalents[talentId] && (
-    <PageRef 
-      obj={pilotTalents[talentId]} 
-      version={version}
-    />
-  )}
-</td>
+{/* For level 5, use rowspan and only render on first talent row */}
+{/* For levels 1 and 2-4, render for each talent index */}
+{levelIndex === 4 ? (
+  talentIndex === 0 && (
+    <td rowspan={maxTalents}>
+      {talentId && pilotTalents[talentId] && (
+        <PageRef 
+          obj={pilotTalents[talentId]} 
+          version={version}
+        />
+      )}
+    </td>
+  )
+) : (
+  <td>
+    {talentId && pilotTalents[talentId] && (
+      <PageRef 
+        obj={pilotTalents[talentId]} 
+        version={version}
+      />
+    )}
+  </td>
+)}
