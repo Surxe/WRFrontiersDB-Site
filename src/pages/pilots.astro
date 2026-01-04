@@ -5,9 +5,8 @@ import { getAllVersions, getParseObjects } from '../utils/parse_object';
 import { prepareObjectList, groupBy, sortGroups } from '../utils/list_helpers';
 import type { Pilot, PilotType, PilotTalent, PilotTalentType } from '../types/pilot';
 import LocalizedText from '../components/LocalizedText.astro';
-import Icon from '../components/Icon.astro';
+import PilotTable from '../components/pilot/Table.astro';
 import PageRef from '../components/PageRef.astro';
-import LevelTableData from '../components/pilot/LevelTableData.astro';
 
 const { versions, latestVersion } = getAllVersions();
 
@@ -36,8 +35,6 @@ const sortedGroups = sortGroups(grouped, (a, b) => {
   return orderA - orderB;
 });
 
-const levelOneTalentTypeId = 'DA_TalentType_General.0';
-const levelFiveTalentTypeId = 'DA_TalentType_Ult.0';
 ---
 
 <ParseObjectListPage title="Pilots">
@@ -53,75 +50,17 @@ const levelFiveTalentTypeId = 'DA_TalentType_Ult.0';
     {sortedGroups.map(([pilotTypeId, pilotEntries]) => (
       <section>
         <h2>
-          <LocalizedText
-            tag="span"
-            localizationKey={pilotTypes[pilotTypeId].name}
+          <PageRef 
+            obj={pilotTypes[pilotTypeId]} 
+            version={latestVersion}
           />
         </h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Pilot Name</th>
-              <th>
-                Level 1
-                <PageRef 
-                  obj={pilotTalentTypes[levelOneTalentTypeId]} 
-                  version={latestVersion}
-                />
-              </th>
-              <th></th>
-              <th>Level 2</th>
-              <th></th>
-              <th>Level 3</th>
-              <th></th>
-              <th>Level 4</th>
-              <th>
-                Level 5
-                <PageRef 
-                  obj={pilotTalentTypes[levelFiveTalentTypeId]} 
-                  version={latestVersion}
-                />
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {pilotEntries.map(([id, pilot]) => {
-              // Calculate max talents across all levels for this pilot
-              const maxTalents = Math.max(
-                ...pilot.levels.map(level => level?.talents?.length || 0)
-              );
-              
-              return Array.from({ length: Math.max(1, maxTalents) }).map((_, talentIndex) => (
-                <tr>
-                  {/* Pilot Name */}
-                  {talentIndex === 0 && (
-                    <>
-                      <td rowspan={maxTalents}>
-                        <PageRef 
-                          obj={pilot} 
-                          version={latestVersion}
-                          iconSize={48}
-                        />
-                      </td>
-                    </>
-                  )}
-                  {/* Levels 1-5 */}
-                  {[0, 1, 2, 3, 4].map(levelIndex => (
-                    <LevelTableData 
-                      levelIndex={levelIndex}
-                      level={pilot.levels[levelIndex]}
-                      talentIndex={talentIndex}
-                      maxTalents={maxTalents}
-                      pilotTalents={pilotTalents}
-                      pilotTalentTypes={pilotTalentTypes}
-                      version={latestVersion}
-                    />
-                  ))}
-                </tr>
-              ));
-            })}
-          </tbody>
-        </table>
+        <PilotTable 
+          pilots={pilotEntries}
+          pilotTalents={pilotTalents}
+          pilotTalentTypes={pilotTalentTypes}
+          version={latestVersion}
+        />
       </section>
     ))}
 </ParseObjectListPage>
