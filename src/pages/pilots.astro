@@ -6,6 +6,7 @@ import { prepareObjectList, groupBy, sortGroups } from '../utils/list_helpers';
 import type { Pilot, PilotType, PilotTalent, PilotTalentType } from '../types/pilot';
 import LocalizedText from '../components/LocalizedText.astro';
 import Icon from '../components/Icon.astro';
+import PageRef from '../components/PageRef.astro';
 
 const { versions, latestVersion } = getAllVersions();
 
@@ -59,21 +60,13 @@ const levelFiveTalentTypeId = 'DA_TalentType_Ult.0';
         <table>
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Icon</th>
+              <th>Pilot Name</th>
               <th>
-                <a href={`/WRFrontiersDB-Site/pilot_talent_types/${levelOneTalentTypeId}/${latestVersion}`}>
-                  Level 1
-                  <LocalizedText
-                    tag="span"
-                    localizationKey={pilotTalentTypes[levelOneTalentTypeId].name}
-                  />
-                  <Icon 
-                    iconPath={pilotTalentTypes[levelOneTalentTypeId].image_path}
-                    altText={`${pilotTalentTypes[levelOneTalentTypeId].name.en} icon`}
-                    size={24}
-                  />
-                </a>
+                Level 1
+                <PageRef 
+                  obj={pilotTalentTypes[levelOneTalentTypeId]} 
+                  version={latestVersion}
+                />
               </th>
               <th></th>
               <th>Level 2</th>
@@ -82,18 +75,11 @@ const levelFiveTalentTypeId = 'DA_TalentType_Ult.0';
               <th></th>
               <th>Level 4</th>
               <th>
-                <a href={`/WRFrontiersDB-Site/pilot_talent_types/${levelFiveTalentTypeId}/${latestVersion}`}>
-                  Level 5
-                  <LocalizedText
-                    tag="span"
-                    localizationKey={pilotTalentTypes[levelFiveTalentTypeId].name}
-                  />
-                  <Icon 
-                    iconPath={pilotTalentTypes[levelFiveTalentTypeId].image_path}
-                    altText={`${pilotTalentTypes[levelFiveTalentTypeId].name.en} icon`}
-                    size={24}
-                  />
-                </a>
+                Level 5
+                <PageRef 
+                  obj={pilotTalentTypes[levelFiveTalentTypeId]} 
+                  version={latestVersion}
+                />
               </th>
             </tr>
           </thead>
@@ -110,18 +96,12 @@ const levelFiveTalentTypeId = 'DA_TalentType_Ult.0';
                     <>
                       <td rowspan={maxTalents}>
                         <a href={`/WRFrontiersDB-Site/pilots/${id}/${latestVersion}`}>
-                          <LocalizedText
-                            tag="span"
-                            localizationKey={pilot.first_name}
+                          <PageRef 
+                            obj={pilot} 
+                            version={latestVersion}
+                            iconSize={48}
                           />
                         </a>
-                      </td>
-                      <td rowspan={maxTalents}>
-                        <Icon 
-                          iconPath={pilot.image_path}
-                          altText={`${pilot.first_name.en} icon`}
-                          size={48}
-                        />
                       </td>
                     </>
                   )}
@@ -131,17 +111,10 @@ const levelFiveTalentTypeId = 'DA_TalentType_Ult.0';
                     return (
                       <td>
                         {talentId && pilotTalents[talentId] && (
-                          <a href={`/WRFrontiersDB-Site/pilot_talents/${talentId}/${latestVersion}`}>
-                            <Icon 
-                              iconPath={pilotTalents[talentId].image_path}
-                              altText={`${pilotTalents[talentId].name.en} icon`}
-                              size={24}
-                            />
-                            <LocalizedText
-                              tag="span"
-                              localizationKey={pilotTalents[talentId].name}
-                            />
-                          </a>
+                          <PageRef 
+                            obj={pilotTalents[talentId]} 
+                            version={latestVersion}
+                          />
                         )}
                       </td>
                     );
@@ -149,17 +122,10 @@ const levelFiveTalentTypeId = 'DA_TalentType_Ult.0';
                   {/* Type 2 */}
                   {talentIndex === 0 && pilot.levels[1]?.talent_type_id && (
                     <td rowspan={maxTalents}>
-                      <a href={`/WRFrontiersDB-Site/pilot_talent_types/${pilot.levels[1].talent_type_id}/${latestVersion}`}>
-                        <Icon 
-                          iconPath={pilotTalentTypes[pilot.levels[1].talent_type_id].image_path}
-                          altText={`${pilotTalentTypes[pilot.levels[1].talent_type_id].name.en} icon`}
-                          size={24}
-                        />
-                        <LocalizedText
-                          tag="span"
-                          localizationKey={pilotTalentTypes[pilot.levels[1].talent_type_id].name}
-                        />
-                      </a>
+                      <PageRef 
+                        obj={pilotTalentTypes[pilot.levels[1].talent_type_id]} 
+                        version={latestVersion}
+                      />
                     </td>
                   )}
                   {/* Level 2 */}
@@ -168,17 +134,10 @@ const levelFiveTalentTypeId = 'DA_TalentType_Ult.0';
                     return (
                       <td>
                         {talentId && pilotTalents[talentId] && (
-                          <a href={`/WRFrontiersDB-Site/pilot_talents/${talentId}/${latestVersion}`}>
-                            <Icon 
-                              iconPath={pilotTalents[talentId].image_path}
-                              altText={`${pilotTalents[talentId].name.en} icon`}
-                              size={24}
-                            />
-                            <LocalizedText
-                              tag="span"
-                              localizationKey={pilotTalents[talentId].name}
-                            />
-                          </a>
+                          <PageRef 
+                            obj={pilotTalents[talentId]} 
+                            version={latestVersion}
+                          />
                         )}
                       </td>
                     );
@@ -186,17 +145,10 @@ const levelFiveTalentTypeId = 'DA_TalentType_Ult.0';
                   {/* Type 3 */}
                   {talentIndex === 0 && pilot.levels[2]?.talent_type_id && (
                     <td rowspan={maxTalents}>
-                      <a href={`/WRFrontiersDB-Site/pilot_talent_types/${pilot.levels[2].talent_type_id}/${latestVersion}`}>
-                        <Icon 
-                          iconPath={pilotTalentTypes[pilot.levels[2].talent_type_id].image_path}
-                          altText={`${pilotTalentTypes[pilot.levels[2].talent_type_id].name.en} icon`}
-                          size={24}
-                        />
-                        <LocalizedText
-                          tag="span"
-                          localizationKey={pilotTalentTypes[pilot.levels[2].talent_type_id].name}
-                        />
-                      </a>
+                      <PageRef 
+                        obj={pilotTalentTypes[pilot.levels[2].talent_type_id]} 
+                        version={latestVersion}
+                      />
                     </td>
                   )}
                   {/* Level 3 */}
@@ -205,17 +157,10 @@ const levelFiveTalentTypeId = 'DA_TalentType_Ult.0';
                     return (
                       <td>
                         {talentId && pilotTalents[talentId] && (
-                          <a href={`/WRFrontiersDB-Site/pilot_talents/${talentId}/${latestVersion}`}>
-                            <Icon 
-                              iconPath={pilotTalents[talentId].image_path}
-                              altText={`${pilotTalents[talentId].name.en} icon`}
-                              size={24}
-                            />
-                            <LocalizedText
-                              tag="span"
-                              localizationKey={pilotTalents[talentId].name}
-                            />
-                          </a>
+                          <PageRef 
+                            obj={pilotTalents[talentId]} 
+                            version={latestVersion}
+                          />
                         )}
                       </td>
                     );
@@ -223,17 +168,10 @@ const levelFiveTalentTypeId = 'DA_TalentType_Ult.0';
                   {/* Type 4 */}
                   {talentIndex === 0 && pilot.levels[3]?.talent_type_id && (
                     <td rowspan={maxTalents}>
-                      <a href={`/WRFrontiersDB-Site/pilot_talent_types/${pilot.levels[3].talent_type_id}/${latestVersion}`}>
-                        <Icon 
-                          iconPath={pilotTalentTypes[pilot.levels[3].talent_type_id].image_path}
-                          altText={`${pilotTalentTypes[pilot.levels[3].talent_type_id].name.en} icon`}
-                          size={24}
-                        />
-                        <LocalizedText
-                          tag="span"
-                          localizationKey={pilotTalentTypes[pilot.levels[3].talent_type_id].name}
-                        />
-                      </a>
+                      <PageRef 
+                        obj={pilotTalentTypes[pilot.levels[3].talent_type_id]} 
+                        version={latestVersion}
+                      />
                     </td>
                   )}
                   {/* Level 4 */}
@@ -242,17 +180,10 @@ const levelFiveTalentTypeId = 'DA_TalentType_Ult.0';
                     return (
                       <td>
                         {talentId && pilotTalents[talentId] && (
-                          <a href={`/WRFrontiersDB-Site/pilot_talents/${talentId}/${latestVersion}`}>
-                            <Icon 
-                              iconPath={pilotTalents[talentId].image_path}
-                              altText={`${pilotTalents[talentId].name.en} icon`}
-                              size={24}
-                            />
-                            <LocalizedText
-                              tag="span"
-                              localizationKey={pilotTalents[talentId].name}
-                            />
-                          </a>
+                          <PageRef 
+                            obj={pilotTalents[talentId]} 
+                            version={latestVersion}
+                          />
                         )}
                       </td>
                     );
@@ -260,17 +191,10 @@ const levelFiveTalentTypeId = 'DA_TalentType_Ult.0';
                   {talentIndex === 0 && (
                     <td rowspan={maxTalents}>
                       {pilot.levels[4]?.talents?.[0] && pilotTalents[pilot.levels[4].talents[0]] && (
-                        <a href={`/WRFrontiersDB-Site/pilot_talents/${pilot.levels[4].talents[0]}/${latestVersion}`}>
-                          <Icon 
-                            iconPath={pilotTalents[pilot.levels[4].talents[0]].image_path}
-                            altText={`${pilotTalents[pilot.levels[4].talents[0]].name.en} icon`}
-                            size={24}
-                          />
-                          <LocalizedText
-                            tag="span"
-                            localizationKey={pilotTalents[pilot.levels[4].talents[0]].name}
-                          />
-                        </a>
+                        <PageRef 
+                          obj={pilotTalents[pilot.levels[4].talents[0]]} 
+                          version={latestVersion}
+                        />
                       )}
                     </td>
                   )}
