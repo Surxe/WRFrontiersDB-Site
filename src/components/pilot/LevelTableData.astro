@@ -1,0 +1,50 @@
+---
+import PageRef from '../PageRef.astro';
+import type { PilotTalent, PilotTalentType } from '../../types/pilot';
+
+interface Props {
+  levelIndex: number; // 1 for level 2, 2 for level 3, 3 for level 4
+  level?: {
+    talents?: string[];
+    talent_type_id?: string;
+  };
+  talentIndex: number;
+  maxTalents: number;
+  pilotTalents: Record<string, PilotTalent>;
+  pilotTalentTypes: Record<string, PilotTalentType>;
+  version: string;
+}
+
+const { 
+  levelIndex, 
+  level, 
+  talentIndex, 
+  maxTalents, 
+  pilotTalents, 
+  pilotTalentTypes, 
+  version 
+} = Astro.props;
+
+const talentId = level?.talents?.[talentIndex];
+const talentTypeId = level?.talent_type_id;
+---
+
+{/* Type column (only on first talent row) */}
+{talentIndex === 0 && talentTypeId && (
+  <td rowspan={maxTalents}>
+    <PageRef 
+      obj={pilotTalentTypes[talentTypeId]} 
+      version={version}
+    />
+  </td>
+)}
+
+{/* Talent column */}
+<td>
+  {talentId && pilotTalents[talentId] && (
+    <PageRef 
+      obj={pilotTalents[talentId]} 
+      version={version}
+    />
+  )}
+</td>

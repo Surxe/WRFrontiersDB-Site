@@ -7,6 +7,7 @@ import type { Pilot, PilotType, PilotTalent, PilotTalentType } from '../types/pi
 import LocalizedText from '../components/LocalizedText.astro';
 import Icon from '../components/Icon.astro';
 import PageRef from '../components/PageRef.astro';
+import LevelTableData from '../components/pilot/LevelTableData.astro';
 
 const { versions, latestVersion } = getAllVersions();
 
@@ -119,75 +120,37 @@ const levelFiveTalentTypeId = 'DA_TalentType_Ult.0';
                       </td>
                     );
                   })()}
-                  {/* Type 2 */}
-                  {talentIndex === 0 && pilot.levels[1]?.talent_type_id && (
-                    <td rowspan={maxTalents}>
-                      <PageRef 
-                        obj={pilotTalentTypes[pilot.levels[1].talent_type_id]} 
-                        version={latestVersion}
-                      />
-                    </td>
-                  )}
                   {/* Level 2 */}
-                  {(() => {
-                    const talentId = pilot.levels[1]?.talents?.[talentIndex];
-                    return (
-                      <td>
-                        {talentId && pilotTalents[talentId] && (
-                          <PageRef 
-                            obj={pilotTalents[talentId]} 
-                            version={latestVersion}
-                          />
-                        )}
-                      </td>
-                    );
-                  })()}
-                  {/* Type 3 */}
-                  {talentIndex === 0 && pilot.levels[2]?.talent_type_id && (
-                    <td rowspan={maxTalents}>
-                      <PageRef 
-                        obj={pilotTalentTypes[pilot.levels[2].talent_type_id]} 
-                        version={latestVersion}
-                      />
-                    </td>
-                  )}
+                  <LevelTableData 
+                    levelIndex={1}
+                    level={pilot.levels[1]}
+                    talentIndex={talentIndex}
+                    maxTalents={maxTalents}
+                    pilotTalents={pilotTalents}
+                    pilotTalentTypes={pilotTalentTypes}
+                    version={latestVersion}
+                  />
                   {/* Level 3 */}
-                  {(() => {
-                    const talentId = pilot.levels[2]?.talents?.[talentIndex];
-                    return (
-                      <td>
-                        {talentId && pilotTalents[talentId] && (
-                          <PageRef 
-                            obj={pilotTalents[talentId]} 
-                            version={latestVersion}
-                          />
-                        )}
-                      </td>
-                    );
-                  })()}
-                  {/* Type 4 */}
-                  {talentIndex === 0 && pilot.levels[3]?.talent_type_id && (
-                    <td rowspan={maxTalents}>
-                      <PageRef 
-                        obj={pilotTalentTypes[pilot.levels[3].talent_type_id]} 
-                        version={latestVersion}
-                      />
-                    </td>
-                  )}
+                  <LevelTableData 
+                    levelIndex={2}
+                    level={pilot.levels[2]}
+                    talentIndex={talentIndex}
+                    maxTalents={maxTalents}
+                    pilotTalents={pilotTalents}
+                    pilotTalentTypes={pilotTalentTypes}
+                    version={latestVersion}
+                  />
                   {/* Level 4 */}
-                  {(() => {
-                    const talentId = pilot.levels[3]?.talents?.[talentIndex];
-                    return (
-                      <td>
-                        {talentId && pilotTalents[talentId] && (
-                          <PageRef 
-                            obj={pilotTalents[talentId]} 
-                            version={latestVersion}
-                          />
-                        )}
-                      </td>
-                    );
-                  })()}
+                  <LevelTableData 
+                    levelIndex={3}
+                    level={pilot.levels[3]}
+                    talentIndex={talentIndex}
+                    maxTalents={maxTalents}
+                    pilotTalents={pilotTalents}
+                    pilotTalentTypes={pilotTalentTypes}
+                    version={latestVersion}
+                  />
+                  {/* Level 5 */}
                   {talentIndex === 0 && (
                     <td rowspan={maxTalents}>
                       {pilot.levels[4]?.talents?.[0] && pilotTalents[pilot.levels[4].talents[0]] && (
