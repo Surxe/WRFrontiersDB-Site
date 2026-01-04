@@ -1,0 +1,59 @@
+---
+import LocalizedText from '../LocalizedText.astro';
+import PilotTable from './Table.astro';
+import { getParseObjects } from '../../utils/parse_object';
+import { prepareObjectList, groupBy, sortGroups } from '../../utils/list_helpers';
+import type { Pilot, PilotType, PilotTalent, PilotTalentType } from '../../types/pilot';
+
+interface Props {
+  pilots: Record<string, Pilot>;
+  version: string;
+}
+
+const { pilots, version } = Astro.props;
+
+// Load pilot types, and pilot talents
+const pilotTypes = getParseObjects<PilotType>("Objects/PilotType.json", version);
+const pilotTalents = getParseObjects<PilotTalent>("Objects/PilotTalent.json", version);
+const pilotTalentTypes = getParseObjects<PilotTalentType>("Objects/PilotTalentType.json", version);
+
+// Prepare and filter pilots
+const entries = prepareObjectList(pilots, { prodReadyOnly: false });
+
+// Group by pilot type
+const grouped = groupBy(entries, ([_, pilot]) => pilot.pilot_type_id);
+
+// Define explicit sort order for pilot types
+const pilotTypeOrder: Record<string, number> = {
+  'DA_PilotType_Legendary.0': 1,
+  'DA_PilotType_Common.0': 2,
+};
+
+// Sort groups with explicit order: Legendary before Common
+const sortedGroups = sortGroups(grouped, (a, b) => {
+  const orderA = pilotTypeOrder[a] || 999;
+  const orderB = pilotTypeOrder[b] || 999;
+  return orderA - orderB;
+});
+---
+
+<!-- 
+Create tables. Levels 1 through 4 may have multiple talents in them, so 
+the other columns have rowspan to center them within their group of rows
+-->
+{sortedGroups.map(([pilotTypeId, pilotEntries]) => (
+  <section>
+    <h2>
+      <LocalizedText 
+        tag="span" 
+        localizationKey={pilotTypes[pilotTypeId].name}
+      />
+    </h2>
+    <PilotTable 
+      pilots={pilotEntries}
+      pilotTalents={pilotTalents}
+      pilotTalentTypes={pilotTalentTypes}
+      version={version}
+    />
+  </section>
+))}

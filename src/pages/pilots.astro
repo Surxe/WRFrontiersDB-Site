@@ -2,39 +2,13 @@
 import BackToHome from '../components/BackToHome.astro';
 import ParseObjectListPage from '../components/ParseObjectListPage.astro';
 import { getAllVersions, getParseObjects } from '../utils/parse_object';
-import { prepareObjectList, groupBy, sortGroups } from '../utils/list_helpers';
-import type { Pilot, PilotType, PilotTalent, PilotTalentType } from '../types/pilot';
-import LocalizedText from '../components/LocalizedText.astro';
-import PilotTable from '../components/pilot/Table.astro';
-import PageRef from '../components/PageRef.astro';
+import PilotTables from '../components/pilot/Tables.astro';
+import type { Pilot } from '../types/pilot';
 
 const { versions, latestVersion } = getAllVersions();
 
-// Load pilots, pilot types, and pilot talents
+// Load pilots
 const pilots = getParseObjects<Pilot>("Objects/Pilot.json", latestVersion);
-const pilotTypes = getParseObjects<PilotType>("Objects/PilotType.json", latestVersion);
-const pilotTalents = getParseObjects<PilotTalent>("Objects/PilotTalent.json", latestVersion);
-const pilotTalentTypes = getParseObjects<PilotTalentType>("Objects/PilotTalentType.json", latestVersion);
-
-// Prepare and filter pilots
-const entries = prepareObjectList(pilots, { prodReadyOnly: false });
-
-// Group by pilot type
-const grouped = groupBy(entries, ([_, pilot]) => pilot.pilot_type_id);
-
-// Define explicit sort order for pilot types
-const pilotTypeOrder: Record<string, number> = {
-  'DA_PilotType_Legendary.0': 1,
-  'DA_PilotType_Common.0': 2,
-};
-
-// Sort groups with explicit order: Legendary before Common
-const sortedGroups = sortGroups(grouped, (a, b) => {
-  const orderA = pilotTypeOrder[a] || 999;
-  const orderB = pilotTypeOrder[b] || 999;
-  return orderA - orderB;
-});
-
 ---
 
 <ParseObjectListPage title="Pilots">
@@ -43,24 +17,5 @@ const sortedGroups = sortGroups(grouped, (a, b) => {
     
     <p>Showing pilots from latest version: {versions[latestVersion].title} ({latestVersion})</p>
 
-    <!-- 
-    Create table. Levels 1 through 4 may have multiple talents in them, so 
-    the other columns have rowspan to center them within their group of rows
-    -->
-    {sortedGroups.map(([pilotTypeId, pilotEntries]) => (
-      <section>
-        <h2>
-          <LocalizedText 
-            tag="span" 
-            localizationKey={pilotTypes[pilotTypeId].name}
-          />
-        </h2>
-        <PilotTable 
-          pilots={pilotEntries}
-          pilotTalents={pilotTalents}
-          pilotTalentTypes={pilotTalentTypes}
-          version={latestVersion}
-        />
-      </section>
-    ))}
+    <PilotTables pilots={pilots} version={latestVersion} />
 </ParseObjectListPage>
