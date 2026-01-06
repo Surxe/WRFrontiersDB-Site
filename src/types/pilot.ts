@@ -1,30 +1,31 @@
 import type { LocalizationKey } from './localization';
+import type { ParseObject } from './parse_object';
 
-export interface PilotTalentType {
-    id: string;
-    name?: LocalizationKey;
+export interface PilotTalentType extends ParseObject {
+    parseObjectClass: 'PilotTalentType';
+    name: LocalizationKey;
     description?: LocalizationKey;
-    image_path?: string;
+    image_path: string;
 }
 
-export interface PilotType {
-    id: string;
+export interface PilotType extends ParseObject {
+    parseObjectClass: 'PilotType';
     rarity_id: string; // TODO
-    name?: LocalizationKey;
+    name: LocalizationKey;
     group_reward_id: string; // TODO
     has_extended_bio?: boolean;
     can_change_talents?: boolean;
     sort_order?: number;
 }
 
-export interface PilotPersonality {
-    id: string;
+export interface PilotPersonality extends ParseObject {
+    parseObjectClass: 'PilotPersonality';
     icon_path: string;
     name: LocalizationKey;
 }
 
-export interface PilotClass {
-    id: string;
+export interface PilotClass extends ParseObject {
+    parseObjectClass: 'PilotClass';
     name: LocalizationKey;
     badge: {
         image_path: string;
@@ -32,8 +33,8 @@ export interface PilotClass {
     }
 }
 
-export interface PilotTalent {
-    id: string;
+export interface PilotTalent extends ParseObject {
+    parseObjectClass: 'PilotTalent';
     name: LocalizationKey;
     description: LocalizationKey;
     ui_description: LocalizationKey;
@@ -67,10 +68,14 @@ export interface PilotTalent {
     default_properties?: {
         [key: string]: any;
     };
+    
+    // Enriched properties (populated at build time)
+    talent_type_id?: string;
+    level?: number;
 }
 
-export interface Pilot {
-    id: string;
+export interface Pilot extends ParseObject {
+    parseObjectClass: 'Pilot';
     first_name: LocalizationKey;
     second_name?: LocalizationKey;
     image_path: string;

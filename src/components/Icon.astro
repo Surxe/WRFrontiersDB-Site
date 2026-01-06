@@ -18,6 +18,8 @@ if (iconPath) {
 {iconSrc && color && (
   <div 
     style={`
+      display: inline-block;
+      vertical-align: middle;
       width: ${size}px; 
       height: ${size}px; 
       background-color: #${color}; 
@@ -34,5 +36,5 @@ if (iconPath) {
 )}
 
 {iconSrc && !color && (
-  <img src={iconSrc} alt={altText} style={`width: ${size}px; height: ${size}px;`} />
+  <img src={iconSrc} alt={altText} style={`display: inline-block; vertical-align: middle; width: ${size}px; height: ${size}px;`} />
 )}

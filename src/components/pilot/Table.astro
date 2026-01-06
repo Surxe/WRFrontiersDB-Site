@@ -1,0 +1,66 @@
+---
+import PageRef from '../PageRef.astro';
+import LevelTableData from './LevelTableData.astro';
+import type { Pilot, PilotTalent } from '../../types/pilot';
+
+interface Props {
+  pilots: [string, Pilot][];
+  pilotTalents: Record<string, PilotTalent>;
+  version: string;
+}
+
+const { 
+  pilots,  
+  pilotTalents, 
+  version,
+} = Astro.props;
+---
+
+<table>
+  <thead>
+    <tr>
+      <th>Pilot Name</th>
+      <th>Level 1</th>
+      <th>Level 2</th>
+      <th>Level 3</th>
+      <th>Level 4</th>
+      <th>Level 5</th>
+    </tr>
+  </thead>
+  <tbody>
+    {pilots.map(([id, pilot]) => {
+      // Calculate max talents across all levels for this pilot
+      const maxTalents = Math.max(
+        ...pilot.levels.map(level => level?.talents?.length || 0)
+      );
+      
+      return Array.from({ length: Math.max(1, maxTalents) }).map((_, talentIndex) => (
+        <tr>
+          {/* Pilot Name */}
+          {talentIndex === 0 && (
+            <>
+              <td rowspan={maxTalents}>
+                <PageRef 
+                  obj={pilot} 
+                  version={version}
+                  iconSize={48}
+                />
+              </td>
+            </>
+          )}
+          {/* Levels 1-5 */}
+          {[0, 1, 2, 3, 4].map(levelIndex => (
+            <LevelTableData 
+              levelIndex={levelIndex}
+              level={pilot.levels[levelIndex]}
+              talentIndex={talentIndex}
+              maxTalents={maxTalents}
+              pilotTalents={pilotTalents}
+              version={version}
+            />
+          ))}
+        </tr>
+      ));
+    })}
+  </tbody>
+</table>

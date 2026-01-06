@@ -1,10 +1,49 @@
 ---
-import ParseObjectList from '../components/ParseObjectList.astro';
 import BackToHome from '../components/BackToHome.astro';
 import ParseObjectListPage from '../components/ParseObjectListPage.astro';
-import { getAllVersions } from '../utils/parse_object';
+import { getAllVersions, getParseObjects } from '../utils/parse_object';
+import { prepareObjectList, groupBy, sortGroups } from '../utils/list';
+import type { PilotTalentType, Pilot } from '../types/pilot';
+import LocalizedText from '../components/LocalizedText.astro';
+import PageRef from '../components/PageRef.astro';
 
 const { versions, latestVersion } = getAllVersions();
+
+// Load pilot talent types and pilots
+const pilotTalentTypes = getParseObjects<PilotTalentType>("Objects/PilotTalentType.json", latestVersion);
+const pilots = getParseObjects<Pilot>("Objects/Pilot.json", latestVersion);
+
+// For each pilot talent type,
+//  find what level it appears at
+for (const [talentTypeId, talentType] of Object.entries(pilotTalentTypes)) {
+    let levelFound: number = -1;
+
+    // Search through all pilots
+    for (const [_, pilot] of Object.entries(pilots)) {
+        // Check each level in the pilot
+        for (const [levelIndex, levelEntry] of pilot.levels.entries()) {
+            if (levelEntry.talent_type_id === talentTypeId) {
+                levelFound = levelIndex + 1; // Levels are 1-based
+                break;
+            }
+        }
+        if (levelFound !== -1) {
+            break;
+        }
+    }
+    
+    // Set the level
+    (talentType as any).level = levelFound;
+}
+
+// Prepare and filter talent types
+const entries = prepareObjectList(pilotTalentTypes, { prodReadyOnly: false });
+
+// Group by level
+const grouped = groupBy(entries, ([_, talentType]) => (talentType as any).level || 'Unknown');
+
+// Sort groups numerically
+const sortedGroups = sortGroups(grouped, (a, b) => Number(a) - Number(b));
 ---
 
 <ParseObjectListPage title="Pilot Talent Types">
@@ -13,9 +52,35 @@ const { versions, latestVersion } = getAllVersions();
     
     <p>Showing pilot talent types from latest version: {versions[latestVersion].title} ({latestVersion})</p>
 
-    <ParseObjectList 
-      parseObjectFile="Objects/PilotTalentType.json" 
-      parseObjectUrl="pilot_talent_types" 
-      version={latestVersion}
-    />
+    {sortedGroups.map(([levelNum, pilotTalentTypeEntries]) => (
+      <section>
+        <h2>Level {levelNum}</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            {pilotTalentTypeEntries.map(([id, talentType]) => (
+              <tr>
+                <td>
+                  <PageRef 
+                    obj={talentType} 
+                    version={latestVersion}
+                  />
+                </td>
+                <td>
+                  <LocalizedText
+                    tag="span"
+                    localizationKey={talentType.description}
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+    ))}
 </ParseObjectListPage>

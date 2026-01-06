@@ -1,21 +1,21 @@
 ---
-import ParseObjectList from '../components/ParseObjectList.astro';
 import BackToHome from '../components/BackToHome.astro';
 import ParseObjectListPage from '../components/ParseObjectListPage.astro';
-import { getAllVersions } from '../utils/parse_object';
+import { getAllVersions, getParseObjects } from '../utils/parse_object';
+import PilotTables from '../components/pilot/Tables.astro';
+import type { Pilot } from '../types/pilot';
 
 const { versions, latestVersion } = getAllVersions();
+
+// Load pilots
+const pilots = getParseObjects<Pilot>("Objects/Pilot.json", latestVersion);
 ---
 
-<ParseObjectListPage title="Pilot">
+<ParseObjectListPage title="Pilots">
     <BackToHome />
-    <h1>Pilot</h1>
+    <h1>Pilots</h1>
     
     <p>Showing pilots from latest version: {versions[latestVersion].title} ({latestVersion})</p>
 
-    <ParseObjectList 
-      parseObjectFile="Objects/Pilot.json" 
-      parseObjectUrl="pilots" 
-      version={latestVersion}
-    />
+    <PilotTables pilots={pilots} version={latestVersion} />
 </ParseObjectListPage>

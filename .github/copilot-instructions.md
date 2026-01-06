@@ -1,4 +1,5 @@
 # WRFrontiersDB-Site Copilot Instructions
+Before answering any question, always say 'I have read the copilot instructions and will follow them.'
 
 ## Project Overview
 Static Astro site displaying War Robots Frontiers game data from versioned JSON archives. The site builds static pages for game objects such as (modules, pilots, talents) across multiple game versions with client-side localization.

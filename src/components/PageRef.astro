@@ -1,0 +1,50 @@
+---
+import Icon from './Icon.astro';
+import LocalizedText from './LocalizedText.astro';
+import { getPageRefData } from '../utils/page_ref';
+import type { ParseObject } from '../types/parse_object';
+
+interface Props {
+  obj: ParseObject;
+  version: string;
+  iconSize?: number;
+  showIcon?: boolean;
+}
+
+const { obj, version, iconSize = 24, showIcon = true } = Astro.props;
+
+// Get the page reference data (localization key, icon path, hex color)
+const pageData = getPageRefData(obj);
+
+// Convert parseObjectClass to URL path segment
+function getPagePath(parseObjectClass: string): string {
+  const pathMap: Record<string, string> = {
+    'Module': 'modules',
+    'Pilot': 'pilots',
+    'PilotClass': 'pilot_classes',
+    'PilotPersonality': 'pilot_personalities',
+    'PilotTalent': 'pilot_talents',
+    'PilotTalentType': 'pilot_talent_types',
+    'PilotType': 'pilot_types'
+  };
+  return pathMap[parseObjectClass] || parseObjectClass.toLowerCase();
+}
+
+const pagePath = getPagePath(obj.parseObjectClass);
+const pageUrl = `/WRFrontiersDB-Site/${pagePath}/${obj.id}/${version}`;
+---
+
+<a href={pageUrl}}>
+  {showIcon && (
+    <Icon 
+      iconPath={pageData.iconPath} 
+      altText={`${pageData.localizationKey.en} icon`}
+      size={iconSize}
+      color={pageData.hexColor}
+    />
+  )}
+  <LocalizedText 
+    tag="span" 
+    localizationKey={pageData.localizationKey}
+  />
+</a>

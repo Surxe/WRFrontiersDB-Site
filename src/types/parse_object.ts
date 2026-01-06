@@ -1,0 +1,10 @@
+export interface StaticPathsResult {
+  params: { id: string; version: string };
+  props: { objectVersions: string[] };
+}
+
+export interface ParseObject {
+  id: string;
+  production_status?: string;
+  [key: string]: any;
+}
