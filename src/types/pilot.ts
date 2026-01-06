@@ -68,6 +68,10 @@ export interface PilotTalent extends ParseObject {
     default_properties?: {
         [key: string]: any;
     };
+    
+    // Enriched properties (populated at build time)
+    talent_type_id?: string;
+    level?: number;
 }
 
 export interface Pilot extends ParseObject {

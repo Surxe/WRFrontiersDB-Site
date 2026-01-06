@@ -1,11 +1,13 @@
 ---
-import type { PilotTalent } from '../../../types/pilot';
+import type { PilotTalent, Pilot, PilotTalentType } from '../../../types/pilot';
 import Icon from '../../../components/Icon.astro';
 import LocalizedText from '../../../components/LocalizedText.astro';
 import VersionList from '../../../components/VersionList.astro';
 import ObjectPageScripts from '../../../components/ObjectPageScripts.astro';
 import ParseObjectPage from '../../../components/ParseObjectPage.astro';
-import { generateObjectStaticPaths, getParseObject, getVersionsData } from '../../../utils/parse_object';
+import { generateObjectStaticPaths, getParseObjects, getVersionsData } from '../../../utils/parse_object';
+import { enrichPilotTalents } from '../../../utils/pilot_talent';
+import PageRef from '../../../components/PageRef.astro';
 
 export async function getStaticPaths() {
   return await generateObjectStaticPaths("Objects/PilotTalent.json");
@@ -14,7 +16,13 @@ export async function getStaticPaths() {
 const { id, version } = Astro.params;
 const { objectVersions } = Astro.props;
 
-const pilotTalent = getParseObject<PilotTalent>(id, version, "Objects/PilotTalent.json");
+// Load pilots to enrich the talent data
+const pilots = getParseObjects<Pilot>("Objects/Pilot.json", version);
+const pilotTalents = getParseObjects<PilotTalent>("Objects/PilotTalent.json", version);
+const enrichedTalents = enrichPilotTalents(pilotTalents, pilots);
+const pilotTalentTypes = getParseObjects<PilotTalentType>("Objects/PilotTalentType.json", version);
+
+const pilotTalent = enrichedTalents[id];
 
 // Load version metadata
 const { versions, versionInfo } = getVersionsData(version);
@@ -60,6 +68,15 @@ const defaultName = pilotTalent.name?.en || pilotTalent.id;
       iconPath={pilotTalent.image_path}
       altText={`${defaultName} icon`}
     />
+
+    <p>Pilot Talent Type:
+      {pilotTalent.talent_type_id && (
+        <PageRef
+          obj={pilotTalentTypes[pilotTalent.talent_type_id]}
+          version={version}
+        />
+      )}
+    </p>
 
     <p>stats placeholder</p> <!-- TODO -->
 
