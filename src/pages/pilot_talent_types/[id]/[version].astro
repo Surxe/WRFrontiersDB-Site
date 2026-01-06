@@ -7,7 +7,7 @@ import ObjectPageScripts from '../../../components/ObjectPageScripts.astro';
 import ParseObjectPage from '../../../components/ParseObjectPage.astro';
 import PageRef from '../../../components/PageRef.astro';
 import { generateObjectStaticPaths, getParseObject, getParseObjects, getVersionsData } from '../../../utils/parse_object';
-import { enrichPilotTalents } from '../../../utils/pilot_talent';
+import { enrichPilotTalents } from '../../../utils/pilot';
 
 export async function getStaticPaths() {
   return await generateObjectStaticPaths("Objects/PilotTalentType.json");
@@ -62,12 +62,12 @@ const defaultName = pilotTalentType.name?.en || pilotTalentType.id;
     />
 
     <h2>Pilot Talents</h2>
+    <p>Level: {talentsForType.length > 0 ? talentsForType[0][1].level : 'Unknown'}</p>
     {talentsForType.length > 0 ? (
       <table>
         <thead>
           <tr>
             <th>Name</th>
-            <th>Level</th>
             <th>Description</th>
           </tr>
         </thead>
@@ -80,7 +80,6 @@ const defaultName = pilotTalentType.name?.en || pilotTalentType.id;
                   version={version}
                 />
               </td>
-              <td>{talent.level || 'Unknown'}</td>
               <td>
                 <LocalizedText
                   tag="span"
