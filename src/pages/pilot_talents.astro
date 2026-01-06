@@ -61,10 +61,12 @@ const sortedGroups = sortGroups(grouped, (a, b) => Number(a) - Number(b));
                   />
                 </td>
                 <td>
-                  <PageRef
-                    obj={pilotTalentTypes[talent.talent_type_id]}
-                    version={latestVersion}
-                  />
+                  {talent.talent_type_id && 
+                    <PageRef
+                      obj={pilotTalentTypes[talent.talent_type_id]}
+                      version={latestVersion}
+                    />
+                  }
                 </td>
               </tr>
             ))}
