@@ -4,7 +4,7 @@ import ParseObjectListPage from '../components/ParseObjectListPage.astro';
 import { getAllVersions } from '../utils/parse_object';
 import type { PilotClass } from '../types/pilot';
 import { getParseObjects } from '../utils/parse_object';
-import { prepareObjectList } from '../utils/list_helpers';
+import { prepareObjectList } from '../utils/list';
 import PageRef from '../components/PageRef.astro';
 
 const { versions, latestVersion } = getAllVersions();
