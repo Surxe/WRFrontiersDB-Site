@@ -43,7 +43,7 @@ npx vitest run
 npx vitest run --coverage
 
 # Run specific test file
-npx vitest tests/ts_utils/list.test.ts
+npx vitest tests/ts_utils/list/prepareObjectList.ts
 
 # Run with UI
 npx vitest --ui
