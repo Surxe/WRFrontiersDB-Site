@@ -4,7 +4,8 @@ export interface StaticPathsResult {
 }
 
 export interface ParseObject {
+  parseObjectClass: string;
   id: string;
   production_status?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }

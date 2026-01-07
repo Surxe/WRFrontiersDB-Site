@@ -15,7 +15,7 @@ export interface Module extends ParseObject {
   description?: LocalizationKey;
   text_tags?: LocalizationKey[];
   module_scalars: {
-    default_scalars?: Record<string, any>;
+    default_scalars?: Record<string, unknown>;
     primary_stat_id?: string;
     secondary_stat_id?: string;
     levels?: {
@@ -24,7 +24,7 @@ export interface Module extends ParseObject {
     };
     module_name?: string;
   };
-  abilities_scalars?: any; // TODO
+  abilities_scalars?: unknown; // TODO
   faction_id: string;
   module_classes_ids: string[];
   module_stats_table_id?: string;

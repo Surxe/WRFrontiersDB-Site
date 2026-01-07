@@ -14,11 +14,13 @@ const baseUrl = `/WRFrontiersDB-Site/${parseObjectUrl}/${id}`;
 
 <h2>Available Versions</h2>
 <ul>
-  {myVersions.map((version: string) => (
-    <li>
-      <a href={`${baseUrl}/${version}`}>
-        {versionsData[version]?.title || version} ({version})
-      </a>
-    </li>
-  ))}
+  {
+    myVersions.map((version: string) => (
+      <li>
+        <a href={`${baseUrl}/${version}`}>
+          {versionsData[version]?.title || version} ({version})
+        </a>
+      </li>
+    ))
+  }
 </ul>

@@ -8,13 +8,17 @@ const { versions, latestVersion } = getAllVersions();
 ---
 
 <ParseObjectListPage title="Pilot Personalities">
-    <BackToHome />
-    <h1>Pilot Personalities</h1>
-    
-    <p>Showing pilot personalities from latest version: {versions[latestVersion].title} ({latestVersion})</p>
+  <BackToHome />
+  <h1>Pilot Personalities</h1>
 
-    <ParseObjectList 
-      parseObjectFile="Objects/PilotPersonality.json" 
-      version={latestVersion}
-    />
+  <p>
+    Showing pilot personalities from latest version: {
+      versions[latestVersion].title
+    } ({latestVersion})
+  </p>
+
+  <ParseObjectList
+    parseObjectFile="Objects/PilotPersonality.json"
+    version={latestVersion}
+  />
 </ParseObjectListPage>

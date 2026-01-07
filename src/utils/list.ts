@@ -7,21 +7,21 @@ export function prepareObjectList<T extends ParseObject>(
   objects: Record<string, T>,
   options: {
     prodReadyOnly?: boolean;
-    sortBy?: (a: [string, T], b: [string, T]) => number;
+    sortBy?: (_a: [string, T], _b: [string, T]) => number;
   } = {}
 ) {
   const { prodReadyOnly = false, sortBy } = options;
-  
+
   let entries = Object.entries(objects);
-  
+
   if (prodReadyOnly) {
     entries = entries.filter(([_, obj]) => obj.production_status === 'Ready');
   }
-  
+
   if (sortBy) {
     entries.sort(sortBy);
   }
-  
+
   return entries;
 }
 
@@ -30,10 +30,10 @@ export function prepareObjectList<T extends ParseObject>(
  */
 export function groupBy<T>(
   items: [string, T][],
-  keyExtractor: (item: [string, T]) => string
+  keyExtractor: (_item: [string, T]) => string
 ): Map<string, [string, T][]> {
   const groups = new Map<string, [string, T][]>();
-  
+
   for (const item of items) {
     const key = keyExtractor(item);
     if (!groups.has(key)) {
@@ -41,7 +41,7 @@ export function groupBy<T>(
     }
     groups.get(key)!.push(item);
   }
-  
+
   return groups;
 }
 
@@ -50,15 +50,15 @@ export function groupBy<T>(
  */
 export function sortGroups<T>(
   groups: Map<string, [string, T][]>,
-  compareFn?: (a: string, b: string) => number
+  compareFn?: (_a: string, _b: string) => number
 ): [string, [string, T][]][] {
   const entries = Array.from(groups.entries());
-  
+
   if (compareFn) {
     entries.sort((a, b) => compareFn(a[0], b[0]));
   } else {
     entries.sort((a, b) => String(a[0]).localeCompare(String(b[0])));
   }
-  
+
   return entries;
 }

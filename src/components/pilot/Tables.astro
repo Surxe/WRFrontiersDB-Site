@@ -13,8 +13,14 @@ interface Props {
 const { pilots, version } = Astro.props;
 
 // Load pilot types, and pilot talents
-const pilotTypes = getParseObjects<PilotType>("Objects/PilotType.json", version);
-const pilotTalents = getParseObjects<PilotTalent>("Objects/PilotTalent.json", version);
+const pilotTypes = getParseObjects<PilotType>(
+  'Objects/PilotType.json',
+  version
+);
+const pilotTalents = getParseObjects<PilotTalent>(
+  'Objects/PilotTalent.json',
+  version
+);
 
 // Prepare and filter pilots
 const entries = prepareObjectList(pilots, { prodReadyOnly: false });
@@ -39,19 +45,20 @@ const sortedGroups = sortGroups(grouped, (a, b) => {
 <!-- 
 Create tables. Levels 1 through 4 may have multiple talents in them, so 
 the other columns have rowspan to center them within their group of rows
--->
-{sortedGroups.map(([pilotTypeId, pilotEntries]) => (
-  <section>
-    <h2>
-      <LocalizedText 
-        tag="span" 
-        localizationKey={pilotTypes[pilotTypeId].name}
+-->{
+  sortedGroups.map(([pilotTypeId, pilotEntries]) => (
+    <section>
+      <h2>
+        <LocalizedText
+          tag="span"
+          localizationKey={pilotTypes[pilotTypeId].name}
+        />
+      </h2>
+      <PilotTable
+        pilots={pilotEntries}
+        pilotTalents={pilotTalents}
+        version={version}
       />
-    </h2>
-    <PilotTable 
-      pilots={pilotEntries}
-      pilotTalents={pilotTalents}
-      version={version}
-    />
-  </section>
-))}
+    </section>
+  ))
+}
