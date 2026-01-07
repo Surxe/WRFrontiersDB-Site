@@ -11,17 +11,17 @@ export function prepareObjectList<T extends ParseObject>(
   } = {}
 ) {
   const { prodReadyOnly = false, sortBy } = options;
-  
+
   let entries = Object.entries(objects);
-  
+
   if (prodReadyOnly) {
     entries = entries.filter(([_, obj]) => obj.production_status === 'Ready');
   }
-  
+
   if (sortBy) {
     entries.sort(sortBy);
   }
-  
+
   return entries;
 }
 
@@ -33,7 +33,7 @@ export function groupBy<T>(
   keyExtractor: (_item: [string, T]) => string
 ): Map<string, [string, T][]> {
   const groups = new Map<string, [string, T][]>();
-  
+
   for (const item of items) {
     const key = keyExtractor(item);
     if (!groups.has(key)) {
@@ -41,7 +41,7 @@ export function groupBy<T>(
     }
     groups.get(key)!.push(item);
   }
-  
+
   return groups;
 }
 
@@ -53,12 +53,12 @@ export function sortGroups<T>(
   compareFn?: (_a: string, _b: string) => number
 ): [string, [string, T][]][] {
   const entries = Array.from(groups.entries());
-  
+
   if (compareFn) {
     entries.sort((a, b) => compareFn(a[0], b[0]));
   } else {
     entries.sort((a, b) => String(a[0]).localeCompare(String(b[0])));
   }
-  
+
   return entries;
 }

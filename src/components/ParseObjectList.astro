@@ -18,12 +18,11 @@ let entries = prepareObjectList(objects, { prodReadyOnly });
 ---
 
 <ul>
-  {entries.map(([_, obj]) => (
-    <li>
-      <PageRef 
-        obj={obj} 
-        version={version}
-      />
-    </li>
-  ))}
+  {
+    entries.map(([_, obj]) => (
+      <li>
+        <PageRef obj={obj} version={version} />
+      </li>
+    ))
+  }
 </ul>

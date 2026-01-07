@@ -10,49 +10,60 @@ import PageRef from '../components/PageRef.astro';
 const { versions, latestVersion } = getAllVersions();
 
 // Load pilot talent types and pilots
-const pilotTalentTypes = getParseObjects<PilotTalentType>("Objects/PilotTalentType.json", latestVersion);
-const pilots = getParseObjects<Pilot>("Objects/Pilot.json", latestVersion);
+const pilotTalentTypes = getParseObjects<PilotTalentType>(
+  'Objects/PilotTalentType.json',
+  latestVersion
+);
+const pilots = getParseObjects<Pilot>('Objects/Pilot.json', latestVersion);
 
 // For each pilot talent type,
 //  find what level it appears at
 for (const [talentTypeId, talentType] of Object.entries(pilotTalentTypes)) {
-    let levelFound: number = -1;
+  let levelFound: number = -1;
 
-    // Search through all pilots
-    for (const [_, pilot] of Object.entries(pilots)) {
-        // Check each level in the pilot
-        for (const [levelIndex, levelEntry] of pilot.levels.entries()) {
-            if (levelEntry.talent_type_id === talentTypeId) {
-                levelFound = levelIndex + 1; // Levels are 1-based
-                break;
-            }
-        }
-        if (levelFound !== -1) {
-            break;
-        }
+  // Search through all pilots
+  for (const [_, pilot] of Object.entries(pilots)) {
+    // Check each level in the pilot
+    for (const [levelIndex, levelEntry] of pilot.levels.entries()) {
+      if (levelEntry.talent_type_id === talentTypeId) {
+        levelFound = levelIndex + 1; // Levels are 1-based
+        break;
+      }
     }
-    
-    // Set the level
-    (talentType as any).level = levelFound;
+    if (levelFound !== -1) {
+      break;
+    }
+  }
+
+  // Set the level
+  (talentType as any).level = levelFound;
 }
 
 // Prepare and filter talent types
 const entries = prepareObjectList(pilotTalentTypes, { prodReadyOnly: false });
 
 // Group by level
-const grouped = groupBy(entries, ([_, talentType]) => (talentType as any).level || 'Unknown');
+const grouped = groupBy(
+  entries,
+  ([_, talentType]) => (talentType as any).level || 'Unknown'
+);
 
 // Sort groups numerically
 const sortedGroups = sortGroups(grouped, (a, b) => Number(a) - Number(b));
 ---
 
 <ParseObjectListPage title="Pilot Talent Types">
-    <BackToHome />
-    <h1>Pilot Talent Types</h1>
-    
-    <p>Showing pilot talent types from latest version: {versions[latestVersion].title} ({latestVersion})</p>
+  <BackToHome />
+  <h1>Pilot Talent Types</h1>
 
-    {sortedGroups.map(([levelNum, pilotTalentTypeEntries]) => (
+  <p>
+    Showing pilot talent types from latest version: {
+      versions[latestVersion].title
+    } ({latestVersion})
+  </p>
+
+  {
+    sortedGroups.map(([levelNum, pilotTalentTypeEntries]) => (
       <section>
         <h2>Level {levelNum}</h2>
         <table>
@@ -66,10 +77,7 @@ const sortedGroups = sortGroups(grouped, (a, b) => Number(a) - Number(b));
             {pilotTalentTypeEntries.map(([_id, talentType]) => (
               <tr>
                 <td>
-                  <PageRef 
-                    obj={talentType} 
-                    version={latestVersion}
-                  />
+                  <PageRef obj={talentType} version={latestVersion} />
                 </td>
                 <td>
                   <LocalizedText
@@ -82,5 +90,6 @@ const sortedGroups = sortGroups(grouped, (a, b) => Number(a) - Number(b));
           </tbody>
         </table>
       </section>
-    ))}
+    ))
+  }
 </ParseObjectListPage>

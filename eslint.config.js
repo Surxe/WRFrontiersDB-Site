@@ -12,13 +12,13 @@ export default [
       'node_modules/',
       '.astro/',
       'WRFrontiersDB-Data/',
-      'public/js/**/*.js' // Client-side JS files
-    ]
+      'public/js/**/*.js', // Client-side JS files
+    ],
   },
-  
+
   // Base ESLint recommended rules
   js.configs.recommended,
-  
+
   // TypeScript files
   {
     files: ['**/*.ts'],
@@ -26,30 +26,33 @@ export default [
       parser: tsParser,
       parserOptions: {
         ecmaVersion: 'latest',
-        sourceType: 'module'
+        sourceType: 'module',
       },
       globals: {
         process: 'readonly',
         __dirname: 'readonly',
         __filename: 'readonly',
-        console: 'readonly'
-      }
+        console: 'readonly',
+      },
     },
     plugins: {
-      '@typescript-eslint': tsPlugin
+      '@typescript-eslint': tsPlugin,
     },
     rules: {
       ...tsPlugin.configs.recommended.rules,
-      '@typescript-eslint/no-unused-vars': ['warn', { 
-        argsIgnorePattern: '^_',
-        varsIgnorePattern: '^_'
-      }],
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+        },
+      ],
       '@typescript-eslint/no-explicit-any': 'warn',
       'no-redeclare': 'off',
-      '@typescript-eslint/no-redeclare': 'error'
-    }
+      '@typescript-eslint/no-redeclare': 'error',
+    },
   },
-  
+
   // Astro files
   {
     files: ['**/*.astro'],
@@ -57,27 +60,30 @@ export default [
       parser: astroParser,
       parserOptions: {
         parser: tsParser,
-        extraFileExtensions: ['.astro']
-      }
+        extraFileExtensions: ['.astro'],
+      },
     },
     plugins: {
-      astro: astroPlugin
+      astro: astroPlugin,
     },
     rules: {
       ...astroPlugin.configs.recommended.rules,
       'astro/no-set-html-directive': 'error',
-      'astro/no-unused-css-selector': 'warn'
-    }
+      'astro/no-unused-css-selector': 'warn',
+    },
   },
-  
+
   // General rules for all files
   {
     rules: {
       'no-console': ['warn', { allow: ['warn', 'error'] }],
-      'no-unused-vars': ['warn', { 
-        argsIgnorePattern: '^_',
-        varsIgnorePattern: '^_'
-      }]
-    }
-  }
+      'no-unused-vars': [
+        'warn',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+        },
+      ],
+    },
+  },
 ];

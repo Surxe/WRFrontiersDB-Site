@@ -9,26 +9,32 @@ import PageRef from '../components/PageRef.astro';
 
 const { versions, latestVersion } = getAllVersions();
 
-const pilotClasses = getParseObjects<PilotClass>("Objects/PilotClass.json", latestVersion);
+const pilotClasses = getParseObjects<PilotClass>(
+  'Objects/PilotClass.json',
+  latestVersion
+);
 
 // Prepare and filter modules
 const entries = prepareObjectList(pilotClasses, { prodReadyOnly: false });
 ---
 
 <ParseObjectListPage title="Pilot Classes">
-    <BackToHome />
-    <h1>Pilot Classes</h1>
-    
-    <p>Showing pilot classes from latest version: {versions[latestVersion].title} ({latestVersion})</p>
+  <BackToHome />
+  <h1>Pilot Classes</h1>
 
-    <ul>
-      {entries.map(([_id, pilotClass]) => (
+  <p>
+    Showing pilot classes from latest version: {versions[latestVersion].title} ({
+      latestVersion
+    })
+  </p>
+
+  <ul>
+    {
+      entries.map(([_id, pilotClass]) => (
         <li>
-          <PageRef 
-            obj={pilotClass} 
-            version={latestVersion}
-          />
+          <PageRef obj={pilotClass} version={latestVersion} />
         </li>
-      ))}
-    </ul>    
+      ))
+    }
+  </ul>
 </ParseObjectListPage>

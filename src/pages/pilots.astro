@@ -8,14 +8,18 @@ import type { Pilot } from '../types/pilot';
 const { versions, latestVersion } = getAllVersions();
 
 // Load pilots
-const pilots = getParseObjects<Pilot>("Objects/Pilot.json", latestVersion);
+const pilots = getParseObjects<Pilot>('Objects/Pilot.json', latestVersion);
 ---
 
 <ParseObjectListPage title="Pilots">
-    <BackToHome />
-    <h1>Pilots</h1>
-    
-    <p>Showing pilots from latest version: {versions[latestVersion].title} ({latestVersion})</p>
+  <BackToHome />
+  <h1>Pilots</h1>
 
-    <PilotTables pilots={pilots} version={latestVersion} />
+  <p>
+    Showing pilots from latest version: {versions[latestVersion].title} ({
+      latestVersion
+    })
+  </p>
+
+  <PilotTables pilots={pilots} version={latestVersion} />
 </ParseObjectListPage>

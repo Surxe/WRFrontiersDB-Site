@@ -1,14 +1,14 @@
 {
-  "de": {"de": "Deutsch", "en": "German"},
-  "en": {"en": "English"},
-  "es": {"es": "Español", "en": "Spanish"},
-  "fr": {"fr": "Français", "en": "French"},
-  "ja": {"ja": "日本語", "en": "Japanese"},
-  "ko": {"ko": "한국어", "en": "Korean"},
-  "pl": {"pl": "Polski", "en": "Polish"},
-  "pt-BR": {"pt-BR": "Português (Brasil)", "en": "Portuguese (Brazil)"},
-  "ru": {"ru": "Русский", "en": "Russian"},
-  "tr": {"tr": "Türkçe", "en": "Turkish"},
-  "zh-Hans": {"zh-Hans": "简体中文", "en": "Chinese (Simplified)"},
-  "zh-Hant": {"zh-Hant": "繁體中文", "en": "Chinese (Traditional)"}
+  "de": { "de": "Deutsch", "en": "German" },
+  "en": { "en": "English" },
+  "es": { "es": "Español", "en": "Spanish" },
+  "fr": { "fr": "Français", "en": "French" },
+  "ja": { "ja": "日本語", "en": "Japanese" },
+  "ko": { "ko": "한국어", "en": "Korean" },
+  "pl": { "pl": "Polski", "en": "Polish" },
+  "pt-BR": { "pt-BR": "Português (Brasil)", "en": "Portuguese (Brazil)" },
+  "ru": { "ru": "Русский", "en": "Russian" },
+  "tr": { "tr": "Türkçe", "en": "Turkish" },
+  "zh-Hans": { "zh-Hans": "简体中文", "en": "Chinese (Simplified)" },
+  "zh-Hant": { "zh-Hant": "繁體中文", "en": "Chinese (Traditional)" }
 }

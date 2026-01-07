@@ -17,14 +17,19 @@ export async function loadLanguage(lang, version) {
   if (localizationCache[cacheKey]) {
     return localizationCache[cacheKey];
   }
-  
+
   try {
-    const response = await fetch(`/WRFrontiersDB-Site/WRFrontiersDB-Data/archive/${version}/Localization/${lang}.json`);
+    const response = await fetch(
+      `/WRFrontiersDB-Site/WRFrontiersDB-Data/archive/${version}/Localization/${lang}.json`
+    );
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     localizationCache[cacheKey] = await response.json();
     return localizationCache[cacheKey];
   } catch (error) {
-    console.warn(`Failed to load language ${lang} for version ${version}:`, error);
+    console.warn(
+      `Failed to load language ${lang} for version ${version}:`,
+      error
+    );
     return null;
   }
 }
@@ -64,16 +69,21 @@ export function setCurrentLanguage(lang) {
  */
 export function updateLocalizedElements(locData, selectors) {
   const selectorArray = Array.isArray(selectors) ? selectors : [selectors];
-  
-  selectorArray.forEach(selector => {
+
+  selectorArray.forEach((selector) => {
     const elements = document.querySelectorAll(selector);
-    elements.forEach(element => {
+    elements.forEach((element) => {
       const namespace = element.dataset.locNamespace;
       const key = element.dataset.locKey;
       const fallback = element.dataset.locFallback || element.textContent;
-      
+
       if (namespace && key) {
-        const localizedText = getLocalizedText(locData, namespace, key, fallback);
+        const localizedText = getLocalizedText(
+          locData,
+          namespace,
+          key,
+          fallback
+        );
         element.textContent = localizedText;
       }
     });
@@ -85,18 +95,21 @@ export function updateLocalizedElements(locData, selectors) {
  * @param {string} version - Game version for this page
  * @param {string|string[]} selectors - Elements to localize
  */
-export async function initializeLocalization(version, selectors = '[data-loc-key]') {
+export async function initializeLocalization(
+  version,
+  selectors = '[data-loc-key]'
+) {
   const currentLang = getCurrentLanguage();
-  
+
   // Update language indicator if exists
   const langSpan = document.getElementById('current-lang');
   if (langSpan) {
     langSpan.textContent = currentLang;
   }
-  
+
   // Skip loading if English (already embedded as fallback)
   if (currentLang === 'en') return;
-  
+
   // Load and apply localization
   const locData = await loadLanguage(currentLang, version);
   if (locData) {
