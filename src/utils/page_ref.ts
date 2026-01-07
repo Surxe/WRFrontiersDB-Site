@@ -29,52 +29,60 @@ export function getPageRefData(_obj: ParseObject): PageRefData; // Here just for
 
 export function getPageRefData(obj: ParseObject): PageRefData {
   switch (obj.parseObjectClass) {
-    case 'Module':
-      if (!obj.name) {
+    case 'Module': {
+      const module = obj as Module;
+      if (!module.name) {
         // The only modules without names are ones without production_status=Ready, which are never display
         throw new Error('Module object has no name');
       }
       return {
-        localizationKey: obj.name,
-        iconPath: obj.inventory_icon_path,
+        localizationKey: module.name,
+        iconPath: module.inventory_icon_path,
       };
-    case 'PilotClass':
+    }
+    case 'PilotClass': {
+      const pilotClass = obj as PilotClass;
       return {
-        localizationKey: obj.name,
-        iconPath: obj.badge.image_path,
-        hexColor: obj.badge.hex,
+        localizationKey: pilotClass.name,
+        iconPath: pilotClass.badge.image_path,
+        hexColor: pilotClass.badge.hex,
       };
-
-    case 'Pilot':
+    }
+    case 'Pilot': {
+      const pilot = obj as Pilot;
       return {
-        localizationKey: obj.first_name,
-        iconPath: obj.image_path,
+        localizationKey: pilot.first_name,
+        iconPath: pilot.image_path,
       };
-
-    case 'PilotTalent':
+    }
+    case 'PilotTalent': {
+      const pilotTalent = obj as PilotTalent;
       return {
-        localizationKey: obj.name,
-        iconPath: obj.image_path,
+        localizationKey: pilotTalent.name,
+        iconPath: pilotTalent.image_path,
       };
-
-    case 'PilotType':
+    }
+    case 'PilotType': {
+      const pilotType = obj as PilotType;
       return {
-        localizationKey: obj.name,
+        localizationKey: pilotType.name,
         iconPath: '',
       };
-
-    case 'PilotTalentType':
+    }
+    case 'PilotTalentType': {
+      const pilotTalentType = obj as PilotTalentType;
       return {
-        localizationKey: obj.name,
-        iconPath: obj.image_path,
+        localizationKey: pilotTalentType.name,
+        iconPath: pilotTalentType.image_path,
       };
-
-    case 'PilotPersonality':
+    }
+    case 'PilotPersonality': {
+      const pilotPersonality = obj as PilotPersonality;
       return {
-        localizationKey: obj.name,
-        iconPath: obj.icon_path,
+        localizationKey: pilotPersonality.name,
+        iconPath: pilotPersonality.icon_path,
       };
-
+    }
     default:
       throw new Error(`Unsupported parseObjectClass: ${obj.parseObjectClass}`);
   }
