@@ -18,14 +18,14 @@ export interface PageRefData {
 }
 
 // For each class, define a method to retrieve the PageRefData
-export function getPageRefData(obj: Module): PageRefData;
-export function getPageRefData(obj: PilotPersonality): PageRefData;
-export function getPageRefData(obj: PilotClass): PageRefData;
-export function getPageRefData(obj: PilotTalent): PageRefData;
-export function getPageRefData(obj: PilotTalentType): PageRefData;
-export function getPageRefData(obj: PilotType): PageRefData;
-export function getPageRefData(obj: Pilot): PageRefData;
-export function getPageRefData(obj: ParseObject): PageRefData; // Here just for type support. Better than an overload that requires specifying the name of every class.
+export function getPageRefData(_obj: Module): PageRefData;
+export function getPageRefData(_obj: PilotPersonality): PageRefData;
+export function getPageRefData(_obj: PilotClass): PageRefData;
+export function getPageRefData(_obj: PilotTalent): PageRefData;
+export function getPageRefData(_obj: PilotTalentType): PageRefData;
+export function getPageRefData(_obj: PilotType): PageRefData;
+export function getPageRefData(_obj: Pilot): PageRefData;
+export function getPageRefData(_obj: ParseObject): PageRefData; // Here just for type support. Better than an overload that requires specifying the name of every class.
 
 export function getPageRefData(
   obj: ParseObject

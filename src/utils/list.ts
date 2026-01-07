@@ -50,7 +50,7 @@ export function groupBy<T>(
  */
 export function sortGroups<T>(
   groups: Map<string, [string, T][]>,
-  compareFn?: (a: string, b: string) => number
+  compareFn?: (_a: string, _b: string) => number
 ): [string, [string, T][]][] {
   const entries = Array.from(groups.entries());
   

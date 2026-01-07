@@ -1,8 +1,10 @@
+// All versions, plus conveniently a specific version for that page
 export interface VersionsData {
-  versions: Record<string, any>;
+  versions: Record<string, VersionInfo>;
   versionInfo: VersionInfo;
 }
 
+// Metadata for a specific version
 export interface VersionInfo {
   title: string;
   date_utc: string;
