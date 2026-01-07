@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { prepareObjectList } from '../../src/utils/list';
-import type { ParseObject } from '../../src/types/parse_object';
+import { prepareObjectList } from '../../../src/utils/list';
+import type { ParseObject } from '../../../src/types/parse_object';
 
 describe('prepareObjectList', () => {
   it('should return all entries when no options provided', () => {
