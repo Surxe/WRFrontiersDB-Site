@@ -22,7 +22,7 @@ const entries = prepareObjectList(pilotClasses, { prodReadyOnly: false });
     <p>Showing pilot classes from latest version: {versions[latestVersion].title} ({latestVersion})</p>
 
     <ul>
-      {entries.map(([id, pilotClass]) => (
+      {entries.map(([_id, pilotClass]) => (
         <li>
           <PageRef 
             obj={pilotClass} 

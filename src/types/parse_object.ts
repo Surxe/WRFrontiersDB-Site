@@ -6,5 +6,5 @@ export interface StaticPathsResult {
 export interface ParseObject {
   id: string;
   production_status?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }

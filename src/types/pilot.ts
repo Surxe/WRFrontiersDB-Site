@@ -63,10 +63,10 @@ export interface PilotTalent extends ParseObject {
                 module_tag_id: string; // TODO
             }[];
         }
-        [key: string]: any;
+        [key: string]: unknown;
     }[];
     default_properties?: {
-        [key: string]: any;
+        [key: string]: unknown;
     };
     
     // Enriched properties (populated at build time)

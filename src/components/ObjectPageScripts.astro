@@ -11,7 +11,7 @@ const { version, objectData, jsFileName } = Astro.props;
 <!--Common astro scripts for all ParseObject pages-->
 
 <!--The object's data, for use by js-->
-<script type="application/json" id="object-data" set:html={JSON.stringify(objectData)}></script>
+<script type="application/json" id="object-data" set:text={JSON.stringify(objectData)}></script>
 
 <!--Initialize localization on all the localizeable elements-->
 <script type="module" define:vars={{ version }}>

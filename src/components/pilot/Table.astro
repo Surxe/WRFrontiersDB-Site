@@ -28,7 +28,7 @@ const {
     </tr>
   </thead>
   <tbody>
-    {pilots.map(([id, pilot]) => {
+    {pilots.map(([_id, pilot]) => {
       // Calculate max talents across all levels for this pilot
       const maxTalents = Math.max(
         ...pilot.levels.map(level => level?.talents?.length || 0)

@@ -1,9 +1,9 @@
 ---
 import fs from 'fs';
 import path from 'path';
+import process from 'node:process';
 import Page from '../components/Page.astro';
-
-import type { VersionInfo } from '../utils/parse_object';
+import type { VersionInfo } from '../types/version';
 
 // Load version metadata
 const versionsPath = path.join(process.cwd(), 'WRFrontiersDB-Data/versions.json');

@@ -1,7 +1,6 @@
 ---
 import BackToHome from '../components/BackToHome.astro';
 import ParseObjectListPage from '../components/ParseObjectListPage.astro';
-import LocalizedText from '../components/LocalizedText.astro';
 import { getAllVersions, getParseObjects } from '../utils/parse_object';
 import { prepareObjectList, groupBy, sortGroups } from '../utils/list';
 import type { Module } from '../types/module';
@@ -32,7 +31,7 @@ const sortedGroups = sortGroups(grouped);
       <section>
         <h2>{moduleTypeId}</h2>
         <ul>
-          {moduleEntries.map(([id, module]) => (
+          {moduleEntries.map(([_id, module]) => (
             <li>
               <PageRef
                 obj={module} 

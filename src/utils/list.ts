@@ -7,7 +7,7 @@ export function prepareObjectList<T extends ParseObject>(
   objects: Record<string, T>,
   options: {
     prodReadyOnly?: boolean;
-    sortBy?: (a: [string, T], b: [string, T]) => number;
+    sortBy?: (_a: [string, T], _b: [string, T]) => number;
   } = {}
 ) {
   const { prodReadyOnly = false, sortBy } = options;
@@ -30,7 +30,7 @@ export function prepareObjectList<T extends ParseObject>(
  */
 export function groupBy<T>(
   items: [string, T][],
-  keyExtractor: (item: [string, T]) => string
+  keyExtractor: (_item: [string, T]) => string
 ): Map<string, [string, T][]> {
   const groups = new Map<string, [string, T][]>();
   
