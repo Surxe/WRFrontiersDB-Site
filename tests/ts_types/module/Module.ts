@@ -2,14 +2,32 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import type { Module } from '../../../src/types/module';
+import type { ParseObject } from '../../../src/types/parse_object';
 
 describe('Module interface vs data structure', () => {
   const dataPath = join(process.cwd(), 'WRFrontiersDB-Data', 'archive', '2025-12-09', 'Objects', 'Module.json');
   const rawData = JSON.parse(readFileSync(dataPath, 'utf-8'));
   const realObjects = Object.values(rawData) as Record<string, unknown>[];
 
-  // Fields inherited from ParseObject that may not be in all object types
-  const inheritedFields = ['production_status', 'parseObjectClass'];
+  // Dynamically determine inherited fields from ParseObject interface
+  const parseObjectPath = join(process.cwd(), 'src', 'types', 'parse_object.ts');
+  const parseObjectSource = readFileSync(parseObjectPath, 'utf-8');
+  
+  // Extract fields from ParseObject interface (excluding 'id' since it's required in child types)
+  const parseObjectMatch = parseObjectSource.match(/export interface ParseObject \{([^}]+)\}/);
+  const inheritedFields: string[] = [];
+  
+  if (parseObjectMatch) {
+    const interfaceBody = parseObjectMatch[1];
+    // Match field names (excluding indexer signature and 'id')
+    const fieldMatches = interfaceBody.matchAll(/(\w+)(\?)?:/g);
+    for (const match of fieldMatches) {
+      const fieldName = match[1];
+      if (fieldName !== 'id') {
+        inheritedFields.push(fieldName);
+      }
+    }
+  }
 
   // Dynamically determine which fields are required vs optional
   const allFieldsInData = new Set<string>();
