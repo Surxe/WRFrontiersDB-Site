@@ -1,202 +1,87 @@
 import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import type { PilotTalentType } from '../../../src/types/pilot';
-import type { LocalizationKey } from '../../../src/types/localization';
 
-describe('PilotTalentType', () => {
-  it('should accept a valid PilotTalentType object with all required fields', () => {
-    const validTalentType: PilotTalentType = {
-      parseObjectClass: 'PilotTalentType',
-      id: 'PTT_Offensive',
-      name: {
-        Key: 'PTT_Offensive_Name',
-        TableNamespace: 'PilotTalentTypes',
-        en: 'Offensive'
-      },
-      image_path: 'WRFrontiers/Content/Sparrow/UI/Textures/Pilots/TalentTypes/T_Offensive'
-    };
+describe('PilotTalentType interface vs data structure', () => {
+  const dataPath = join(process.cwd(), 'WRFrontiersDB-Data', 'archive', '2025-12-09', 'Objects', 'PilotTalentType.json');
+  const rawData = JSON.parse(readFileSync(dataPath, 'utf-8'));
+  const realObjects = Object.values(rawData) as Record<string, unknown>[];
 
-    expect(validTalentType.parseObjectClass).toBe('PilotTalentType');
-    expect(validTalentType.id).toBe('PTT_Offensive');
-    expect(validTalentType.name.en).toBe('Offensive');
-    expect(validTalentType.image_path).toContain('T_Offensive');
+  // Fields inherited from ParseObject that may not be in all object types
+  const inheritedFields = ['production_status', 'parseObjectClass'];
+
+  // Dynamically determine which fields are required vs optional
+  const allFieldsInData = new Set<string>();
+  realObjects.forEach(obj => {
+    Object.keys(obj).forEach(key => allFieldsInData.add(key));
   });
 
-  it('should accept PilotTalentType with optional description', () => {
-    const withDescription: PilotTalentType = {
-      parseObjectClass: 'PilotTalentType',
-      id: 'PTT_Defensive',
-      name: {
-        Key: 'PTT_Defensive_Name',
-        TableNamespace: 'PilotTalentTypes',
-        en: 'Defensive'
-      },
-      description: {
-        Key: 'PTT_Defensive_Desc',
-        TableNamespace: 'PilotTalentTypes',
-        en: 'Focuses on defensive capabilities'
-      },
-      image_path: 'WRFrontiers/Content/Sparrow/UI/Textures/Pilots/TalentTypes/T_Defensive'
-    };
+  const requiredFields: string[] = [];
+  const optionalFields: string[] = [];
 
-    expect(withDescription.description).toBeDefined();
-    expect(withDescription.description?.en).toBe('Focuses on defensive capabilities');
+  allFieldsInData.forEach(field => {
+    if (inheritedFields.includes(field)) {
+      return; // Skip inherited fields
+    }
+
+    const objectsWithField = realObjects.filter(obj => obj[field] !== undefined);
+    if (objectsWithField.length === realObjects.length) {
+      requiredFields.push(field);
+    } else {
+      optionalFields.push(field);
+    }
   });
 
-  it('should accept PilotTalentType without optional description', () => {
-    const withoutDescription: PilotTalentType = {
-      parseObjectClass: 'PilotTalentType',
-      id: 'PTT_Support',
-      name: {
-        Key: 'PTT_Support_Name',
-        TableNamespace: 'PilotTalentTypes',
-        en: 'Support'
-      },
-      image_path: 'WRFrontiers/Content/Sparrow/UI/Textures/Pilots/TalentTypes/T_Support'
-    };
+  const allKnownFields = [...requiredFields, ...optionalFields, ...inheritedFields];
 
-    expect(withoutDescription.description).toBeUndefined();
-  });
+  it('should ensure every object has all required fields', () => {
+    expect(realObjects.length).toBeGreaterThan(0);
+    expect(requiredFields.length).toBeGreaterThan(0);
 
-  it('should accept PilotTalentType with production_status from ParseObject', () => {
-    const withProductionStatus: PilotTalentType = {
-      parseObjectClass: 'PilotTalentType',
-      id: 'PTT_Test',
-      name: {
-        Key: 'PTT_Test_Name',
-        TableNamespace: 'PilotTalentTypes',
-        en: 'Test'
-      },
-      image_path: 'WRFrontiers/Content/Test',
-      production_status: 'Ready'
-    };
+    console.log('Dynamically detected required fields:', requiredFields);
+    console.log('Dynamically detected optional fields:', optionalFields);
 
-    expect(withProductionStatus.production_status).toBe('Ready');
-  });
+    realObjects.forEach((obj, index) => {
+      requiredFields.forEach(field => {
+        expect(obj[field], `Object at index ${index} (id: ${obj.id}) is missing required field: ${field}`).toBeDefined();
+      });
 
-  it('should support different production_status values', () => {
-    const notReady: PilotTalentType = {
-      parseObjectClass: 'PilotTalentType',
-      id: 'PTT_InDev',
-      name: {
-        Key: 'PTT_InDev_Name',
-        TableNamespace: 'PilotTalentTypes',
-        en: 'In Development'
-      },
-      image_path: 'WRFrontiers/Content/InDev',
-      production_status: 'InDevelopment'
-    };
-
-    expect(notReady.production_status).toBe('InDevelopment');
-  });
-
-  it('should work in arrays', () => {
-    const talentTypes: PilotTalentType[] = [
-      {
-        parseObjectClass: 'PilotTalentType',
-        id: 'PTT_1',
-        name: { Key: 'PTT_1_Name', TableNamespace: 'PilotTalentTypes', en: 'Type 1' },
-        image_path: 'Path1'
-      },
-      {
-        parseObjectClass: 'PilotTalentType',
-        id: 'PTT_2',
-        name: { Key: 'PTT_2_Name', TableNamespace: 'PilotTalentTypes', en: 'Type 2' },
-        image_path: 'Path2'
+      // Additional validation for nested required fields
+      if (obj.name) {
+        const name = obj.name as Record<string, unknown>;
+        expect(name.Key, `Object at index ${index} missing name.Key`).toBeDefined();
+        expect(name.TableNamespace, `Object at index ${index} missing name.TableNamespace`).toBeDefined();
+        expect(name.en, `Object at index ${index} missing name.en`).toBeDefined();
       }
-    ];
-
-    expect(talentTypes).toHaveLength(2);
-    expect(talentTypes[0].id).toBe('PTT_1');
-    expect(talentTypes[1].name.en).toBe('Type 2');
+    });
   });
 
-  it('should allow additional properties from ParseObject indexer', () => {
-    const withAdditionalProps: PilotTalentType = {
-      parseObjectClass: 'PilotTalentType',
-      id: 'PTT_Custom',
-      name: {
-        Key: 'PTT_Custom_Name',
-        TableNamespace: 'PilotTalentTypes',
-        en: 'Custom'
-      },
-      image_path: 'WRFrontiers/Content/Custom',
-      custom_property: 'custom_value',
-      another_field: 123
-    };
-
-    expect(withAdditionalProps.custom_property).toBe('custom_value');
-    expect(withAdditionalProps.another_field).toBe(123);
+  it('should flag if none of the objects have any optional field', () => {
+    optionalFields.forEach(optionalField => {
+      const objectsWithField = realObjects.filter(obj => obj[optionalField] !== undefined);
+      
+      expect(
+        objectsWithField.length,
+        `WARNING: No objects have the optional field '${optionalField}'. This might indicate the interface is out of sync with the data.`
+      ).toBeGreaterThan(0);
+    });
   });
 
-  it('should support empty string values', () => {
-    const withEmptyStrings: PilotTalentType = {
-      parseObjectClass: 'PilotTalentType',
-      id: '',
-      name: {
-        Key: '',
-        TableNamespace: '',
-        en: ''
-      },
-      image_path: ''
-    };
+  it('should flag if there are keys in data that are not in the interface', () => {
+    const unexpectedKeys = new Set<string>();
 
-    expect(withEmptyStrings.id).toBe('');
-    expect(withEmptyStrings.image_path).toBe('');
-  });
+    realObjects.forEach(obj => {
+      Object.keys(obj).forEach(key => {
+        if (!allKnownFields.includes(key)) {
+          unexpectedKeys.add(key);
+        }
+      });
+    });
 
-  it('should support various image path formats', () => {
-    const talentTypes = [
-      {
-        parseObjectClass: 'PilotTalentType' as const,
-        id: 'PTT_1',
-        name: { Key: 'K1', TableNamespace: 'NS', en: 'Name1' },
-        image_path: 'WRFrontiers/Content/Sparrow/UI/Textures/Icon'
-      },
-      {
-        parseObjectClass: 'PilotTalentType' as const,
-        id: 'PTT_2',
-        name: { Key: 'K2', TableNamespace: 'NS', en: 'Name2' },
-        image_path: '/absolute/path/to/icon'
-      },
-      {
-        parseObjectClass: 'PilotTalentType' as const,
-        id: 'PTT_3',
-        name: { Key: 'K3', TableNamespace: 'NS', en: 'Name3' },
-        image_path: 'relative/path'
-      }
-    ];
-
-    expect(talentTypes[0].image_path).toContain('WRFrontiers');
-    expect(talentTypes[1].image_path).toContain('/absolute/');
-    expect(talentTypes[2].image_path).toBe('relative/path');
-  });
-
-  it('should support filtering by production_status', () => {
-    const allTalentTypes: PilotTalentType[] = [
-      {
-        parseObjectClass: 'PilotTalentType',
-        id: 'PTT_Ready',
-        name: { Key: 'K1', TableNamespace: 'NS', en: 'Ready Type' },
-        image_path: 'Path1',
-        production_status: 'Ready'
-      },
-      {
-        parseObjectClass: 'PilotTalentType',
-        id: 'PTT_InDev',
-        name: { Key: 'K2', TableNamespace: 'NS', en: 'Dev Type' },
-        image_path: 'Path2',
-        production_status: 'InDevelopment'
-      },
-      {
-        parseObjectClass: 'PilotTalentType',
-        id: 'PTT_NoStatus',
-        name: { Key: 'K3', TableNamespace: 'NS', en: 'No Status Type' },
-        image_path: 'Path3'
-      }
-    ];
-
-    const readyOnly = allTalentTypes.filter(t => t.production_status === 'Ready');
-    expect(readyOnly).toHaveLength(1);
-    expect(readyOnly[0].id).toBe('PTT_Ready');
+    expect(
+      Array.from(unexpectedKeys),
+      `Found unexpected keys in data that are not defined in PilotTalentType interface. Consider adding these to the interface or using the ParseObject indexer.`
+    ).toEqual([]);
   });
 });

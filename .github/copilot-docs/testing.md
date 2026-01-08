@@ -44,10 +44,15 @@ npx vitest run --coverage
 
 # Run specific test file
 npx vitest tests/ts_utils/list/prepareObjectList.ts
-
-# Run with UI
-npx vitest --ui
 ```
+
+## Tests for Typescript interfaces
+Tests for typescript interfaces should read real data and compare to the interface with the following 3 tests:
+* Every object should have every required field (except parseObjectClass and production_status which are inherited from the ParseObject interface)
+* For each optional field, at least 1 object should have it
+* Each key in the object should be a field in the interface
+
+Required and optional fields should be determined dynamically.
 
 ## Best Practices
 
