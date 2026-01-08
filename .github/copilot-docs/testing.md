@@ -33,15 +33,6 @@ tests/
 ## Running Tests
 
 ```bash
-# Run all tests in watch mode
-npx vitest
-
-# Run once
-npx vitest run
-
-# Run with coverage
-npx vitest run --coverage
-
 # Run specific test file
 npx vitest tests/ts_utils/list/prepareObjectList.ts
 ```
@@ -54,17 +45,12 @@ Tests for typescript interfaces should read real data and compare to the interfa
 
 Required and optional fields should be determined dynamically.
 
+**IMPORTANT: While adding a test for an interface, if the interface does not accurately represent the Data, the interface should be updated instead of modifying the test to work around the innaccurate interface.**
+
 ## Best Practices
 
 1. **Test behavior, not implementation**: Focus on inputs/outputs
-2. **Keep tests isolated**: Don't depend on external data files when possible
+2. **Keep tests isolated**: Don't depend on external data files when possible, except for interface tests
 3. **Use descriptive test names**: `it('should filter non-Ready objects when prodReadyOnly is true')`
 4. **Test edge cases**: Empty inputs, missing fields, invalid data
 5. **Mock external dependencies**: File system, network requests
-6. **Coverage targets**: Aim for >80% on utility functions
-
-## VS Code Integration
-
-Install the Vitest extension for VS Code:
-- Extension ID: `vitest.explorer`
-- Features: Inline test running, debugging, coverage visualization
