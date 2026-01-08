@@ -27,7 +27,7 @@ tests/
 
 ### Naming Convention
 
-- Test files: `{fileName}/{functionName}.ts`
+- Test files: `{fileName}/{functionOrInterfaceName}.ts`
 - Place in `tests/` subdirectory (not next to source files)
 
 ## Running Tests

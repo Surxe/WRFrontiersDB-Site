@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { getParseObjects } from '../../src/utils/parse_object';
-import type { Module } from '../../src/types/module';
+import { getParseObjects } from '../../../src/utils/parse_object';
+import type { Module } from '../../../src/types/module';
 
 describe('Module interface', () => {
   const testVersion = '2025-12-09';

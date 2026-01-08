@@ -48,4 +48,4 @@ Example: [modules/[id]/[version].astro](../../src/pages/modules/[id]/[version].a
 - **Page URLs**: Properly pluralized (e.g., `/modules`, `/pilots`, `/pilot_personalities`)
 - **File Names**: Snake case for multi-word pages (e.g., `pilot_personalities.astro`)
 - **Component Names**: PascalCase (e.g., `ParseObjectList.astro`)
-- **Test Files**: `{fileName}/{functionName}.ts` in `tests/` subdirectories
+- **Test Files**: `{fileName}/{functionOrInterfaceName}.ts` in `tests/` subdirectories
