@@ -36,7 +36,7 @@ const grouped = groupBy(entries, ([_, talent]) =>
 const sortedGroups = sortGroups(grouped, (a, b) => Number(a) - Number(b));
 ---
 
-<ParseObjectListPage title="Pilot Talents">
+<ParseObjectListPage title="Pilot Talents" version={latestVersion}>
   <BackToHome />
   <h1>Pilot Talents</h1>
 

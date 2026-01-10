@@ -1,0 +1,20 @@
+---
+export interface Props {
+  version: string;
+  jsFileName?: string;
+}
+
+const { version, jsFileName } = Astro.props;
+---
+
+<!--Common astro scripts for all ParseObjectList pages--><!--Initialize localization on all the localizeable elements-->
+<script type="module" define:vars={{ version }}>
+  import { initializeLocalization } from '/WRFrontiersDB-Site/js/localization.js';
+  initializeLocalization(version);
+</script>
+
+<!--Load the specific JS file for this list page, only if jsFileName is provided-->{
+  jsFileName && (
+    <script is:inline src={`/WRFrontiersDB-Site/js/${jsFileName}`} />
+  )
+}
