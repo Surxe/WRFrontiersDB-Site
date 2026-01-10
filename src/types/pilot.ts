@@ -98,7 +98,7 @@ export interface Pilot extends ParseObject {
     talent_type_id: string;
     talents: string[];
     reputation_cost?: number;
-    upgrade_cost: {
+    upgrade_cost?: {
       currency_id: string; // TODO
       amount: number;
     }; // Not used in game
