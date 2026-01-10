@@ -37,14 +37,14 @@ export interface PilotTalent extends ParseObject {
   parseObjectClass: 'PilotTalent';
   name: LocalizationKey;
   description: LocalizationKey;
-  ui_description: LocalizationKey;
-  short_ui_description: LocalizationKey;
+  ui_description?: LocalizationKey;
+  short_ui_description?: LocalizationKey;
   image_path: string;
   stats: {
     stat_id: string; // TODO
     value: number;
   }[];
-  buffs: {
+  buffs?: {
     Modifier?: number;
     Modifiers?: {
       what: string;
@@ -65,6 +65,12 @@ export interface PilotTalent extends ParseObject {
     };
     [key: string]: unknown;
   }[];
+  target_buffs?: {
+    [key: string]: unknown;
+  }[];
+  cooldown?: number;
+  reactivation_policy?: string;
+  buff_class?: string;
   default_properties?: {
     [key: string]: unknown;
   };
