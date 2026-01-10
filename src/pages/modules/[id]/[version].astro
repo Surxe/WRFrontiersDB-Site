@@ -68,11 +68,9 @@ const defaultName = getDefaultString(module.name) || module.id;
   }
   <p>Version: {versionInfo?.title || version} ({version})</p>
   <p>Language: <span id="current-lang">en</span></p>
-  <p>Rarity: 
-    <PageRef
-      obj={rarity}
-      version={version}
-    />
+  <p>
+    Rarity:
+    <PageRef obj={rarity} version={version} />
   </p>
 
   <div id="stats">stats</div>
