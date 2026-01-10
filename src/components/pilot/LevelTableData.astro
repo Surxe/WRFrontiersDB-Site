@@ -16,23 +16,15 @@ interface Props {
 
 /*
 Create table data cells that look like this for the respective levels:
-Level 1: (column header will contain the Type)
+Level 1-4:
 Talent1
 Talent2
 Talent3
 
-Level 2-4:
-        | Talent1
-Type1   | Talent2 (rowspan=maxTalents)
-        | Talent3
-
-Level 5: (column header will contain the Type)
-(blank)
-        | Talent1 (rowspan=maxTalents)
-(blank)
+Level 5: 
+Talent1 (rowspan=maxTalents)
 
 To summarize: Levels 1-4 have 3 talents, level 5 has 1 talent. 
-    Level 1 and 5 do not show the Type column. Levels 2-4 show the Type column only on the first talent row, with rowspan=maxTalents.
 */
 
 const { levelIndex, level, talentIndex, maxTalents, pilotTalents, version } =

@@ -4,119 +4,57 @@ Before answering any question, always say 'I have read the copilot instructions 
 
 ## Project Overview
 
-Static Astro site displaying War Robots Frontiers game data from versioned JSON archives. The site builds static pages for game objects such as (modules, pilots, talents) across multiple game versions with client-side localization.
+Static Astro site displaying War Robots Frontiers game data from versioned JSON archives. The site builds static pages for game objects (modules, pilots, talents) across multiple game versions with client-side localization.
 
-## Architecture
+## Quick Reference
 
-### Data Layer (WRFrontiersDB-Data/)
+**Detailed Documentation**:
 
-- **External data source**: Separate repository as subfolder containing parsed game data
-- **Structure**: `archive/{version}/Objects/{ParseObject}.json` and `archive/{version}/Localization/{lang}.json`
-- **versions.json**: Master version registry with metadata (title, date, manifest_id, patch_notes_url, is_season_release)
-- **Data is read-only**: Site consumes but never modifies WRFrontiersDB-Data files
+- [Architecture](copilot-docs/architecture.md) - Data layer, SSG, build vs runtime
+- [Conventions](copilot-docs/conventions.md) - Parse objects, localization, file organization
+- [Common Tasks](copilot-docs/common-tasks.md) - Step-by-step workflows
+- [Testing](copilot-docs/testing.md) - Vitest setup, patterns, and guidelines
 
-### Static Site Generation
+## Critical Rules
 
-- **Framework**: Astro 5.x with static output (`output: 'static'`)
-- **Base path**: `/WRFrontiersDB-Site/` for GitHub Pages deployment at `https://Surxe.github.io/WRFrontiersDB-Site/`
-- **Always use full base path** in all internal links, asset references, and fetch URLs
-- **URL pattern**: `/{parseObject}/{id}/{version}` (e.g., `/modules/MOD_ArmorShield/2025-12-09`)
+**Always follow these rules**:
 
-### Build-time vs Runtime
+1. **Base path is mandatory**: All links and fetches MUST include `/WRFrontiersDB-Site/` prefix for GitHub Pages
+2. **Production filtering**: Only objects with `production_status === 'Ready'` appear in production lists
+3. **No TypeScript in public/js**: Client-side scripts must be plain JavaScript with JSDoc
+4. **Localization is version-specific**: Each game version has its own localization files
+5. **Tests go in tests/ directory**: Never place test files next to source files
 
-**Build-time (Node.js)**:
+## Tech Stack
 
-- `src/utils/parse_object.ts`: Loads JSON from filesystem using `fs` and `path`
-- `generateObjectStaticPaths()`: Creates all static routes during build
-- Type definitions in `src/types/`
+- **Framework**: Astro 5.x (static output)
+- **Language**: TypeScript (build-time), JavaScript (runtime)
+- **Testing**: Vitest
 
-**Runtime (Browser)**:
+## File Structure
 
-- Client-side localization lazy-loaded on language change
-- `public/js/*.js`: Plain JavaScript modules (not TypeScript)
-- Fetches localization JSON from `/WRFrontiersDB-Site/WRFrontiersDB-Data/archive/{version}/Localization/{lang}.json`
-
-## Key Conventions
-
-### Parse Object Pages Pattern
-
-See more in [feature_docs.md](feature_docs.md)'s "Parse Objects" section.
-**List Page** (e.g., [modules.astro](src/pages/modules.astro)):
-
-- Uses `ParseObjectListPage` wrapper component
-- Shows `ParseObjectList` component with latest version data
-- `prodReadyOnly={true}`: Filters objects where `production_status !== 'Ready'`
-
-**Detail Page** (e.g., [modules/[id]/[version].astro](src/pages/modules/[id]/[version].astro)):
-
-- Dynamic routes with `getStaticPaths()` calling `generateObjectStaticPaths()`
-- Uses `ParseObjectPage` wrapper
-- Props: `{ id, version }` from params, `{ objectVersions }` from props
-- Shows object data, version info, and `VersionList` component for navigating versions
-
-### Localization System
-
-See more in [feature_docs.md](feature_docs.md)'s "Localization" section.
-**Server-side (build)**:
-
-- Localization keys stored in JSON objects: `{ Key: string, TableNamespace: string, en: string }`
-- `en` value used as default/fallback text in SSR HTML
-
-**Client-side (runtime)**:
-
-- `LocalizedText` component renders elements with `data-loc-key` and `data-loc-namespace` attributes
-- Language selector updates `localStorage.selectedLang` and triggers page reload
-- `initializeLocalization(version)` in `public/js/localization.js` handles loading and updating text
-- Uses two-level lookup: `locData[namespace][key]`
-
-### File Organization
-
-- **Pages**: `src/pages/{parseObject}.astro` (list) and `src/pages/{parseObject}/[id]/[version].astro` (detail)
-- **Components**: Reusable UI in `src/components/`
-- **Utils**: Build-time helpers in `src/utils/` (TypeScript, Node.js APIs)
-- **Public JS**: Client-side scripts in `public/js/` (plain JavaScript, browser APIs)
-- **Types**: TypeScript interfaces in `src/types/` (e.g., `Module`, `LocalizationKey`)
-
-## Common Tasks
-
-### Adding a New Object Type
-
-1. Study JSON structure in `WRFrontiersDB-Data/archive/{version}/Objects/{parseObject}.json`
-1. Create type interface in `src/types/{parseObject}.ts` (e.g., `export interface Weapon { ... }`)
-1. Create list page: `src/pages/{parseObject}s.astro` (properly pluralized) using `ParseObjectList`
-1. Create detail page: `src/pages/{parseObject}s/[id]/[version].astro` with `getStaticPaths()`
-1. Call `generateObjectStaticPaths("Objects/{parseObject}.json", true)`
-1. Add link to homepage ([index.astro](src/pages/index.astro))
-
-### Working with Icons/Textures
-
-See more in [feature_docs.md](feature_docs.md)'s "Textures" section.
-
-- Texture paths in objects: `"inventory_icon_path": "WRFrontiers/Content/Sparrow/UI/Textures/Abilities/T_Icon"`
-- Physical files: `WRFrontiersDB-Data/textures/WRFrontiers/Content/.../T_Icon.png`
-- Use `Icon` component with `iconPath` prop (no `.png` extension)
-
-### Client-side Object Data
-
-Page-specific scripts access object data via:
-
-```javascript
-const el = document.getElementById('object-data');
-const objectData = JSON.parse(el.textContent);
+```
+src/
+  pages/          # Astro pages (list and detail views)
+  components/     # Reusable UI components
+  utils/          # Build-time helpers (TypeScript + Node.js)
+  types/          # TypeScript interfaces
+public/
+  js/             # Client-side scripts (plain JavaScript)
+tests/            # Test files organized by type
+  ts_utils/       # Tests for src/utils/*.ts
+  components/     # Tests for components
+  pages/          # Tests for page logic
+  js/             # Tests for public/js/*.js
+WRFrontiersDB-Data/  # External data repository (read-only)
+  archive/        # Versioned game data
+  versions.json   # Version registry
 ```
 
-Injected by `ObjectPageScripts` component using `<script type="application/json">`
+## Quick Commands
 
-## Development Commands
-
-- `npm run dev`: Dev server at `localhost:4321` (must use full base paths for links to work)
-- `npm run build`: Static build to `./dist/`
-- `npm run preview`: Preview built site locally
-
-## Important Notes
-
-- **All links/fetches must include `/WRFrontiersDB-Site/` prefix** - this is non-negotiable for GitHub Pages
-- **Production status filter**: Only objects with `production_status === 'Ready'` appear in production lists
-- **Version ordering**: `versions.json` is ordered newest-first; `Object.keys(versions)[0]` is latest
-- **No TypeScript in public/js**: Client-side scripts are plain JavaScript with JSDoc for types
-- **Localization is version-specific**: Each game version has its own localization files
+```bash
+npm run dev      # Start dev server
+npx vitest       # Run tests in watch mode
+npx vitest run   # Run tests once
+```

@@ -11,7 +11,7 @@ export interface Module extends ParseObject {
     mount: string;
   }>;
   module_tags_ids?: string[];
-  name?: LocalizationKey;
+  name?: LocalizationKey | { InvariantString: string }; // TODO InvariantString support
   description?: LocalizationKey;
   text_tags?: LocalizationKey[];
   module_scalars: {
@@ -19,8 +19,8 @@ export interface Module extends ParseObject {
     primary_stat_id?: string;
     secondary_stat_id?: string;
     levels?: {
-      constants: Record<string, number>;
-      variables: Record<string, number>;
+      constants: Record<string, unknown>;
+      variables?: Array<Record<string, unknown>>;
     };
     module_name?: string;
   };
