@@ -209,7 +209,9 @@ describe('PilotTalent interface', () => {
 
     it('should have valid LocalizationKey structure for short_ui_description when present', () => {
       pilotTalentArray.forEach((talent) => {
-        if (Object.prototype.hasOwnProperty.call(talent, 'short_ui_description')) {
+        if (
+          Object.prototype.hasOwnProperty.call(talent, 'short_ui_description')
+        ) {
           expect(talent.short_ui_description).toBeDefined();
           expect(talent.short_ui_description.Key).toBeDefined();
           expect(talent.short_ui_description.TableNamespace).toBeDefined();
@@ -305,7 +307,9 @@ describe('PilotTalent interface', () => {
       pilotTalentArray.forEach((talent) => {
         if (Object.prototype.hasOwnProperty.call(talent, 'buffs')) {
           talent.buffs.forEach((buff: unknown) => {
-            if (Object.prototype.hasOwnProperty.call(buff, 'AbilitySelectors')) {
+            if (
+              Object.prototype.hasOwnProperty.call(buff, 'AbilitySelectors')
+            ) {
               expect(Array.isArray(buff.AbilitySelectors)).toBe(true);
               buff.AbilitySelectors.forEach((selector: unknown) => {
                 expect(selector).toHaveProperty('allowed_placement_types');
@@ -313,7 +317,9 @@ describe('PilotTalent interface', () => {
                   true
                 );
 
-                if (Object.prototype.hasOwnProperty.call(selector, 'module_tags')) {
+                if (
+                  Object.prototype.hasOwnProperty.call(selector, 'module_tags')
+                ) {
                   expect(Array.isArray(selector.module_tags)).toBe(true);
                   selector.module_tags.forEach((tag: unknown) => {
                     expect(tag).toHaveProperty('module_tag_id');
@@ -331,7 +337,9 @@ describe('PilotTalent interface', () => {
       pilotTalentArray.forEach((talent) => {
         if (Object.prototype.hasOwnProperty.call(talent, 'buffs')) {
           talent.buffs.forEach((buff: unknown) => {
-            if (Object.prototype.hasOwnProperty.call(buff, 'module_tag_selector')) {
+            if (
+              Object.prototype.hasOwnProperty.call(buff, 'module_tag_selector')
+            ) {
               expect(buff.module_tag_selector).toHaveProperty('list_operator');
               expect(buff.module_tag_selector).toHaveProperty('module_tags');
               expect(typeof buff.module_tag_selector.list_operator).toBe(
@@ -384,8 +392,10 @@ describe('PilotTalent interface', () => {
     it('should have buffs or target_buffs in most objects', () => {
       const withBuffsOrTargetBuffs = pilotTalentArray.filter(
         (t) =>
-          (Object.prototype.hasOwnProperty.call(t, 'buffs') && t.buffs.length > 0) ||
-          (Object.prototype.hasOwnProperty.call(t, 'target_buffs') && t.target_buffs.length > 0)
+          (Object.prototype.hasOwnProperty.call(t, 'buffs') &&
+            t.buffs.length > 0) ||
+          (Object.prototype.hasOwnProperty.call(t, 'target_buffs') &&
+            t.target_buffs.length > 0)
       );
       // Most talents should have buffs or target_buffs
       expect(withBuffsOrTargetBuffs.length).toBeGreaterThan(

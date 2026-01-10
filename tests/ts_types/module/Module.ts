@@ -100,10 +100,15 @@ describe('Module interface', () => {
     });
 
     it('should have at least one object with "name" field', () => {
-      const withName = moduleArray.filter((m) => Object.prototype.hasOwnProperty.call(m, 'name'));
+      const withName = moduleArray.filter((m) =>
+        Object.prototype.hasOwnProperty.call(m, 'name')
+      );
       expect(withName.length).toBeGreaterThan(0);
       withName.forEach((module) => {
-        const name = (module as Record<string, unknown>).name as Record<string, unknown>;
+        const name = (module as Record<string, unknown>).name as Record<
+          string,
+          unknown
+        >;
         // name can be either LocalizationKey or { InvariantString: string }
         const isLocalizationKey =
           Object.prototype.hasOwnProperty.call(name, 'Key') &&
@@ -198,12 +203,14 @@ describe('Module interface', () => {
       moduleArray.forEach((module) => {
         const mod = module as Record<string, unknown>;
         expect(Array.isArray(mod.character_module_mounts)).toBe(true);
-        (mod.character_module_mounts as Record<string, unknown>[]).forEach((mount) => {
-          expect(mount).toHaveProperty('character_module_id');
-          expect(mount).toHaveProperty('mount');
-          expect(typeof mount.character_module_id).toBe('string');
-          expect(typeof mount.mount).toBe('string');
-        });
+        (mod.character_module_mounts as Record<string, unknown>[]).forEach(
+          (mount) => {
+            expect(mount).toHaveProperty('character_module_id');
+            expect(mount).toHaveProperty('mount');
+            expect(typeof mount.character_module_id).toBe('string');
+            expect(typeof mount.mount).toBe('string');
+          }
+        );
       });
     });
 
@@ -212,15 +219,17 @@ describe('Module interface', () => {
 
       moduleArray.forEach((module) => {
         const mod = module as Record<string, unknown>;
-        (mod.character_module_mounts as Record<string, unknown>[]).forEach((mount) => {
-          const actualFields = Object.keys(mount);
-          actualFields.forEach((field) => {
-            expect(
-              allowedMountFields.has(field),
-              `Unexpected mount field: ${field}`
-            ).toBe(true);
-          });
-        });
+        (mod.character_module_mounts as Record<string, unknown>[]).forEach(
+          (mount) => {
+            const actualFields = Object.keys(mount);
+            actualFields.forEach((field) => {
+              expect(
+                allowedMountFields.has(field),
+                `Unexpected mount field: ${field}`
+              ).toBe(true);
+            });
+          }
+        );
       });
     });
   });
@@ -257,7 +266,9 @@ describe('Module interface', () => {
       moduleArray.forEach((module) => {
         const mod = module as Record<string, unknown>;
         const scalars = mod.module_scalars as Record<string, unknown>;
-        if (Object.prototype.hasOwnProperty.call(scalars, 'secondary_stat_id')) {
+        if (
+          Object.prototype.hasOwnProperty.call(scalars, 'secondary_stat_id')
+        ) {
           expect(typeof scalars.secondary_stat_id).toBe('string');
         }
       });
@@ -273,9 +284,7 @@ describe('Module interface', () => {
           expect(typeof levels.constants).toBe('object');
           // variables is optional, but when present, it should be an array
           if (Object.prototype.hasOwnProperty.call(levels, 'variables')) {
-            expect(Array.isArray(levels.variables)).toBe(
-              true
-            );
+            expect(Array.isArray(levels.variables)).toBe(true);
           }
         }
       });
