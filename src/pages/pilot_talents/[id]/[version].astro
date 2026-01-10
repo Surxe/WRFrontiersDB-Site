@@ -62,20 +62,24 @@ const defaultName = getDefaultString(pilotTalent.name) || pilotTalent.id;
     localizationKey={pilotTalent.description}
   />
 
-  { pilotTalent.ui_description && 
-    <LocalizedText
-      id="pilot-talent-ui-desc"
-      tag="p"
-      localizationKey={pilotTalent.ui_description}
-    />
+  {
+    pilotTalent.ui_description && (
+      <LocalizedText
+        id="pilot-talent-ui-desc"
+        tag="p"
+        localizationKey={pilotTalent.ui_description}
+      />
+    )
   }
 
-  { pilotTalent.short_ui_description &&
-    <LocalizedText
-      id="pilot-talent-short-ui-desc"
-      tag="p"
-      localizationKey={pilotTalent.short_ui_description}
-    />
+  {
+    pilotTalent.short_ui_description && (
+      <LocalizedText
+        id="pilot-talent-short-ui-desc"
+        tag="p"
+        localizationKey={pilotTalent.short_ui_description}
+      />
+    )
   }
 
   <Icon iconPath={pilotTalent.image_path} altText={`${defaultName} icon`} />

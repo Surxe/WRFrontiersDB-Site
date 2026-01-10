@@ -1,6 +1,8 @@
-import type { LocalizationKey } from "../types/localization";
+import type { LocalizationKey } from '../types/localization';
 
-export function getDefaultString(localizationKey: LocalizationKey | undefined): string | undefined {
+export function getDefaultString(
+  localizationKey: LocalizationKey | undefined
+): string | undefined {
   if (!localizationKey) {
     return undefined;
   }

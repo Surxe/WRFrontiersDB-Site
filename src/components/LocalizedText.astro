@@ -23,13 +23,12 @@ necessary to localize it, as well as the default text while the localization laz
 
 If invariantString is provided, create a non-localization element with just the default text
 otherwise, create a localization element with the necessary data attributes.
--->
-{invariantString ? (
-  <Tag id={id}>
-    {invariantString}
-  </Tag>
-) : ( 
-  <Tag id={id} data-loc-key={key} data-loc-namespace={namespace}>
-    {defaultText}
-  </Tag>
-)}
+-->{
+  invariantString ? (
+    <Tag id={id}>{invariantString}</Tag>
+  ) : (
+    <Tag id={id} data-loc-key={key} data-loc-namespace={namespace}>
+      {defaultText}
+    </Tag>
+  )
+}

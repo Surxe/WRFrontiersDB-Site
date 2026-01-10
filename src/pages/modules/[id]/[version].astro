@@ -45,13 +45,15 @@ const defaultName = getDefaultString(module.name) || module.id;
 
   <Icon iconPath={module.inventory_icon_path} altText={`${defaultName} icon`} />
 
-  {module.description && (
-    <LocalizedText
-      id="module-desc"
-      tag="p"
-      localizationKey={module.description}
-    />
-  )}
+  {
+    module.description && (
+      <LocalizedText
+        id="module-desc"
+        tag="p"
+        localizationKey={module.description}
+      />
+    )
+  }
   <p>Version: {versionInfo?.title || version} ({version})</p>
   <p>Language: <span id="current-lang">en</span></p>
 
