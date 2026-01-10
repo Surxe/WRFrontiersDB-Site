@@ -1,5 +1,6 @@
 ---
-import type { Module } from '../../../types/module';
+import type { Module, ModuleRarity } from '../../../types/module';
+import type { Rarity } from '../../../types/rarity';
 import Icon from '../../../components/Icon.astro';
 import LocalizedText from '../../../components/LocalizedText.astro';
 import VersionList from '../../../components/VersionList.astro';
@@ -11,6 +12,7 @@ import {
   getVersionsData,
 } from '../../../utils/parse_object';
 import { getDefaultString } from '../../../utils/localization';
+import PageRef from '../../../components/PageRef.astro';
 
 export async function getStaticPaths() {
   return await generateObjectStaticPaths('Objects/Module.json', true);
@@ -20,6 +22,16 @@ const { id, version } = Astro.params;
 const { objectVersions } = Astro.props;
 
 const module = getParseObject<Module>(id, version, 'Objects/Module.json');
+const moduleRarity = getParseObject<ModuleRarity>(
+  module.module_rarity_id,
+  version,
+  'Objects/ModuleRarity.json'
+);
+const rarity = getParseObject<Rarity>(
+  moduleRarity.rarity_id,
+  version,
+  'Objects/Rarity.json'
+);
 
 if (!module.name) {
   throw new Error(`Module with id ${id} is missing name. 
@@ -56,6 +68,12 @@ const defaultName = getDefaultString(module.name) || module.id;
   }
   <p>Version: {versionInfo?.title || version} ({version})</p>
   <p>Language: <span id="current-lang">en</span></p>
+  <p>Rarity: 
+    <PageRef
+      obj={rarity}
+      version={version}
+    />
+  </p>
 
   <div id="stats">stats</div>
 
