@@ -4,7 +4,7 @@ import ParseObjectListPage from '../components/ParseObjectListPage.astro';
 import ParseObjectList from '../components/ParseObjectList.astro';
 import { getAllVersions } from '../utils/parse_object';
 
-const { versions, latestVersion } = getAllVersions();
+const { latestVersion } = getAllVersions();
 ---
 
 <ParseObjectListPage title="Rarities" version={latestVersion}>
