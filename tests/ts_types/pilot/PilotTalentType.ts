@@ -1,11 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import type { PilotTalentType } from '../../../src/types/pilot';
 import fs from 'fs';
 import path from 'path';
 
 describe('PilotTalentType interface', () => {
-  let pilotTalentTypes: Record<string, any>;
-  let pilotTalentTypeArray: any[];
+  let pilotTalentTypes: Record<string, unknown>;
+  let pilotTalentTypeArray: unknown[];
 
   // Load real data from the latest version
   const archiveDir = path.join(process.cwd(), 'WRFrontiersDB-Data', 'archive');
@@ -52,7 +51,7 @@ describe('PilotTalentType interface', () => {
   describe('Optional fields', () => {
     it('should have at least one object with "description" field', () => {
       const withDescription = pilotTalentTypeArray.filter((tt) =>
-        tt.hasOwnProperty('description')
+        Object.prototype.hasOwnProperty.call(tt, 'description')
       );
       expect(withDescription.length).toBeGreaterThan(0);
       withDescription.forEach((talentType) => {
@@ -102,7 +101,7 @@ describe('PilotTalentType interface', () => {
 
     it('should have valid LocalizationKey structure for description when present', () => {
       pilotTalentTypeArray.forEach((talentType) => {
-        if (talentType.hasOwnProperty('description')) {
+        if (Object.prototype.hasOwnProperty.call(talentType, 'description')) {
           expect(talentType.description).toBeDefined();
           expect(talentType.description.Key).toBeDefined();
           expect(talentType.description.TableNamespace).toBeDefined();

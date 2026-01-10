@@ -1,11 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import type { PilotTalent } from '../../../src/types/pilot';
 import fs from 'fs';
 import path from 'path';
 
 describe('PilotTalent interface', () => {
-  let pilotTalents: Record<string, any>;
-  let pilotTalentArray: any[];
+  let pilotTalents: Record<string, unknown>;
+  let pilotTalentArray: unknown[];
 
   // Load real data from the latest version
   const archiveDir = path.join(process.cwd(), 'WRFrontiersDB-Data', 'archive');
@@ -71,7 +70,7 @@ describe('PilotTalent interface', () => {
   describe('Optional fields', () => {
     it('should have at least one object with "ui_description" field', () => {
       const withUIDescription = pilotTalentArray.filter((t) =>
-        t.hasOwnProperty('ui_description')
+        Object.prototype.hasOwnProperty.call(t, 'ui_description')
       );
       expect(withUIDescription.length).toBeGreaterThan(0);
       withUIDescription.forEach((talent) => {
@@ -86,7 +85,7 @@ describe('PilotTalent interface', () => {
 
     it('should have at least one object with "short_ui_description" field', () => {
       const withShortUIDescription = pilotTalentArray.filter((t) =>
-        t.hasOwnProperty('short_ui_description')
+        Object.prototype.hasOwnProperty.call(t, 'short_ui_description')
       );
       expect(withShortUIDescription.length).toBeGreaterThan(0);
       withShortUIDescription.forEach((talent) => {
@@ -103,7 +102,7 @@ describe('PilotTalent interface', () => {
 
     it('should have at least one object with "buffs" field', () => {
       const withBuffs = pilotTalentArray.filter((t) =>
-        t.hasOwnProperty('buffs')
+        Object.prototype.hasOwnProperty.call(t, 'buffs')
       );
       expect(withBuffs.length).toBeGreaterThan(0);
       withBuffs.forEach((talent) => {
@@ -113,7 +112,7 @@ describe('PilotTalent interface', () => {
 
     it('should have at least one object with "target_buffs" field', () => {
       const withTargetBuffs = pilotTalentArray.filter((t) =>
-        t.hasOwnProperty('target_buffs')
+        Object.prototype.hasOwnProperty.call(t, 'target_buffs')
       );
       expect(withTargetBuffs.length).toBeGreaterThan(0);
       withTargetBuffs.forEach((talent) => {
@@ -123,7 +122,7 @@ describe('PilotTalent interface', () => {
 
     it('should have at least one object with "default_properties" field', () => {
       const withDefaultProperties = pilotTalentArray.filter((t) =>
-        t.hasOwnProperty('default_properties')
+        Object.prototype.hasOwnProperty.call(t, 'default_properties')
       );
       expect(withDefaultProperties.length).toBeGreaterThan(0);
       withDefaultProperties.forEach((talent) => {
@@ -196,7 +195,7 @@ describe('PilotTalent interface', () => {
 
     it('should have valid LocalizationKey structure for ui_description when present', () => {
       pilotTalentArray.forEach((talent) => {
-        if (talent.hasOwnProperty('ui_description')) {
+        if (Object.prototype.hasOwnProperty.call(talent, 'ui_description')) {
           expect(talent.ui_description).toBeDefined();
           expect(talent.ui_description.Key).toBeDefined();
           expect(talent.ui_description.TableNamespace).toBeDefined();
@@ -210,7 +209,7 @@ describe('PilotTalent interface', () => {
 
     it('should have valid LocalizationKey structure for short_ui_description when present', () => {
       pilotTalentArray.forEach((talent) => {
-        if (talent.hasOwnProperty('short_ui_description')) {
+        if (Object.prototype.hasOwnProperty.call(talent, 'short_ui_description')) {
           expect(talent.short_ui_description).toBeDefined();
           expect(talent.short_ui_description.Key).toBeDefined();
           expect(talent.short_ui_description.TableNamespace).toBeDefined();
@@ -229,7 +228,7 @@ describe('PilotTalent interface', () => {
     it('should have valid stats array structure', () => {
       pilotTalentArray.forEach((talent) => {
         expect(Array.isArray(talent.stats)).toBe(true);
-        talent.stats.forEach((stat: any) => {
+        talent.stats.forEach((stat: unknown) => {
           expect(stat).toHaveProperty('stat_id');
           expect(stat).toHaveProperty('value');
           expect(typeof stat.stat_id).toBe('string');
@@ -242,7 +241,7 @@ describe('PilotTalent interface', () => {
       const allowedStatFields = new Set(['stat_id', 'value']);
 
       pilotTalentArray.forEach((talent) => {
-        talent.stats.forEach((stat: any) => {
+        talent.stats.forEach((stat: unknown) => {
           const actualFields = Object.keys(stat);
           actualFields.forEach((field) => {
             expect(
@@ -258,9 +257,9 @@ describe('PilotTalent interface', () => {
   describe('Nested structures - buffs array', () => {
     it('should have valid buffs array structure when present', () => {
       pilotTalentArray.forEach((talent) => {
-        if (talent.hasOwnProperty('buffs')) {
+        if (Object.prototype.hasOwnProperty.call(talent, 'buffs')) {
           expect(Array.isArray(talent.buffs)).toBe(true);
-          talent.buffs.forEach((buff: any) => {
+          talent.buffs.forEach((buff: unknown) => {
             expect(typeof buff).toBe('object');
           });
         }
@@ -269,9 +268,9 @@ describe('PilotTalent interface', () => {
 
     it('should have valid Modifier field when present', () => {
       pilotTalentArray.forEach((talent) => {
-        if (talent.hasOwnProperty('buffs')) {
-          talent.buffs.forEach((buff: any) => {
-            if (buff.hasOwnProperty('Modifier')) {
+        if (Object.prototype.hasOwnProperty.call(talent, 'buffs')) {
+          talent.buffs.forEach((buff: unknown) => {
+            if (Object.prototype.hasOwnProperty.call(buff, 'Modifier')) {
               expect(typeof buff.Modifier).toBe('number');
             }
           });
@@ -281,11 +280,11 @@ describe('PilotTalent interface', () => {
 
     it('should have valid Modifiers array when present', () => {
       pilotTalentArray.forEach((talent) => {
-        if (talent.hasOwnProperty('buffs')) {
-          talent.buffs.forEach((buff: any) => {
-            if (buff.hasOwnProperty('Modifiers')) {
+        if (Object.prototype.hasOwnProperty.call(talent, 'buffs')) {
+          talent.buffs.forEach((buff: unknown) => {
+            if (Object.prototype.hasOwnProperty.call(buff, 'Modifiers')) {
               expect(Array.isArray(buff.Modifiers)).toBe(true);
-              buff.Modifiers.forEach((modifier: any) => {
+              buff.Modifiers.forEach((modifier: unknown) => {
                 expect(modifier).toHaveProperty('what');
                 expect(modifier).toHaveProperty('operator');
                 expect(modifier).toHaveProperty('value');
@@ -304,19 +303,19 @@ describe('PilotTalent interface', () => {
 
     it('should have valid AbilitySelectors array when present', () => {
       pilotTalentArray.forEach((talent) => {
-        if (talent.hasOwnProperty('buffs')) {
-          talent.buffs.forEach((buff: any) => {
-            if (buff.hasOwnProperty('AbilitySelectors')) {
+        if (Object.prototype.hasOwnProperty.call(talent, 'buffs')) {
+          talent.buffs.forEach((buff: unknown) => {
+            if (Object.prototype.hasOwnProperty.call(buff, 'AbilitySelectors')) {
               expect(Array.isArray(buff.AbilitySelectors)).toBe(true);
-              buff.AbilitySelectors.forEach((selector: any) => {
+              buff.AbilitySelectors.forEach((selector: unknown) => {
                 expect(selector).toHaveProperty('allowed_placement_types');
                 expect(Array.isArray(selector.allowed_placement_types)).toBe(
                   true
                 );
 
-                if (selector.hasOwnProperty('module_tags')) {
+                if (Object.prototype.hasOwnProperty.call(selector, 'module_tags')) {
                   expect(Array.isArray(selector.module_tags)).toBe(true);
-                  selector.module_tags.forEach((tag: any) => {
+                  selector.module_tags.forEach((tag: unknown) => {
                     expect(tag).toHaveProperty('module_tag_id');
                     expect(typeof tag.module_tag_id).toBe('string');
                   });
@@ -330,9 +329,9 @@ describe('PilotTalent interface', () => {
 
     it('should have valid module_tag_selector when present', () => {
       pilotTalentArray.forEach((talent) => {
-        if (talent.hasOwnProperty('buffs')) {
-          talent.buffs.forEach((buff: any) => {
-            if (buff.hasOwnProperty('module_tag_selector')) {
+        if (Object.prototype.hasOwnProperty.call(talent, 'buffs')) {
+          talent.buffs.forEach((buff: unknown) => {
+            if (Object.prototype.hasOwnProperty.call(buff, 'module_tag_selector')) {
               expect(buff.module_tag_selector).toHaveProperty('list_operator');
               expect(buff.module_tag_selector).toHaveProperty('module_tags');
               expect(typeof buff.module_tag_selector.list_operator).toBe(
@@ -342,7 +341,7 @@ describe('PilotTalent interface', () => {
                 true
               );
 
-              buff.module_tag_selector.module_tags.forEach((tag: any) => {
+              buff.module_tag_selector.module_tags.forEach((tag: unknown) => {
                 expect(tag).toHaveProperty('module_tag_id');
                 expect(typeof tag.module_tag_id).toBe('string');
               });
@@ -385,8 +384,8 @@ describe('PilotTalent interface', () => {
     it('should have buffs or target_buffs in most objects', () => {
       const withBuffsOrTargetBuffs = pilotTalentArray.filter(
         (t) =>
-          (t.hasOwnProperty('buffs') && t.buffs.length > 0) ||
-          (t.hasOwnProperty('target_buffs') && t.target_buffs.length > 0)
+          (Object.prototype.hasOwnProperty.call(t, 'buffs') && t.buffs.length > 0) ||
+          (Object.prototype.hasOwnProperty.call(t, 'target_buffs') && t.target_buffs.length > 0)
       );
       // Most talents should have buffs or target_buffs
       expect(withBuffsOrTargetBuffs.length).toBeGreaterThan(

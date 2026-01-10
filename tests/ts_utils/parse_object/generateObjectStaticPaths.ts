@@ -83,7 +83,7 @@ describe('generateObjectStaticPaths', () => {
       }
 
       // For each object ID, all paths should have the same objectVersions list
-      for (const [objectId, paths] of pathsByObjectId.entries()) {
+      for (const [_objectId, paths] of pathsByObjectId.entries()) {
         if (paths.length > 1) {
           const firstVersionsList = paths[0].props.objectVersions
             .sort()

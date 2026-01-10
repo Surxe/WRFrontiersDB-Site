@@ -63,7 +63,7 @@ describe('LevelTableData Component', () => {
 
   it('should render cells for all talent rows on levels 1-4', () => {
     const levelIndex = 2; // Level 3
-    const talentIndex = 2;
+    const _talentIndex = 2;
     const isLevel5 = levelIndex === 4;
 
     expect(isLevel5).toBe(false);

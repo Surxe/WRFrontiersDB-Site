@@ -12,7 +12,7 @@ describe('Pilot Table Component', () => {
             levels: [],
           },
         ],
-      ] as [string, any][],
+      ] as [string, unknown][],
       pilotTalents: {
         TALENT_001: { id: 'TALENT_001' },
       },
@@ -71,7 +71,7 @@ describe('Pilot Table Component', () => {
   });
 
   it('should handle pilots as array of tuples', () => {
-    const pilots: [string, any][] = [
+    const pilots: [string, unknown][] = [
       ['PILOT_001', { id: 'PILOT_001', levels: [] }],
       ['PILOT_002', { id: 'PILOT_002', levels: [] }],
     ];

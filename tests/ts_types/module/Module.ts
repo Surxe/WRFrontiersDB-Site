@@ -1,11 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import type { Module } from '../../../src/types/module';
 import fs from 'fs';
 import path from 'path';
 
 describe('Module interface', () => {
-  let modules: Record<string, any>;
-  let moduleArray: any[];
+  let modules: Record<string, unknown>;
+  let moduleArray: unknown[];
 
   // Load real data from the latest version
   const archiveDir = path.join(process.cwd(), 'WRFrontiersDB-Data', 'archive');
@@ -82,7 +81,7 @@ describe('Module interface', () => {
   describe('Optional fields', () => {
     it('should have at least one object with "production_status" field', () => {
       const withProductionStatus = moduleArray.filter((m) =>
-        m.hasOwnProperty('production_status')
+        Object.prototype.hasOwnProperty.call(m, 'production_status')
       );
       expect(withProductionStatus.length).toBeGreaterThan(0);
       withProductionStatus.forEach((module) => {
@@ -92,7 +91,7 @@ describe('Module interface', () => {
 
     it('should have at least one object with "module_tags_ids" field', () => {
       const withModuleTags = moduleArray.filter((m) =>
-        m.hasOwnProperty('module_tags_ids')
+        Object.prototype.hasOwnProperty.call(m, 'module_tags_ids')
       );
       expect(withModuleTags.length).toBeGreaterThan(0);
       withModuleTags.forEach((module) => {
@@ -101,17 +100,17 @@ describe('Module interface', () => {
     });
 
     it('should have at least one object with "name" field', () => {
-      const withName = moduleArray.filter((m) => m.hasOwnProperty('name'));
+      const withName = moduleArray.filter((m) => Object.prototype.hasOwnProperty.call(m, 'name'));
       expect(withName.length).toBeGreaterThan(0);
       withName.forEach((module) => {
-        const name = module.name as any;
+        const name = (module as Record<string, unknown>).name as Record<string, unknown>;
         // name can be either LocalizationKey or { InvariantString: string }
         const isLocalizationKey =
-          name.hasOwnProperty('Key') &&
-          name.hasOwnProperty('TableNamespace') &&
-          name.hasOwnProperty('en');
+          Object.prototype.hasOwnProperty.call(name, 'Key') &&
+          Object.prototype.hasOwnProperty.call(name, 'TableNamespace') &&
+          Object.prototype.hasOwnProperty.call(name, 'en');
         const isInvariantString =
-          name.hasOwnProperty('InvariantString') &&
+          Object.prototype.hasOwnProperty.call(name, 'InvariantString') &&
           typeof name.InvariantString === 'string';
 
         expect(isLocalizationKey || isInvariantString).toBe(true);
@@ -120,7 +119,7 @@ describe('Module interface', () => {
 
     it('should have at least one object with "description" field', () => {
       const withDescription = moduleArray.filter((m) =>
-        m.hasOwnProperty('description')
+        Object.prototype.hasOwnProperty.call(m, 'description')
       );
       expect(withDescription.length).toBeGreaterThan(0);
       withDescription.forEach((module) => {
@@ -132,7 +131,7 @@ describe('Module interface', () => {
 
     it('should have at least one object with "text_tags" field', () => {
       const withTextTags = moduleArray.filter((m) =>
-        m.hasOwnProperty('text_tags')
+        Object.prototype.hasOwnProperty.call(m, 'text_tags')
       );
       expect(withTextTags.length).toBeGreaterThan(0);
       withTextTags.forEach((module) => {
@@ -142,7 +141,7 @@ describe('Module interface', () => {
 
     it('should have at least one object with "module_stats_table_id" field', () => {
       const withModuleStatsTable = moduleArray.filter((m) =>
-        m.hasOwnProperty('module_stats_table_id')
+        Object.prototype.hasOwnProperty.call(m, 'module_stats_table_id')
       );
       expect(withModuleStatsTable.length).toBeGreaterThan(0);
       withModuleStatsTable.forEach((module) => {
@@ -152,7 +151,7 @@ describe('Module interface', () => {
 
     it('should have at least one object with "module_socket_type_ids" field', () => {
       const withSocketTypes = moduleArray.filter((m) =>
-        m.hasOwnProperty('module_socket_type_ids')
+        Object.prototype.hasOwnProperty.call(m, 'module_socket_type_ids')
       );
       expect(withSocketTypes.length).toBeGreaterThan(0);
       withSocketTypes.forEach((module) => {
@@ -197,8 +196,9 @@ describe('Module interface', () => {
   describe('Nested structures - character_module_mounts', () => {
     it('should have valid character_module_mounts array structure', () => {
       moduleArray.forEach((module) => {
-        expect(Array.isArray(module.character_module_mounts)).toBe(true);
-        module.character_module_mounts.forEach((mount: any) => {
+        const mod = module as Record<string, unknown>;
+        expect(Array.isArray(mod.character_module_mounts)).toBe(true);
+        (mod.character_module_mounts as Record<string, unknown>[]).forEach((mount) => {
           expect(mount).toHaveProperty('character_module_id');
           expect(mount).toHaveProperty('mount');
           expect(typeof mount.character_module_id).toBe('string');
@@ -211,7 +211,8 @@ describe('Module interface', () => {
       const allowedMountFields = new Set(['character_module_id', 'mount']);
 
       moduleArray.forEach((module) => {
-        module.character_module_mounts.forEach((mount: any) => {
+        const mod = module as Record<string, unknown>;
+        (mod.character_module_mounts as Record<string, unknown>[]).forEach((mount) => {
           const actualFields = Object.keys(mount);
           actualFields.forEach((field) => {
             expect(
@@ -234,36 +235,45 @@ describe('Module interface', () => {
 
     it('should have valid default_scalars when present', () => {
       moduleArray.forEach((module) => {
-        if (module.module_scalars.hasOwnProperty('default_scalars')) {
-          expect(typeof module.module_scalars.default_scalars).toBe('object');
+        const mod = module as Record<string, unknown>;
+        const scalars = mod.module_scalars as Record<string, unknown>;
+        if (Object.prototype.hasOwnProperty.call(scalars, 'default_scalars')) {
+          expect(typeof scalars.default_scalars).toBe('object');
         }
       });
     });
 
     it('should have valid primary_stat_id when present', () => {
       moduleArray.forEach((module) => {
-        if (module.module_scalars.hasOwnProperty('primary_stat_id')) {
-          expect(typeof module.module_scalars.primary_stat_id).toBe('string');
+        const mod = module as Record<string, unknown>;
+        const scalars = mod.module_scalars as Record<string, unknown>;
+        if (Object.prototype.hasOwnProperty.call(scalars, 'primary_stat_id')) {
+          expect(typeof scalars.primary_stat_id).toBe('string');
         }
       });
     });
 
     it('should have valid secondary_stat_id when present', () => {
       moduleArray.forEach((module) => {
-        if (module.module_scalars.hasOwnProperty('secondary_stat_id')) {
-          expect(typeof module.module_scalars.secondary_stat_id).toBe('string');
+        const mod = module as Record<string, unknown>;
+        const scalars = mod.module_scalars as Record<string, unknown>;
+        if (Object.prototype.hasOwnProperty.call(scalars, 'secondary_stat_id')) {
+          expect(typeof scalars.secondary_stat_id).toBe('string');
         }
       });
     });
 
     it('should have valid levels structure when present', () => {
       moduleArray.forEach((module) => {
-        if (module.module_scalars.hasOwnProperty('levels')) {
-          expect(module.module_scalars.levels).toHaveProperty('constants');
-          expect(typeof module.module_scalars.levels.constants).toBe('object');
+        const mod = module as Record<string, unknown>;
+        const scalars = mod.module_scalars as Record<string, unknown>;
+        if (Object.prototype.hasOwnProperty.call(scalars, 'levels')) {
+          const levels = scalars.levels as Record<string, unknown>;
+          expect(levels).toHaveProperty('constants');
+          expect(typeof levels.constants).toBe('object');
           // variables is optional, but when present, it should be an array
-          if (module.module_scalars.levels.hasOwnProperty('variables')) {
-            expect(Array.isArray(module.module_scalars.levels.variables)).toBe(
+          if (Object.prototype.hasOwnProperty.call(levels, 'variables')) {
+            expect(Array.isArray(levels.variables)).toBe(
               true
             );
           }
@@ -273,8 +283,10 @@ describe('Module interface', () => {
 
     it('should have valid module_name when present', () => {
       moduleArray.forEach((module) => {
-        if (module.module_scalars.hasOwnProperty('module_name')) {
-          expect(typeof module.module_scalars.module_name).toBe('string');
+        const mod = module as Record<string, unknown>;
+        const scalars = mod.module_scalars as Record<string, unknown>;
+        if (Object.prototype.hasOwnProperty.call(scalars, 'module_name')) {
+          expect(typeof scalars.module_name).toBe('string');
         }
       });
     });
@@ -283,23 +295,26 @@ describe('Module interface', () => {
   describe('Nested structures - LocalizationKeys', () => {
     it('should have valid LocalizationKey structure for description when present', () => {
       moduleArray.forEach((module) => {
-        if (module.hasOwnProperty('description')) {
-          expect(module.description).toBeDefined();
-          expect(module.description.Key).toBeDefined();
-          expect(module.description.TableNamespace).toBeDefined();
-          expect(module.description.en).toBeDefined();
-          expect(typeof module.description.Key).toBe('string');
-          expect(typeof module.description.TableNamespace).toBe('string');
-          expect(typeof module.description.en).toBe('string');
+        const mod = module as Record<string, unknown>;
+        if (Object.prototype.hasOwnProperty.call(mod, 'description')) {
+          const desc = mod.description as Record<string, unknown>;
+          expect(desc).toBeDefined();
+          expect(desc.Key).toBeDefined();
+          expect(desc.TableNamespace).toBeDefined();
+          expect(desc.en).toBeDefined();
+          expect(typeof desc.Key).toBe('string');
+          expect(typeof desc.TableNamespace).toBe('string');
+          expect(typeof desc.en).toBe('string');
         }
       });
     });
 
     it('should have valid LocalizationKey array for text_tags when present', () => {
       moduleArray.forEach((module) => {
-        if (module.hasOwnProperty('text_tags')) {
-          expect(Array.isArray(module.text_tags)).toBe(true);
-          module.text_tags.forEach((tag: any) => {
+        const mod = module as Record<string, unknown>;
+        if (Object.prototype.hasOwnProperty.call(mod, 'text_tags')) {
+          expect(Array.isArray(mod.text_tags)).toBe(true);
+          (mod.text_tags as Record<string, unknown>[]).forEach((tag) => {
             expect(tag).toHaveProperty('Key');
             expect(tag).toHaveProperty('TableNamespace');
             expect(tag).toHaveProperty('en');

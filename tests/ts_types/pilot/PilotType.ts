@@ -1,11 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import type { PilotType } from '../../../src/types/pilot';
 import fs from 'fs';
 import path from 'path';
 
 describe('PilotType interface', () => {
-  let pilotTypes: Record<string, any>;
-  let pilotTypeArray: any[];
+  let pilotTypes: Record<string, unknown>;
+  let pilotTypeArray: unknown[];
 
   // Load real data from the latest version
   const archiveDir = path.join(process.cwd(), 'WRFrontiersDB-Data', 'archive');
@@ -59,7 +58,7 @@ describe('PilotType interface', () => {
   describe('Optional fields', () => {
     it('should have at least one object with "has_extended_bio" field', () => {
       const withHasExtendedBio = pilotTypeArray.filter((pt) =>
-        pt.hasOwnProperty('has_extended_bio')
+        Object.prototype.hasOwnProperty.call(pt, 'has_extended_bio')
       );
       expect(withHasExtendedBio.length).toBeGreaterThan(0);
       withHasExtendedBio.forEach((pilotType) => {
@@ -69,7 +68,7 @@ describe('PilotType interface', () => {
 
     it('should have at least one object with "can_change_talents" field', () => {
       const withCanChangeTalents = pilotTypeArray.filter((pt) =>
-        pt.hasOwnProperty('can_change_talents')
+        Object.prototype.hasOwnProperty.call(pt, 'can_change_talents')
       );
       expect(withCanChangeTalents.length).toBeGreaterThan(0);
       withCanChangeTalents.forEach((pilotType) => {
@@ -79,7 +78,7 @@ describe('PilotType interface', () => {
 
     it('should have at least one object with "sort_order" field', () => {
       const withSortOrder = pilotTypeArray.filter((pt) =>
-        pt.hasOwnProperty('sort_order')
+        Object.prototype.hasOwnProperty.call(pt, 'sort_order')
       );
       expect(withSortOrder.length).toBeGreaterThan(0);
       withSortOrder.forEach((pilotType) => {
@@ -144,7 +143,7 @@ describe('PilotType interface', () => {
 
     it('should have valid sort_order values when present', () => {
       pilotTypeArray.forEach((pilotType) => {
-        if (pilotType.hasOwnProperty('sort_order')) {
+        if (Object.prototype.hasOwnProperty.call(pilotType, 'sort_order')) {
           expect(typeof pilotType.sort_order).toBe('number');
           expect(pilotType.sort_order).toBeGreaterThanOrEqual(0);
         }

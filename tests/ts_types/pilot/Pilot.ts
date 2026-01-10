@@ -1,11 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import type { Pilot } from '../../../src/types/pilot';
 import fs from 'fs';
 import path from 'path';
 
 describe('Pilot interface', () => {
-  let pilots: Record<string, any>;
-  let pilotArray: any[];
+  let pilots: Record<string, unknown>;
+  let pilotArray: unknown[];
 
   // Load real data from the latest version
   const archiveDir = path.join(process.cwd(), 'WRFrontiersDB-Data', 'archive');
@@ -111,7 +110,7 @@ describe('Pilot interface', () => {
   describe('Optional fields', () => {
     it('should have at least one object with "second_name" field', () => {
       const withSecondName = pilotArray.filter((p) =>
-        p.hasOwnProperty('second_name')
+        Object.prototype.hasOwnProperty.call(p, 'second_name')
       );
       expect(withSecondName.length).toBeGreaterThan(0);
       withSecondName.forEach((pilot) => {
@@ -168,7 +167,7 @@ describe('Pilot interface', () => {
 
     it('should have valid LocalizationKey structure for second_name when present', () => {
       pilotArray.forEach((pilot) => {
-        if (pilot.hasOwnProperty('second_name')) {
+        if (Object.prototype.hasOwnProperty.call(pilot, 'second_name')) {
           expect(pilot.second_name).toBeDefined();
           expect(pilot.second_name.Key).toBeDefined();
           expect(pilot.second_name.TableNamespace).toBeDefined();
@@ -226,7 +225,7 @@ describe('Pilot interface', () => {
         expect(Array.isArray(pilot.levels)).toBe(true);
         expect(pilot.levels.length).toBeGreaterThan(0);
 
-        pilot.levels.forEach((level: any) => {
+        pilot.levels.forEach((level: unknown) => {
           expect(level).toHaveProperty('talent_type_id');
           expect(level).toHaveProperty('talents');
           expect(typeof level.talent_type_id).toBe('string');
@@ -239,8 +238,8 @@ describe('Pilot interface', () => {
       let foundReputationCost = false;
 
       pilotArray.forEach((pilot) => {
-        pilot.levels.forEach((level: any) => {
-          if (level.hasOwnProperty('reputation_cost')) {
+        pilot.levels.forEach((level: unknown) => {
+          if (Object.prototype.hasOwnProperty.call(level, 'reputation_cost')) {
             foundReputationCost = true;
             expect(typeof level.reputation_cost).toBe('number');
             expect(level.reputation_cost).toBeGreaterThanOrEqual(0);
@@ -253,8 +252,8 @@ describe('Pilot interface', () => {
 
     it('should have valid upgrade_cost structure in levels when present', () => {
       pilotArray.forEach((pilot) => {
-        pilot.levels.forEach((level: any) => {
-          if (level.hasOwnProperty('upgrade_cost')) {
+        pilot.levels.forEach((level: unknown) => {
+          if (Object.prototype.hasOwnProperty.call(level, 'upgrade_cost')) {
             expect(level.upgrade_cost).toHaveProperty('currency_id');
             expect(level.upgrade_cost).toHaveProperty('amount');
             expect(typeof level.upgrade_cost.currency_id).toBe('string');
@@ -267,9 +266,9 @@ describe('Pilot interface', () => {
 
     it('should have non-empty talents array in each level', () => {
       pilotArray.forEach((pilot) => {
-        pilot.levels.forEach((level: any) => {
+        pilot.levels.forEach((level: unknown) => {
           expect(level.talents.length).toBeGreaterThan(0);
-          level.talents.forEach((talent: any) => {
+          level.talents.forEach((talent: unknown) => {
             expect(typeof talent).toBe('string');
             expect(talent.length).toBeGreaterThan(0);
           });
@@ -286,7 +285,7 @@ describe('Pilot interface', () => {
       ]);
 
       pilotArray.forEach((pilot) => {
-        pilot.levels.forEach((level: any) => {
+        pilot.levels.forEach((level: unknown) => {
           const actualFields = Object.keys(level);
           actualFields.forEach((field) => {
             expect(
@@ -302,8 +301,8 @@ describe('Pilot interface', () => {
       const allowedUpgradeCostFields = new Set(['currency_id', 'amount']);
 
       pilotArray.forEach((pilot) => {
-        pilot.levels.forEach((level: any) => {
-          if (level.hasOwnProperty('upgrade_cost')) {
+        pilot.levels.forEach((level: unknown) => {
+          if (Object.prototype.hasOwnProperty.call(level, 'upgrade_cost')) {
             const actualFields = Object.keys(level.upgrade_cost);
             actualFields.forEach((field) => {
               expect(

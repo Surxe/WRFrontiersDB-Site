@@ -41,7 +41,7 @@ describe('PageRef Component', () => {
   });
 
   it('should generate correct page URL', () => {
-    const parseObjectClass = 'Module';
+    const _parseObjectClass = 'Module';
     const id = 'MOD_ArmorShield';
     const version = '2025-12-09';
     const pagePath = 'modules';

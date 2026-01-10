@@ -1,11 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import type { PilotClass } from '../../../src/types/pilot';
 import fs from 'fs';
 import path from 'path';
 
 describe('PilotClass interface', () => {
-  let pilotClasses: Record<string, any>;
-  let pilotClassArray: any[];
+  let pilotClasses: Record<string, unknown>;
+  let pilotClassArray: unknown[];
 
   // Load real data from the latest version
   const archiveDir = path.join(process.cwd(), 'WRFrontiersDB-Data', 'archive');

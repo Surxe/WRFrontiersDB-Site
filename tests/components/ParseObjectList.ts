@@ -59,7 +59,7 @@ describe('ParseObjectList Component', () => {
 
   it('should handle entries as array of tuples', () => {
     // Simulate the structure returned by prepareObjectList
-    const entries: [string, any][] = [
+    const entries: [string, unknown][] = [
       ['MOD_ArmorShield', { id: 'MOD_ArmorShield', name: 'Shield' }],
       ['MOD_SpeedBoost', { id: 'MOD_SpeedBoost', name: 'Speed' }],
     ];
