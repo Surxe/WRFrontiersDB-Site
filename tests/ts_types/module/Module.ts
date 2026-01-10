@@ -79,31 +79,34 @@ describe('Module interface', () => {
   });
 
   describe('Optional fields', () => {
-    it('should have at least one object with "production_status" field', () => {
+    it('should have at least one object with "production_status" field, but not all', () => {
       const withProductionStatus = moduleArray.filter((m) =>
         Object.prototype.hasOwnProperty.call(m, 'production_status')
       );
       expect(withProductionStatus.length).toBeGreaterThan(0);
+      expect(withProductionStatus.length).toBeLessThan(moduleArray.length);
       withProductionStatus.forEach((module) => {
         expect(typeof module.production_status).toBe('string');
       });
     });
 
-    it('should have at least one object with "module_tags_ids" field', () => {
+    it('should have at least one object with "module_tags_ids" field, but not all', () => {
       const withModuleTags = moduleArray.filter((m) =>
         Object.prototype.hasOwnProperty.call(m, 'module_tags_ids')
       );
       expect(withModuleTags.length).toBeGreaterThan(0);
+      expect(withModuleTags.length).toBeLessThan(moduleArray.length);
       withModuleTags.forEach((module) => {
         expect(Array.isArray(module.module_tags_ids)).toBe(true);
       });
     });
 
-    it('should have at least one object with "name" field', () => {
+    it('should have at least one object with "name" field, but not all', () => {
       const withName = moduleArray.filter((m) =>
         Object.prototype.hasOwnProperty.call(m, 'name')
       );
       expect(withName.length).toBeGreaterThan(0);
+      expect(withName.length).toBeLessThan(moduleArray.length);
       withName.forEach((module) => {
         const name = (module as Record<string, unknown>).name as Record<
           string,
@@ -122,11 +125,12 @@ describe('Module interface', () => {
       });
     });
 
-    it('should have at least one object with "description" field', () => {
+    it('should have at least one object with "description" field, but not all', () => {
       const withDescription = moduleArray.filter((m) =>
         Object.prototype.hasOwnProperty.call(m, 'description')
       );
       expect(withDescription.length).toBeGreaterThan(0);
+      expect(withDescription.length).toBeLessThan(moduleArray.length);
       withDescription.forEach((module) => {
         expect(module.description).toHaveProperty('Key');
         expect(module.description).toHaveProperty('TableNamespace');
@@ -134,31 +138,34 @@ describe('Module interface', () => {
       });
     });
 
-    it('should have at least one object with "text_tags" field', () => {
+    it('should have at least one object with "text_tags" field, but not all', () => {
       const withTextTags = moduleArray.filter((m) =>
         Object.prototype.hasOwnProperty.call(m, 'text_tags')
       );
       expect(withTextTags.length).toBeGreaterThan(0);
+      expect(withTextTags.length).toBeLessThan(moduleArray.length);
       withTextTags.forEach((module) => {
         expect(Array.isArray(module.text_tags)).toBe(true);
       });
     });
 
-    it('should have at least one object with "module_stats_table_id" field', () => {
+    it('should have at least one object with "module_stats_table_id" field, but not all', () => {
       const withModuleStatsTable = moduleArray.filter((m) =>
         Object.prototype.hasOwnProperty.call(m, 'module_stats_table_id')
       );
       expect(withModuleStatsTable.length).toBeGreaterThan(0);
+      expect(withModuleStatsTable.length).toBeLessThan(moduleArray.length);
       withModuleStatsTable.forEach((module) => {
         expect(typeof module.module_stats_table_id).toBe('string');
       });
     });
 
-    it('should have at least one object with "module_socket_type_ids" field', () => {
+    it('should have at least one object with "module_socket_type_ids" field, but not all', () => {
       const withSocketTypes = moduleArray.filter((m) =>
         Object.prototype.hasOwnProperty.call(m, 'module_socket_type_ids')
       );
       expect(withSocketTypes.length).toBeGreaterThan(0);
+      expect(withSocketTypes.length).toBeLessThan(moduleArray.length);
       withSocketTypes.forEach((module) => {
         expect(Array.isArray(module.module_socket_type_ids)).toBe(true);
       });

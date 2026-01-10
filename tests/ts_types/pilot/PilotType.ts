@@ -56,31 +56,34 @@ describe('PilotType interface', () => {
   });
 
   describe('Optional fields', () => {
-    it('should have at least one object with "has_extended_bio" field', () => {
+    it('should have at least one object with "has_extended_bio" field, but not all', () => {
       const withHasExtendedBio = pilotTypeArray.filter((pt) =>
         Object.prototype.hasOwnProperty.call(pt, 'has_extended_bio')
       );
       expect(withHasExtendedBio.length).toBeGreaterThan(0);
+      expect(withHasExtendedBio.length).toBeLessThan(pilotTypeArray.length);
       withHasExtendedBio.forEach((pilotType) => {
         expect(typeof pilotType.has_extended_bio).toBe('boolean');
       });
     });
 
-    it('should have at least one object with "can_change_talents" field', () => {
+    it('should have at least one object with "can_change_talents" field, but not all', () => {
       const withCanChangeTalents = pilotTypeArray.filter((pt) =>
         Object.prototype.hasOwnProperty.call(pt, 'can_change_talents')
       );
       expect(withCanChangeTalents.length).toBeGreaterThan(0);
+      expect(withCanChangeTalents.length).toBeLessThan(pilotTypeArray.length);
       withCanChangeTalents.forEach((pilotType) => {
         expect(typeof pilotType.can_change_talents).toBe('boolean');
       });
     });
 
-    it('should have at least one object with "sort_order" field', () => {
+    it('should have at least one object with "sort_order" field, but not all', () => {
       const withSortOrder = pilotTypeArray.filter((pt) =>
         Object.prototype.hasOwnProperty.call(pt, 'sort_order')
       );
       expect(withSortOrder.length).toBeGreaterThan(0);
+      expect(withSortOrder.length).toBeLessThan(pilotTypeArray.length);
       withSortOrder.forEach((pilotType) => {
         expect(typeof pilotType.sort_order).toBe('number');
       });

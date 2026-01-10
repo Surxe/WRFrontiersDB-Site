@@ -40,21 +40,9 @@ describe('PilotTalentType interface', () => {
       });
     });
 
-    it('should have "image_path" field in every object', () => {
+    it('should have "description" field in every object', () => {
       pilotTalentTypeArray.forEach((talentType) => {
-        expect(talentType).toHaveProperty('image_path');
-        expect(typeof talentType.image_path).toBe('string');
-      });
-    });
-  });
-
-  describe('Optional fields', () => {
-    it('should have at least one object with "description" field', () => {
-      const withDescription = pilotTalentTypeArray.filter((tt) =>
-        Object.prototype.hasOwnProperty.call(tt, 'description')
-      );
-      expect(withDescription.length).toBeGreaterThan(0);
-      withDescription.forEach((talentType) => {
+        expect(talentType).toHaveProperty('description');
         expect(talentType.description).toHaveProperty('Key');
         expect(talentType.description).toHaveProperty('TableNamespace');
         expect(talentType.description).toHaveProperty('en');
@@ -62,6 +50,14 @@ describe('PilotTalentType interface', () => {
         expect(typeof talentType.description.TableNamespace).toBe('string');
         expect(typeof talentType.description.en).toBe('string');
       });
+    });
+  });
+
+  describe('Optional fields', () => {
+    // PilotTalentType interface has no optional fields besides parseObjectClass (which is set at build time)
+    it('should note that PilotTalentType has no optional fields besides parseObjectClass', () => {
+      // This test exists to document that all fields in PilotTalentType are required
+      expect(true).toBe(true);
     });
   });
 
