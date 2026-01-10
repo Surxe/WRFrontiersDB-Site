@@ -37,8 +37,9 @@ const pageUrl = `/WRFrontiersDB-Site/${pagePath}/${obj.id}/${version}`;
 ---
 
 <a href={pageUrl}>
+  <!-- Show icon if supported and enabled -->
   {
-    showIcon && (
+    showIcon && pageData.iconPath && (
       <Icon
         iconPath={pageData.iconPath}
         altText={`${getDefaultString(pageData.localizationKey)} icon`}
@@ -47,5 +48,16 @@ const pageUrl = `/WRFrontiersDB-Site/${pagePath}/${obj.id}/${version}`;
       />
     )
   }
-  <LocalizedText tag="span" localizationKey={pageData.localizationKey} />
+  <!-- Show text with colored div if iconPath not supported, otherwise show just text-->
+  { 
+    !pageData.iconPath && pageData.hexColor ? (
+      <div
+        style={`display: inline-block; padding: 2px 8px; background-color: #${pageData.hexColor}; border-radius: 4px;`}
+      >
+        <LocalizedText tag="span" localizationKey={pageData.localizationKey} />
+      </div>
+    ) : (
+      <LocalizedText tag="span" localizationKey={pageData.localizationKey} />
+    )
+  }
 </a>
