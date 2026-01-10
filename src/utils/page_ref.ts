@@ -4,7 +4,6 @@ import type {
   PilotClass,
   PilotTalent,
   PilotTalentType,
-  PilotType,
   Pilot,
 } from '../types/pilot';
 import type { Module } from '../types/module';
@@ -24,7 +23,6 @@ export function getPageRefData(_obj: PilotPersonality): PageRefData;
 export function getPageRefData(_obj: PilotClass): PageRefData;
 export function getPageRefData(_obj: PilotTalent): PageRefData;
 export function getPageRefData(_obj: PilotTalentType): PageRefData;
-export function getPageRefData(_obj: PilotType): PageRefData;
 export function getPageRefData(_obj: Pilot): PageRefData;
 export function getPageRefData(_obj: Rarity): PageRefData;
 export function getPageRefData(_obj: ParseObject): PageRefData; // Here just for type support. Better than an overload that requires specifying the name of every class.
@@ -62,13 +60,6 @@ export function getPageRefData(obj: ParseObject): PageRefData {
       return {
         localizationKey: pilotTalent.name,
         iconPath: pilotTalent.image_path,
-      };
-    }
-    case 'PilotType': {
-      const pilotType = obj as PilotType;
-      return {
-        localizationKey: pilotType.name,
-        iconPath: '',
       };
     }
     case 'PilotTalentType': {

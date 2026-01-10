@@ -7,6 +7,7 @@ import {
   type PilotTalent,
   type PilotTalentType,
 } from '../../../types/pilot';
+import { type Rarity } from '../../../types/rarity';
 import Icon from '../../../components/Icon.astro';
 import LocalizedText from '../../../components/LocalizedText.astro';
 import VersionList from '../../../components/VersionList.astro';
@@ -37,10 +38,20 @@ const pilotTalentTypes = getParseObjects<PilotTalentType>(
   'Objects/PilotTalentType.json',
   version
 );
+const pilotTypes = getParseObjects<PilotType>(
+  'Objects/PilotType.json',
+  version
+);
+
 const pilotType = getParseObject<PilotType>(
   pilot.pilot_type_id,
   version,
   'Objects/PilotType.json'
+);
+const rarity = getParseObject<Rarity>(
+  pilotTypes[pilot.pilot_type_id].rarity_id,
+  version,
+  'Objects/Rarity.json'
 );
 const pilotClass = getParseObject<PilotClass>(
   pilot.pilot_class_id,
@@ -75,11 +86,13 @@ const defaultName = getDefaultString(pilot.first_name) || pilot.id;
       localizationKey={pilot.first_name}
     />
     {' '}
-    <LocalizedText
-      id="pilot-second-name"
-      tag="span"
-      localizationKey={pilot.second_name}
-    />
+    {pilot.second_name && (
+      <LocalizedText
+        id="pilot-second-name"
+        tag="span"
+        localizationKey={pilot.second_name}
+      />
+    )}
   </p>
 
   <LocalizedText id="pilot-bio" tag="p" localizationKey={pilot.bio} />
@@ -135,12 +148,8 @@ const defaultName = getDefaultString(pilot.first_name) || pilot.id;
 
   <!-- Hyperlinks to the referenced ids pilot_type_id, pilot_class_id, personality_id -->
   <p>
-    Pilot Type
-    <LocalizedText
-      id="pilot-type-name"
-      tag="span"
-      localizationKey={pilotType.name}
-    />
+    Rarity
+    <PageRef obj={rarity} version={version} />
   </p>
   <p>
     Pilot Class
