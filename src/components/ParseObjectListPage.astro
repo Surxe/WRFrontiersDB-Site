@@ -17,5 +17,9 @@ const { title, version, jsFileName } = Astro.props;
   <slot name="head" slot="head" />
   <slot />
 
-  {version && <ParseObjectListPageScripts version={version} jsFileName={jsFileName} />}
+  {
+    version && (
+      <ParseObjectListPageScripts version={version} jsFileName={jsFileName} />
+    )
+  }
 </Page>

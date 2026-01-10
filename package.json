@@ -9,7 +9,8 @@
     "astro": "astro",
     "lint": "eslint . --ext .js,.ts,.astro --max-warnings 0",
     "format:check": "prettier --check \"**/*.{js,ts,astro,json,md}\"",
-    "vitest": "vitest run"
+    "vitest": "vitest run",
+    "format:fix": "prettier --write \"**/*.{js,ts,astro,json,md}\""
   },
   "dependencies": {
     "astro": "^5.16.6"
