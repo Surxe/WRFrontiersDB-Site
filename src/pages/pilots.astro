@@ -11,7 +11,7 @@ const { versions, latestVersion } = getAllVersions();
 const pilots = getParseObjects<Pilot>('Objects/Pilot.json', latestVersion);
 ---
 
-<ParseObjectListPage title="Pilots">
+<ParseObjectListPage title="Pilots" version={latestVersion}>
   <BackToHome />
   <h1>Pilots</h1>
 
