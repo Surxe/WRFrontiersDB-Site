@@ -39,10 +39,10 @@ npx vitest tests/ts_utils/list/prepareObjectList.ts
 
 ## Tests for Typescript interfaces
 
-Tests for typescript interfaces should read real data and compare to the interface with the following 3 tests:
+Tests for typescript interfaces should read real data and compare to the interface with the following 4 tests:
 
 - Every real object should have every required field (except parseObjectClass which is set at build time)
-- For each optional field, at least 1 real object should have it
+- For each optional field, at least 1 real object should have it, but not all of them
 - Each key in the real object should be a field in the interface
 
 Required and optional fields should NOT be determined dynamically.
