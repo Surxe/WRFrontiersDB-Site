@@ -3,6 +3,7 @@ import Icon from './Icon.astro';
 import LocalizedText from './LocalizedText.astro';
 import { getPageRefData } from '../utils/page_ref';
 import type { ParseObject } from '../types/parse_object';
+import { getDefaultString } from '../utils/localization';
 
 interface Props {
   obj: ParseObject;
@@ -39,7 +40,7 @@ const pageUrl = `/WRFrontiersDB-Site/${pagePath}/${obj.id}/${version}`;
     showIcon && (
       <Icon
         iconPath={pageData.iconPath}
-        altText={`${pageData.localizationKey.en} icon`}
+        altText={`${getDefaultString(pageData.localizationKey)} icon`}
         size={iconSize}
         color={pageData.hexColor}
       />

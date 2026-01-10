@@ -19,6 +19,7 @@ import {
   getVersionsData,
 } from '../../../utils/parse_object';
 import PageRef from '../../../components/PageRef.astro';
+import { getDefaultString } from '../../../utils/localization';
 
 export async function getStaticPaths() {
   return await generateObjectStaticPaths('Objects/Pilot.json');
@@ -56,7 +57,7 @@ const pilotPersonality = getParseObject<PilotPersonality>(
 const { versions, versionInfo } = getVersionsData(version);
 
 // Extract English text as fallback
-const defaultName = pilot.first_name?.en || pilot.id;
+const defaultName = getDefaultString(pilot.first_name) || pilot.id;
 ---
 
 <ParseObjectPage>

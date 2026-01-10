@@ -1,24 +1,35 @@
 ---
 import type { LocalizationKey } from '../types/localization';
+import { getDefaultString } from '../utils/localization';
 
 export interface Props {
   id?: string;
   tag: string;
-  localizationKey?: LocalizationKey;
+  localizationKey: LocalizationKey;
 }
 
 const { id, tag, localizationKey } = Astro.props;
 const Tag = tag as any;
 
-const namespace = localizationKey?.TableNamespace;
-const key = localizationKey?.Key;
-const defaultText = localizationKey?.en || '';
+const namespace = localizationKey.TableNamespace;
+const key = localizationKey.Key;
+const invariantString = localizationKey.InvariantString;
+const defaultText = getDefaultString(localizationKey);
 ---
 
 <!--
 Creates an html element with tag {tag}, e.g. <p> that stores localization data
 necessary to localize it, as well as the default text while the localization lazy-loads
+
+If invariantString is provided, create a non-localization element with just the default text
+otherwise, create a localization element with the necessary data attributes.
 -->
-<Tag id={id} data-loc-key={key} data-loc-namespace={namespace}>
-  {defaultText}
-</Tag>
+{invariantString ? (
+  <Tag id={id}>
+    {invariantString}
+  </Tag>
+) : ( 
+  <Tag id={id} data-loc-key={key} data-loc-namespace={namespace}>
+    {defaultText}
+  </Tag>
+)}
