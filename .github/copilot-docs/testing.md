@@ -49,6 +49,9 @@ When reading in real objects, use dynamically the latest version dir within the 
 
 **IMPORTANT: While adding a test for an interface, if the interface does not accurately represent the Data, the interface should be updated, as opposed to modifying the test to work around the innaccurate interface.**
 
+## Tests for astro components
+Test logic and data structures, but do not actually render the Astro component.
+
 ## Best Practices
 
 1. **Test behavior, not implementation**: Focus on inputs/outputs
