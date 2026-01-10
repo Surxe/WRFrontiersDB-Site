@@ -1,0 +1,18 @@
+---
+import BackToHome from '../components/BackToHome.astro';
+import ParseObjectListPage from '../components/ParseObjectListPage.astro';
+import ParseObjectList from '../components/ParseObjectList.astro';
+import { getAllVersions } from '../utils/parse_object';
+
+const { latestVersion } = getAllVersions();
+---
+
+<ParseObjectListPage title="Rarities" version={latestVersion}>
+  <BackToHome />
+  <h1>Rarities</h1>
+
+  <ParseObjectList
+    parseObjectFile="Objects/Rarity.json"
+    version={latestVersion}
+  />
+</ParseObjectListPage>

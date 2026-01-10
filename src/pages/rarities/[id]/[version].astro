@@ -1,0 +1,51 @@
+---
+import type { Rarity } from '../../../types/rarity';
+import LocalizedText from '../../../components/LocalizedText.astro';
+import VersionList from '../../../components/VersionList.astro';
+import ObjectPageScripts from '../../../components/ObjectPageScripts.astro';
+import ParseObjectPage from '../../../components/ParseObjectPage.astro';
+import {
+  generateObjectStaticPaths,
+  getParseObject,
+  getVersionsData,
+} from '../../../utils/parse_object';
+
+export async function getStaticPaths() {
+  return await generateObjectStaticPaths('Objects/Rarity.json');
+}
+
+const { id, version } = Astro.params;
+const { objectVersions } = Astro.props;
+
+const rarity = getParseObject<Rarity>(id, version, 'Objects/Rarity.json');
+
+// Load version metadata
+const { versions, versionInfo } = getVersionsData(version);
+---
+
+<ParseObjectPage>
+  <LocalizedText
+    id="rarity-name-title"
+    tag="title"
+    localizationKey={rarity.name}
+    slot="head"
+  />
+  <p>Back to <a href="/WRFrontiersDB-Site/rarities">Rarities</a></p>
+  <LocalizedText id="rarity-name" tag="h1" localizationKey={rarity.name} />
+
+  <div style={`color: #${rarity.hex};`}>
+    <p>Color: #{rarity.hex}</p>
+  </div>
+
+  <p>Version: {versionInfo?.title || version} ({version})</p>
+  <p>Language: <span id="current-lang">en</span></p>
+
+  <VersionList
+    parseObjectUrl="rarity=ies"
+    id={id}
+    myVersions={objectVersions}
+    versionsData={versions}
+  />
+
+  <ObjectPageScripts objectData={rarity} version={version} />
+</ParseObjectPage>

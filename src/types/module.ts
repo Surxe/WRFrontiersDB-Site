@@ -1,5 +1,13 @@
 import type { LocalizationKey } from './localization';
 import type { ParseObject } from './parse_object';
+
+export interface ModuleRarity extends ParseObject {
+  parseObjectClass: 'ModuleRarity';
+  id: string;
+  rarity_id: string;
+  sort_order: number;
+}
+
 // TODO verify which are optional
 export interface Module extends ParseObject {
   parseObjectClass: 'Module';
