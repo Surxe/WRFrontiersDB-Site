@@ -11,7 +11,12 @@ describe('Module interface', () => {
   const archiveDir = path.join(process.cwd(), 'WRFrontiersDB-Data', 'archive');
   const versions = fs.readdirSync(archiveDir).sort().reverse();
   const latestVersion = versions[0];
-  const modulePath = path.join(archiveDir, latestVersion, 'Objects', 'Module.json');
+  const modulePath = path.join(
+    archiveDir,
+    latestVersion,
+    'Objects',
+    'Module.json'
+  );
 
   modules = JSON.parse(fs.readFileSync(modulePath, 'utf-8'));
   moduleArray = Object.values(modules);
@@ -76,7 +81,7 @@ describe('Module interface', () => {
 
   describe('Optional fields', () => {
     it('should have at least one object with "production_status" field', () => {
-      const withProductionStatus = moduleArray.filter((m) => 
+      const withProductionStatus = moduleArray.filter((m) =>
         m.hasOwnProperty('production_status')
       );
       expect(withProductionStatus.length).toBeGreaterThan(0);
@@ -86,7 +91,7 @@ describe('Module interface', () => {
     });
 
     it('should have at least one object with "module_tags_ids" field', () => {
-      const withModuleTags = moduleArray.filter((m) => 
+      const withModuleTags = moduleArray.filter((m) =>
         m.hasOwnProperty('module_tags_ids')
       );
       expect(withModuleTags.length).toBeGreaterThan(0);
@@ -96,25 +101,25 @@ describe('Module interface', () => {
     });
 
     it('should have at least one object with "name" field', () => {
-      const withName = moduleArray.filter((m) => 
-        m.hasOwnProperty('name')
-      );
+      const withName = moduleArray.filter((m) => m.hasOwnProperty('name'));
       expect(withName.length).toBeGreaterThan(0);
       withName.forEach((module) => {
         const name = module.name as any;
         // name can be either LocalizationKey or { InvariantString: string }
-        const isLocalizationKey = name.hasOwnProperty('Key') && 
-                                 name.hasOwnProperty('TableNamespace') && 
-                                 name.hasOwnProperty('en');
-        const isInvariantString = name.hasOwnProperty('InvariantString') && 
-                                 typeof name.InvariantString === 'string';
-        
+        const isLocalizationKey =
+          name.hasOwnProperty('Key') &&
+          name.hasOwnProperty('TableNamespace') &&
+          name.hasOwnProperty('en');
+        const isInvariantString =
+          name.hasOwnProperty('InvariantString') &&
+          typeof name.InvariantString === 'string';
+
         expect(isLocalizationKey || isInvariantString).toBe(true);
       });
     });
 
     it('should have at least one object with "description" field', () => {
-      const withDescription = moduleArray.filter((m) => 
+      const withDescription = moduleArray.filter((m) =>
         m.hasOwnProperty('description')
       );
       expect(withDescription.length).toBeGreaterThan(0);
@@ -126,7 +131,7 @@ describe('Module interface', () => {
     });
 
     it('should have at least one object with "text_tags" field', () => {
-      const withTextTags = moduleArray.filter((m) => 
+      const withTextTags = moduleArray.filter((m) =>
         m.hasOwnProperty('text_tags')
       );
       expect(withTextTags.length).toBeGreaterThan(0);
@@ -136,7 +141,7 @@ describe('Module interface', () => {
     });
 
     it('should have at least one object with "module_stats_table_id" field', () => {
-      const withModuleStatsTable = moduleArray.filter((m) => 
+      const withModuleStatsTable = moduleArray.filter((m) =>
         m.hasOwnProperty('module_stats_table_id')
       );
       expect(withModuleStatsTable.length).toBeGreaterThan(0);
@@ -146,7 +151,7 @@ describe('Module interface', () => {
     });
 
     it('should have at least one object with "module_socket_type_ids" field', () => {
-      const withSocketTypes = moduleArray.filter((m) => 
+      const withSocketTypes = moduleArray.filter((m) =>
         m.hasOwnProperty('module_socket_type_ids')
       );
       expect(withSocketTypes.length).toBeGreaterThan(0);
@@ -181,7 +186,9 @@ describe('Module interface', () => {
       moduleArray.forEach((module) => {
         const actualFields = Object.keys(module);
         actualFields.forEach((field) => {
-          expect(allowedFields.has(field), `Unexpected field: ${field}`).toBe(true);
+          expect(allowedFields.has(field), `Unexpected field: ${field}`).toBe(
+            true
+          );
         });
       });
     });
@@ -207,7 +214,10 @@ describe('Module interface', () => {
         module.character_module_mounts.forEach((mount: any) => {
           const actualFields = Object.keys(mount);
           actualFields.forEach((field) => {
-            expect(allowedMountFields.has(field), `Unexpected mount field: ${field}`).toBe(true);
+            expect(
+              allowedMountFields.has(field),
+              `Unexpected mount field: ${field}`
+            ).toBe(true);
           });
         });
       });
@@ -253,7 +263,9 @@ describe('Module interface', () => {
           expect(typeof module.module_scalars.levels.constants).toBe('object');
           // variables is optional, but when present, it should be an array
           if (module.module_scalars.levels.hasOwnProperty('variables')) {
-            expect(Array.isArray(module.module_scalars.levels.variables)).toBe(true);
+            expect(Array.isArray(module.module_scalars.levels.variables)).toBe(
+              true
+            );
           }
         }
       });
@@ -338,8 +350,8 @@ describe('Module interface', () => {
     });
 
     it('should have production_status "Ready" for most modules', () => {
-      const readyModules = moduleArray.filter((m) => 
-        m.production_status === 'Ready'
+      const readyModules = moduleArray.filter(
+        (m) => m.production_status === 'Ready'
       );
       // Most modules should be Ready
       expect(readyModules.length).toBeGreaterThan(moduleArray.length * 0.5);

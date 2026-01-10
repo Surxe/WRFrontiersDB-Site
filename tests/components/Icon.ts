@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest';
 describe('Icon Component', () => {
   it('should accept required altText prop', () => {
     const requiredProps = {
-      altText: 'Shield icon'
+      altText: 'Shield icon',
     };
 
     expect(requiredProps.altText).toBeDefined();
@@ -13,7 +13,8 @@ describe('Icon Component', () => {
   it('should accept optional iconPath prop', () => {
     const propsWithIconPath = {
       altText: 'Shield icon',
-      iconPath: '/WRFrontiers/Content/Sparrow/UI/Textures/Abilities/T_AddShieldIcon'
+      iconPath:
+        '/WRFrontiers/Content/Sparrow/UI/Textures/Abilities/T_AddShieldIcon',
     };
 
     expect(propsWithIconPath.iconPath).toBeDefined();
@@ -28,7 +29,7 @@ describe('Icon Component', () => {
   it('should accept optional size prop', () => {
     const propsWithSize = {
       altText: 'Shield icon',
-      size: 32
+      size: 32,
     };
 
     expect(propsWithSize.size).toBe(32);
@@ -38,7 +39,7 @@ describe('Icon Component', () => {
   it('should accept optional color prop', () => {
     const propsWithColor = {
       altText: 'Shield icon',
-      color: 'FF5733'
+      color: 'FF5733',
     };
 
     expect(propsWithColor.color).toBeDefined();
@@ -46,15 +47,20 @@ describe('Icon Component', () => {
   });
 
   it('should construct correct iconSrc path from iconPath', () => {
-    const iconPath = '/WRFrontiers/Content/Sparrow/UI/Textures/Abilities/T_AddShieldIcon';
+    const iconPath =
+      '/WRFrontiers/Content/Sparrow/UI/Textures/Abilities/T_AddShieldIcon';
     const iconSrc = `/WRFrontiersDB-Site/WRFrontiersDB-Data/textures${iconPath}.png`;
 
-    expect(iconSrc).toBe('/WRFrontiersDB-Site/WRFrontiersDB-Data/textures/WRFrontiers/Content/Sparrow/UI/Textures/Abilities/T_AddShieldIcon.png');
+    expect(iconSrc).toBe(
+      '/WRFrontiersDB-Site/WRFrontiersDB-Data/textures/WRFrontiers/Content/Sparrow/UI/Textures/Abilities/T_AddShieldIcon.png'
+    );
   });
 
   it('should return null iconSrc when iconPath is undefined', () => {
     const iconPath = undefined;
-    const iconSrc = iconPath ? `/WRFrontiersDB-Site/WRFrontiersDB-Data/textures${iconPath}.png` : null;
+    const iconSrc = iconPath
+      ? `/WRFrontiersDB-Site/WRFrontiersDB-Data/textures${iconPath}.png`
+      : null;
 
     expect(iconSrc).toBeNull();
   });

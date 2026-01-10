@@ -9,8 +9,8 @@ describe('VersionList Component', () => {
       myVersions: ['2025-12-09', '2025-11-15'],
       versionsData: {
         '2025-12-09': { title: 'Version 1.2.0' },
-        '2025-11-15': { title: 'Version 1.1.0' }
-      }
+        '2025-11-15': { title: 'Version 1.1.0' },
+      },
     };
 
     // Verify the props structure is valid
@@ -31,19 +31,19 @@ describe('VersionList Component', () => {
   it('should generate correct version links', () => {
     const baseUrl = '/WRFrontiersDB-Site/modules/MOD_ArmorShield';
     const versions = ['2025-12-09', '2025-11-15'];
-    
-    const expectedLinks = versions.map(version => `${baseUrl}/${version}`);
+
+    const expectedLinks = versions.map((version) => `${baseUrl}/${version}`);
 
     expect(expectedLinks).toEqual([
       '/WRFrontiersDB-Site/modules/MOD_ArmorShield/2025-12-09',
-      '/WRFrontiersDB-Site/modules/MOD_ArmorShield/2025-11-15'
+      '/WRFrontiersDB-Site/modules/MOD_ArmorShield/2025-11-15',
     ]);
   });
 
   it('should use version title from versionsData when available', () => {
     const version = '2025-12-09';
     const versionsData = {
-      '2025-12-09': { title: 'Version 1.2.0' }
+      '2025-12-09': { title: 'Version 1.2.0' },
     };
 
     const displayText = versionsData[version]?.title || version;
@@ -63,11 +63,11 @@ describe('VersionList Component', () => {
     const versionsData = {
       '2025-12-09': { title: 'Version 1.2.0' },
       '2025-11-15': { title: 'Version 1.1.0' },
-      '2025-10-28': { title: 'Version 1.0.0' }
+      '2025-10-28': { title: 'Version 1.0.0' },
     };
 
     expect(myVersions.length).toBe(3);
-    myVersions.forEach(version => {
+    myVersions.forEach((version) => {
       expect(versionsData[version]).toBeDefined();
       expect(versionsData[version].title).toBeDefined();
     });

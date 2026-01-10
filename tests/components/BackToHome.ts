@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest';
 describe('BackToHome Component', () => {
   it('should accept optional baseUrl prop', () => {
     const propsWithBaseUrl = {
-      baseUrl: '/custom-path'
+      baseUrl: '/custom-path',
     };
 
     expect(propsWithBaseUrl.baseUrl).toBeDefined();

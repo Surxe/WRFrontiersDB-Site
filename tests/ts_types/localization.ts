@@ -1,12 +1,15 @@
 import { describe, it, expect } from 'vitest';
-import type { LocalizationKey, LocalizationData } from '../../src/types/localization';
+import type {
+  LocalizationKey,
+  LocalizationData,
+} from '../../src/types/localization';
 
 describe('LocalizationKey', () => {
   it('should accept a valid LocalizationKey object', () => {
     const validKey: LocalizationKey = {
       Key: 'MOD_ArmorShield_Name',
       TableNamespace: 'Modules',
-      en: 'Armor Shield'
+      en: 'Armor Shield',
     };
 
     expect(validKey.Key).toBe('MOD_ArmorShield_Name');
@@ -18,7 +21,7 @@ describe('LocalizationKey', () => {
     const keyWithEmptyStrings: LocalizationKey = {
       Key: '',
       TableNamespace: '',
-      en: ''
+      en: '',
     };
 
     expect(keyWithEmptyStrings.Key).toBe('');
@@ -30,7 +33,7 @@ describe('LocalizationKey', () => {
     const keyWithSpecialChars: LocalizationKey = {
       Key: 'MOD_Test-123_Name!@#',
       TableNamespace: 'Test/Namespace',
-      en: 'Test & Display "Name" <value>'
+      en: 'Test & Display "Name" <value>',
     };
 
     expect(keyWithSpecialChars.Key).toContain('!@#');
@@ -42,7 +45,7 @@ describe('LocalizationKey', () => {
     const keyWithLongText: LocalizationKey = {
       Key: 'LONG_DESC',
       TableNamespace: 'Descriptions',
-      en: 'This is a very long description that might span multiple lines and contain lots of detailed information about the game mechanic or object that needs to be localized properly.'
+      en: 'This is a very long description that might span multiple lines and contain lots of detailed information about the game mechanic or object that needs to be localized properly.',
     };
 
     expect(keyWithLongText.en.length).toBeGreaterThan(100);
@@ -52,7 +55,7 @@ describe('LocalizationKey', () => {
     const keys: LocalizationKey[] = [
       { Key: 'KEY_1', TableNamespace: 'NS1', en: 'Value 1' },
       { Key: 'KEY_2', TableNamespace: 'NS2', en: 'Value 2' },
-      { Key: 'KEY_3', TableNamespace: 'NS3', en: 'Value 3' }
+      { Key: 'KEY_3', TableNamespace: 'NS3', en: 'Value 3' },
     ];
 
     expect(keys).toHaveLength(3);
@@ -66,25 +69,27 @@ describe('LocalizationData', () => {
     const validData: LocalizationData = {
       Modules: {
         MOD_ArmorShield_Name: 'Armor Shield',
-        MOD_ArmorShield_Desc: 'Provides additional armor protection'
-      }
+        MOD_ArmorShield_Desc: 'Provides additional armor protection',
+      },
     };
 
     expect(validData.Modules.MOD_ArmorShield_Name).toBe('Armor Shield');
-    expect(validData.Modules.MOD_ArmorShield_Desc).toBe('Provides additional armor protection');
+    expect(validData.Modules.MOD_ArmorShield_Desc).toBe(
+      'Provides additional armor protection'
+    );
   });
 
   it('should support multiple namespaces', () => {
     const multiNamespaceData: LocalizationData = {
       Modules: {
-        MOD_Test: 'Test Module'
+        MOD_Test: 'Test Module',
       },
       Pilots: {
-        PILOT_TestPilot: 'Test Pilot'
+        PILOT_TestPilot: 'Test Pilot',
       },
       Abilities: {
-        ABL_Test: 'Test Ability'
-      }
+        ABL_Test: 'Test Ability',
+      },
     };
 
     expect(Object.keys(multiNamespaceData)).toHaveLength(3);
@@ -95,7 +100,7 @@ describe('LocalizationData', () => {
 
   it('should support empty namespaces', () => {
     const emptyNamespace: LocalizationData = {
-      EmptyNamespace: {}
+      EmptyNamespace: {},
     };
 
     expect(emptyNamespace.EmptyNamespace).toEqual({});
@@ -112,8 +117,8 @@ describe('LocalizationData', () => {
   it('should allow dynamic namespace and key access', () => {
     const data: LocalizationData = {
       TestNamespace: {
-        TestKey: 'Test Value'
-      }
+        TestKey: 'Test Value',
+      },
     };
 
     const namespace = 'TestNamespace';
@@ -126,16 +131,19 @@ describe('LocalizationData', () => {
     const data: LocalizationData = {
       Modules: {
         MOD_1: 'Module 1',
-        MOD_2: 'Module 2'
+        MOD_2: 'Module 2',
       },
       Pilots: {
         PILOT_1: 'Pilot 1',
-        PILOT_2: 'Pilot 2'
-      }
+        PILOT_2: 'Pilot 2',
+      },
     };
 
     // Simulating two-level lookup: locData[namespace][key]
-    const lookupValue = (namespace: string, key: string): string | undefined => {
+    const lookupValue = (
+      namespace: string,
+      key: string
+    ): string | undefined => {
       return data[namespace]?.[key];
     };
 
@@ -149,12 +157,14 @@ describe('LocalizationData', () => {
     const data: LocalizationData = {
       'Special/Namespace': {
         'Key-With-Dashes': 'Value with "quotes"',
-        'Key_With_Underscores': 'Value with <html> & symbols'
-      }
+        Key_With_Underscores: 'Value with <html> & symbols',
+      },
     };
 
     expect(data['Special/Namespace']['Key-With-Dashes']).toContain('quotes');
-    expect(data['Special/Namespace']['Key_With_Underscores']).toContain('<html>');
+    expect(data['Special/Namespace']['Key_With_Underscores']).toContain(
+      '<html>'
+    );
   });
 
   it('should support numeric string keys', () => {
@@ -162,8 +172,8 @@ describe('LocalizationData', () => {
       Numbers: {
         '1': 'One',
         '2': 'Two',
-        '100': 'One Hundred'
-      }
+        '100': 'One Hundred',
+      },
     };
 
     expect(data.Numbers['1']).toBe('One');
@@ -173,7 +183,7 @@ describe('LocalizationData', () => {
   it('should work with entries and iteration', () => {
     const data: LocalizationData = {
       NS1: { KEY1: 'Value 1' },
-      NS2: { KEY2: 'Value 2' }
+      NS2: { KEY2: 'Value 2' },
     };
 
     const namespaces = Object.keys(data);
@@ -187,7 +197,7 @@ describe('LocalizationData', () => {
     const keys: LocalizationKey[] = [
       { Key: 'MOD_1_Name', TableNamespace: 'Modules', en: 'Module 1' },
       { Key: 'MOD_1_Desc', TableNamespace: 'Modules', en: 'Description 1' },
-      { Key: 'PILOT_1_Name', TableNamespace: 'Pilots', en: 'Pilot 1' }
+      { Key: 'PILOT_1_Name', TableNamespace: 'Pilots', en: 'Pilot 1' },
     ];
 
     // Transform array to LocalizationData structure

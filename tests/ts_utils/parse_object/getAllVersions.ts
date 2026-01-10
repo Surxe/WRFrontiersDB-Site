@@ -29,12 +29,12 @@ describe('getAllVersions', () => {
     const result = getAllVersions();
 
     const versionKeys = Object.keys(result.versions);
-    
+
     // Check that version keys are in descending order
     for (let i = 0; i < versionKeys.length - 1; i++) {
       const current = versionKeys[i];
       const next = versionKeys[i + 1];
-      
+
       // Later dates should come before earlier dates
       expect(current >= next).toBe(true);
     }
@@ -80,9 +80,9 @@ describe('getAllVersions', () => {
 
     const versionKeys = Object.keys(result.versions);
     const latestKey = versionKeys[0];
-    
+
     expect(result.latestVersion).toBe(latestKey);
-    
+
     // Verify it's actually the latest date
     for (const key of versionKeys) {
       expect(latestKey >= key).toBe(true);
@@ -94,15 +94,15 @@ describe('getAllVersions', () => {
 
     // Find a version that might have optional fields
     const versionKeys = Object.keys(result.versions);
-    
+
     for (const key of versionKeys) {
       const version = result.versions[key];
-      
+
       // If patch_notes_url exists, it should be a string
       if ('patch_notes_url' in version) {
         expect(typeof version.patch_notes_url).toBe('string');
       }
-      
+
       // If is_season_release exists, it should be a boolean
       if ('is_season_release' in version) {
         expect(typeof version.is_season_release).toBe('boolean');
@@ -115,6 +115,8 @@ describe('getAllVersions', () => {
     const result2 = getAllVersions();
 
     expect(result1.latestVersion).toBe(result2.latestVersion);
-    expect(Object.keys(result1.versions).length).toBe(Object.keys(result2.versions).length);
+    expect(Object.keys(result1.versions).length).toBe(
+      Object.keys(result2.versions).length
+    );
   });
 });

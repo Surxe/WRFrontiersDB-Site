@@ -11,7 +11,12 @@ describe('PilotTalentType interface', () => {
   const archiveDir = path.join(process.cwd(), 'WRFrontiersDB-Data', 'archive');
   const versions = fs.readdirSync(archiveDir).sort().reverse();
   const latestVersion = versions[0];
-  const pilotTalentTypePath = path.join(archiveDir, latestVersion, 'Objects', 'PilotTalentType.json');
+  const pilotTalentTypePath = path.join(
+    archiveDir,
+    latestVersion,
+    'Objects',
+    'PilotTalentType.json'
+  );
 
   pilotTalentTypes = JSON.parse(fs.readFileSync(pilotTalentTypePath, 'utf-8'));
   pilotTalentTypeArray = Object.values(pilotTalentTypes);
@@ -46,7 +51,7 @@ describe('PilotTalentType interface', () => {
 
   describe('Optional fields', () => {
     it('should have at least one object with "description" field', () => {
-      const withDescription = pilotTalentTypeArray.filter((tt) => 
+      const withDescription = pilotTalentTypeArray.filter((tt) =>
         tt.hasOwnProperty('description')
       );
       expect(withDescription.length).toBeGreaterThan(0);
@@ -74,7 +79,9 @@ describe('PilotTalentType interface', () => {
       pilotTalentTypeArray.forEach((talentType) => {
         const actualFields = Object.keys(talentType);
         actualFields.forEach((field) => {
-          expect(allowedFields.has(field), `Unexpected field: ${field}`).toBe(true);
+          expect(allowedFields.has(field), `Unexpected field: ${field}`).toBe(
+            true
+          );
         });
       });
     });

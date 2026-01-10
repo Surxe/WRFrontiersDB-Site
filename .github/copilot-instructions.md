@@ -9,6 +9,7 @@ Static Astro site displaying War Robots Frontiers game data from versioned JSON 
 ## Quick Reference
 
 **Detailed Documentation**:
+
 - [Architecture](copilot-docs/architecture.md) - Data layer, SSG, build vs runtime
 - [Conventions](copilot-docs/conventions.md) - Parse objects, localization, file organization
 - [Common Tasks](copilot-docs/common-tasks.md) - Step-by-step workflows

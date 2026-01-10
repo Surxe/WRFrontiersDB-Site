@@ -5,9 +5,9 @@ describe('PageRef Component', () => {
     const requiredProps = {
       obj: {
         id: 'MOD_ArmorShield',
-        parseObjectClass: 'Module'
+        parseObjectClass: 'Module',
       },
-      version: '2025-12-09'
+      version: '2025-12-09',
     };
 
     expect(requiredProps.obj).toBeDefined();
@@ -45,10 +45,12 @@ describe('PageRef Component', () => {
     const id = 'MOD_ArmorShield';
     const version = '2025-12-09';
     const pagePath = 'modules';
-    
+
     const pageUrl = `/WRFrontiersDB-Site/${pagePath}/${id}/${version}`;
 
-    expect(pageUrl).toBe('/WRFrontiersDB-Site/modules/MOD_ArmorShield/2025-12-09');
+    expect(pageUrl).toBe(
+      '/WRFrontiersDB-Site/modules/MOD_ArmorShield/2025-12-09'
+    );
   });
 
   it('should fallback to lowercase for unknown parseObjectClass', () => {

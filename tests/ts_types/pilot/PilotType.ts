@@ -11,7 +11,12 @@ describe('PilotType interface', () => {
   const archiveDir = path.join(process.cwd(), 'WRFrontiersDB-Data', 'archive');
   const versions = fs.readdirSync(archiveDir).sort().reverse();
   const latestVersion = versions[0];
-  const pilotTypePath = path.join(archiveDir, latestVersion, 'Objects', 'PilotType.json');
+  const pilotTypePath = path.join(
+    archiveDir,
+    latestVersion,
+    'Objects',
+    'PilotType.json'
+  );
 
   pilotTypes = JSON.parse(fs.readFileSync(pilotTypePath, 'utf-8'));
   pilotTypeArray = Object.values(pilotTypes);
@@ -53,7 +58,7 @@ describe('PilotType interface', () => {
 
   describe('Optional fields', () => {
     it('should have at least one object with "has_extended_bio" field', () => {
-      const withHasExtendedBio = pilotTypeArray.filter((pt) => 
+      const withHasExtendedBio = pilotTypeArray.filter((pt) =>
         pt.hasOwnProperty('has_extended_bio')
       );
       expect(withHasExtendedBio.length).toBeGreaterThan(0);
@@ -63,7 +68,7 @@ describe('PilotType interface', () => {
     });
 
     it('should have at least one object with "can_change_talents" field', () => {
-      const withCanChangeTalents = pilotTypeArray.filter((pt) => 
+      const withCanChangeTalents = pilotTypeArray.filter((pt) =>
         pt.hasOwnProperty('can_change_talents')
       );
       expect(withCanChangeTalents.length).toBeGreaterThan(0);
@@ -73,7 +78,7 @@ describe('PilotType interface', () => {
     });
 
     it('should have at least one object with "sort_order" field', () => {
-      const withSortOrder = pilotTypeArray.filter((pt) => 
+      const withSortOrder = pilotTypeArray.filter((pt) =>
         pt.hasOwnProperty('sort_order')
       );
       expect(withSortOrder.length).toBeGreaterThan(0);
@@ -99,7 +104,9 @@ describe('PilotType interface', () => {
       pilotTypeArray.forEach((pilotType) => {
         const actualFields = Object.keys(pilotType);
         actualFields.forEach((field) => {
-          expect(allowedFields.has(field), `Unexpected field: ${field}`).toBe(true);
+          expect(allowedFields.has(field), `Unexpected field: ${field}`).toBe(
+            true
+          );
         });
       });
     });

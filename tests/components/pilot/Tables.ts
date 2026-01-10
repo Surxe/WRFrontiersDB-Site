@@ -4,13 +4,13 @@ describe('Pilot Tables Component', () => {
   it('should accept required props', () => {
     const requiredProps = {
       pilots: {
-        'PILOT_001': { 
+        PILOT_001: {
           id: 'PILOT_001',
           pilot_type_id: 'DA_PilotType_Legendary.0',
-          levels: []
-        }
+          levels: [],
+        },
       },
-      version: '2025-12-09'
+      version: '2025-12-09',
     };
 
     expect(requiredProps.pilots).toBeDefined();

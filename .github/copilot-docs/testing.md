@@ -38,18 +38,21 @@ npx vitest tests/ts_utils/list/prepareObjectList.ts
 ```
 
 ## Tests for Typescript interfaces
-Tests for typescript interfaces should read real data and compare to the interface with the following 3 tests:
-* Every real object should have every required field (except parseObjectClass which is set at build time)
-* For each optional field, at least 1 real object should have it
-* Each key in the real object should be a field in the interface
 
-Required and optional fields should NOT be determined dynamically. 
+Tests for typescript interfaces should read real data and compare to the interface with the following 3 tests:
+
+- Every real object should have every required field (except parseObjectClass which is set at build time)
+- For each optional field, at least 1 real object should have it
+- Each key in the real object should be a field in the interface
+
+Required and optional fields should NOT be determined dynamically.
 These tests should extend to nested fields as well.
 When reading in real objects, use dynamically the latest version dir within the archive dir
 
 **IMPORTANT: While adding a test for an interface, if the interface does not accurately represent the Data, the interface should be updated, as opposed to modifying the test to work around the innaccurate interface.**
 
 ## Tests for astro components
+
 Test logic and data structures, but do not actually render the Astro component.
 
 ## Best Practices

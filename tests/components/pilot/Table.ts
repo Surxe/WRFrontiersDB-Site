@@ -4,16 +4,19 @@ describe('Pilot Table Component', () => {
   it('should accept required props', () => {
     const requiredProps = {
       pilots: [
-        ['PILOT_001', { 
-          id: 'PILOT_001', 
-          parseObjectClass: 'Pilot',
-          levels: [] 
-        }]
+        [
+          'PILOT_001',
+          {
+            id: 'PILOT_001',
+            parseObjectClass: 'Pilot',
+            levels: [],
+          },
+        ],
       ] as [string, any][],
       pilotTalents: {
-        'TALENT_001': { id: 'TALENT_001' }
+        TALENT_001: { id: 'TALENT_001' },
       },
-      version: '2025-12-09'
+      version: '2025-12-09',
     };
 
     expect(requiredProps.pilots).toBeDefined();
@@ -31,8 +34,8 @@ describe('Pilot Table Component', () => {
         { talents: ['T3'] },
         { talents: ['T4', 'T5', 'T6'] },
         { talents: [] },
-        { talents: ['T7'] }
-      ]
+        { talents: ['T7'] },
+      ],
     };
 
     const maxTalents = Math.max(
@@ -49,8 +52,8 @@ describe('Pilot Table Component', () => {
         { talents: [] },
         { talents: [] },
         { talents: [] },
-        { talents: [] }
-      ]
+        { talents: [] },
+      ],
     };
 
     const maxTalents = Math.max(
@@ -62,7 +65,7 @@ describe('Pilot Table Component', () => {
 
   it('should use correct level indices for 5 levels', () => {
     const levelIndices = [0, 1, 2, 3, 4];
-    
+
     expect(levelIndices.length).toBe(5);
     expect(levelIndices).toEqual([0, 1, 2, 3, 4]);
   });
@@ -70,7 +73,7 @@ describe('Pilot Table Component', () => {
   it('should handle pilots as array of tuples', () => {
     const pilots: [string, any][] = [
       ['PILOT_001', { id: 'PILOT_001', levels: [] }],
-      ['PILOT_002', { id: 'PILOT_002', levels: [] }]
+      ['PILOT_002', { id: 'PILOT_002', levels: [] }],
     ];
 
     expect(Array.isArray(pilots)).toBe(true);

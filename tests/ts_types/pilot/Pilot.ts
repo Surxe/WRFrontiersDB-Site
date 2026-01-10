@@ -11,7 +11,12 @@ describe('Pilot interface', () => {
   const archiveDir = path.join(process.cwd(), 'WRFrontiersDB-Data', 'archive');
   const versions = fs.readdirSync(archiveDir).sort().reverse();
   const latestVersion = versions[0];
-  const pilotPath = path.join(archiveDir, latestVersion, 'Objects', 'Pilot.json');
+  const pilotPath = path.join(
+    archiveDir,
+    latestVersion,
+    'Objects',
+    'Pilot.json'
+  );
 
   pilots = JSON.parse(fs.readFileSync(pilotPath, 'utf-8'));
   pilotArray = Object.values(pilots);
@@ -105,7 +110,7 @@ describe('Pilot interface', () => {
 
   describe('Optional fields', () => {
     it('should have at least one object with "second_name" field', () => {
-      const withSecondName = pilotArray.filter((p) => 
+      const withSecondName = pilotArray.filter((p) =>
         p.hasOwnProperty('second_name')
       );
       expect(withSecondName.length).toBeGreaterThan(0);
@@ -140,7 +145,9 @@ describe('Pilot interface', () => {
       pilotArray.forEach((pilot) => {
         const actualFields = Object.keys(pilot);
         actualFields.forEach((field) => {
-          expect(allowedFields.has(field), `Unexpected field: ${field}`).toBe(true);
+          expect(allowedFields.has(field), `Unexpected field: ${field}`).toBe(
+            true
+          );
         });
       });
     });
@@ -204,7 +211,10 @@ describe('Pilot interface', () => {
       pilotArray.forEach((pilot) => {
         const actualFields = Object.keys(pilot.sell_price);
         actualFields.forEach((field) => {
-          expect(allowedSellPriceFields.has(field), `Unexpected sell_price field: ${field}`).toBe(true);
+          expect(
+            allowedSellPriceFields.has(field),
+            `Unexpected sell_price field: ${field}`
+          ).toBe(true);
         });
       });
     });
@@ -215,7 +225,7 @@ describe('Pilot interface', () => {
       pilotArray.forEach((pilot) => {
         expect(Array.isArray(pilot.levels)).toBe(true);
         expect(pilot.levels.length).toBeGreaterThan(0);
-        
+
         pilot.levels.forEach((level: any) => {
           expect(level).toHaveProperty('talent_type_id');
           expect(level).toHaveProperty('talents');
@@ -227,7 +237,7 @@ describe('Pilot interface', () => {
 
     it('should have at least one level with "reputation_cost" field', () => {
       let foundReputationCost = false;
-      
+
       pilotArray.forEach((pilot) => {
         pilot.levels.forEach((level: any) => {
           if (level.hasOwnProperty('reputation_cost')) {
@@ -237,7 +247,7 @@ describe('Pilot interface', () => {
           }
         });
       });
-      
+
       expect(foundReputationCost).toBe(true);
     });
 
@@ -279,7 +289,10 @@ describe('Pilot interface', () => {
         pilot.levels.forEach((level: any) => {
           const actualFields = Object.keys(level);
           actualFields.forEach((field) => {
-            expect(allowedLevelFields.has(field), `Unexpected level field: ${field}`).toBe(true);
+            expect(
+              allowedLevelFields.has(field),
+              `Unexpected level field: ${field}`
+            ).toBe(true);
           });
         });
       });
@@ -293,7 +306,10 @@ describe('Pilot interface', () => {
           if (level.hasOwnProperty('upgrade_cost')) {
             const actualFields = Object.keys(level.upgrade_cost);
             actualFields.forEach((field) => {
-              expect(allowedUpgradeCostFields.has(field), `Unexpected upgrade_cost field: ${field}`).toBe(true);
+              expect(
+                allowedUpgradeCostFields.has(field),
+                `Unexpected upgrade_cost field: ${field}`
+              ).toBe(true);
             });
           }
         });

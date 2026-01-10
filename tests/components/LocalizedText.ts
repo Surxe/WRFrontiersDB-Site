@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest';
 describe('LocalizedText Component', () => {
   it('should accept required tag prop', () => {
     const requiredProps = {
-      tag: 'span'
+      tag: 'span',
     };
 
     expect(requiredProps.tag).toBeDefined();
@@ -13,7 +13,7 @@ describe('LocalizedText Component', () => {
   it('should accept optional id prop', () => {
     const propsWithId = {
       tag: 'p',
-      id: 'module-name'
+      id: 'module-name',
     };
 
     expect(propsWithId.id).toBeDefined();
@@ -26,8 +26,8 @@ describe('LocalizedText Component', () => {
       localizationKey: {
         Key: 'MOD_name_ArmorShield',
         TableNamespace: 'Module_name',
-        en: 'Emergency Shield'
-      }
+        en: 'Emergency Shield',
+      },
     };
 
     expect(propsWithKey.localizationKey).toBeDefined();
@@ -40,7 +40,7 @@ describe('LocalizedText Component', () => {
     const localizationKey = {
       Key: 'MOD_name_ArmorShield',
       TableNamespace: 'Module_name',
-      en: 'Emergency Shield'
+      en: 'Emergency Shield',
     };
 
     const namespace = localizationKey?.TableNamespace;
@@ -51,7 +51,7 @@ describe('LocalizedText Component', () => {
     const localizationKey = {
       Key: 'MOD_name_ArmorShield',
       TableNamespace: 'Module_name',
-      en: 'Emergency Shield'
+      en: 'Emergency Shield',
     };
 
     const key = localizationKey?.Key;
@@ -62,7 +62,7 @@ describe('LocalizedText Component', () => {
     const localizationKey = {
       Key: 'MOD_name_ArmorShield',
       TableNamespace: 'Module_name',
-      en: 'Emergency Shield'
+      en: 'Emergency Shield',
     };
 
     const defaultText = localizationKey?.en || '';
@@ -79,7 +79,7 @@ describe('LocalizedText Component', () => {
   it('should handle various HTML tags', () => {
     const validTags = ['p', 'span', 'h1', 'h2', 'div', 'strong', 'em'];
 
-    validTags.forEach(tag => {
+    validTags.forEach((tag) => {
       expect(typeof tag).toBe('string');
       expect(tag.length).toBeGreaterThan(0);
     });

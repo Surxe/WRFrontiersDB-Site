@@ -5,7 +5,7 @@ describe('ParseObjectList Component', () => {
     // Define the expected props structure
     const requiredProps = {
       parseObjectFile: 'Objects/Module.json',
-      version: '2025-12-09'
+      version: '2025-12-09',
     };
 
     // Verify the props structure is valid
@@ -19,7 +19,7 @@ describe('ParseObjectList Component', () => {
     const propsWithProdReady = {
       parseObjectFile: 'Objects/Module.json',
       version: '2025-12-09',
-      prodReadyOnly: true
+      prodReadyOnly: true,
     };
 
     expect(propsWithProdReady.prodReadyOnly).toBeDefined();
@@ -29,7 +29,7 @@ describe('ParseObjectList Component', () => {
   it('should default prodReadyOnly to false when not provided', () => {
     const props = {
       parseObjectFile: 'Objects/Module.json',
-      version: '2025-12-09'
+      version: '2025-12-09',
     };
 
     const prodReadyOnly = props.prodReadyOnly ?? false;
@@ -38,13 +38,13 @@ describe('ParseObjectList Component', () => {
 
   it('should use correct parseObjectFile path format', () => {
     const parseObjectFile = 'Objects/Module.json';
-    
+
     expect(parseObjectFile).toMatch(/^Objects\/\w+\.json$/);
   });
 
   it('should use correct version format', () => {
     const version = '2025-12-09';
-    
+
     // Version should be in YYYY-MM-DD format
     expect(version).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
@@ -61,12 +61,12 @@ describe('ParseObjectList Component', () => {
     // Simulate the structure returned by prepareObjectList
     const entries: [string, any][] = [
       ['MOD_ArmorShield', { id: 'MOD_ArmorShield', name: 'Shield' }],
-      ['MOD_SpeedBoost', { id: 'MOD_SpeedBoost', name: 'Speed' }]
+      ['MOD_SpeedBoost', { id: 'MOD_SpeedBoost', name: 'Speed' }],
     ];
 
     expect(Array.isArray(entries)).toBe(true);
     expect(entries.length).toBe(2);
-    
+
     entries.forEach(([key, obj]) => {
       expect(typeof key).toBe('string');
       expect(obj).toHaveProperty('id');

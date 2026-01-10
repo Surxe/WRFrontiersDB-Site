@@ -16,29 +16,41 @@ describe('sortGroups', () => {
 
   it('should preserve items within each group', () => {
     const groups = new Map<string, [string, { value: number }][]>([
-      ['B', [
-        ['b1', { value: 1 }],
-        ['b2', { value: 2 }],
-      ]],
-      ['A', [
-        ['a1', { value: 3 }],
-        ['a2', { value: 4 }],
-        ['a3', { value: 5 }],
-      ]],
+      [
+        'B',
+        [
+          ['b1', { value: 1 }],
+          ['b2', { value: 2 }],
+        ],
+      ],
+      [
+        'A',
+        [
+          ['a1', { value: 3 }],
+          ['a2', { value: 4 }],
+          ['a3', { value: 5 }],
+        ],
+      ],
     ]);
 
     const result = sortGroups(groups);
 
     expect(result).toEqual([
-      ['A', [
-        ['a1', { value: 3 }],
-        ['a2', { value: 4 }],
-        ['a3', { value: 5 }],
-      ]],
-      ['B', [
-        ['b1', { value: 1 }],
-        ['b2', { value: 2 }],
-      ]],
+      [
+        'A',
+        [
+          ['a1', { value: 3 }],
+          ['a2', { value: 4 }],
+          ['a3', { value: 5 }],
+        ],
+      ],
+      [
+        'B',
+        [
+          ['b1', { value: 1 }],
+          ['b2', { value: 2 }],
+        ],
+      ],
     ]);
   });
 
@@ -70,9 +82,7 @@ describe('sortGroups', () => {
 
     const result = sortGroups(groups);
 
-    expect(result).toEqual([
-      ['OnlyGroup', [['item1', { value: 1 }]]],
-    ]);
+    expect(result).toEqual([['OnlyGroup', [['item1', { value: 1 }]]]]);
   });
 
   it('should sort numeric strings naturally', () => {
@@ -114,7 +124,12 @@ describe('sortGroups', () => {
     const result = sortGroups(groups);
 
     // localeCompare handles case-insensitive by default
-    expect(result.map(([key]) => key)).toEqual(['alpha', 'Alpha', 'zebra', 'Zebra']);
+    expect(result.map(([key]) => key)).toEqual([
+      'alpha',
+      'Alpha',
+      'zebra',
+      'Zebra',
+    ]);
   });
 
   it('should handle special characters in keys', () => {
@@ -145,6 +160,11 @@ describe('sortGroups', () => {
 
     const result = sortGroups(groups, (a, b) => a.length - b.length);
 
-    expect(result.map(([key]) => key)).toEqual(['x', 'mid', 'medium', 'longest_key']);
+    expect(result.map(([key]) => key)).toEqual([
+      'x',
+      'mid',
+      'medium',
+      'longest_key',
+    ]);
   });
 });

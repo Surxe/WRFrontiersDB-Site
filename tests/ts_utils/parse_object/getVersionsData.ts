@@ -75,7 +75,7 @@ describe('getVersionsData', () => {
       const result = getVersionsData(testVersion);
 
       const versionKeys = Object.keys(result.versions);
-      
+
       // Check a few versions
       for (let i = 0; i < Math.min(3, versionKeys.length); i++) {
         const key = versionKeys[i];
@@ -93,10 +93,12 @@ describe('getVersionsData', () => {
       const result = getVersionsData(testVersion);
 
       const versionFromObject = result.versions[testVersion];
-      
+
       expect(result.versionInfo.title).toBe(versionFromObject.title);
       expect(result.versionInfo.date_utc).toBe(versionFromObject.date_utc);
-      expect(result.versionInfo.manifest_id).toBe(versionFromObject.manifest_id);
+      expect(result.versionInfo.manifest_id).toBe(
+        versionFromObject.manifest_id
+      );
     });
 
     it('should include optional properties when present', () => {

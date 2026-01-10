@@ -11,7 +11,12 @@ describe('PilotClass interface', () => {
   const archiveDir = path.join(process.cwd(), 'WRFrontiersDB-Data', 'archive');
   const versions = fs.readdirSync(archiveDir).sort().reverse();
   const latestVersion = versions[0];
-  const pilotClassPath = path.join(archiveDir, latestVersion, 'Objects', 'PilotClass.json');
+  const pilotClassPath = path.join(
+    archiveDir,
+    latestVersion,
+    'Objects',
+    'PilotClass.json'
+  );
 
   pilotClasses = JSON.parse(fs.readFileSync(pilotClassPath, 'utf-8'));
   pilotClassArray = Object.values(pilotClasses);
@@ -75,21 +80,23 @@ describe('PilotClass interface', () => {
         // parseObjectClass is added at build time, not in raw data
       ]);
 
-      const allowedBadgeFields = new Set([
-        'image_path',
-        'hex',
-      ]);
+      const allowedBadgeFields = new Set(['image_path', 'hex']);
 
       pilotClassArray.forEach((pilotClass) => {
         const actualFields = Object.keys(pilotClass);
         actualFields.forEach((field) => {
-          expect(allowedFields.has(field), `Unexpected field: ${field}`).toBe(true);
+          expect(allowedFields.has(field), `Unexpected field: ${field}`).toBe(
+            true
+          );
         });
 
         if (pilotClass.badge) {
           const actualBadgeFields = Object.keys(pilotClass.badge);
           actualBadgeFields.forEach((field) => {
-            expect(allowedBadgeFields.has(field), `Unexpected badge field: ${field}`).toBe(true);
+            expect(
+              allowedBadgeFields.has(field),
+              `Unexpected badge field: ${field}`
+            ).toBe(true);
           });
         }
       });

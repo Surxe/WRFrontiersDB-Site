@@ -6,14 +6,14 @@ describe('LevelTableData Component', () => {
       levelIndex: 0,
       level: {
         talents: ['TALENT_001', 'TALENT_002'],
-        talent_type_id: 'TYPE_001'
+        talent_type_id: 'TYPE_001',
       },
       talentIndex: 0,
       maxTalents: 3,
       pilotTalents: {
-        'TALENT_001': { id: 'TALENT_001' }
+        TALENT_001: { id: 'TALENT_001' },
       },
-      version: '2025-12-09'
+      version: '2025-12-09',
     };
 
     expect(requiredProps.levelIndex).toBeDefined();
@@ -28,9 +28,8 @@ describe('LevelTableData Component', () => {
     const level = { talents: ['TALENT_SPECIAL', 'TALENT_IGNORED'] };
     const talentIndex = 1;
 
-    const talentId = levelIndex === 4 
-      ? level?.talents?.[0] 
-      : level?.talents?.[talentIndex];
+    const talentId =
+      levelIndex === 4 ? level?.talents?.[0] : level?.talents?.[talentIndex];
 
     expect(talentId).toBe('TALENT_SPECIAL');
   });
@@ -40,9 +39,8 @@ describe('LevelTableData Component', () => {
     const level = { talents: ['TALENT_001', 'TALENT_002', 'TALENT_003'] };
     const talentIndex = 1;
 
-    const talentId = levelIndex === 4 
-      ? level?.talents?.[0] 
-      : level?.talents?.[talentIndex];
+    const talentId =
+      levelIndex === 4 ? level?.talents?.[0] : level?.talents?.[talentIndex];
 
     expect(talentId).toBe('TALENT_002');
   });
@@ -76,9 +74,8 @@ describe('LevelTableData Component', () => {
     const level = undefined;
     const talentIndex = 0;
 
-    const talentId = levelIndex === 4 
-      ? level?.talents?.[0] 
-      : level?.talents?.[talentIndex];
+    const talentId =
+      levelIndex === 4 ? level?.talents?.[0] : level?.talents?.[talentIndex];
 
     expect(talentId).toBeUndefined();
   });

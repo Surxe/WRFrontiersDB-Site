@@ -11,9 +11,16 @@ describe('PilotPersonality interface', () => {
   const archiveDir = path.join(process.cwd(), 'WRFrontiersDB-Data', 'archive');
   const versions = fs.readdirSync(archiveDir).sort().reverse();
   const latestVersion = versions[0];
-  const pilotPersonalityPath = path.join(archiveDir, latestVersion, 'Objects', 'PilotPersonality.json');
+  const pilotPersonalityPath = path.join(
+    archiveDir,
+    latestVersion,
+    'Objects',
+    'PilotPersonality.json'
+  );
 
-  pilotPersonalities = JSON.parse(fs.readFileSync(pilotPersonalityPath, 'utf-8'));
+  pilotPersonalities = JSON.parse(
+    fs.readFileSync(pilotPersonalityPath, 'utf-8')
+  );
   pilotPersonalityArray = Object.values(pilotPersonalities);
 
   describe('Required fields', () => {
@@ -64,7 +71,9 @@ describe('PilotPersonality interface', () => {
       pilotPersonalityArray.forEach((personality) => {
         const actualFields = Object.keys(personality);
         actualFields.forEach((field) => {
-          expect(allowedFields.has(field), `Unexpected field: ${field}`).toBe(true);
+          expect(allowedFields.has(field), `Unexpected field: ${field}`).toBe(
+            true
+          );
         });
       });
     });

@@ -9,7 +9,10 @@ describe('getParseObjects', () => {
 
   describe('successful loading', () => {
     it('should load Module objects and add parseObjectClass', () => {
-      const result = getParseObjects<Module>('Objects/Module.json', testVersion);
+      const result = getParseObjects<Module>(
+        'Objects/Module.json',
+        testVersion
+      );
 
       // Should return a non-empty object
       expect(Object.keys(result).length).toBeGreaterThan(0);
@@ -37,7 +40,10 @@ describe('getParseObjects', () => {
     });
 
     it('should extract parseObjectClass from different file paths', () => {
-      const pilotClasses = getParseObjects('Objects/PilotClass.json', testVersion);
+      const pilotClasses = getParseObjects(
+        'Objects/PilotClass.json',
+        testVersion
+      );
 
       expect(Object.keys(pilotClasses).length).toBeGreaterThan(0);
 
@@ -57,7 +63,10 @@ describe('getParseObjects', () => {
     });
 
     it('should preserve all original object properties', () => {
-      const result = getParseObjects<Module>('Objects/Module.json', testVersion);
+      const result = getParseObjects<Module>(
+        'Objects/Module.json',
+        testVersion
+      );
       const firstKey = Object.keys(result)[0];
       const module = result[firstKey];
 
@@ -133,7 +142,10 @@ describe('getParseObjects', () => {
 
     it('should allow generic type parameter', () => {
       // Test that TypeScript generic works
-      const modules = getParseObjects<Module>('Objects/Module.json', testVersion);
+      const modules = getParseObjects<Module>(
+        'Objects/Module.json',
+        testVersion
+      );
       const pilots = getParseObjects<Pilot>('Objects/Pilot.json', testVersion);
 
       const moduleKey = Object.keys(modules)[0];

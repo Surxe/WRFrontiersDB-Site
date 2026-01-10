@@ -11,7 +11,12 @@ describe('PilotTalent interface', () => {
   const archiveDir = path.join(process.cwd(), 'WRFrontiersDB-Data', 'archive');
   const versions = fs.readdirSync(archiveDir).sort().reverse();
   const latestVersion = versions[0];
-  const pilotTalentPath = path.join(archiveDir, latestVersion, 'Objects', 'PilotTalent.json');
+  const pilotTalentPath = path.join(
+    archiveDir,
+    latestVersion,
+    'Objects',
+    'PilotTalent.json'
+  );
 
   pilotTalents = JSON.parse(fs.readFileSync(pilotTalentPath, 'utf-8'));
   pilotTalentArray = Object.values(pilotTalents);
@@ -65,7 +70,7 @@ describe('PilotTalent interface', () => {
 
   describe('Optional fields', () => {
     it('should have at least one object with "ui_description" field', () => {
-      const withUIDescription = pilotTalentArray.filter((t) => 
+      const withUIDescription = pilotTalentArray.filter((t) =>
         t.hasOwnProperty('ui_description')
       );
       expect(withUIDescription.length).toBeGreaterThan(0);
@@ -80,7 +85,7 @@ describe('PilotTalent interface', () => {
     });
 
     it('should have at least one object with "short_ui_description" field', () => {
-      const withShortUIDescription = pilotTalentArray.filter((t) => 
+      const withShortUIDescription = pilotTalentArray.filter((t) =>
         t.hasOwnProperty('short_ui_description')
       );
       expect(withShortUIDescription.length).toBeGreaterThan(0);
@@ -89,13 +94,15 @@ describe('PilotTalent interface', () => {
         expect(talent.short_ui_description).toHaveProperty('TableNamespace');
         expect(talent.short_ui_description).toHaveProperty('en');
         expect(typeof talent.short_ui_description.Key).toBe('string');
-        expect(typeof talent.short_ui_description.TableNamespace).toBe('string');
+        expect(typeof talent.short_ui_description.TableNamespace).toBe(
+          'string'
+        );
         expect(typeof talent.short_ui_description.en).toBe('string');
       });
     });
 
     it('should have at least one object with "buffs" field', () => {
-      const withBuffs = pilotTalentArray.filter((t) => 
+      const withBuffs = pilotTalentArray.filter((t) =>
         t.hasOwnProperty('buffs')
       );
       expect(withBuffs.length).toBeGreaterThan(0);
@@ -105,7 +112,7 @@ describe('PilotTalent interface', () => {
     });
 
     it('should have at least one object with "target_buffs" field', () => {
-      const withTargetBuffs = pilotTalentArray.filter((t) => 
+      const withTargetBuffs = pilotTalentArray.filter((t) =>
         t.hasOwnProperty('target_buffs')
       );
       expect(withTargetBuffs.length).toBeGreaterThan(0);
@@ -115,7 +122,7 @@ describe('PilotTalent interface', () => {
     });
 
     it('should have at least one object with "default_properties" field', () => {
-      const withDefaultProperties = pilotTalentArray.filter((t) => 
+      const withDefaultProperties = pilotTalentArray.filter((t) =>
         t.hasOwnProperty('default_properties')
       );
       expect(withDefaultProperties.length).toBeGreaterThan(0);
@@ -154,7 +161,9 @@ describe('PilotTalent interface', () => {
       pilotTalentArray.forEach((talent) => {
         const actualFields = Object.keys(talent);
         actualFields.forEach((field) => {
-          expect(allowedFields.has(field), `Unexpected field: ${field}`).toBe(true);
+          expect(allowedFields.has(field), `Unexpected field: ${field}`).toBe(
+            true
+          );
         });
       });
     });
@@ -207,7 +216,9 @@ describe('PilotTalent interface', () => {
           expect(talent.short_ui_description.TableNamespace).toBeDefined();
           expect(talent.short_ui_description.en).toBeDefined();
           expect(typeof talent.short_ui_description.Key).toBe('string');
-          expect(typeof talent.short_ui_description.TableNamespace).toBe('string');
+          expect(typeof talent.short_ui_description.TableNamespace).toBe(
+            'string'
+          );
           expect(typeof talent.short_ui_description.en).toBe('string');
         }
       });
@@ -234,7 +245,10 @@ describe('PilotTalent interface', () => {
         talent.stats.forEach((stat: any) => {
           const actualFields = Object.keys(stat);
           actualFields.forEach((field) => {
-            expect(allowedStatFields.has(field), `Unexpected stat field: ${field}`).toBe(true);
+            expect(
+              allowedStatFields.has(field),
+              `Unexpected stat field: ${field}`
+            ).toBe(true);
           });
         });
       });
@@ -277,7 +291,9 @@ describe('PilotTalent interface', () => {
                 expect(modifier).toHaveProperty('value');
                 expect(typeof modifier.what).toBe('string');
                 expect(typeof modifier.operator).toBe('string');
-                expect(['Grow', 'Multiply'].includes(modifier.operator)).toBe(true);
+                expect(['Grow', 'Multiply'].includes(modifier.operator)).toBe(
+                  true
+                );
                 expect(typeof modifier.value).toBe('number');
               });
             }
@@ -294,8 +310,10 @@ describe('PilotTalent interface', () => {
               expect(Array.isArray(buff.AbilitySelectors)).toBe(true);
               buff.AbilitySelectors.forEach((selector: any) => {
                 expect(selector).toHaveProperty('allowed_placement_types');
-                expect(Array.isArray(selector.allowed_placement_types)).toBe(true);
-                
+                expect(Array.isArray(selector.allowed_placement_types)).toBe(
+                  true
+                );
+
                 if (selector.hasOwnProperty('module_tags')) {
                   expect(Array.isArray(selector.module_tags)).toBe(true);
                   selector.module_tags.forEach((tag: any) => {
@@ -317,9 +335,13 @@ describe('PilotTalent interface', () => {
             if (buff.hasOwnProperty('module_tag_selector')) {
               expect(buff.module_tag_selector).toHaveProperty('list_operator');
               expect(buff.module_tag_selector).toHaveProperty('module_tags');
-              expect(typeof buff.module_tag_selector.list_operator).toBe('string');
-              expect(Array.isArray(buff.module_tag_selector.module_tags)).toBe(true);
-              
+              expect(typeof buff.module_tag_selector.list_operator).toBe(
+                'string'
+              );
+              expect(Array.isArray(buff.module_tag_selector.module_tags)).toBe(
+                true
+              );
+
               buff.module_tag_selector.module_tags.forEach((tag: any) => {
                 expect(tag).toHaveProperty('module_tag_id');
                 expect(typeof tag.module_tag_id).toBe('string');
@@ -361,12 +383,15 @@ describe('PilotTalent interface', () => {
     });
 
     it('should have buffs or target_buffs in most objects', () => {
-      const withBuffsOrTargetBuffs = pilotTalentArray.filter((t) => 
-        (t.hasOwnProperty('buffs') && t.buffs.length > 0) || 
-        (t.hasOwnProperty('target_buffs') && t.target_buffs.length > 0)
+      const withBuffsOrTargetBuffs = pilotTalentArray.filter(
+        (t) =>
+          (t.hasOwnProperty('buffs') && t.buffs.length > 0) ||
+          (t.hasOwnProperty('target_buffs') && t.target_buffs.length > 0)
       );
       // Most talents should have buffs or target_buffs
-      expect(withBuffsOrTargetBuffs.length).toBeGreaterThan(pilotTalentArray.length * 0.5);
+      expect(withBuffsOrTargetBuffs.length).toBeGreaterThan(
+        pilotTalentArray.length * 0.5
+      );
     });
   });
 });

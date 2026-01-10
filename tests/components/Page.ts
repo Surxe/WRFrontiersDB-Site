@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest';
 describe('Page Component', () => {
   it('should accept optional title prop', () => {
     const propsWithTitle = {
-      title: 'WRFrontiersDB - Modules'
+      title: 'WRFrontiersDB - Modules',
     };
 
     expect(propsWithTitle.title).toBeDefined();
@@ -18,7 +18,7 @@ describe('Page Component', () => {
 
   it('should handle undefined title gracefully', () => {
     const props: { title?: string } = {
-      title: undefined
+      title: undefined,
     };
 
     const title = props.title;
@@ -36,7 +36,7 @@ describe('Page Component', () => {
 
   it('should have correct HTML lang attribute', () => {
     const lang = 'en';
-    
+
     expect(lang).toBe('en');
     expect(typeof lang).toBe('string');
   });
@@ -45,11 +45,11 @@ describe('Page Component', () => {
     // Simulate langs.json structure
     const langs = {
       en: { en: 'English', ru: 'Английский' },
-      ru: { en: 'Russian', ru: 'Русский' }
+      ru: { en: 'Russian', ru: 'Русский' },
     };
 
     const entries = Object.entries(langs);
-    
+
     expect(entries.length).toBeGreaterThan(0);
     entries.forEach(([code, names]) => {
       expect(typeof code).toBe('string');
@@ -59,7 +59,7 @@ describe('Page Component', () => {
 
   it('should default to English language', () => {
     const defaultLang = 'en';
-    
+
     expect(defaultLang).toBe('en');
   });
 });

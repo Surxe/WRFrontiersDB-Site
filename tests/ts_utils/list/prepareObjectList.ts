@@ -5,9 +5,21 @@ import type { ParseObject } from '../../../src/types/parse_object';
 describe('prepareObjectList', () => {
   it('should return all entries when no options provided', () => {
     const objects: Record<string, ParseObject> = {
-      obj1: { id: 'obj1', production_status: 'Ready', parseObjectClass: 'Test' },
-      obj2: { id: 'obj2', production_status: 'NotReady', parseObjectClass: 'Test' },
-      obj3: { id: 'obj3', production_status: 'Ready', parseObjectClass: 'Test' },
+      obj1: {
+        id: 'obj1',
+        production_status: 'Ready',
+        parseObjectClass: 'Test',
+      },
+      obj2: {
+        id: 'obj2',
+        production_status: 'NotReady',
+        parseObjectClass: 'Test',
+      },
+      obj3: {
+        id: 'obj3',
+        production_status: 'Ready',
+        parseObjectClass: 'Test',
+      },
     };
 
     const result = prepareObjectList(objects);
@@ -22,9 +34,21 @@ describe('prepareObjectList', () => {
 
   it('should filter objects when prodReadyOnly is true', () => {
     const objects: Record<string, ParseObject> = {
-      obj1: { id: 'obj1', production_status: 'Ready', parseObjectClass: 'Test' },
-      obj2: { id: 'obj2', production_status: 'NotReady', parseObjectClass: 'Test' },
-      obj3: { id: 'obj3', production_status: 'Ready', parseObjectClass: 'Test' },
+      obj1: {
+        id: 'obj1',
+        production_status: 'Ready',
+        parseObjectClass: 'Test',
+      },
+      obj2: {
+        id: 'obj2',
+        production_status: 'NotReady',
+        parseObjectClass: 'Test',
+      },
+      obj3: {
+        id: 'obj3',
+        production_status: 'Ready',
+        parseObjectClass: 'Test',
+      },
       obj4: { id: 'obj4', parseObjectClass: 'Test' }, // No production_status
     };
 
@@ -39,9 +63,21 @@ describe('prepareObjectList', () => {
 
   it('should apply custom sorting when sortBy is provided', () => {
     const objects: Record<string, ParseObject> = {
-      obj1: { id: 'obj1', production_status: 'Ready', parseObjectClass: 'Test' },
-      obj2: { id: 'obj2', production_status: 'Ready', parseObjectClass: 'Test' },
-      obj3: { id: 'obj3', production_status: 'Ready', parseObjectClass: 'Test' },
+      obj1: {
+        id: 'obj1',
+        production_status: 'Ready',
+        parseObjectClass: 'Test',
+      },
+      obj2: {
+        id: 'obj2',
+        production_status: 'Ready',
+        parseObjectClass: 'Test',
+      },
+      obj3: {
+        id: 'obj3',
+        production_status: 'Ready',
+        parseObjectClass: 'Test',
+      },
     };
 
     const result = prepareObjectList(objects, {
@@ -57,10 +93,26 @@ describe('prepareObjectList', () => {
 
   it('should filter and sort when both options are provided', () => {
     const objects: Record<string, ParseObject> = {
-      zebra: { id: 'zebra', production_status: 'Ready', parseObjectClass: 'Test' },
-      apple: { id: 'apple', production_status: 'NotReady', parseObjectClass: 'Test' },
-      banana: { id: 'banana', production_status: 'Ready', parseObjectClass: 'Test' },
-      cherry: { id: 'cherry', production_status: 'Ready', parseObjectClass: 'Test' },
+      zebra: {
+        id: 'zebra',
+        production_status: 'Ready',
+        parseObjectClass: 'Test',
+      },
+      apple: {
+        id: 'apple',
+        production_status: 'NotReady',
+        parseObjectClass: 'Test',
+      },
+      banana: {
+        id: 'banana',
+        production_status: 'Ready',
+        parseObjectClass: 'Test',
+      },
+      cherry: {
+        id: 'cherry',
+        production_status: 'Ready',
+        parseObjectClass: 'Test',
+      },
     };
 
     const result = prepareObjectList(objects, {

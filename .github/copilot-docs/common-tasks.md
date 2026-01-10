@@ -35,7 +35,6 @@ Injected by `ObjectPageScripts` component using `<script type="application/json"
 3. **Pass props** using TypeScript interfaces for type safety
 4. **Use slots** for flexible content injection when appropriate
 
-
 ## Working with Versions
 
 - **Latest version**: `Object.keys(versions)[0]` (versions are ordered newest-first)
