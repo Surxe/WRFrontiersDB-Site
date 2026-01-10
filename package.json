@@ -8,7 +8,8 @@
     "preview": "astro preview",
     "astro": "astro",
     "lint": "eslint . --ext .js,.ts,.astro --max-warnings 0",
-    "format:check": "prettier --check \"**/*.{js,ts,astro,json,md}\""
+    "format:check": "prettier --check \"**/*.{js,ts,astro,json,md}\"",
+    "vitest": "vitest run"
   },
   "dependencies": {
     "astro": "^5.16.6"
@@ -16,10 +17,12 @@
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^8.52.0",
     "@typescript-eslint/parser": "^8.52.0",
+    "@vitest/ui": "^4.0.16",
     "astro-eslint-parser": "^1.2.2",
     "eslint": "^9.39.2",
     "eslint-plugin-astro": "^1.5.0",
     "prettier": "^3.7.4",
-    "prettier-plugin-astro": "^0.14.1"
+    "prettier-plugin-astro": "^0.14.1",
+    "vitest": "^4.0.16"
   }
 }
