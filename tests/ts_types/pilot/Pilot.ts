@@ -108,11 +108,12 @@ describe('Pilot interface', () => {
   });
 
   describe('Optional fields', () => {
-    it('should have at least one object with "second_name" field', () => {
+    it('should have at least one object with "second_name" field, but not all', () => {
       const withSecondName = pilotArray.filter((p) =>
         Object.prototype.hasOwnProperty.call(p, 'second_name')
       );
       expect(withSecondName.length).toBeGreaterThan(0);
+      expect(withSecondName.length).toBeLessThan(pilotArray.length);
       withSecondName.forEach((pilot) => {
         expect(pilot.second_name).toHaveProperty('Key');
         expect(pilot.second_name).toHaveProperty('TableNamespace');

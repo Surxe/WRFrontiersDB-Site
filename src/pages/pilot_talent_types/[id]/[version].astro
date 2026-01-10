@@ -13,6 +13,7 @@ import {
   getVersionsData,
 } from '../../../utils/parse_object';
 import { enrichPilotTalents } from '../../../utils/pilot';
+import { getDefaultString } from '../../../utils/localization';
 
 export async function getStaticPaths() {
   return await generateObjectStaticPaths('Objects/PilotTalentType.json');
@@ -44,7 +45,8 @@ const talentsForType = Object.entries(enrichedTalents)
 const { versions, versionInfo } = getVersionsData(version);
 
 // Extract English text as fallback
-const defaultName = pilotTalentType.name?.en || pilotTalentType.id;
+const defaultName =
+  getDefaultString(pilotTalentType.name) || pilotTalentType.id;
 ---
 
 <ParseObjectPage>
@@ -67,11 +69,15 @@ const defaultName = pilotTalentType.name?.en || pilotTalentType.id;
 
   <Icon iconPath={pilotTalentType.image_path} altText={`${defaultName} icon`} />
 
-  <LocalizedText
-    id="pilot-talent-type-desc"
-    tag="p"
-    localizationKey={pilotTalentType.description}
-  />
+  {
+    pilotTalentType.description && (
+      <LocalizedText
+        id="pilot-talent-type-desc"
+        tag="p"
+        localizationKey={pilotTalentType.description}
+      />
+    )
+  }
 
   <h2>Pilot Talents</h2>
   <p>

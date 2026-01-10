@@ -68,11 +68,12 @@ describe('PilotTalent interface', () => {
   });
 
   describe('Optional fields', () => {
-    it('should have at least one object with "ui_description" field', () => {
+    it('should have at least one object with "ui_description" field, but not all', () => {
       const withUIDescription = pilotTalentArray.filter((t) =>
         Object.prototype.hasOwnProperty.call(t, 'ui_description')
       );
       expect(withUIDescription.length).toBeGreaterThan(0);
+      expect(withUIDescription.length).toBeLessThan(pilotTalentArray.length);
       withUIDescription.forEach((talent) => {
         expect(talent.ui_description).toHaveProperty('Key');
         expect(talent.ui_description).toHaveProperty('TableNamespace');
@@ -83,11 +84,14 @@ describe('PilotTalent interface', () => {
       });
     });
 
-    it('should have at least one object with "short_ui_description" field', () => {
+    it('should have at least one object with "short_ui_description" field, but not all', () => {
       const withShortUIDescription = pilotTalentArray.filter((t) =>
         Object.prototype.hasOwnProperty.call(t, 'short_ui_description')
       );
       expect(withShortUIDescription.length).toBeGreaterThan(0);
+      expect(withShortUIDescription.length).toBeLessThan(
+        pilotTalentArray.length
+      );
       withShortUIDescription.forEach((talent) => {
         expect(talent.short_ui_description).toHaveProperty('Key');
         expect(talent.short_ui_description).toHaveProperty('TableNamespace');

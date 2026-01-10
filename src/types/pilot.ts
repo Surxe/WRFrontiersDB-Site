@@ -4,7 +4,7 @@ import type { ParseObject } from './parse_object';
 export interface PilotTalentType extends ParseObject {
   parseObjectClass: 'PilotTalentType';
   name: LocalizationKey;
-  description?: LocalizationKey;
+  description: LocalizationKey;
   image_path: string;
 }
 

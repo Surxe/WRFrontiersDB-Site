@@ -11,7 +11,7 @@ export interface Module extends ParseObject {
     mount: string;
   }>;
   module_tags_ids?: string[];
-  name?: LocalizationKey | { InvariantString: string }; // TODO InvariantString support
+  name?: LocalizationKey; // TODO InvariantString support
   description?: LocalizationKey;
   text_tags?: LocalizationKey[];
   module_scalars: {
