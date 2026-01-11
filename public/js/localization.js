@@ -99,8 +99,8 @@ function replaceStatPlaceholders(text, choiceMap, currentChoice, locData) {
       if (unitName) {
         localizedUnit = getLocalizedText(
           locData,
-          unitName.namespace,
-          unitName.key,
+          unitName.TableNamespace,
+          unitName.Key,
           unitName.en // English fallback
         );
       }
