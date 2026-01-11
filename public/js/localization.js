@@ -74,13 +74,17 @@ function replaceStatPlaceholders(text, choiceMap, currentChoice) {
     return text;
   }
 
+  console.log('replaceStatPlaceholders called:', { text, choiceMap, currentChoice });
+
   let result = text;
   for (const [shortKey, choices] of Object.entries(choiceMap)) {
     const value = choices[currentChoice];
     if (value !== undefined) {
       // Replace all occurrences of {shortKey} with the value
       const regex = new RegExp(`\\{${shortKey}\\}`, 'g');
+      const before = result;
       result = result.replace(regex, String(value));
+      console.log(`Replaced {${shortKey}} with ${value}:`, { before, after: result });
     }
     // If value not found, leave placeholder intact
   }
@@ -112,10 +116,12 @@ export function updateLocalizedElements(locData, selectors) {
 
         // Handle stat replacements if data-stat-value-choices exists
         const statValueChoices = element.dataset.statValueChoices;
+        console.log('Element with localization:', { element, namespace, key, statValueChoices });
         if (statValueChoices) {
           try {
             const choiceMap = JSON.parse(statValueChoices);
             const currentChoice = parseInt(element.dataset.currentChoice || '0', 10);
+            console.log('About to replace stats:', { localizedText, choiceMap, currentChoice });
             localizedText = replaceStatPlaceholders(localizedText, choiceMap, currentChoice);
           } catch (error) {
             console.warn('Failed to parse stat value choices:', error);
@@ -145,8 +151,11 @@ export async function initializeLocalization(
     langSpan.textContent = currentLang;
   }
 
-  // Skip loading if English (already embedded as fallback)
-  if (currentLang === 'en') return;
+  // For English, still need to run updateLocalizedElements for stat replacements
+  if (currentLang === 'en') {
+    updateLocalizedElements({}, selectors);
+    return;
+  }
 
   // Load and apply localization
   const locData = await loadLanguage(currentLang, version);
