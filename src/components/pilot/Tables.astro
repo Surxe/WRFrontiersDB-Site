@@ -21,10 +21,7 @@ const pilotTalents = getParseObjects<PilotTalent>(
   'Objects/PilotTalent.json',
   version
 );
-const rarities = getParseObjects(
-  'Objects/Rarity.json',
-  version
-);
+const rarities = getParseObjects('Objects/Rarity.json', version);
 
 // Prepare and filter pilots
 const entries = prepareObjectList(pilots, { prodReadyOnly: false });

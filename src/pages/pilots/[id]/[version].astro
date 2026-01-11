@@ -42,12 +42,6 @@ const pilotTypes = getParseObjects<PilotType>(
   'Objects/PilotType.json',
   version
 );
-
-const pilotType = getParseObject<PilotType>(
-  pilot.pilot_type_id,
-  version,
-  'Objects/PilotType.json'
-);
 const rarity = getParseObject<Rarity>(
   pilotTypes[pilot.pilot_type_id].rarity_id,
   version,
@@ -86,13 +80,15 @@ const defaultName = getDefaultString(pilot.first_name) || pilot.id;
       localizationKey={pilot.first_name}
     />
     {' '}
-    {pilot.second_name && (
-      <LocalizedText
-        id="pilot-second-name"
-        tag="span"
-        localizationKey={pilot.second_name}
-      />
-    )}
+    {
+      pilot.second_name && (
+        <LocalizedText
+          id="pilot-second-name"
+          tag="span"
+          localizationKey={pilot.second_name}
+        />
+      )
+    }
   </p>
 
   <LocalizedText id="pilot-bio" tag="p" localizationKey={pilot.bio} />
