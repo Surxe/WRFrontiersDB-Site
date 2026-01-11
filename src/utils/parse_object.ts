@@ -38,7 +38,9 @@ export function getParseObjects<T = ParseObject>(
 
       // Dynamically derive URL constant name: "ModuleStat" -> "MODULESTAT_URL"
       const urlConstName = parseObjectClass.toUpperCase() + '_URL';
-      const parseObjectUrl = allTypeExports[urlConstName as keyof typeof allTypeExports] as string;
+      const parseObjectUrl = allTypeExports[
+        urlConstName as keyof typeof allTypeExports
+      ] as string;
 
       // Add parseObjectClass and parseObjectUrl to each object
       const objectsWithType: Record<string, T> = {};
