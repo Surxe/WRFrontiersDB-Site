@@ -1,7 +1,6 @@
 ---
 import type { PilotTalent, Pilot, PilotTalentType } from '../../../types/pilot';
 import type { ModuleStat } from '../../../types/module';
-import type { StatValueChoices } from '../../../components/StatEmbedLocalizedText.astro';
 import Icon from '../../../components/Icon.astro';
 import LocalizedText from '../../../components/LocalizedText.astro';
 import StatEmbedLocalizedText from '../../../components/StatEmbedLocalizedText.astro';
@@ -14,6 +13,7 @@ import {
   getVersionsData,
 } from '../../../utils/parse_object';
 import { enrichPilotTalents } from '../../../utils/pilot';
+import { getStatValueChoices } from '../../../utils/stat';
 import PageRef from '../../../components/PageRef.astro';
 import { getDefaultString } from '../../../utils/localization';
 
@@ -45,32 +45,7 @@ const moduleStats = getParseObjects<ModuleStat>(
 );
 
 // Build statValueChoices from talent.stats
-const statValueChoices: StatValueChoices = {};
-if (pilotTalent.stats) {
-  pilotTalent.stats.forEach(({ stat_id, value }) => {
-    const statObject = moduleStats[stat_id];
-    if (statObject) {
-      // Get unit pattern (default to {Amount}{Unit} for older versions)
-      const unitPattern =
-        getDefaultString(statObject.unit_pattern) || '{Amount}{Unit}';
-
-      // Apply unit scaler (default to 1.0)
-      const scaler = statObject.unit_scaler ?? 1;
-      const scaledValue = value * scaler;
-
-      statValueChoices[stat_id] = {
-        pattern: unitPattern,
-        unitName: statObject.unit_name,
-        unitExponent: statObject.unit_exponent,
-        decimalPlaces: statObject.decimal_places,
-        shortKey: statObject.short_key,
-        choices: {
-          0: scaledValue,
-        },
-      };
-    }
-  });
-}
+const statValueChoices = getStatValueChoices(pilotTalent.stats, moduleStats);
 
 // Load version metadata
 const { versions, versionInfo } = getVersionsData(version);
