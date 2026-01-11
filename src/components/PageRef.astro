@@ -3,24 +3,50 @@ import Icon from './Icon.astro';
 import LocalizedText from './LocalizedText.astro';
 import { getPageRefData } from '../utils/page_ref';
 import type { ParseObject } from '../types/parse_object';
+import type { StatValueChoices } from './StatEmbedLocalizedText.astro';
 import { getDefaultString } from '../utils/localization';
+import { formatStatDescription } from '../utils/stat';
 
 interface Props {
   obj: ParseObject;
   version: string;
   iconSize?: number;
   showIcon?: boolean;
+  useOnHover?: boolean;
+  onHoverStatChoices?: StatValueChoices;
 }
 
-const { obj, version, iconSize = 24, showIcon = true } = Astro.props;
+const {
+  obj,
+  version,
+  iconSize = 24,
+  showIcon = true,
+  useOnHover = false,
+  onHoverStatChoices,
+} = Astro.props;
 
 // Get the page reference data (localization key, icon path, hex color)
 const pageData = getPageRefData(obj);
 
 const pageUrl = `/WRFrontiersDB-Site/${obj.parseObjectUrl}/${obj.id}/${version}`;
+
+if (useOnHover && !pageData.description) {
+  throw new Error(
+    'useOnHover is enabled but no description is available for this object.'
+  );
+}
+
+// Get description text for hover if available
+let descriptionText =
+  useOnHover && pageData.description
+    ? getDefaultString(pageData.description)
+    : undefined;
+
+// Replace stat placeholders in description if onHoverStatChoices provided
+
 ---
 
-<a href={pageUrl}>
+<a href={pageUrl} title={descriptionText}>
   <!-- Show icon if supported and enabled -->
   {
     showIcon && pageData.iconPath && (

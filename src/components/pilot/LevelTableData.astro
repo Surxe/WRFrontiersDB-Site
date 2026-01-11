@@ -1,6 +1,9 @@
 ---
 import PageRef from '../PageRef.astro';
 import type { PilotTalent } from '../../types/pilot';
+import type { ModuleStat } from '../../types/module';
+import { getParseObjects } from '../../utils/parse_object';
+import { getStatValueChoices } from '../../utils/stat';
 
 interface Props {
   levelIndex: number; // 0 for level 1, 1 for level 2, 2 for level 3, 3 for level 4, 4 for level 5
@@ -30,10 +33,23 @@ To summarize: Levels 1-4 have 3 talents, level 5 has 1 talent.
 const { levelIndex, level, talentIndex, maxTalents, pilotTalents, version } =
   Astro.props;
 
+// Load ModuleStats for stat replacements
+const moduleStats = getParseObjects<ModuleStat>(
+  'Objects/ModuleStat.json',
+  version
+);
+
 // For level 5, always use the first talent; for others, use the current talentIndex
 // because level 5 only has one talent slot
-const talentId =
-  levelIndex === 4 ? level?.talents?.[0] : level?.talents?.[talentIndex];
+const getTalentData = (levelIdx: number, talentIdx: number) => {
+  const talentId =
+    levelIdx === 4 ? level?.talents?.[0] : level?.talents?.[talentIdx];
+  const talent = talentId ? pilotTalents[talentId] : undefined;
+  const statValueChoices = talent
+    ? getStatValueChoices(talent.stats, moduleStats)
+    : undefined;
+  return { talent, statValueChoices };
+};
 ---
 
 {/* Talent column */}
@@ -41,18 +57,34 @@ const talentId =
 {/* For levels 1 and 2-4, render for each talent index */}
 {
   levelIndex === 4 ? (
-    talentIndex === 0 && (
-      <td rowspan={maxTalents}>
-        {talentId && pilotTalents[talentId] && (
-          <PageRef obj={pilotTalents[talentId]} version={version} />
-        )}
-      </td>
-    )
-  ) : (
-    <td>
-      {talentId && pilotTalents[talentId] && (
-        <PageRef obj={pilotTalents[talentId]} version={version} />
-      )}
-    </td>
-  )
+    talentIndex === 0 && (() => {
+      const { talent, statValueChoices } = getTalentData(levelIndex, talentIndex);
+      return (
+        <td rowspan={maxTalents}>
+          {talent && (
+            <PageRef
+              obj={talent}
+              version={version}
+              useOnHover={true}
+              onHoverStatChoices={statValueChoices}
+            />
+          )}
+        </td>
+      );
+    })()
+  ) : (() => {
+      const { talent, statValueChoices } = getTalentData(levelIndex, talentIndex);
+      return (
+        <td>
+          {talent && (
+            <PageRef
+              obj={talent}
+              version={version}
+              useOnHover={true}
+              onHoverStatChoices={statValueChoices}
+            />
+          )}
+        </td>
+      );
+    })()
 }

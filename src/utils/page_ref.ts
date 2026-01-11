@@ -15,6 +15,7 @@ export interface PageRefData {
   localizationKey: LocalizationKey;
   iconPath: string;
   hexColor?: string;
+  description?: LocalizationKey;
 }
 
 // For each class, define a method to retrieve the PageRefData
@@ -38,6 +39,7 @@ export function getPageRefData(obj: ParseObject): PageRefData {
       return {
         localizationKey: module.name,
         iconPath: module.inventory_icon_path,
+        description: module.description,
       };
     }
     case 'PilotClass': {
@@ -60,6 +62,7 @@ export function getPageRefData(obj: ParseObject): PageRefData {
       return {
         localizationKey: pilotTalent.name,
         iconPath: pilotTalent.image_path,
+        description: pilotTalent.description,
       };
     }
     case 'PilotTalentType': {
@@ -67,6 +70,7 @@ export function getPageRefData(obj: ParseObject): PageRefData {
       return {
         localizationKey: pilotTalentType.name,
         iconPath: pilotTalentType.image_path,
+        description: pilotTalentType.description,
       };
     }
     case 'PilotPersonality': {
