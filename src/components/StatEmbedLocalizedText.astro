@@ -6,7 +6,7 @@ import { getDefaultString } from '../utils/localization';
 export interface StatValueChoices {
   [stat_id: string]: {
     choices: {
-      [choiceIndex: number]: number;
+      [choiceIndex: number]: string;
     };
     statObject: ModuleStat;
   };
@@ -24,7 +24,7 @@ const Tag = tag as any;
 
 // Build the choice map using short_key from statObject
 // Format: { shortKey: { 0: value, 1: value, ... } }
-const choiceMap: Record<string, Record<number, number>> = {};
+const choiceMap: Record<string, Record<number, string>> = {};
 for (const [_, data] of Object.entries(statValueChoices)) {
   const shortKey = data.statObject.short_key;
   choiceMap[shortKey] = data.choices;

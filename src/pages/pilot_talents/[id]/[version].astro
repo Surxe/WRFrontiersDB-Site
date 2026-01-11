@@ -50,8 +50,29 @@ if (pilotTalent.stats) {
   pilotTalent.stats.forEach(({ stat_id, value }) => {
     const statObject = moduleStats[stat_id];
     if (statObject) {
+      // Get unit pattern (default to {Amount}{Unit} for older versions)
+      const unitPattern = getDefaultString(statObject.unit_pattern) || '{Amount}{Unit}';
+      
+      // Apply unit scaler (default to 1.0)
+      const scaler = statObject.unit_scaler ?? 1;
+      const scaledValue = value * scaler;
+      
+      // Get unit name (localized)
+      const unitName = getDefaultString(statObject.unit_name) || '';
+      
+      // Apply decimal places if specified
+      const decimalPlaces = statObject.decimal_places;
+      const formattedAmount = decimalPlaces !== undefined
+        ? scaledValue.toFixed(decimalPlaces)
+        : String(scaledValue);
+      
+      // Replace placeholders in pattern
+      const formattedValue = unitPattern
+        .replace('{Amount}', formattedAmount)
+        .replace('{Unit}', unitName);
+      
       statValueChoices[stat_id] = {
-        choices: { 0: value }, // Single choice for pilots
+        choices: { 0: formattedValue },
         statObject,
       };
     }
