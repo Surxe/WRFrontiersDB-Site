@@ -47,9 +47,6 @@ export function getLocalizedText(locData, namespace, key, fallback = false) {
     fallback = key;
   }
   const localizedText = locData?.[namespace]?.[key] || fallback;
-  console.log(`Fallback text:`, fallback);
-  console.log(`Localization data:`, locData[namespace][key]);
-  console.log(`Localization lookup from: [${namespace}] ${key} => ${localizedText}`);
   return localizedText;
 }
 
