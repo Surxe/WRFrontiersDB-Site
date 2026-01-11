@@ -19,6 +19,14 @@ jobs:
         with:
           submodules: recursive
       
+      # Checkout data repo (uses PAT ONLY for this step)
+      - name: Checkout Data Repo
+        uses: actions/checkout@v4
+        with:
+          repository: Surxe/WRFrontiersDB-Data
+          token: ${{ secrets.DATA_REPO_PAT }}
+          path: WRFrontiersDB-Data
+      
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
