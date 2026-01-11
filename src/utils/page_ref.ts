@@ -6,7 +6,7 @@ import type {
   PilotTalentType,
   Pilot,
 } from '../types/pilot';
-import type { Module, ModuleStat } from '../types/module';
+import type { Module } from '../types/module';
 import type { Rarity } from '../types/rarity';
 import type { ParseObject } from '../types/parse_object';
 
@@ -19,7 +19,6 @@ export interface PageRefData {
 
 // For each class, define a method to retrieve the PageRefData
 export function getPageRefData(_obj: Module): PageRefData;
-export function getPageRefData(_obj: ModuleStat): PageRefData;
 export function getPageRefData(_obj: PilotPersonality): PageRefData;
 export function getPageRefData(_obj: PilotClass): PageRefData;
 export function getPageRefData(_obj: PilotTalent): PageRefData;
@@ -39,13 +38,6 @@ export function getPageRefData(obj: ParseObject): PageRefData {
       return {
         localizationKey: module.name,
         iconPath: module.inventory_icon_path,
-      };
-    }
-    case 'ModuleStat': {
-      const moduleStat = obj as ModuleStat;
-      return {
-        localizationKey: moduleStat.stat_name,
-        iconPath: '',
       };
     }
     case 'PilotClass': {
