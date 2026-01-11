@@ -5,10 +5,13 @@ import { getDefaultString } from '../utils/localization';
 
 export interface StatValueChoices {
   [stat_id: string]: {
+    pattern: string;
+    unitName?: LocalizationKey;
+    decimalPlaces?: number;
+    shortKey: string;
     choices: {
-      [choiceIndex: number]: string;
+      [choiceIndex: number]: number;
     };
-    statObject: ModuleStat;
   };
 }
 
@@ -22,12 +25,20 @@ export interface Props {
 const { id, tag, localizationKey, statValueChoices } = Astro.props;
 const Tag = tag as any;
 
-// Build the choice map using short_key from statObject
-// Format: { shortKey: { 0: value, 1: value, ... } }
-const choiceMap: Record<string, Record<number, string>> = {};
+// Build the choice map using shortKey from data
+// Format: { shortKey: { pattern, unitName, decimalPlaces, choices: { 0: amount, ... } } }
+const choiceMap: Record<string, { pattern: string; unitName?: { key: string; namespace: string, en: string; }; decimalPlaces?: number; choices: Record<number, number> }> = {};
 for (const [_, data] of Object.entries(statValueChoices)) {
-  const shortKey = data.statObject.short_key;
-  choiceMap[shortKey] = data.choices;
+  choiceMap[data.shortKey] = {
+    pattern: data.pattern,
+    unitName: data.unitName ? {
+      key: data.unitName.Key,
+      namespace: data.unitName.TableNamespace,
+      en: data.unitName.en
+    } : undefined,
+    decimalPlaces: data.decimalPlaces,
+    choices: data.choices
+  };
 }
 
 const namespace = localizationKey.TableNamespace;

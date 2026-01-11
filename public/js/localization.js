@@ -42,8 +42,15 @@ export async function loadLanguage(lang, version) {
  * @param {string} fallback - Fallback text if not found
  * @returns {string} Localized text or fallback
  */
-export function getLocalizedText(locData, namespace, key, fallback = '') {
-  return locData?.[namespace]?.[key] || fallback || key;
+export function getLocalizedText(locData, namespace, key, fallback = false) {
+  if (!fallback) {
+    fallback = key;
+  }
+  const localizedText = locData?.[namespace]?.[key] || fallback;
+  console.log(`Fallback text:`, fallback);
+  console.log(`Localization data:`, locData[namespace][key]);
+  console.log(`Localization lookup from: [${namespace}] ${key} => ${localizedText}`);
+  return localizedText;
 }
 
 /**
@@ -65,22 +72,47 @@ export function setCurrentLanguage(lang) {
 /**
  * Replaces stat placeholders in text with values from choice map
  * @param {string} text - Text with placeholders like {ArmorBoost}
- * @param {Object} choiceMap - Map of {shortKey: {0: value, 1: value, ...}}
+ * @param {Object} choiceMap - Map of {shortKey: {0: {amount, pattern, unitName, decimalPlaces}}}
  * @param {number} currentChoice - Index of choice to use
+ * @param {Object} locData - Localization data for unit names
  * @returns {string} Text with placeholders replaced
  */
-function replaceStatPlaceholders(text, choiceMap, currentChoice) {
+function replaceStatPlaceholders(text, choiceMap, currentChoice, locData) {
   if (!choiceMap || typeof choiceMap !== 'object') {
     return text;
   }
 
   let result = text;
-  for (const [shortKey, choices] of Object.entries(choiceMap)) {
-    const value = choices[currentChoice];
-    if (value !== undefined) {
-      // Replace all occurrences of {shortKey} with the value
+  for (const [shortKey, data] of Object.entries(choiceMap)) {
+    const amount = data.choices[currentChoice];
+    if (amount !== undefined) {
+      // Extract formatting info (shared across all choices)
+      const { pattern, unitName, decimalPlaces } = data;
+      
+      // Format amount with decimal places
+      const formattedAmount = decimalPlaces !== undefined
+        ? amount.toFixed(decimalPlaces)
+        : String(amount);
+      
+      // Get localized unit name (or empty string if not provided)
+      let localizedUnit = '';
+      if (unitName) {
+        localizedUnit = getLocalizedText(
+          locData,
+          unitName.namespace,
+          unitName.key,
+          unitName.en // English fallback
+        );
+      }
+      
+      // Apply pattern
+      const formattedValue = pattern
+        .replace('{Amount}', formattedAmount)
+        .replace('{Unit}', localizedUnit);
+      
+      // Replace all occurrences of {shortKey} with the formatted value
       const regex = new RegExp(`\\{${shortKey}\\}`, 'g');
-      result = result.replace(regex, String(value));
+      result = result.replace(regex, formattedValue);
     }
     // If value not found, leave placeholder intact
   }
@@ -117,7 +149,8 @@ export function updateLocalizedElements(locData, selectors) {
             localizedText = replaceStatPlaceholders(
               localizedText,
               choiceMap,
-              currentChoice
+              currentChoice,
+              locData
             );
           } catch (error) {
             console.warn('Failed to parse stat value choices:', error);
@@ -145,12 +178,6 @@ export async function initializeLocalization(
   const langSpan = document.getElementById('current-lang');
   if (langSpan) {
     langSpan.textContent = currentLang;
-  }
-
-  // For English, still need to run updateLocalizedElements for stat replacements
-  if (currentLang === 'en') {
-    updateLocalizedElements({}, selectors);
-    return;
   }
 
   // Load and apply localization

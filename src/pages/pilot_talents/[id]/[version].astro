@@ -57,23 +57,14 @@ if (pilotTalent.stats) {
       const scaler = statObject.unit_scaler ?? 1;
       const scaledValue = value * scaler;
       
-      // Get unit name (localized)
-      const unitName = getDefaultString(statObject.unit_name) || '';
-      
-      // Apply decimal places if specified
-      const decimalPlaces = statObject.decimal_places;
-      const formattedAmount = decimalPlaces !== undefined
-        ? scaledValue.toFixed(decimalPlaces)
-        : String(scaledValue);
-      
-      // Replace placeholders in pattern
-      const formattedValue = unitPattern
-        .replace('{Amount}', formattedAmount)
-        .replace('{Unit}', unitName);
-      
       statValueChoices[stat_id] = {
-        choices: { 0: formattedValue },
-        statObject,
+        pattern: unitPattern,
+        unitName: statObject.unit_name,
+        decimalPlaces: statObject.decimal_places,
+        shortKey: statObject.short_key,
+        choices: {
+          0: scaledValue
+        }
       };
     }
   });
