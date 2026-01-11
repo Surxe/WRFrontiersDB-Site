@@ -2,6 +2,24 @@ import type { LocalizationKey } from './localization';
 import type { ParseObject } from './parse_object';
 
 export const MODULE_URL = 'modules';
+export const MODULESTAT_URL = 'module_stats';
+
+export interface ModuleStat extends ParseObject {
+  parseObjectClass: 'ModuleStat';
+  parseObjectUrl: typeof MODULESTAT_URL;
+  id: string;
+  stat_name: LocalizationKey;
+  short_key: string;
+  unit_name?: LocalizationKey;
+  unit_scaler?: number;
+  unit_exponent?: number;
+  unit_baseline?: number;
+  unit_pattern?: LocalizationKey;
+  decimal_places?: number;
+  more_is_better?: boolean;
+  max_stat_value_ui?: number;
+  max_stat_titan_value_ui?: number;
+}
 
 export interface ModuleRarity extends ParseObject {
   parseObjectClass: 'ModuleRarity';

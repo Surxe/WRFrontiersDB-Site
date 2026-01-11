@@ -1,15 +1,15 @@
 import type { LocalizationKey } from './localization';
 import type { ParseObject } from './parse_object';
 
-export const PILOT_TALENT_TYPE_URL = 'pilot_talent_types';
-export const PILOT_PERSONALITY_URL = 'pilot_personalities';
-export const PILOT_CLASS_URL = 'pilot_classes';
-export const PILOT_TALENT_URL = 'pilot_talents';
+export const PILOTTALENTTYPE_URL = 'pilot_talent_types';
+export const PILOTPERSONALITY_URL = 'pilot_personalities';
+export const PILOTCLASS_URL = 'pilot_classes';
+export const PILOTTALENT_URL = 'pilot_talents';
 export const PILOT_URL = 'pilots';
 
 export interface PilotTalentType extends ParseObject {
   parseObjectClass: 'PilotTalentType';
-  parseObjectUrl: typeof PILOT_TALENT_TYPE_URL;
+  parseObjectUrl: typeof PILOTTALENTTYPE_URL;
   name: LocalizationKey;
   description: LocalizationKey;
   image_path: string;
@@ -27,14 +27,14 @@ export interface PilotType extends ParseObject {
 
 export interface PilotPersonality extends ParseObject {
   parseObjectClass: 'PilotPersonality';
-  parseObjectUrl: typeof PILOT_PERSONALITY_URL;
+  parseObjectUrl: typeof PILOTPERSONALITY_URL;
   icon_path: string;
   name: LocalizationKey;
 }
 
 export interface PilotClass extends ParseObject {
   parseObjectClass: 'PilotClass';
-  parseObjectUrl: typeof PILOT_CLASS_URL;
+  parseObjectUrl: typeof PILOTCLASS_URL;
   name: LocalizationKey;
   badge: {
     image_path: string;
@@ -44,7 +44,7 @@ export interface PilotClass extends ParseObject {
 
 export interface PilotTalent extends ParseObject {
   parseObjectClass: 'PilotTalent';
-  parseObjectUrl: typeof PILOT_TALENT_URL;
+  parseObjectUrl: typeof PILOTTALENT_URL;
   name: LocalizationKey;
   description: LocalizationKey;
   ui_description?: LocalizationKey;
