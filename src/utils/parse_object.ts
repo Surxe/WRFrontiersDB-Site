@@ -2,6 +2,15 @@ import fs from 'fs';
 import path from 'path';
 import type { VersionsData, VersionInfo } from '../types/version';
 import type { StaticPathsResult, ParseObject } from '../types/parse_object';
+import { MODULE_URL } from '../types/module';
+import {
+  PILOT_URL,
+  PILOT_CLASS_URL,
+  PILOT_PERSONALITY_URL,
+  PILOT_TALENT_URL,
+  PILOT_TALENT_TYPE_URL,
+} from '../types/pilot';
+import { RARITY_URL } from '../types/rarity';
 
 /**
  * Load parse objects from a specific version
@@ -26,10 +35,22 @@ export function getParseObjects<T = ParseObject>(
       const fileName = parseObjectFile.split('/').pop() || '';
       const parseObjectClass = fileName.split('.')[0];
 
-      // Add parseObjectClass to each object
+      // URL lookup map from parseObjectClass
+      const URL_MAP: Record<string, string> = {
+        Module: MODULE_URL,
+        Pilot: PILOT_URL,
+        PilotClass: PILOT_CLASS_URL,
+        PilotPersonality: PILOT_PERSONALITY_URL,
+        PilotTalent: PILOT_TALENT_URL,
+        PilotTalentType: PILOT_TALENT_TYPE_URL,
+        Rarity: RARITY_URL,
+      };
+      const parseObjectUrl = URL_MAP[parseObjectClass];
+
+      // Add parseObjectClass and parseObjectUrl to each object
       const objectsWithType: Record<string, T> = {};
       for (const [key, value] of Object.entries(data)) {
-        objectsWithType[key] = { ...(value as object), parseObjectClass } as T;
+        objectsWithType[key] = { ...(value as object), parseObjectClass, parseObjectUrl } as T;
       }
 
       return objectsWithType;

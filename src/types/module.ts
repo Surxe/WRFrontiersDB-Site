@@ -1,6 +1,8 @@
 import type { LocalizationKey } from './localization';
 import type { ParseObject } from './parse_object';
 
+export const MODULE_URL = 'modules';
+
 export interface ModuleRarity extends ParseObject {
   parseObjectClass: 'ModuleRarity';
   id: string;
@@ -11,6 +13,7 @@ export interface ModuleRarity extends ParseObject {
 // TODO verify which are optional
 export interface Module extends ParseObject {
   parseObjectClass: 'Module';
+  parseObjectUrl: typeof MODULE_URL;
   production_status?: string;
   inventory_icon_path: string;
   module_rarity_id: string;
