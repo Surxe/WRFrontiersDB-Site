@@ -7,13 +7,7 @@ import astroParser from 'astro-eslint-parser';
 export default [
   // Ignore patterns
   {
-    ignores: [
-      'dist/',
-      'node_modules/',
-      '.astro/',
-      'WRFrontiersDB-Data/',
-      'public/js/**/*.js', // Client-side JS files
-    ],
+    ignores: ['dist/', 'node_modules/', '.astro/', 'WRFrontiersDB-Data/'],
   },
 
   // Base ESLint recommended rules
@@ -70,6 +64,22 @@ export default [
       ...astroPlugin.configs.recommended.rules,
       'astro/no-set-html-directive': 'error',
       'astro/no-unused-css-selector': 'warn',
+    },
+  },
+
+  // Client-side JavaScript files
+  {
+    files: ['public/js/**/*.js'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      globals: {
+        document: 'readonly',
+        window: 'readonly',
+        console: 'readonly',
+        localStorage: 'readonly',
+        fetch: 'readonly',
+      },
     },
   },
 

@@ -39,7 +39,10 @@ const pilotTalentTypes = getParseObjects<PilotTalentType>(
 const pilotTalent = enrichedTalents[id];
 
 // Load ModuleStats for stat replacements
-const moduleStats = getParseObjects<ModuleStat>('Objects/ModuleStat.json', version);
+const moduleStats = getParseObjects<ModuleStat>(
+  'Objects/ModuleStat.json',
+  version
+);
 
 // Build statValueChoices from talent.stats
 const statValueChoices: StatValueChoices = {};
