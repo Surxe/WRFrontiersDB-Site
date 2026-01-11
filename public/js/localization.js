@@ -63,6 +63,31 @@ export function setCurrentLanguage(lang) {
 }
 
 /**
+ * Replaces stat placeholders in text with values from choice map
+ * @param {string} text - Text with placeholders like {ArmorBoost}
+ * @param {Object} choiceMap - Map of {shortKey: {0: value, 1: value, ...}}
+ * @param {number} currentChoice - Index of choice to use
+ * @returns {string} Text with placeholders replaced
+ */
+function replaceStatPlaceholders(text, choiceMap, currentChoice) {
+  if (!choiceMap || typeof choiceMap !== 'object') {
+    return text;
+  }
+
+  let result = text;
+  for (const [shortKey, choices] of Object.entries(choiceMap)) {
+    const value = choices[currentChoice];
+    if (value !== undefined) {
+      // Replace all occurrences of {shortKey} with the value
+      const regex = new RegExp(`\\{${shortKey}\\}`, 'g');
+      result = result.replace(regex, String(value));
+    }
+    // If value not found, leave placeholder intact
+  }
+  return result;
+}
+
+/**
  * Updates DOM elements with localization data attributes
  * @param {LocalizationData} locData - Loaded localization data
  * @param {string|string[]} selectors - CSS selector(s) for elements to update
@@ -78,12 +103,25 @@ export function updateLocalizedElements(locData, selectors) {
       const fallback = element.dataset.locFallback || element.textContent;
 
       if (namespace && key) {
-        const localizedText = getLocalizedText(
+        let localizedText = getLocalizedText(
           locData,
           namespace,
           key,
           fallback
         );
+
+        // Handle stat replacements if data-stat-value-choices exists
+        const statValueChoices = element.dataset.statValueChoices;
+        if (statValueChoices) {
+          try {
+            const choiceMap = JSON.parse(statValueChoices);
+            const currentChoice = parseInt(element.dataset.currentChoice || '0', 10);
+            localizedText = replaceStatPlaceholders(localizedText, choiceMap, currentChoice);
+          } catch (error) {
+            console.warn('Failed to parse stat value choices:', error);
+          }
+        }
+
         element.textContent = localizedText;
       }
     });
@@ -116,3 +154,22 @@ export async function initializeLocalization(
     updateLocalizedElements(locData, selectors);
   }
 }
+
+/**
+ * Sets the current stat choice for elements with stat value choices
+ * @param {number} choiceIndex - Index of the choice to use (0-based)
+ * @param {string} version - Game version for re-localization
+ */
+export async function setStatChoice(choiceIndex, version) {
+  // Update data-current-choice on all elements with stat choices
+  const elements = document.querySelectorAll('[data-stat-value-choices]');
+  elements.forEach((element) => {
+    element.dataset.currentChoice = String(choiceIndex);
+  });
+
+  // Re-run localization to apply new choice
+  const currentLang = getCurrentLanguage();
+  const locData = currentLang === 'en' ? {} : await loadLanguage(currentLang, version);
+  updateLocalizedElements(locData || {}, '[data-loc-key]');
+}
+

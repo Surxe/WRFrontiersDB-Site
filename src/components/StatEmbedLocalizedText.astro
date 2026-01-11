@@ -1,0 +1,39 @@
+---
+import LocalizedText from './LocalizedText.astro';
+import type { LocalizationKey } from '../types/localization';
+import type { ModuleStat } from '../types/module';
+
+export interface StatValueChoices {
+  [stat_id: string]: {
+    choices: {
+      [choiceIndex: number]: number;
+    };
+    statObject: ModuleStat;
+  };
+}
+
+export interface Props {
+  id?: string;
+  tag: string;
+  localizationKey: LocalizationKey;
+  statValueChoices: StatValueChoices;
+}
+
+const { id, tag, localizationKey, statValueChoices } = Astro.props;
+
+// Build the choice map using short_key from statObject
+// Format: { shortKey: { 0: value, 1: value, ... } }
+const choiceMap: Record<string, Record<number, number>> = {};
+for (const [stat_id, data] of Object.entries(statValueChoices)) {
+  const shortKey = data.statObject.short_key;
+  choiceMap[shortKey] = data.choices;
+}
+---
+
+<LocalizedText
+  id={id}
+  tag={tag}
+  localizationKey={localizationKey}
+  data-stat-value-choices={JSON.stringify(choiceMap)}
+  data-current-choice="0"
+/>

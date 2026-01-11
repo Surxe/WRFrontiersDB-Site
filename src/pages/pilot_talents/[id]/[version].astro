@@ -1,7 +1,10 @@
 ---
 import type { PilotTalent, Pilot, PilotTalentType } from '../../../types/pilot';
+import type { ModuleStat } from '../../../types/module';
+import type { StatValueChoices } from '../../../components/StatEmbedLocalizedText.astro';
 import Icon from '../../../components/Icon.astro';
 import LocalizedText from '../../../components/LocalizedText.astro';
+import StatEmbedLocalizedText from '../../../components/StatEmbedLocalizedText.astro';
 import VersionList from '../../../components/VersionList.astro';
 import ObjectPageScripts from '../../../components/ObjectPageScripts.astro';
 import ParseObjectPage from '../../../components/ParseObjectPage.astro';
@@ -35,6 +38,23 @@ const pilotTalentTypes = getParseObjects<PilotTalentType>(
 
 const pilotTalent = enrichedTalents[id];
 
+// Load ModuleStats for stat replacements
+const moduleStats = getParseObjects<ModuleStat>('Objects/ModuleStat.json', version);
+
+// Build statValueChoices from talent.stats
+const statValueChoices: StatValueChoices = {};
+if (pilotTalent.stats) {
+  pilotTalent.stats.forEach(({ stat_id, value }) => {
+    const statObject = moduleStats[stat_id];
+    if (statObject) {
+      statValueChoices[stat_id] = {
+        choices: { 0: value }, // Single choice for pilots
+        statObject,
+      };
+    }
+  });
+}
+
 // Load version metadata
 const { versions, versionInfo } = getVersionsData(version);
 
@@ -56,28 +76,31 @@ const defaultName = getDefaultString(pilotTalent.name) || pilotTalent.id;
     localizationKey={pilotTalent.name}
   />
 
-  <LocalizedText
+  <StatEmbedLocalizedText
     id="pilot-talent-desc"
     tag="p"
     localizationKey={pilotTalent.description}
+    statValueChoices={statValueChoices}
   />
 
   {
     pilotTalent.ui_description && (
-      <LocalizedText
+      <StatEmbedLocalizedText
         id="pilot-talent-ui-desc"
         tag="p"
         localizationKey={pilotTalent.ui_description}
+        statValueChoices={statValueChoices}
       />
     )
   }
 
   {
     pilotTalent.short_ui_description && (
-      <LocalizedText
+      <StatEmbedLocalizedText
         id="pilot-talent-short-ui-desc"
         tag="p"
         localizationKey={pilotTalent.short_ui_description}
+        statValueChoices={statValueChoices}
       />
     )
   }
