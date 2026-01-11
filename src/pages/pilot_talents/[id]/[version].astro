@@ -51,20 +51,21 @@ if (pilotTalent.stats) {
     const statObject = moduleStats[stat_id];
     if (statObject) {
       // Get unit pattern (default to {Amount}{Unit} for older versions)
-      const unitPattern = getDefaultString(statObject.unit_pattern) || '{Amount}{Unit}';
-      
+      const unitPattern =
+        getDefaultString(statObject.unit_pattern) || '{Amount}{Unit}';
+
       // Apply unit scaler (default to 1.0)
       const scaler = statObject.unit_scaler ?? 1;
       const scaledValue = value * scaler;
-      
+
       statValueChoices[stat_id] = {
         pattern: unitPattern,
         unitName: statObject.unit_name,
         decimalPlaces: statObject.decimal_places,
         shortKey: statObject.short_key,
         choices: {
-          0: scaledValue
-        }
+          0: scaledValue,
+        },
       };
     }
   });

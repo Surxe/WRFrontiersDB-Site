@@ -1,6 +1,5 @@
 ---
 import type { LocalizationKey } from '../types/localization';
-import type { ModuleStat } from '../types/module';
 import { getDefaultString } from '../utils/localization';
 
 export interface StatValueChoices {
@@ -27,13 +26,21 @@ const Tag = tag as any;
 
 // Build the choice map using shortKey from data
 // Format: { shortKey: { pattern, unitName, decimalPlaces, choices: { 0: amount, ... } } }
-const choiceMap: Record<string, { pattern: string; unitName?: LocalizationKey; decimalPlaces?: number; choices: Record<number, number> }> = {};
+const choiceMap: Record<
+  string,
+  {
+    pattern: string;
+    unitName?: LocalizationKey;
+    decimalPlaces?: number;
+    choices: Record<number, number>;
+  }
+> = {};
 for (const [_, data] of Object.entries(statValueChoices)) {
   choiceMap[data.shortKey] = {
     pattern: data.pattern,
     unitName: data.unitName,
     decimalPlaces: data.decimalPlaces,
-    choices: data.choices
+    choices: data.choices,
   };
 }
 

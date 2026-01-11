@@ -78,9 +78,7 @@ export function setCurrentLanguage(lang) {
 function formatStatValue(value, pattern, unitName, decimalPlaces, locData) {
   // Format amount with decimal places
   const formattedAmount =
-    decimalPlaces !== undefined
-      ? value.toFixed(decimalPlaces)
-      : String(value);
+    decimalPlaces !== undefined ? value.toFixed(decimalPlaces) : String(value);
 
   // Get localized unit name (or empty string if not provided)
   let localizedUnit = '';
