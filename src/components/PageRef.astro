@@ -1,11 +1,11 @@
 ---
 import Icon from './Icon.astro';
 import LocalizedText from './LocalizedText.astro';
+import StatEmbedLocalizedText from './StatEmbedLocalizedText.astro';
 import { getPageRefData } from '../utils/page_ref';
 import type { ParseObject } from '../types/parse_object';
 import type { StatValueChoices } from './StatEmbedLocalizedText.astro';
 import { getDefaultString } from '../utils/localization';
-import { formatStatDescription } from '../utils/stat';
 
 interface Props {
   obj: ParseObject;
@@ -35,39 +35,87 @@ if (useOnHover && !pageData.description) {
     'useOnHover is enabled but no description is available for this object.'
   );
 }
-
-// Get description text for hover if available
-let descriptionText =
-  useOnHover && pageData.description
-    ? getDefaultString(pageData.description)
-    : undefined;
-
-// Replace stat placeholders in description if onHoverStatChoices provided
-
 ---
 
-<a href={pageUrl} title={descriptionText}>
-  <!-- Show icon if supported and enabled -->
-  {
-    showIcon && pageData.iconPath && (
-      <Icon
-        iconPath={pageData.iconPath}
-        altText={`${getDefaultString(pageData.localizationKey)} icon`}
-        size={iconSize}
-        color={pageData.hexColor}
-      />
-    )
-  }
-  <!-- Show text with colored div if iconPath not supported, otherwise show just text-->
-  {
-    !pageData.iconPath && pageData.hexColor ? (
-      <div
-        style={`display: inline-block; padding: 2px 8px; background-color: #${pageData.hexColor}; border-radius: 4px;`}
-      >
+<span class="page-ref-wrapper">
+  <a href={pageUrl}>
+    <!-- Show icon if supported and enabled -->
+    {
+      showIcon && pageData.iconPath && (
+        <Icon
+          iconPath={pageData.iconPath}
+          altText={`${getDefaultString(pageData.localizationKey)} icon`}
+          size={iconSize}
+          color={pageData.hexColor}
+        />
+      )
+    }
+    <!-- Show text with colored div if iconPath not supported, otherwise show just text-->
+    {
+      !pageData.iconPath && pageData.hexColor ? (
+        <div
+          style={`display: inline-block; padding: 2px 8px; background-color: #${pageData.hexColor}; border-radius: 4px;`}
+        >
+          <LocalizedText tag="span" localizationKey={pageData.localizationKey} />
+        </div>
+      ) : (
         <LocalizedText tag="span" localizationKey={pageData.localizationKey} />
-      </div>
-    ) : (
-      <LocalizedText tag="span" localizationKey={pageData.localizationKey} />
+      )
+    }
+  </a>
+  {
+    useOnHover && pageData.description && (
+      <span class="hover-tooltip">
+        <StatEmbedLocalizedText
+          tag="span"
+          localizationKey={pageData.description}
+          statValueChoices={onHoverStatChoices || {}}
+        />
+      </span>
     )
   }
-</a>
+</span>
+
+<style>
+  .page-ref-wrapper {
+    position: relative;
+    display: inline-block;
+  }
+
+  .hover-tooltip {
+    visibility: hidden;
+    position: absolute;
+    z-index: 1000;
+    background-color: #333;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    white-space: normal;
+    width: max-content;
+    max-width: 400px;
+    min-width: 200px;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+
+  .hover-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #333 transparent transparent transparent;
+  }
+
+  .page-ref-wrapper:hover .hover-tooltip {
+    visibility: visible;
+    opacity: 1;
+  }
+</style>
