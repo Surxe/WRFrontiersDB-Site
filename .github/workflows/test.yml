@@ -1,0 +1,32 @@
+name: Run Tests
+
+on:
+  # Trigger on pull requests to any branch
+  pull_request:
+    branches:
+      - '**'
+  
+  # Allow manual workflow dispatch
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run tests
+        run: npm run vitest
