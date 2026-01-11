@@ -1,9 +1,9 @@
 ---
-import LocalizedText from '../LocalizedText.astro';
 import PilotTable from './Table.astro';
 import { getParseObjects } from '../../utils/parse_object';
 import { prepareObjectList, groupBy, sortGroups } from '../../utils/list';
 import type { Pilot, PilotType, PilotTalent } from '../../types/pilot';
+import PageRef from '../PageRef.astro';
 
 interface Props {
   pilots: Record<string, Pilot>;
@@ -21,6 +21,7 @@ const pilotTalents = getParseObjects<PilotTalent>(
   'Objects/PilotTalent.json',
   version
 );
+const rarities = getParseObjects('Objects/Rarity.json', version);
 
 // Prepare and filter pilots
 const entries = prepareObjectList(pilots, { prodReadyOnly: false });
@@ -49,9 +50,9 @@ the other columns have rowspan to center them within their group of rows
   sortedGroups.map(([pilotTypeId, pilotEntries]) => (
     <section>
       <h2>
-        <LocalizedText
-          tag="span"
-          localizationKey={pilotTypes[pilotTypeId].name}
+        <PageRef
+          obj={rarities[pilotTypes[pilotTypeId].rarity_id]}
+          version={version}
         />
       </h2>
       <PilotTable
