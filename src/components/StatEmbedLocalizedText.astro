@@ -6,6 +6,7 @@ export interface StatValueChoices {
   [stat_id: string]: {
     pattern: string;
     unitName?: LocalizationKey;
+    unitExponent?: number;
     decimalPlaces?: number;
     shortKey: string;
     choices: {
@@ -25,12 +26,13 @@ const { id, tag, localizationKey, statValueChoices } = Astro.props;
 const Tag = tag as any;
 
 // Build the choice map using shortKey from data
-// Format: { shortKey: { pattern, unitName, decimalPlaces, choices: { 0: amount, ... } } }
+// Format: { shortKey: { pattern, unitName, unitExponent, decimalPlaces, choices: { 0: amount, ... } } }
 const choiceMap: Record<
   string,
   {
     pattern: string;
     unitName?: LocalizationKey;
+    unitExponent?: number;
     decimalPlaces?: number;
     choices: Record<number, number>;
   }
@@ -39,6 +41,7 @@ for (const [_, data] of Object.entries(statValueChoices)) {
   choiceMap[data.shortKey] = {
     pattern: data.pattern,
     unitName: data.unitName,
+    unitExponent: data.unitExponent,
     decimalPlaces: data.decimalPlaces,
     choices: data.choices,
   };

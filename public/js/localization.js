@@ -71,14 +71,28 @@ export function setCurrentLanguage(lang) {
  * @param {number} value - The numeric value to format
  * @param {string} pattern - Pattern string with {Amount} and {Unit} placeholders
  * @param {LocalizationKey} [unitName] - Unit name localization key
+ * @param {number} [unitExponent] - Exponent to raise the value to (default 1.0)
  * @param {number} [decimalPlaces] - Number of decimal places
  * @param {LocalizationData} locData - Localization data for unit names
  * @returns {string} Formatted stat value
  */
-function formatStatValue(value, pattern, unitName, decimalPlaces, locData) {
+function formatStatValue(
+  value,
+  pattern,
+  unitName,
+  unitExponent,
+  decimalPlaces,
+  locData
+) {
+  // Apply exponent (default to 1.0)
+  const exponentValue = unitExponent ?? 1.0;
+  const exponentiatedValue = Math.pow(value, exponentValue);
+
   // Format amount with decimal places
   const formattedAmount =
-    decimalPlaces !== undefined ? value.toFixed(decimalPlaces) : String(value);
+    decimalPlaces !== undefined
+      ? exponentiatedValue.toFixed(decimalPlaces)
+      : String(exponentiatedValue);
 
   // Get localized unit name (or empty string if not provided)
   let localizedUnit = '';
@@ -119,6 +133,7 @@ function replaceStatPlaceholders(text, choiceMap, currentChoice, locData) {
         amount,
         data.pattern,
         data.unitName,
+        data.unitExponent,
         data.decimalPlaces,
         locData
       );
