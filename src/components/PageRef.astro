@@ -17,22 +17,7 @@ const { obj, version, iconSize = 24, showIcon = true } = Astro.props;
 // Get the page reference data (localization key, icon path, hex color)
 const pageData = getPageRefData(obj);
 
-// Convert parseObjectClass to URL path segment
-function getPagePath(parseObjectClass: string): string {
-  const pathMap: Record<string, string> = {
-    Module: 'modules',
-    Pilot: 'pilots',
-    PilotClass: 'pilot_classes',
-    PilotPersonality: 'pilot_personalities',
-    PilotTalent: 'pilot_talents',
-    PilotTalentType: 'pilot_talent_types',
-    Rarity: 'rarities',
-  };
-  return pathMap[parseObjectClass] || parseObjectClass.toLowerCase();
-}
-
-const pagePath = getPagePath(obj.parseObjectClass);
-const pageUrl = `/WRFrontiersDB-Site/${pagePath}/${obj.id}/${version}`;
+const pageUrl = `/WRFrontiersDB-Site/${obj.parseObjectUrl}/${obj.id}/${version}`;
 ---
 
 <a href={pageUrl}>
