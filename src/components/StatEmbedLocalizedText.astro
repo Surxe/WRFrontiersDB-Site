@@ -1,0 +1,72 @@
+---
+import type { LocalizationKey } from '../types/localization';
+import { getDefaultString } from '../utils/localization';
+
+export interface StatValueChoices {
+  [stat_id: string]: {
+    pattern: string;
+    unitName?: LocalizationKey;
+    unitExponent?: number;
+    decimalPlaces?: number;
+    shortKey: string;
+    choices: {
+      [choiceIndex: number]: number;
+    };
+  };
+}
+
+export interface Props {
+  id?: string;
+  tag: string;
+  localizationKey: LocalizationKey;
+  statValueChoices: StatValueChoices;
+}
+
+const { id, tag, localizationKey, statValueChoices } = Astro.props;
+const Tag = tag as any;
+
+// Build the choice map using shortKey from data
+// Format: { shortKey: { pattern, unitName, unitExponent, decimalPlaces, choices: { 0: amount, ... } } }
+const choiceMap: Record<
+  string,
+  {
+    pattern: string;
+    unitName?: LocalizationKey;
+    unitExponent?: number;
+    decimalPlaces?: number;
+    choices: Record<number, number>;
+  }
+> = {};
+for (const [_, data] of Object.entries(statValueChoices)) {
+  choiceMap[data.shortKey] = {
+    pattern: data.pattern,
+    unitName: data.unitName,
+    unitExponent: data.unitExponent,
+    decimalPlaces: data.decimalPlaces,
+    choices: data.choices,
+  };
+}
+
+const namespace = localizationKey.TableNamespace;
+const key = localizationKey.Key;
+const invariantString = localizationKey.InvariantString;
+const defaultText = getDefaultString(localizationKey);
+---
+
+<!--
+Creates an html element with localization data attributes and stat replacement data
+-->{
+  invariantString ? (
+    <Tag id={id}>{invariantString}</Tag>
+  ) : (
+    <Tag
+      id={id}
+      data-loc-key={key}
+      data-loc-namespace={namespace}
+      data-stat-value-choices={JSON.stringify(choiceMap)}
+      data-current-choice="0"
+    >
+      {defaultText}
+    </Tag>
+  )
+}

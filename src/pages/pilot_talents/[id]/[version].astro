@@ -1,7 +1,9 @@
 ---
 import type { PilotTalent, Pilot, PilotTalentType } from '../../../types/pilot';
+import type { ModuleStat } from '../../../types/module';
 import Icon from '../../../components/Icon.astro';
 import LocalizedText from '../../../components/LocalizedText.astro';
+import StatEmbedLocalizedText from '../../../components/StatEmbedLocalizedText.astro';
 import VersionList from '../../../components/VersionList.astro';
 import ObjectPageScripts from '../../../components/ObjectPageScripts.astro';
 import ParseObjectPage from '../../../components/ParseObjectPage.astro';
@@ -11,6 +13,7 @@ import {
   getVersionsData,
 } from '../../../utils/parse_object';
 import { enrichPilotTalents } from '../../../utils/pilot';
+import { getStatValueChoices } from '../../../utils/stat';
 import PageRef from '../../../components/PageRef.astro';
 import { getDefaultString } from '../../../utils/localization';
 
@@ -35,6 +38,15 @@ const pilotTalentTypes = getParseObjects<PilotTalentType>(
 
 const pilotTalent = enrichedTalents[id];
 
+// Load ModuleStats for stat replacements
+const moduleStats = getParseObjects<ModuleStat>(
+  'Objects/ModuleStat.json',
+  version
+);
+
+// Build statValueChoices from talent.stats
+const statValueChoices = getStatValueChoices(pilotTalent.stats, moduleStats);
+
 // Load version metadata
 const { versions, versionInfo } = getVersionsData(version);
 
@@ -56,28 +68,31 @@ const defaultName = getDefaultString(pilotTalent.name) || pilotTalent.id;
     localizationKey={pilotTalent.name}
   />
 
-  <LocalizedText
+  <StatEmbedLocalizedText
     id="pilot-talent-desc"
     tag="p"
     localizationKey={pilotTalent.description}
+    statValueChoices={statValueChoices}
   />
 
   {
     pilotTalent.ui_description && (
-      <LocalizedText
+      <StatEmbedLocalizedText
         id="pilot-talent-ui-desc"
         tag="p"
         localizationKey={pilotTalent.ui_description}
+        statValueChoices={statValueChoices}
       />
     )
   }
 
   {
     pilotTalent.short_ui_description && (
-      <LocalizedText
+      <StatEmbedLocalizedText
         id="pilot-talent-short-ui-desc"
         tag="p"
         localizationKey={pilotTalent.short_ui_description}
+        statValueChoices={statValueChoices}
       />
     )
   }
