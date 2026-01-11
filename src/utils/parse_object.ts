@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import type { VersionsData, VersionInfo } from '../types/version';
 import type { StaticPathsResult, ParseObject } from '../types/parse_object';
-import { MODULE_URL } from '../types/module';
+import { MODULE_URL, MODULE_STAT_URL } from '../types/module';
 import {
   PILOT_URL,
   PILOT_CLASS_URL,
@@ -38,6 +38,7 @@ export function getParseObjects<T = ParseObject>(
       // URL lookup map from parseObjectClass
       const URL_MAP: Record<string, string> = {
         Module: MODULE_URL,
+        ModuleStat: MODULE_STAT_URL,
         Pilot: PILOT_URL,
         PilotClass: PILOT_CLASS_URL,
         PilotPersonality: PILOT_PERSONALITY_URL,
