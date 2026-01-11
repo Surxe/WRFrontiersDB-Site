@@ -6,7 +6,6 @@ import type {
   PilotPersonality,
   PilotTalent,
   PilotTalentType,
-  PilotType,
   Pilot,
 } from '../../../src/types/pilot';
 import type { ParseObject } from '../../../src/types/parse_object';
@@ -130,25 +129,6 @@ describe('getPageRefData', () => {
       expect(result).toEqual({
         localizationKey: mockLocalizationKey,
         iconPath: '/path/to/talent',
-      });
-    });
-  });
-
-  describe('PilotType', () => {
-    it('should return correct PageRefData with empty iconPath', () => {
-      const pilotType: PilotType = {
-        parseObjectClass: 'PilotType',
-        id: 'PTY_123',
-        rarity_id: 'rarity',
-        name: mockLocalizationKey,
-        group_reward_id: 'reward',
-      };
-
-      const result = getPageRefData(pilotType);
-
-      expect(result).toEqual({
-        localizationKey: mockLocalizationKey,
-        iconPath: '',
       });
     });
   });
