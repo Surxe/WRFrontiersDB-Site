@@ -50,7 +50,11 @@ export function getParseObjects<T = ParseObject>(
       // Add parseObjectClass and parseObjectUrl to each object
       const objectsWithType: Record<string, T> = {};
       for (const [key, value] of Object.entries(data)) {
-        objectsWithType[key] = { ...(value as object), parseObjectClass, parseObjectUrl } as T;
+        objectsWithType[key] = {
+          ...(value as object),
+          parseObjectClass,
+          parseObjectUrl,
+        } as T;
       }
 
       return objectsWithType;
