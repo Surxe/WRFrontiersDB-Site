@@ -70,9 +70,42 @@ export function setCurrentLanguage(lang) {
 }
 
 /**
+ * Formats a stat value using pattern, unit name, and decimal places
+ * @param {number} value - The numeric value to format
+ * @param {string} pattern - Pattern string with {Amount} and {Unit} placeholders
+ * @param {LocalizationKey} [unitName] - Unit name localization key
+ * @param {number} [decimalPlaces] - Number of decimal places
+ * @param {LocalizationData} locData - Localization data for unit names
+ * @returns {string} Formatted stat value
+ */
+function formatStatValue(value, pattern, unitName, decimalPlaces, locData) {
+  // Format amount with decimal places
+  const formattedAmount =
+    decimalPlaces !== undefined
+      ? value.toFixed(decimalPlaces)
+      : String(value);
+
+  // Get localized unit name (or empty string if not provided)
+  let localizedUnit = '';
+  if (unitName) {
+    localizedUnit = getLocalizedText(
+      locData,
+      unitName.TableNamespace,
+      unitName.Key,
+      unitName.en // English fallback
+    );
+  }
+
+  // Apply pattern
+  return pattern
+    .replace('{Amount}', formattedAmount)
+    .replace('{Unit}', localizedUnit);
+}
+
+/**
  * Replaces stat placeholders in text with values from choice map
  * @param {string} text - Text with placeholders like {ArmorBoost}
- * @param {Object} choiceMap - Map of {shortKey: {0: {amount, pattern, unitName, decimalPlaces}}}
+ * @param {Object} choiceMap - Map of {shortKey: {pattern, unitName, decimalPlaces, choices}}
  * @param {number} currentChoice - Index of choice to use
  * @param {Object} locData - Localization data for unit names
  * @returns {string} Text with placeholders replaced
@@ -86,30 +119,15 @@ function replaceStatPlaceholders(text, choiceMap, currentChoice, locData) {
   for (const [shortKey, data] of Object.entries(choiceMap)) {
     const amount = data.choices[currentChoice];
     if (amount !== undefined) {
-      // Extract formatting info (shared across all choices)
-      const { pattern, unitName, decimalPlaces } = data;
-      
-      // Format amount with decimal places
-      const formattedAmount = decimalPlaces !== undefined
-        ? amount.toFixed(decimalPlaces)
-        : String(amount);
-      
-      // Get localized unit name (or empty string if not provided)
-      let localizedUnit = '';
-      if (unitName) {
-        localizedUnit = getLocalizedText(
-          locData,
-          unitName.TableNamespace,
-          unitName.Key,
-          unitName.en // English fallback
-        );
-      }
-      
-      // Apply pattern
-      const formattedValue = pattern
-        .replace('{Amount}', formattedAmount)
-        .replace('{Unit}', localizedUnit);
-      
+      // Format the stat value
+      const formattedValue = formatStatValue(
+        amount,
+        data.pattern,
+        data.unitName,
+        data.decimalPlaces,
+        locData
+      );
+
       // Replace all occurrences of {shortKey} with the formatted value
       const regex = new RegExp(`\\{${shortKey}\\}`, 'g');
       result = result.replace(regex, formattedValue);
