@@ -2,11 +2,11 @@ import type { LocalizationKey } from './localization';
 import type { ParseObject } from './parse_object';
 
 export const MODULE_URL = 'modules';
-export const MODULE_STAT_URL = 'module_stats';
+export const MODULESTAT_URL = 'module_stats';
 
 export interface ModuleStat extends ParseObject {
   parseObjectClass: 'ModuleStat';
-  parseObjectUrl: typeof MODULE_STAT_URL;
+  parseObjectUrl: typeof MODULESTAT_URL;
   id: string;
   stat_name: LocalizationKey;
   short_key: string;

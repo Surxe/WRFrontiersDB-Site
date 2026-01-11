@@ -2,15 +2,16 @@ import fs from 'fs';
 import path from 'path';
 import type { VersionsData, VersionInfo } from '../types/version';
 import type { StaticPathsResult, ParseObject } from '../types/parse_object';
-import { MODULE_URL, MODULE_STAT_URL } from '../types/module';
-import {
-  PILOT_URL,
-  PILOT_CLASS_URL,
-  PILOT_PERSONALITY_URL,
-  PILOT_TALENT_URL,
-  PILOT_TALENT_TYPE_URL,
-} from '../types/pilot';
-import { RARITY_URL } from '../types/rarity';
+import * as moduleTypes from '../types/module';
+import * as pilotTypes from '../types/pilot';
+import * as rarityTypes from '../types/rarity';
+
+// Merge all exported constants from type modules
+const allTypeExports = {
+  ...moduleTypes,
+  ...pilotTypes,
+  ...rarityTypes,
+};
 
 /**
  * Load parse objects from a specific version
@@ -35,18 +36,9 @@ export function getParseObjects<T = ParseObject>(
       const fileName = parseObjectFile.split('/').pop() || '';
       const parseObjectClass = fileName.split('.')[0];
 
-      // URL lookup map from parseObjectClass
-      const URL_MAP: Record<string, string> = {
-        Module: MODULE_URL,
-        ModuleStat: MODULE_STAT_URL,
-        Pilot: PILOT_URL,
-        PilotClass: PILOT_CLASS_URL,
-        PilotPersonality: PILOT_PERSONALITY_URL,
-        PilotTalent: PILOT_TALENT_URL,
-        PilotTalentType: PILOT_TALENT_TYPE_URL,
-        Rarity: RARITY_URL,
-      };
-      const parseObjectUrl = URL_MAP[parseObjectClass];
+      // Dynamically derive URL constant name: "ModuleStat" -> "MODULESTAT_URL"
+      const urlConstName = parseObjectClass.toUpperCase() + '_URL';
+      const parseObjectUrl = allTypeExports[urlConstName as keyof typeof allTypeExports] as string;
 
       // Add parseObjectClass and parseObjectUrl to each object
       const objectsWithType: Record<string, T> = {};
