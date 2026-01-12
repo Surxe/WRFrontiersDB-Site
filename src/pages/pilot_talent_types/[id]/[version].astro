@@ -1,7 +1,9 @@
 ---
 import type { PilotTalentType, PilotTalent, Pilot } from '../../../types/pilot';
+import type { ModuleStat } from '../../../types/module';
 import Icon from '../../../components/Icon.astro';
 import LocalizedText from '../../../components/LocalizedText.astro';
+import StatEmbedLocalizedText from '../../../components/StatEmbedLocalizedText.astro';
 import VersionList from '../../../components/VersionList.astro';
 import ObjectPageScripts from '../../../components/ObjectPageScripts.astro';
 import ParseObjectPage from '../../../components/ParseObjectPage.astro';
@@ -13,6 +15,7 @@ import {
   getVersionsData,
 } from '../../../utils/parse_object';
 import { enrichPilotTalents } from '../../../utils/pilot';
+import { getStatValueChoices } from '../../../utils/stat';
 import { getDefaultString } from '../../../utils/localization';
 
 export async function getStaticPaths() {
@@ -26,6 +29,12 @@ const pilotTalentType = getParseObject<PilotTalentType>(
   id,
   version,
   'Objects/PilotTalentType.json'
+);
+
+// Load ModuleStats for stat replacements (even though PilotTalentType doesn't have stats)
+const moduleStats = getParseObjects<ModuleStat>(
+  'Objects/ModuleStat.json',
+  version
 );
 
 // Load and enrich pilot talents
@@ -99,9 +108,10 @@ const defaultName =
                 <PageRef obj={talent} version={version} />
               </td>
               <td>
-                <LocalizedText
+                <StatEmbedLocalizedText
                   tag="span"
                   localizationKey={talent.description}
+                  statValueChoices={getStatValueChoices(talent.stats, moduleStats)}
                 />
               </td>
             </tr>
