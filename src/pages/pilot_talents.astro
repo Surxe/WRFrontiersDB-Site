@@ -4,8 +4,11 @@ import ParseObjectListPage from '../components/ParseObjectListPage.astro';
 import { getAllVersions, getParseObjects } from '../utils/parse_object';
 import { prepareObjectList, groupBy, sortGroups } from '../utils/list';
 import { enrichPilotTalents } from '../utils/pilot';
+import { getStatValueChoices } from '../utils/stat';
 import type { PilotTalent, PilotTalentType, Pilot } from '../types/pilot';
+import type { ModuleStat } from '../types/module';
 import LocalizedText from '../components/LocalizedText.astro';
+import StatEmbedLocalizedText from '../components/StatEmbedLocalizedText.astro';
 import PageRef from '../components/PageRef.astro';
 
 const { versions, latestVersion } = getAllVersions();
@@ -23,6 +26,12 @@ const pilots = getParseObjects<Pilot>('Objects/Pilot.json', latestVersion);
 
 // Enrich talents with type and level information
 const enrichedTalents = enrichPilotTalents(pilotTalents, pilots);
+
+// Load ModuleStats for stat replacements
+const moduleStats = getParseObjects<ModuleStat>(
+  'Objects/ModuleStat.json',
+  latestVersion
+);
 
 // Prepare and filter
 const entries = prepareObjectList(enrichedTalents, { prodReadyOnly: false });
@@ -65,9 +74,10 @@ const sortedGroups = sortGroups(grouped, (a, b) => Number(a) - Number(b));
                   <PageRef obj={talent} version={latestVersion} />
                 </td>
                 <td>
-                  <LocalizedText
+                  <StatEmbedLocalizedText
                     tag="span"
                     localizationKey={talent.description}
+                    statValueChoices={getStatValueChoices(talent.stats || [], moduleStats)}
                   />
                 </td>
                 <td>
