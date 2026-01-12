@@ -37,9 +37,9 @@ const { title } = Astro.props;
       }
     </select>
     <slot />
-    <script is:inline>
+    <script is:inline define:vars={{ basePath: import.meta.env.BASE_URL }}>
       // Make base path available to all JavaScript modules
-      window.__ASTRO_BASE_PATH__ = import.meta.env.BASE_URL;
+      window.__ASTRO_BASE_PATH__ = basePath;
     </script>
     <script type="module">
       import { initLanguageSelector } from `${import.meta.env.BASE_URL}js/language_selector.js`;
