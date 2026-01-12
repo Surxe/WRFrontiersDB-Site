@@ -11,7 +11,7 @@ const { iconPath, altText, size = 64, color } = Astro.props;
 let iconSrc = null;
 if (iconPath) {
   // Remove the leading slash and extract the path after "WRFrontiers/"
-  iconSrc = `/WRFrontiersDB-Site/WRFrontiersDB-Data/textures${iconPath}.png`;
+  iconSrc = `${import.meta.env.BASE_URL}WRFrontiersDB-Data/textures${iconPath}.png`;
 }
 ---
 

@@ -52,7 +52,7 @@ const defaultName = getDefaultString(module.name) || module.id;
     localizationKey={module.name}
     slot="head"
   />
-  <p>Back to <a href="/WRFrontiersDB-Site/modules">Modules</a></p>
+  <p>Back to <a href={`${import.meta.env.BASE_URL}modules`}>Modules</a></p>
   <LocalizedText id="module-name" tag="h1" localizationKey={module.name} />
 
   <Icon iconPath={module.inventory_icon_path} altText={`${defaultName} icon`} />

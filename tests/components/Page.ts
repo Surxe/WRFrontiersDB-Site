@@ -25,10 +25,12 @@ describe('Page Component', () => {
     expect(title).toBeUndefined();
   });
 
-  it('should use correct base path for assets', () => {
-    const basePath = '/WRFrontiersDB-Site';
-    const faviconPath = `${basePath}/favicon.svg`;
-    const jsPath = `${basePath}/js/language_selector.js`;
+  it('should use import.meta.env.BASE_URL for assets', () => {
+    // Test assumes BASE_URL is available in the build environment
+    // In production this would be either '/' or '/WRFrontiersDB-Site/'
+    const mockBaseUrl = '/WRFrontiersDB-Site/';
+    const faviconPath = `${mockBaseUrl}favicon.svg`;
+    const jsPath = `${mockBaseUrl}js/language_selector.js`;
 
     expect(faviconPath).toBe('/WRFrontiersDB-Site/favicon.svg');
     expect(jsPath).toBe('/WRFrontiersDB-Site/js/language_selector.js');

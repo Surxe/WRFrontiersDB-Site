@@ -17,7 +17,7 @@ const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8')) as Record<
 ---
 
 <Page title="Versions">
-  <p>Back to <a href="/WRFrontiersDB-Site/">Home</a></p>
+  <p>Back to <a href={import.meta.env.BASE_URL}>Home</a></p>
   <h1>Versions</h1>
 
   <ul>

@@ -21,7 +21,7 @@ const { title } = Astro.props;
     <link
       rel="icon"
       type="image/svg+xml"
-      href="/WRFrontiersDB-Site/favicon.svg"
+      href={`${import.meta.env.BASE_URL}favicon.svg`}
     />
     {title && <title>{title}</title>}
     <slot name="head" />
@@ -37,8 +37,12 @@ const { title } = Astro.props;
       }
     </select>
     <slot />
+    <script is:inline>
+      // Make base path available to all JavaScript modules
+      window.__ASTRO_BASE_PATH__ = import.meta.env.BASE_URL;
+    </script>
     <script type="module">
-      import { initLanguageSelector } from '/WRFrontiersDB-Site/js/language_selector.js';
+      import { initLanguageSelector } from `${import.meta.env.BASE_URL}js/language_selector.js`;
 
       // Initialize language selector with default behavior (reload on change)
       initLanguageSelector();
