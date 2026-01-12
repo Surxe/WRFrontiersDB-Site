@@ -91,11 +91,11 @@ function formatStatValue(
   // Round to avoid floating point precision errors (e.g., 7.000000001 -> 7)
   const roundedValue = Math.round(exponentiatedValue * 1e10) / 1e10;
 
-  // Format amount with decimal places
+  // Format amount with decimal places (only show as many as needed)
   const formattedAmount =
     decimalPlaces !== undefined
-      ? exponentiatedValue.toFixed(decimalPlaces)
-      : String(exponentiatedValue);
+      ? String(parseFloat(roundedValue.toFixed(decimalPlaces)))
+      : String(roundedValue);
 
   // Get localized unit name (or empty string if not provided)
   let localizedUnit = '';
