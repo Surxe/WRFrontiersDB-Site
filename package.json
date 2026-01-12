@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
+    "build:custom-domain": "CUSTOM_DOMAIN=true astro build",
+    "build:github-pages": "astro build",
     "preview": "astro preview",
     "astro": "astro",
     "lint": "eslint . --ext .js,.ts,.astro --max-warnings 0",
