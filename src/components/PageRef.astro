@@ -1,47 +1,81 @@
 ---
 import Icon from './Icon.astro';
 import LocalizedText from './LocalizedText.astro';
+import StatEmbedLocalizedText from './StatEmbedLocalizedText.astro';
 import { getPageRefData } from '../utils/page_ref';
 import type { ParseObject } from '../types/parse_object';
+import type { StatValueChoices } from './StatEmbedLocalizedText.astro';
 import { getDefaultString } from '../utils/localization';
+import '../styles/PageRef.css';
 
 interface Props {
   obj: ParseObject;
   version: string;
   iconSize?: number;
   showIcon?: boolean;
+  useOnHover?: boolean;
+  onHoverStatChoices?: StatValueChoices;
 }
 
-const { obj, version, iconSize = 24, showIcon = true } = Astro.props;
+const {
+  obj,
+  version,
+  iconSize = 24,
+  showIcon = true,
+  useOnHover = false,
+  onHoverStatChoices,
+} = Astro.props;
 
 // Get the page reference data (localization key, icon path, hex color)
 const pageData = getPageRefData(obj);
 
 const pageUrl = `/WRFrontiersDB-Site/${obj.parseObjectUrl}/${obj.id}/${version}`;
+
+if (useOnHover && !pageData.description) {
+  throw new Error(
+    'useOnHover is enabled but no description is available for this object.'
+  );
+}
 ---
 
-<a href={pageUrl}>
-  <!-- Show icon if supported and enabled -->
-  {
-    showIcon && pageData.iconPath && (
-      <Icon
-        iconPath={pageData.iconPath}
-        altText={`${getDefaultString(pageData.localizationKey)} icon`}
-        size={iconSize}
-        color={pageData.hexColor}
-      />
-    )
-  }
-  <!-- Show text with colored div if iconPath not supported, otherwise show just text-->
-  {
-    !pageData.iconPath && pageData.hexColor ? (
-      <div
-        style={`display: inline-block; padding: 2px 8px; background-color: #${pageData.hexColor}; border-radius: 4px;`}
-      >
+<span class="page-ref-wrapper">
+  <a href={pageUrl}>
+    <!-- Show icon if supported and enabled -->
+    {
+      showIcon && pageData.iconPath && (
+        <Icon
+          iconPath={pageData.iconPath}
+          altText={`${getDefaultString(pageData.localizationKey)} icon`}
+          size={iconSize}
+          color={pageData.hexColor}
+        />
+      )
+    }
+    <!-- Show text with colored div if iconPath not supported, otherwise show just text-->
+    {
+      !pageData.iconPath && pageData.hexColor ? (
+        <div
+          style={`display: inline-block; padding: 2px 8px; background-color: #${pageData.hexColor}; border-radius: 4px;`}
+        >
+          <LocalizedText
+            tag="span"
+            localizationKey={pageData.localizationKey}
+          />
+        </div>
+      ) : (
         <LocalizedText tag="span" localizationKey={pageData.localizationKey} />
-      </div>
-    ) : (
-      <LocalizedText tag="span" localizationKey={pageData.localizationKey} />
+      )
+    }
+  </a>
+  {
+    useOnHover && pageData.description && (
+      <span class="hover-tooltip">
+        <StatEmbedLocalizedText
+          tag="span"
+          localizationKey={pageData.description}
+          statValueChoices={onHoverStatChoices || {}}
+        />
+      </span>
     )
   }
-</a>
+</span>

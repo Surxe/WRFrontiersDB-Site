@@ -38,6 +38,7 @@ describe('getPageRefData', () => {
       expect(result).toEqual({
         localizationKey: mockLocalizationKey,
         iconPath: '/path/to/icon',
+        description: mockLocalizationKey,
       });
     });
 
@@ -129,6 +130,7 @@ describe('getPageRefData', () => {
       expect(result).toEqual({
         localizationKey: mockLocalizationKey,
         iconPath: '/path/to/talent',
+        description: mockLocalizationKey,
       });
     });
   });
@@ -140,6 +142,7 @@ describe('getPageRefData', () => {
         id: 'PTT_123',
         name: mockLocalizationKey,
         image_path: '/path/to/talent_type',
+        description: mockLocalizationKey,
       };
 
       const result = getPageRefData(pilotTalentType);
@@ -147,6 +150,7 @@ describe('getPageRefData', () => {
       expect(result).toEqual({
         localizationKey: mockLocalizationKey,
         iconPath: '/path/to/talent_type',
+        description: mockLocalizationKey,
       });
     });
   });
