@@ -34,7 +34,7 @@ jobs:
           node-version: 18
 
       - run: npm install
-      - run: npm run build
+      - run: npm run build:custom-domain
 
       - uses: actions/upload-pages-artifact@v3
         with:
