@@ -19,7 +19,7 @@ Static Astro site displaying War Robots Frontiers game data from versioned JSON 
 
 **Always follow these rules**:
 
-1. **Base path is mandatory**: All links and fetches MUST include `/WRFrontiersDB-Site/` prefix for GitHub Pages
+1. **Environment-based base path**: Use `import.meta.env.BASE_URL` instead of hardcoded paths in Astro files, and `window.__ASTRO_BASE_PATH__` in client-side JavaScript
 2. **Production filtering**: Only objects with `production_status === 'Ready'` appear in production lists
 3. **No TypeScript in public/js**: Client-side scripts must be plain JavaScript with JSDoc
 4. **Localization is version-specific**: Each game version has its own localization files
