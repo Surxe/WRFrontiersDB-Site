@@ -61,7 +61,10 @@ const defaultName = getDefaultString(pilotTalent.name) || pilotTalent.id;
     localizationKey={pilotTalent.name}
     slot="head"
   />
-  <p>Back to <a href={`${import.meta.env.BASE_URL}pilot_talents`}>Pilot Talents</a></p>
+  <p>
+    Back to <a href={`${import.meta.env.BASE_URL}pilot_talents`}
+      >Pilot Talents</a>
+  </p>
   <LocalizedText
     id="pilot-talent-name"
     tag="h1"

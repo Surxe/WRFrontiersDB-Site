@@ -5,16 +5,19 @@ This directory contains build scripts for different deployment environments.
 ## Usage
 
 ### Custom Domain Deployment (wrf-db.info)
+
 ```bash
 npm run build:custom-domain
 ```
 
 ### GitHub Pages Deployment (surxe.github.io/WRFrontiersDB-Site/)
+
 ```bash
 npm run build:github-pages
 ```
 
 ### Development
+
 ```bash
 npm run dev
 ```
