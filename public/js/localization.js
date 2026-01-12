@@ -87,7 +87,7 @@ function formatStatValue(
   // Apply exponent (default to 1.0)
   const exponentValue = unitExponent ?? 1.0;
   const exponentiatedValue = Math.pow(value, exponentValue);
-  
+
   // Round to avoid floating point precision errors (e.g., 7.000000001 -> 7)
   const roundedValue = Math.round(exponentiatedValue * 1e10) / 1e10;
 

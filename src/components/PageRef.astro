@@ -57,7 +57,10 @@ if (useOnHover && !pageData.description) {
         <div
           style={`display: inline-block; padding: 2px 8px; background-color: #${pageData.hexColor}; border-radius: 4px;`}
         >
-          <LocalizedText tag="span" localizationKey={pageData.localizationKey} />
+          <LocalizedText
+            tag="span"
+            localizationKey={pageData.localizationKey}
+          />
         </div>
       ) : (
         <LocalizedText tag="span" localizationKey={pageData.localizationKey} />

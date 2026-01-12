@@ -7,7 +7,6 @@ import { enrichPilotTalents } from '../utils/pilot';
 import { getStatValueChoices } from '../utils/stat';
 import type { PilotTalent, PilotTalentType, Pilot } from '../types/pilot';
 import type { ModuleStat } from '../types/module';
-import LocalizedText from '../components/LocalizedText.astro';
 import StatEmbedLocalizedText from '../components/StatEmbedLocalizedText.astro';
 import PageRef from '../components/PageRef.astro';
 
@@ -77,7 +76,10 @@ const sortedGroups = sortGroups(grouped, (a, b) => Number(a) - Number(b));
                   <StatEmbedLocalizedText
                     tag="span"
                     localizationKey={talent.description}
-                    statValueChoices={getStatValueChoices(talent.stats || [], moduleStats)}
+                    statValueChoices={getStatValueChoices(
+                      talent.stats || [],
+                      moduleStats
+                    )}
                   />
                 </td>
                 <td>

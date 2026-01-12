@@ -111,7 +111,10 @@ const defaultName =
                 <StatEmbedLocalizedText
                   tag="span"
                   localizationKey={talent.description}
-                  statValueChoices={getStatValueChoices(talent.stats, moduleStats)}
+                  statValueChoices={getStatValueChoices(
+                    talent.stats,
+                    moduleStats
+                  )}
                 />
               </td>
             </tr>

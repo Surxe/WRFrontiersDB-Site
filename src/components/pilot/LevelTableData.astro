@@ -56,35 +56,42 @@ const getTalentData = (levelIdx: number, talentIdx: number) => {
 {/* For level 5, use rowspan and only render on first talent row */}
 {/* For levels 1 and 2-4, render for each talent index */}
 {
-  levelIndex === 4 ? (
-    talentIndex === 0 && (() => {
-      const { talent, statValueChoices } = getTalentData(levelIndex, talentIndex);
-      return (
-        <td rowspan={maxTalents}>
-          {talent && (
-            <PageRef
-              obj={talent}
-              version={version}
-              useOnHover={true}
-              onHoverStatChoices={statValueChoices}
-            />
-          )}
-        </td>
-      );
-    })()
-  ) : (() => {
-      const { talent, statValueChoices } = getTalentData(levelIndex, talentIndex);
-      return (
-        <td>
-          {talent && (
-            <PageRef
-              obj={talent}
-              version={version}
-              useOnHover={true}
-              onHoverStatChoices={statValueChoices}
-            />
-          )}
-        </td>
-      );
-    })()
+  levelIndex === 4
+    ? talentIndex === 0 &&
+      (() => {
+        const { talent, statValueChoices } = getTalentData(
+          levelIndex,
+          talentIndex
+        );
+        return (
+          <td rowspan={maxTalents}>
+            {talent && (
+              <PageRef
+                obj={talent}
+                version={version}
+                useOnHover={true}
+                onHoverStatChoices={statValueChoices}
+              />
+            )}
+          </td>
+        );
+      })()
+    : (() => {
+        const { talent, statValueChoices } = getTalentData(
+          levelIndex,
+          talentIndex
+        );
+        return (
+          <td>
+            {talent && (
+              <PageRef
+                obj={talent}
+                version={version}
+                useOnHover={true}
+                onHoverStatChoices={statValueChoices}
+              />
+            )}
+          </td>
+        );
+      })()
 }
