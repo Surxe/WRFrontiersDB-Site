@@ -27,7 +27,7 @@ export function getParseObjects<T = ParseObject>(
   try {
     const objectsPath = path.join(
       process.cwd(),
-      `WRFrontiersDB-Data/archive/${version}/${parseObjectFile}`
+      `public/WRFrontiersDB-Data/archive/${version}/${parseObjectFile}`
     );
     if (fs.existsSync(objectsPath)) {
       const data = JSON.parse(fs.readFileSync(objectsPath, 'utf8'));
@@ -67,7 +67,7 @@ export function getAllVersions(): {
 } {
   const versionsPath = path.join(
     process.cwd(),
-    'WRFrontiersDB-Data/versions.json'
+    'public/WRFrontiersDB-Data/versions.json'
   );
   const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8')) as Record<
     string,
@@ -83,7 +83,7 @@ export function getAllVersions(): {
 export function getVersionsData(version: string): VersionsData {
   const versionsPath = path.join(
     process.cwd(),
-    'WRFrontiersDB-Data/versions.json'
+    'public/WRFrontiersDB-Data/versions.json'
   );
   const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8')) as Record<
     string,
@@ -119,7 +119,7 @@ export async function generateObjectStaticPaths(
 ): Promise<StaticPathsResult[]> {
   const versionsPath = path.join(
     process.cwd(),
-    'WRFrontiersDB-Data/versions.json'
+    'public/WRFrontiersDB-Data/versions.json'
   );
   const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8')) as Record<
     string,
@@ -134,7 +134,7 @@ export async function generateObjectStaticPaths(
     try {
       const objectsPath = path.join(
         process.cwd(),
-        `WRFrontiersDB-Data/archive/${version}/${parseObjectPath}`
+        `public/WRFrontiersDB-Data/archive/${version}/${parseObjectPath}`
       );
       if (fs.existsSync(objectsPath)) {
         const objects = JSON.parse(

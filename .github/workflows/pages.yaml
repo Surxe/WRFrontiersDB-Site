@@ -21,13 +21,13 @@ jobs:
       # Checkout site repo (uses GITHUB_TOKEN)
       - uses: actions/checkout@v4
 
-      # Checkout data repo (uses PAT ONLY for this step)
+      # Checkout data repo into public directory (uses PAT ONLY for this step)
       - name: Checkout Data Repo
         uses: actions/checkout@v4
         with:
           repository: Surxe/WRFrontiersDB-Data
           token: ${{ secrets.DATA_REPO_PAT }}
-          path: WRFrontiersDB-Data
+          path: public/WRFrontiersDB-Data
 
       - uses: actions/setup-node@v4
         with:
