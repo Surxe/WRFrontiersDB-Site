@@ -25,10 +25,11 @@ export function getParseObjects<T = ParseObject>(
   version: string
 ): Record<string, T> {
   try {
-    const objectsPath = path.join(
-      process.cwd(),
-      `public/WRFrontiersDB-Data/archive/${version}/${parseObjectFile}`
-    );
+      const objectsPath = path.resolve(
+        'public/WRFrontiersDB-Data/archive',
+        version,
+        parseObjectFile
+      );
     if (fs.existsSync(objectsPath)) {
       const data = JSON.parse(fs.readFileSync(objectsPath, 'utf8'));
 
@@ -85,10 +86,13 @@ export function getVersionsData(version: string): VersionsData {
     process.cwd(),
     'public/WRFrontiersDB-Data/versions.json'
   );
-  const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8')) as Record<
-    string,
-    VersionInfo
-  >;
+    const versionsPath = path.resolve(
+      'public/WRFrontiersDB-Data/versions.json'
+    );
+    const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8')) as Record<
+      string,
+      VersionInfo
+    >;
   const versionInfo = versions[version];
 
   return { versions, versionInfo };
@@ -121,10 +125,13 @@ export async function generateObjectStaticPaths(
     process.cwd(),
     'public/WRFrontiersDB-Data/versions.json'
   );
-  const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8')) as Record<
-    string,
-    VersionInfo
-  >;
+    const versionsPath = path.resolve(
+      'public/WRFrontiersDB-Data/versions.json'
+    );
+    const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8')) as Record<
+      string,
+      VersionInfo
+    >;
 
   const paths: StaticPathsResult[] = [];
   const objectVersionsMap = new Map<string, string[]>(); // Build lookup table once
@@ -132,10 +139,11 @@ export async function generateObjectStaticPaths(
   // For each version, load its objects and create paths
   for (const version of Object.keys(versions)) {
     try {
-      const objectsPath = path.join(
-        process.cwd(),
-        `public/WRFrontiersDB-Data/archive/${version}/${parseObjectPath}`
-      );
+        const objectsPath = path.resolve(
+          'public/WRFrontiersDB-Data/archive',
+          version,
+          parseObjectPath
+        );
       if (fs.existsSync(objectsPath)) {
         const objects = JSON.parse(
           fs.readFileSync(objectsPath, 'utf8')
