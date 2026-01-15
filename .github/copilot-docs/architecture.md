@@ -26,4 +26,4 @@
 
 - Client-side localization lazy-loaded on language change
 - `public/js/*.js`: Plain JavaScript modules (not TypeScript)
-- Fetches localization JSON from `${window.__ASTRO_BASE_PATH__}WRFrontiersDB-Data/archive/{version}/Localization/{lang}.json`
+- Fetches localization JSON from `${window.__ASTRO_BASE_PATH__}public/WRFrontiersDB-Data/archive/{version}/Localization/{lang}.json`

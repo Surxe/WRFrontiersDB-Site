@@ -2,7 +2,7 @@
 
 ## Adding a New Object Type
 
-1. **Study JSON structure** in `WRFrontiersDB-Data/archive/{version}/Objects/{parseObject}.json`
+1. **Study JSON structure** in `public/WRFrontiersDB-Data/archive/{version}/Objects/{parseObject}.json`
 2. **Create type interface** in `src/types/{parseObject}.ts` (e.g., `export interface Weapon { ... }`) with the url constant for `parseObjectUrl`
 3. **Configure PageRef overload** in `src/utils/page_ref.ts`'s `getPageRefData` function
 4. **Create list page**: `src/pages/{parseObject}s.astro` (properly pluralized) using `ParseObjectList`
@@ -13,7 +13,7 @@
 ## Working with Icons/Textures
 
 - Texture paths in objects: `"inventory_icon_path": "WRFrontiers/Content/Sparrow/UI/Textures/Abilities/T_Icon"`
-- Physical files: `WRFrontiersDB-Data/textures/WRFrontiers/Content/.../T_Icon.png`
+- Physical files: `public/WRFrontiersDB-Data/textures/WRFrontiers/Content/.../T_Icon.png`
 - Use `Icon` component with `iconPath` prop (no `.png` extension)
 
 ## Client-side Object Data

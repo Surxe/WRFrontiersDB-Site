@@ -82,17 +82,13 @@ export function getAllVersions(): {
 // Get all versions data from versions.json and the specific version element
 // Having all versions is necessary for listing the versions the ParseObject exists in
 export function getVersionsData(version: string): VersionsData {
-  const versionsPath = path.join(
-    process.cwd(),
+  const versionsPath = path.resolve(
     'public/WRFrontiersDB-Data/versions.json'
   );
-    const versionsPath = path.resolve(
-      'public/WRFrontiersDB-Data/versions.json'
-    );
-    const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8')) as Record<
-      string,
-      VersionInfo
-    >;
+  const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8')) as Record<
+    string,
+    VersionInfo
+  >;
   const versionInfo = versions[version];
 
   return { versions, versionInfo };
@@ -121,17 +117,13 @@ export async function generateObjectStaticPaths(
   parseObjectPath: string = 'Objects/Module.json',
   prodReadyOnly: boolean = false
 ): Promise<StaticPathsResult[]> {
-  const versionsPath = path.join(
-    process.cwd(),
+  const versionsPath = path.resolve(
     'public/WRFrontiersDB-Data/versions.json'
   );
-    const versionsPath = path.resolve(
-      'public/WRFrontiersDB-Data/versions.json'
-    );
-    const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8')) as Record<
-      string,
-      VersionInfo
-    >;
+  const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8')) as Record<
+    string,
+    VersionInfo
+  >;
 
   const paths: StaticPathsResult[] = [];
   const objectVersionsMap = new Map<string, string[]>(); // Build lookup table once

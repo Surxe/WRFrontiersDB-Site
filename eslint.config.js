@@ -7,7 +7,7 @@ import astroParser from 'astro-eslint-parser';
 export default [
   // Ignore patterns
   {
-    ignores: ['dist/', 'node_modules/', '.astro/', 'WRFrontiersDB-Data/'],
+    ignores: ['dist/', 'node_modules/', '.astro/', 'public/WRFrontiersDB-Data/'],
   },
 
   // Base ESLint recommended rules
