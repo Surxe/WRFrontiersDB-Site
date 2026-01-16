@@ -16,10 +16,7 @@ const { version, objectData, jsFileName } = Astro.props;
 />
 
 <!--Initialize localization on all the localizeable elements-->
-<script
-  type="module"
-  define:vars={{ version }}
->
+<script type="module" define:vars={{ version }}>
   const localizationModule = await import('/js/localization.js');
   const { initializeLocalization } = localizationModule;
   initializeLocalization(version);
