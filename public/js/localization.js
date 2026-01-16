@@ -8,7 +8,7 @@ const localizationCache = {};
 
 // Get base path from global variable set by Astro build (lazy evaluation)
 function getBasePath() {
-  return window.__ASTRO_BASE_PATH__ || '/WRFrontiersDB-Site/';
+  return window.__ASTRO_BASE_PATH__ || '/';
 }
 
 /**
