@@ -9,7 +9,7 @@ export interface Props {
 const { parseObjectUrl, id, myVersions, versionsData } = Astro.props;
 
 // Generate the base URL based on parseObjectUrl
-const baseUrl = `${import.meta.env.BASE_URL}${parseObjectUrl}/${id}`;
+const baseUrl = `/${parseObjectUrl}/${id}`;
 ---
 
 <h2>Available Versions</h2>

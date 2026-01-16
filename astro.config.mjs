@@ -11,5 +11,5 @@ const isCustomDomain = process.env.CUSTOM_DOMAIN === 'true';
 export default defineConfig({
     output: 'static',
     site: isCustomDomain ? 'https://wrf-db.info' : 'https://Surxe.github.io',
-    base: isCustomDomain ? '/' : '/WRFrontiersDB-Site/'
+    base: '/'
 });

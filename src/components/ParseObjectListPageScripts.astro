@@ -10,15 +10,15 @@ const { version, jsFileName } = Astro.props;
 <!--Common astro scripts for all ParseObjectList pages--><!--Initialize localization on all the localizeable elements-->
 <script
   type="module"
-  define:vars={{ version, baseUrl: import.meta.env.BASE_URL }}
+  define:vars={{ version }}
 >
-  const localizationModule = await import(baseUrl + 'js/localization.js');
+  const localizationModule = await import('/js/localization.js');
   const { initializeLocalization } = localizationModule;
   initializeLocalization(version);
 </script>
 
 <!--Load the specific JS file for this list page, only if jsFileName is provided-->{
   jsFileName && (
-    <script is:inline src={`${import.meta.env.BASE_URL}js/${jsFileName}`} />
+    <script is:inline src={`/js/${jsFileName}`} />
   )
 }
