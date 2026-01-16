@@ -42,9 +42,7 @@ const { title } = Astro.props;
       window.__ASTRO_BASE_PATH__ = basePath;
     </script>
     <script type="module" define:vars={{ baseUrl: import.meta.env.BASE_URL }}>
-      const languageModule = await import(
-        baseUrl + 'js/language_selector.js'
-      );
+      const languageModule = await import(baseUrl + 'js/language_selector.js');
       const { initLanguageSelector } = languageModule;
 
       // Initialize language selector with default behavior (reload on change)

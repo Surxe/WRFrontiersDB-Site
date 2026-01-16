@@ -25,12 +25,12 @@ export function getParseObjects<T = ParseObject>(
   version: string
 ): Record<string, T> {
   try {
-      const objectsPath = path.join(
-        process.cwd(),
-        'WRFrontiersDB-Data/archive',
-        version,
-        parseObjectFile
-      );
+    const objectsPath = path.join(
+      process.cwd(),
+      'WRFrontiersDB-Data/archive',
+      version,
+      parseObjectFile
+    );
     if (fs.existsSync(objectsPath)) {
       const data = JSON.parse(fs.readFileSync(objectsPath, 'utf8'));
 
@@ -134,12 +134,12 @@ export async function generateObjectStaticPaths(
   // For each version, load its objects and create paths
   for (const version of Object.keys(versions)) {
     try {
-        const objectsPath = path.join(
-          process.cwd(),
-          'WRFrontiersDB-Data/archive',
-          version,
-          parseObjectPath
-        );
+      const objectsPath = path.join(
+        process.cwd(),
+        'WRFrontiersDB-Data/archive',
+        version,
+        parseObjectPath
+      );
       if (fs.existsSync(objectsPath)) {
         const objects = JSON.parse(
           fs.readFileSync(objectsPath, 'utf8')
