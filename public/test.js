@@ -1,5 +1,6 @@
+/* global window, console, alert */
 // Simple test script to verify JavaScript loading on production
-console.log('Test script loaded successfully!');
+console.warn('Test script loaded successfully!');
 
 // Create a simple function that can be called from browser console
 window.testFunction = function () {
@@ -9,7 +10,7 @@ window.testFunction = function () {
 
 // Log the base path for debugging
 if (typeof window !== 'undefined' && window.__ASTRO_BASE_PATH__) {
-  console.log('Astro base path:', window.__ASTRO_BASE_PATH__);
+  console.warn('Astro base path:', window.__ASTRO_BASE_PATH__);
 } else {
-  console.log('Astro base path not available yet');
+  console.warn('Astro base path not available yet');
 }
