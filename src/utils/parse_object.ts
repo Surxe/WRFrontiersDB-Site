@@ -25,8 +25,9 @@ export function getParseObjects<T = ParseObject>(
   version: string
 ): Record<string, T> {
   try {
-      const objectsPath = path.resolve(
-        'public/WRFrontiersDB-Data/archive',
+      const objectsPath = path.join(
+        process.cwd(),
+        'WRFrontiersDB-Data/archive',
         version,
         parseObjectFile
       );
@@ -68,7 +69,7 @@ export function getAllVersions(): {
 } {
   const versionsPath = path.join(
     process.cwd(),
-    'public/WRFrontiersDB-Data/versions.json'
+    'WRFrontiersDB-Data/versions.json'
   );
   const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8')) as Record<
     string,
@@ -82,8 +83,9 @@ export function getAllVersions(): {
 // Get all versions data from versions.json and the specific version element
 // Having all versions is necessary for listing the versions the ParseObject exists in
 export function getVersionsData(version: string): VersionsData {
-  const versionsPath = path.resolve(
-    'public/WRFrontiersDB-Data/versions.json'
+  const versionsPath = path.join(
+    process.cwd(),
+    'WRFrontiersDB-Data/versions.json'
   );
   const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8')) as Record<
     string,
@@ -117,8 +119,9 @@ export async function generateObjectStaticPaths(
   parseObjectPath: string = 'Objects/Module.json',
   prodReadyOnly: boolean = false
 ): Promise<StaticPathsResult[]> {
-  const versionsPath = path.resolve(
-    'public/WRFrontiersDB-Data/versions.json'
+  const versionsPath = path.join(
+    process.cwd(),
+    'WRFrontiersDB-Data/versions.json'
   );
   const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8')) as Record<
     string,
@@ -131,8 +134,9 @@ export async function generateObjectStaticPaths(
   // For each version, load its objects and create paths
   for (const version of Object.keys(versions)) {
     try {
-        const objectsPath = path.resolve(
-          'public/WRFrontiersDB-Data/archive',
+        const objectsPath = path.join(
+          process.cwd(),
+          'WRFrontiersDB-Data/archive',
           version,
           parseObjectPath
         );

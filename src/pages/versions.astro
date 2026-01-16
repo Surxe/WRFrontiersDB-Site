@@ -8,7 +8,7 @@ import type { VersionInfo } from '../types/version';
 // Load version metadata
 const versionsPath = path.join(
   process.cwd(),
-  'public/WRFrontiersDB-Data/versions.json'
+  'WRFrontiersDB-Data/versions.json'
 );
 const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8')) as Record<
   string,
