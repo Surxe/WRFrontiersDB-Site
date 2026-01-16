@@ -39,7 +39,11 @@ const defaultName = getDefaultString(pilotClass.name) || pilotClass.id;
     localizationKey={pilotClass.name}
     slot="head"
   />
-  <p>Back to <a href="/WRFrontiersDB-Site/pilot_classes">Pilot Classes</a></p>
+  <p>
+    Back to <a href={`${import.meta.env.BASE_URL}pilot_classes`}
+      >Pilot Classes</a
+    >
+  </p>
   <LocalizedText
     id="pilot-class-name"
     tag="h1"

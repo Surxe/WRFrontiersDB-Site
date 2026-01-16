@@ -27,7 +27,9 @@ export function getParseObjects<T = ParseObject>(
   try {
     const objectsPath = path.join(
       process.cwd(),
-      `WRFrontiersDB-Data/archive/${version}/${parseObjectFile}`
+      'WRFrontiersDB-Data/archive',
+      version,
+      parseObjectFile
     );
     if (fs.existsSync(objectsPath)) {
       const data = JSON.parse(fs.readFileSync(objectsPath, 'utf8'));
@@ -134,7 +136,9 @@ export async function generateObjectStaticPaths(
     try {
       const objectsPath = path.join(
         process.cwd(),
-        `WRFrontiersDB-Data/archive/${version}/${parseObjectPath}`
+        'WRFrontiersDB-Data/archive',
+        version,
+        parseObjectPath
       );
       if (fs.existsSync(objectsPath)) {
         const objects = JSON.parse(

@@ -17,12 +17,13 @@ const { version, objectData, jsFileName } = Astro.props;
 
 <!--Initialize localization on all the localizeable elements-->
 <script type="module" define:vars={{ version }}>
-  import { initializeLocalization } from '/WRFrontiersDB-Site/js/localization.js';
+  const localizationModule = await import('/js/localization.js');
+  const { initializeLocalization } = localizationModule;
   initializeLocalization(version);
 </script>
 
 <!--Load the specific JS file for this object page, only if jsFileName is provided-->{
   jsFileName && (
-    <script is:inline src={`/WRFrontiersDB-Site/js/${jsFileName}`} />
+    <script is:inline src={`${import.meta.env.BASE_URL}js/${jsFileName}`} />
   )
 }

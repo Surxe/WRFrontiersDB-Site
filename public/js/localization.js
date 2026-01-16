@@ -20,7 +20,7 @@ export async function loadLanguage(lang, version) {
 
   try {
     const response = await fetch(
-      `/WRFrontiersDB-Site/WRFrontiersDB-Data/archive/${version}/Localization/${lang}.json`
+      `/WRFrontiersDB-Data/archive/${version}/Localization/${lang}.json`
     );
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     localizationCache[cacheKey] = await response.json();

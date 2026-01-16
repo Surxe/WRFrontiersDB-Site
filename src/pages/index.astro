@@ -7,16 +7,24 @@ import Page from '../components/Page.astro';
 
   <h1>Astro</h1>
   <ul>
-    <li><a href="/WRFrontiersDB-Site/modules">Modules</a></li>
-    <li><a href="/WRFrontiersDB-Site/pilots">Pilots</a></li>
+    <li><a href={`${import.meta.env.BASE_URL}modules`}>Modules</a></li>
+    <li><a href={`${import.meta.env.BASE_URL}pilots`}>Pilots</a></li>
     <li>
-      <a href="/WRFrontiersDB-Site/pilot_talent_types">Pilot Talent Types</a>
+      <a href={`${import.meta.env.BASE_URL}pilot_talent_types`}
+        >Pilot Talent Types</a
+      >
     </li>
     <li>
-      <a href="/WRFrontiersDB-Site/pilot_personalities">Pilot Personalities</a>
+      <a href={`${import.meta.env.BASE_URL}pilot_personalities`}
+        >Pilot Personalities</a
+      >
     </li>
-    <li><a href="/WRFrontiersDB-Site/pilot_classes">Pilot Classes</a></li>
-    <li><a href="/WRFrontiersDB-Site/pilot_talents">Pilot Talents</a></li>
-    <li><a href="/WRFrontiersDB-Site/rarities">Rarities</a></li>
+    <li>
+      <a href={`${import.meta.env.BASE_URL}pilot_classes`}>Pilot Classes</a>
+    </li>
+    <li>
+      <a href={`${import.meta.env.BASE_URL}pilot_talents`}>Pilot Talents</a>
+    </li>
+    <li><a href={`${import.meta.env.BASE_URL}rarities`}>Rarities</a></li>
   </ul>
 </Page>

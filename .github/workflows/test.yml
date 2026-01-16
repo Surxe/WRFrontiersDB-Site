@@ -26,6 +26,9 @@ jobs:
           repository: Surxe/WRFrontiersDB-Data
           token: ${{ secrets.DATA_REPO_PAT }}
           path: WRFrontiersDB-Data
+
+      - name: Symlink WRFrontiersDB-Data to public
+        run: ln -s ../WRFrontiersDB-Data public/WRFrontiersDB-Data
       
       - name: Setup Node.js
         uses: actions/setup-node@v4

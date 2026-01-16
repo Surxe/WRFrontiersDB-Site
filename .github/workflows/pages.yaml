@@ -21,7 +21,7 @@ jobs:
       # Checkout site repo (uses GITHUB_TOKEN)
       - uses: actions/checkout@v4
 
-      # Checkout data repo (uses PAT ONLY for this step)
+      # Checkout data repo into public directory (uses PAT ONLY for this step)
       - name: Checkout Data Repo
         uses: actions/checkout@v4
         with:
@@ -29,12 +29,17 @@ jobs:
           token: ${{ secrets.DATA_REPO_PAT }}
           path: WRFrontiersDB-Data
 
+      - name: Symlink WRFrontiersDB-Data to public
+        run: ln -s ../WRFrontiersDB-Data public/WRFrontiersDB-Data
+
       - uses: actions/setup-node@v4
         with:
           node-version: 18
 
       - run: npm install
       - run: npm run build
+        env:
+          CUSTOM_DOMAIN: true
 
       - uses: actions/upload-pages-artifact@v3
         with:
