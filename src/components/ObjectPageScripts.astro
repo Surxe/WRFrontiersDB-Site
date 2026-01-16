@@ -23,7 +23,5 @@ const { version, objectData, jsFileName } = Astro.props;
 </script>
 
 <!--Load the specific JS file for this object page, only if jsFileName is provided-->{
-  jsFileName && (
-    <script is:inline src={`${import.meta.env.BASE_URL}js/${jsFileName}`} />
-  )
+  jsFileName && <script is:inline src={`/js/${jsFileName}`} />
 }

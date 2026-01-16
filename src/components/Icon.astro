@@ -10,7 +10,7 @@ const { iconPath, altText, size = 64, color } = Astro.props;
 
 let iconSrc = null;
 if (iconPath) {
-  iconSrc = `${import.meta.env.BASE_URL}WRFrontiersDB-Data/textures${iconPath}.png`;
+  iconSrc = `/WRFrontiersDB-Data/textures${iconPath}.png`;
 }
 ---
 
