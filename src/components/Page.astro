@@ -41,9 +41,9 @@ const { title } = Astro.props;
       // Make base path available to all JavaScript modules
       window.__ASTRO_BASE_PATH__ = basePath;
     </script>
-    <script type="module">
+    <script type="module" define:vars={{ baseUrl: import.meta.env.BASE_URL }}>
       const languageModule = await import(
-        import.meta.env.BASE_URL + 'js/language_selector.js'
+        baseUrl + 'js/language_selector.js'
       );
       const { initLanguageSelector } = languageModule;
 

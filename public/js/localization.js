@@ -6,8 +6,10 @@
 // Localization cache shared across all pages
 const localizationCache = {};
 
-// Get base path from global variable set by Astro build
-const BASE_PATH = window.__ASTRO_BASE_PATH__ || '/WRFrontiersDB-Site/';
+// Get base path from global variable set by Astro build (lazy evaluation)
+function getBasePath() {
+  return window.__ASTRO_BASE_PATH__ || '/WRFrontiersDB-Site/';
+}
 
 /**
  * Loads localization data for a specific language and version
@@ -23,7 +25,7 @@ export async function loadLanguage(lang, version) {
 
   try {
     const response = await fetch(
-      `${BASE_PATH}WRFrontiersDB-Data/archive/${version}/Localization/${lang}.json`
+      `${getBasePath()}WRFrontiersDB-Data/archive/${version}/Localization/${lang}.json`
     );
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     localizationCache[cacheKey] = await response.json();
