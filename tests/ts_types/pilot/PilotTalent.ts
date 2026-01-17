@@ -156,6 +156,7 @@ describe('PilotTalent interface', () => {
         'cooldown',
         'reactivation_policy',
         'buff_class',
+        'effect_offset',
         'default_properties',
         // talent_type_id and level are enriched at build time, not in raw data
         // parseObjectClass is added at build time, not in raw data

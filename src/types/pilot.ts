@@ -81,6 +81,11 @@ export interface PilotTalent extends ParseObject {
   cooldown?: number;
   reactivation_policy?: string;
   buff_class?: string;
+  effect_offset?: {
+    X: number;
+    Y: number;
+    Z: number;
+  };
   default_properties?: {
     [key: string]: unknown;
   };
