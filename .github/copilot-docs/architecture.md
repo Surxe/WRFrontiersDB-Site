@@ -10,8 +10,7 @@
 ## Static Site Generation
 
 - **Framework**: Astro 5.x with static output (`output: 'static'`)
-- **Base path**: Environment-based using `import.meta.env.BASE_URL` - `/WRFrontiersDB-Site/` for GitHub Pages, `/` for custom domain
-- **Always use `import.meta.env.BASE_URL`** in all internal links, asset references, and fetch URLs
+- **Base path**: `/` (always)
 - **URL pattern**: `/{parseObject}/{id}/{version}` (e.g., `/modules/MOD_ArmorShield/2025-12-09`)
 
 ## Build-time vs Runtime
