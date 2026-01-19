@@ -12,7 +12,7 @@ import {
   getVersionsData,
 } from '../../../utils/parse_object';
 import { getDefaultString } from '../../../utils/localization';
-import PageRef from '../../../components/PageRef.astro';
+import ObjRef from '../../../components/ObjRef.astro';
 
 export async function getStaticPaths() {
   return await generateObjectStaticPaths('Objects/Module.json', true);
@@ -70,7 +70,7 @@ const defaultName = getDefaultString(module.name) || module.id;
   <p>Language: <span id="current-lang">en</span></p>
   <p>
     Rarity:
-    <PageRef obj={rarity} version={version} />
+    <ObjRef obj={rarity} version={version} />
   </p>
 
   <div id="stats">stats</div>

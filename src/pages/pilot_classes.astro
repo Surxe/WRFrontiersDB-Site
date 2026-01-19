@@ -5,7 +5,7 @@ import { getAllVersions } from '../utils/parse_object';
 import type { PilotClass } from '../types/pilot';
 import { getParseObjects } from '../utils/parse_object';
 import { prepareObjectList } from '../utils/list';
-import PageRef from '../components/PageRef.astro';
+import ObjRef from '../components/ObjRef.astro';
 
 const { versions, latestVersion } = getAllVersions();
 
@@ -32,7 +32,7 @@ const entries = prepareObjectList(pilotClasses, { prodReadyOnly: false });
     {
       entries.map(([_id, pilotClass]) => (
         <li>
-          <PageRef obj={pilotClass} version={latestVersion} />
+          <ObjRef obj={pilotClass} version={latestVersion} />
         </li>
       ))
     }

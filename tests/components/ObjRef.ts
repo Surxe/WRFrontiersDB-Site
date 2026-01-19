@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-describe('PageRef Component', () => {
+describe('ObjRef Component', () => {
   it('should accept required props', () => {
     const requiredProps = {
       obj: {

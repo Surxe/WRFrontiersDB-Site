@@ -1,6 +1,6 @@
 ---
 import { getParseObjects } from '../utils/parse_object';
-import PageRef from './PageRef.astro';
+import ObjRef from './ObjRef.astro';
 import { prepareObjectList } from '../utils/list';
 
 export interface Props {
@@ -21,7 +21,7 @@ let entries = prepareObjectList(objects, { prodReadyOnly });
   {
     entries.map(([_, obj]) => (
       <li>
-        <PageRef obj={obj} version={version} />
+        <ObjRef obj={obj} version={version} />
       </li>
     ))
   }

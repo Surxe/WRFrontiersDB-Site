@@ -8,7 +8,7 @@ import { getStatValueChoices } from '../utils/stat';
 import type { PilotTalent, PilotTalentType, Pilot } from '../types/pilot';
 import type { ModuleStat } from '../types/module';
 import StatEmbedLocalizedText from '../components/StatEmbedLocalizedText.astro';
-import PageRef from '../components/PageRef.astro';
+import ObjRef from '../components/ObjRef.astro';
 
 const { versions, latestVersion } = getAllVersions();
 
@@ -70,7 +70,7 @@ const sortedGroups = sortGroups(grouped, (a, b) => Number(a) - Number(b));
             {pilotTalentEntries.map(([_id, talent]) => (
               <tr>
                 <td>
-                  <PageRef obj={talent} version={latestVersion} />
+                  <ObjRef obj={talent} version={latestVersion} />
                 </td>
                 <td>
                   <StatEmbedLocalizedText
@@ -84,7 +84,7 @@ const sortedGroups = sortGroups(grouped, (a, b) => Number(a) - Number(b));
                 </td>
                 <td>
                   {talent.talent_type_id && (
-                    <PageRef
+                    <ObjRef
                       obj={pilotTalentTypes[talent.talent_type_id]}
                       version={latestVersion}
                     />

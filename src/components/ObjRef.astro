@@ -2,11 +2,11 @@
 import Icon from './Icon.astro';
 import LocalizedText from './LocalizedText.astro';
 import StatEmbedLocalizedText from './StatEmbedLocalizedText.astro';
-import { getPageRefData } from '../utils/page_ref';
+import { getObjRefData } from '../utils/obj_ref';
 import type { ParseObject } from '../types/parse_object';
 import type { StatValueChoices } from './StatEmbedLocalizedText.astro';
 import { getDefaultString } from '../utils/localization';
-import '../styles/PageRef.css';
+import '../styles/ObjRef.css';
 
 interface Props {
   obj: ParseObject;
@@ -27,7 +27,7 @@ const {
 } = Astro.props;
 
 // Get the page reference data (localization key, icon path, hex color)
-const pageData = getPageRefData(obj);
+const pageData = getObjRefData(obj);
 
 const pageUrl = `/${obj.parseObjectUrl}/${obj.id}/${version}`;
 
