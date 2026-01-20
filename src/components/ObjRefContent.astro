@@ -13,25 +13,25 @@ interface Props {
 const { pageData, showIcon, iconSize } = Astro.props;
 ---
 
-<!-- Show icon if supported and enabled -->
-{showIcon && pageData.iconPath && (
-  <Icon
-    iconPath={pageData.iconPath}
-    altText={`${getDefaultString(pageData.localizationKey)} icon`}
-    size={iconSize}
-    color={pageData.hexColor}
-  />
-)}
-<!-- Show text with colored div if iconPath not supported, otherwise show just text -->
-{!pageData.iconPath && pageData.hexColor ? (
-  <div
-    style={`display: inline-block; padding: 2px 8px; background-color: #${pageData.hexColor}; border-radius: 4px;`}
-  >
-    <LocalizedText
-      tag="span"
-      localizationKey={pageData.localizationKey}
+<!-- Show icon if supported and enabled -->{
+  showIcon && pageData.iconPath && (
+    <Icon
+      iconPath={pageData.iconPath}
+      altText={`${getDefaultString(pageData.localizationKey)} icon`}
+      size={iconSize}
+      color={pageData.hexColor}
     />
-  </div>
-) : (
-  <LocalizedText tag="span" localizationKey={pageData.localizationKey} />
-)}
+  )
+}
+<!-- Show text with colored div if iconPath not supported, otherwise show just text -->
+{
+  !pageData.iconPath && pageData.hexColor ? (
+    <div
+      style={`display: inline-block; padding: 2px 8px; background-color: #${pageData.hexColor}; border-radius: 4px;`}
+    >
+      <LocalizedText tag="span" localizationKey={pageData.localizationKey} />
+    </div>
+  ) : (
+    <LocalizedText tag="span" localizationKey={pageData.localizationKey} />
+  )
+}

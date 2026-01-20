@@ -40,18 +40,28 @@ if (useOnHover && !pageData.description) {
 ---
 
 <span class="page-ref-wrapper">
-  {useHref ? (
-    <a href={pageUrl}>
-      <ObjRefContent pageData={pageData} showIcon={showIcon} iconSize={iconSize} />
-    </a>
-  ) : (
-    <span>
-      <ObjRefContent pageData={pageData} showIcon={showIcon} iconSize={iconSize} />
-    </span>
-  )}
-  <ObjRefHover 
-    pageData={pageData} 
-    useOnHover={useOnHover} 
-    onHoverStatChoices={onHoverStatChoices} 
+  {
+    useHref ? (
+      <a href={pageUrl}>
+        <ObjRefContent
+          pageData={pageData}
+          showIcon={showIcon}
+          iconSize={iconSize}
+        />
+      </a>
+    ) : (
+      <span>
+        <ObjRefContent
+          pageData={pageData}
+          showIcon={showIcon}
+          iconSize={iconSize}
+        />
+      </span>
+    )
+  }
+  <ObjRefHover
+    pageData={pageData}
+    useOnHover={useOnHover}
+    onHoverStatChoices={onHoverStatChoices}
   />
 </span>
