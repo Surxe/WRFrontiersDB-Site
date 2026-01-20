@@ -5,7 +5,7 @@ import { getAllVersions, getParseObjects } from '../utils/parse_object';
 import { prepareObjectList, groupBy, sortGroups } from '../utils/list';
 import type { PilotTalentType, Pilot } from '../types/pilot';
 import LocalizedText from '../components/LocalizedText.astro';
-import ObjRef from '../components/ObjRef.astro';
+import ObjRef from '../components/obj_ref/ObjRef.astro';
 
 const { versions, latestVersion } = getAllVersions();
 

@@ -4,7 +4,7 @@ import ParseObjectListPage from '../components/ParseObjectListPage.astro';
 import { getAllVersions, getParseObjects } from '../utils/parse_object';
 import { prepareObjectList, groupBy, sortGroups } from '../utils/list';
 import type { Module } from '../types/module';
-import ObjRef from '../components/ObjRef.astro';
+import ObjRef from '../components/obj_ref/ObjRef.astro';
 
 const { versions, latestVersion } = getAllVersions();
 
