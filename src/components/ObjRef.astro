@@ -25,14 +25,14 @@ const {
 } = Astro.props;
 
 // Get the page reference data (localization key, icon path, hex color)
-const pageData = getObjRefData(obj);
+const objRefData = getObjRefData(obj);
 
 // If useHref is not specified, default to True if object has a href
-const useHref = pageData.useHref ?? true;
+const useHref = true;
 
 const pageUrl = `/${obj.parseObjectUrl}/${obj.id}/${version}`;
 
-if (useOnHover && !pageData.description) {
+if (useOnHover && !objRefData.hoverText) {
   throw new Error(
     'useOnHover is enabled but no description is available for this object.'
   );
@@ -44,7 +44,7 @@ if (useOnHover && !pageData.description) {
     useHref ? (
       <a href={pageUrl}>
         <ObjRefContent
-          pageData={pageData}
+          objRefData={objRefData}
           showIcon={showIcon}
           iconSize={iconSize}
         />
@@ -52,7 +52,7 @@ if (useOnHover && !pageData.description) {
     ) : (
       <span>
         <ObjRefContent
-          pageData={pageData}
+          objRefData={objRefData}
           showIcon={showIcon}
           iconSize={iconSize}
         />
@@ -60,7 +60,7 @@ if (useOnHover && !pageData.description) {
     )
   }
   <ObjRefHover
-    pageData={pageData}
+    objRefData={objRefData}
     useOnHover={useOnHover}
     onHoverStatChoices={onHoverStatChoices}
   />

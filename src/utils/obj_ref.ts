@@ -12,11 +12,11 @@ import type { ParseObject } from '../types/parse_object';
 
 // All the data necessary to reference the page in a generic way
 export interface ObjRefData {
-  localizationKey: LocalizationKey;
-  iconPath: string;
-  hexColor?: string;
-  description?: LocalizationKey;
-  useHref?: boolean; // defaults to True
+  text: LocalizationKey;
+  textBackgroundColor?: string;
+  iconPath?: string;
+  iconColor?: string;
+  hoverText?: LocalizationKey;
 }
 
 // For each class, define a method to retrieve the ObjRefData
@@ -38,56 +38,54 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
         throw new Error('Module object has no name');
       }
       return {
-        localizationKey: module.name,
+        text: module.name,
         iconPath: module.inventory_icon_path,
-        description: module.description,
+        hoverText: module.description,
       };
     }
     case 'PilotClass': {
       const pilotClass = obj as PilotClass;
       return {
-        localizationKey: pilotClass.name,
+        text: pilotClass.name,
         iconPath: pilotClass.badge.image_path,
-        hexColor: pilotClass.badge.hex,
+        iconColor: pilotClass.badge.hex,
       };
     }
     case 'Pilot': {
       const pilot = obj as Pilot;
       return {
-        localizationKey: pilot.first_name,
+        text: pilot.first_name,
         iconPath: pilot.image_path,
       };
     }
     case 'PilotTalent': {
       const pilotTalent = obj as PilotTalent;
       return {
-        localizationKey: pilotTalent.name,
+        text: pilotTalent.name,
         iconPath: pilotTalent.image_path,
-        description: pilotTalent.description,
+        hoverText: pilotTalent.description,
       };
     }
     case 'PilotTalentType': {
       const pilotTalentType = obj as PilotTalentType;
       return {
-        localizationKey: pilotTalentType.name,
+        text: pilotTalentType.name,
         iconPath: pilotTalentType.image_path,
-        description: pilotTalentType.description,
+        hoverText: pilotTalentType.description,
       };
     }
     case 'PilotPersonality': {
       const pilotPersonality = obj as PilotPersonality;
       return {
-        localizationKey: pilotPersonality.name,
+        text: pilotPersonality.name,
         iconPath: pilotPersonality.icon_path,
       };
     }
     case 'Rarity': {
       const rarity = obj as Rarity;
       return {
-        localizationKey: rarity.name,
-        iconPath: '',
-        hexColor: rarity.hex,
-        useHref: false,
+        text: rarity.name,
+        textBackgroundColor: rarity.hex,
       };
     }
     default:

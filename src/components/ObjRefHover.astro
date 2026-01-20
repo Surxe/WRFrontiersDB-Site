@@ -4,20 +4,20 @@ import type { ObjRefData } from '../utils/obj_ref';
 import type { StatValueChoices } from './StatEmbedLocalizedText.astro';
 
 interface Props {
-  pageData: ObjRefData;
+  objRefData: ObjRefData;
   onHoverStatChoices?: StatValueChoices;
   useOnHover: boolean;
 }
 
-const { pageData, onHoverStatChoices, useOnHover } = Astro.props;
+const { objRefData, onHoverStatChoices, useOnHover } = Astro.props;
 ---
 
 {
-  useOnHover && pageData.description && (
+  useOnHover && objRefData.hoverText && (
     <span class="hover-tooltip">
       <StatEmbedLocalizedText
         tag="span"
-        localizationKey={pageData.description}
+        localizationKey={objRefData.hoverText}
         statValueChoices={onHoverStatChoices || {}}
       />
     </span>

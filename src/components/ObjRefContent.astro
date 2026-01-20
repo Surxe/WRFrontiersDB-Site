@@ -5,33 +5,33 @@ import type { ObjRefData } from '../utils/obj_ref';
 import { getDefaultString } from '../utils/localization';
 
 interface Props {
-  pageData: ObjRefData;
+  objRefData: ObjRefData;
   showIcon: boolean;
   iconSize: number;
 }
 
-const { pageData, showIcon, iconSize } = Astro.props;
+const { objRefData, showIcon, iconSize } = Astro.props;
 ---
 
 <!-- Show icon if supported and enabled -->{
-  showIcon && pageData.iconPath && (
+  showIcon && objRefData.iconPath && (
     <Icon
-      iconPath={pageData.iconPath}
-      altText={`${getDefaultString(pageData.localizationKey)} icon`}
+      iconPath={objRefData.iconPath}
+      altText={`${getDefaultString(objRefData.text)} icon`}
       size={iconSize}
-      color={pageData.hexColor}
+      color={objRefData.iconColor}
     />
   )
 }
 <!-- Show text with colored div if iconPath not supported, otherwise show just text -->
 {
-  !pageData.iconPath && pageData.hexColor ? (
+  objRefData.textBackgroundColor ? (
     <div
-      style={`display: inline-block; padding: 2px 8px; background-color: #${pageData.hexColor}; border-radius: 4px;`}
+      style={`display: inline-block; padding: 2px 8px; background-color: #${objRefData.textBackgroundColor}; border-radius: 4px;`}
     >
-      <LocalizedText tag="span" localizationKey={pageData.localizationKey} />
+      <LocalizedText tag="span" localizationKey={objRefData.text} />
     </div>
   ) : (
-    <LocalizedText tag="span" localizationKey={pageData.localizationKey} />
+    <LocalizedText tag="span" localizationKey={objRefData.text} />
   )
 }
