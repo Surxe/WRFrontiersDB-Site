@@ -11,24 +11,25 @@ import type { Rarity } from '../types/rarity';
 import type { ParseObject } from '../types/parse_object';
 
 // All the data necessary to reference the page in a generic way
-export interface PageRefData {
+export interface ObjRefData {
   localizationKey: LocalizationKey;
   iconPath: string;
   hexColor?: string;
   description?: LocalizationKey;
+  useHref?: boolean; // defaults to True
 }
 
-// For each class, define a method to retrieve the PageRefData
-export function getPageRefData(_obj: Module): PageRefData;
-export function getPageRefData(_obj: PilotPersonality): PageRefData;
-export function getPageRefData(_obj: PilotClass): PageRefData;
-export function getPageRefData(_obj: PilotTalent): PageRefData;
-export function getPageRefData(_obj: PilotTalentType): PageRefData;
-export function getPageRefData(_obj: Pilot): PageRefData;
-export function getPageRefData(_obj: Rarity): PageRefData;
-export function getPageRefData(_obj: ParseObject): PageRefData; // Here just for type support. Better than an overload that requires specifying the name of every class.
+// For each class, define a method to retrieve the ObjRefData
+export function getObjRefData(_obj: Module): ObjRefData;
+export function getObjRefData(_obj: PilotPersonality): ObjRefData;
+export function getObjRefData(_obj: PilotClass): ObjRefData;
+export function getObjRefData(_obj: PilotTalent): ObjRefData;
+export function getObjRefData(_obj: PilotTalentType): ObjRefData;
+export function getObjRefData(_obj: Pilot): ObjRefData;
+export function getObjRefData(_obj: Rarity): ObjRefData;
+export function getObjRefData(_obj: ParseObject): ObjRefData; // Here just for type support. Better than an overload that requires specifying the name of every class.
 
-export function getPageRefData(obj: ParseObject): PageRefData {
+export function getObjRefData(obj: ParseObject): ObjRefData {
   switch (obj.parseObjectClass) {
     case 'Module': {
       const module = obj as Module;
@@ -86,6 +87,7 @@ export function getPageRefData(obj: ParseObject): PageRefData {
         localizationKey: rarity.name,
         iconPath: '',
         hexColor: rarity.hex,
+        useHref: false,
       };
     }
     default:

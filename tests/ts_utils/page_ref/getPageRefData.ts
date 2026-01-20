@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getPageRefData } from '../../../src/utils/page_ref';
+import { getObjRefData } from '../../../src/utils/obj_ref';
 import type { Module } from '../../../src/types/module';
 import type {
   PilotClass,
@@ -10,7 +10,7 @@ import type {
 } from '../../../src/types/pilot';
 import type { ParseObject } from '../../../src/types/parse_object';
 
-describe('getPageRefData', () => {
+describe('getObjRefData', () => {
   const mockLocalizationKey = {
     Key: 'test_key',
     TableNamespace: 'test_namespace',
@@ -18,7 +18,7 @@ describe('getPageRefData', () => {
   };
 
   describe('Module', () => {
-    it('should return correct PageRefData for Module with name', () => {
+    it('should return correct ObjRefData for Module with name', () => {
       const module: Module = {
         parseObjectClass: 'Module',
         id: 'MOD_123',
@@ -33,7 +33,7 @@ describe('getPageRefData', () => {
         module_type_id: 'type_123',
       };
 
-      const result = getPageRefData(module);
+      const result = getObjRefData(module);
 
       expect(result).toEqual({
         localizationKey: mockLocalizationKey,
@@ -57,12 +57,12 @@ describe('getPageRefData', () => {
         // name is intentionally omitted to test the error case
       };
 
-      expect(() => getPageRefData(module)).toThrow('Module object has no name');
+      expect(() => getObjRefData(module)).toThrow('Module object has no name');
     });
   });
 
   describe('PilotClass', () => {
-    it('should return correct PageRefData including hexColor', () => {
+    it('should return correct ObjRefData including hexColor', () => {
       const pilotClass: PilotClass = {
         parseObjectClass: 'PilotClass',
         id: 'PC_123',
@@ -73,7 +73,7 @@ describe('getPageRefData', () => {
         },
       };
 
-      const result = getPageRefData(pilotClass);
+      const result = getObjRefData(pilotClass);
 
       expect(result).toEqual({
         localizationKey: mockLocalizationKey,
@@ -84,7 +84,7 @@ describe('getPageRefData', () => {
   });
 
   describe('Pilot', () => {
-    it('should return correct PageRefData using first_name', () => {
+    it('should return correct ObjRefData using first_name', () => {
       const pilot: Pilot = {
         parseObjectClass: 'Pilot',
         id: 'PIL_123',
@@ -102,7 +102,7 @@ describe('getPageRefData', () => {
         levels: [],
       };
 
-      const result = getPageRefData(pilot);
+      const result = getObjRefData(pilot);
 
       expect(result).toEqual({
         localizationKey: mockLocalizationKey,
@@ -112,7 +112,7 @@ describe('getPageRefData', () => {
   });
 
   describe('PilotTalent', () => {
-    it('should return correct PageRefData', () => {
+    it('should return correct ObjRefData', () => {
       const pilotTalent: PilotTalent = {
         parseObjectClass: 'PilotTalent',
         id: 'PT_123',
@@ -125,7 +125,7 @@ describe('getPageRefData', () => {
         buffs: [],
       };
 
-      const result = getPageRefData(pilotTalent);
+      const result = getObjRefData(pilotTalent);
 
       expect(result).toEqual({
         localizationKey: mockLocalizationKey,
@@ -136,7 +136,7 @@ describe('getPageRefData', () => {
   });
 
   describe('PilotTalentType', () => {
-    it('should return correct PageRefData', () => {
+    it('should return correct ObjRefData', () => {
       const pilotTalentType: PilotTalentType = {
         parseObjectClass: 'PilotTalentType',
         id: 'PTT_123',
@@ -145,7 +145,7 @@ describe('getPageRefData', () => {
         description: mockLocalizationKey,
       };
 
-      const result = getPageRefData(pilotTalentType);
+      const result = getObjRefData(pilotTalentType);
 
       expect(result).toEqual({
         localizationKey: mockLocalizationKey,
@@ -156,7 +156,7 @@ describe('getPageRefData', () => {
   });
 
   describe('PilotPersonality', () => {
-    it('should return correct PageRefData', () => {
+    it('should return correct ObjRefData', () => {
       const pilotPersonality: PilotPersonality = {
         parseObjectClass: 'PilotPersonality',
         id: 'PP_123',
@@ -164,7 +164,7 @@ describe('getPageRefData', () => {
         name: mockLocalizationKey,
       };
 
-      const result = getPageRefData(pilotPersonality);
+      const result = getObjRefData(pilotPersonality);
 
       expect(result).toEqual({
         localizationKey: mockLocalizationKey,
@@ -180,7 +180,7 @@ describe('getPageRefData', () => {
         id: 'UNS_123',
       };
 
-      expect(() => getPageRefData(unsupportedObject)).toThrow(
+      expect(() => getObjRefData(unsupportedObject)).toThrow(
         'Unsupported parseObjectClass: UnsupportedType'
       );
     });
@@ -203,7 +203,7 @@ describe('getPageRefData', () => {
       };
 
       // This should compile without errors due to overloads
-      const result = getPageRefData(module);
+      const result = getObjRefData(module);
       expect(result.localizationKey).toBe(mockLocalizationKey);
     });
 
@@ -226,7 +226,7 @@ describe('getPageRefData', () => {
       };
 
       // This should compile without errors due to overloads
-      const result = getPageRefData(pilot);
+      const result = getObjRefData(pilot);
       expect(result.localizationKey).toBe(mockLocalizationKey);
     });
   });

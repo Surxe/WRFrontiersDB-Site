@@ -19,7 +19,7 @@ import {
   getParseObject,
   getVersionsData,
 } from '../../../utils/parse_object';
-import PageRef from '../../../components/PageRef.astro';
+import ObjRef from '../../../components/ObjRef.astro';
 import { getDefaultString } from '../../../utils/localization';
 
 export async function getStaticPaths() {
@@ -118,7 +118,7 @@ const defaultName = getDefaultString(pilot.first_name) || pilot.id;
           <tr>
             <td>{index + 1}</td>
             <td>
-              <PageRef
+              <ObjRef
                 obj={pilotTalentTypes[level.talent_type_id]}
                 version={version}
               />
@@ -130,7 +130,7 @@ const defaultName = getDefaultString(pilot.first_name) || pilot.id;
                   const talent = pilotTalents[talent_id];
                   return (
                     <span>
-                      <PageRef obj={talent} version={version} />
+                      <ObjRef obj={talent} version={version} />
                     </span>
                   );
                 })}
@@ -145,15 +145,15 @@ const defaultName = getDefaultString(pilot.first_name) || pilot.id;
   <!-- Hyperlinks to the referenced ids pilot_type_id, pilot_class_id, personality_id -->
   <p>
     Rarity
-    <PageRef obj={rarity} version={version} />
+    <ObjRef obj={rarity} version={version} />
   </p>
   <p>
     Pilot Class
-    <PageRef obj={pilotClass} version={version} />
+    <ObjRef obj={pilotClass} version={version} />
   </p>
   <p>
     Pilot Personality
-    <PageRef obj={pilotPersonality} version={version} />
+    <ObjRef obj={pilotPersonality} version={version} />
   </p>
   <p>faction_id placeholder</p>
 

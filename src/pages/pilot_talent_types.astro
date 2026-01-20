@@ -5,7 +5,7 @@ import { getAllVersions, getParseObjects } from '../utils/parse_object';
 import { prepareObjectList, groupBy, sortGroups } from '../utils/list';
 import type { PilotTalentType, Pilot } from '../types/pilot';
 import LocalizedText from '../components/LocalizedText.astro';
-import PageRef from '../components/PageRef.astro';
+import ObjRef from '../components/ObjRef.astro';
 
 const { versions, latestVersion } = getAllVersions();
 
@@ -77,7 +77,7 @@ const sortedGroups = sortGroups(grouped, (a, b) => Number(a) - Number(b));
             {pilotTalentTypeEntries.map(([_id, talentType]) => (
               <tr>
                 <td>
-                  <PageRef obj={talentType} version={latestVersion} />
+                  <ObjRef obj={talentType} version={latestVersion} />
                 </td>
                 <td>
                   <LocalizedText

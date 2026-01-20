@@ -4,7 +4,7 @@
 
 1. **Study JSON structure** in `public/WRFrontiersDB-Data/archive/{version}/Objects/{parseObject}.json`
 2. **Create type interface** in `src/types/{parseObject}.ts` (e.g., `export interface Weapon { ... }`) with the url constant for `parseObjectUrl`
-3. **Configure PageRef overload** in `src/utils/page_ref.ts`'s `getPageRefData` function
+3. **Configure ObjRef overload** in `src/utils/obj_ref.ts`'s `getObjRefData` function
 4. **Create list page**: `src/pages/{parseObject}s.astro` (properly pluralized) using `ParseObjectList`
 5. **Create detail page**: `src/pages/{parseObject}s/[id]/[version].astro` with `getStaticPaths()`
 6. **Call** `generateObjectStaticPaths("Objects/{parseObject}.json", true)`

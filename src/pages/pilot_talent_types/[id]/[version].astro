@@ -7,7 +7,7 @@ import StatEmbedLocalizedText from '../../../components/StatEmbedLocalizedText.a
 import VersionList from '../../../components/VersionList.astro';
 import ObjectPageScripts from '../../../components/ObjectPageScripts.astro';
 import ParseObjectPage from '../../../components/ParseObjectPage.astro';
-import PageRef from '../../../components/PageRef.astro';
+import ObjRef from '../../../components/ObjRef.astro';
 import {
   generateObjectStaticPaths,
   getParseObject,
@@ -103,7 +103,7 @@ const defaultName =
           {talentsForType.map(([_talentId, talent]) => (
             <tr>
               <td>
-                <PageRef obj={talent} version={version} />
+                <ObjRef obj={talent} version={version} />
               </td>
               <td>
                 <StatEmbedLocalizedText

@@ -14,7 +14,7 @@ import {
 } from '../../../utils/parse_object';
 import { enrichPilotTalents } from '../../../utils/pilot';
 import { getStatValueChoices } from '../../../utils/stat';
-import PageRef from '../../../components/PageRef.astro';
+import ObjRef from '../../../components/ObjRef.astro';
 import { getDefaultString } from '../../../utils/localization';
 
 export async function getStaticPaths() {
@@ -105,7 +105,7 @@ const defaultName = getDefaultString(pilotTalent.name) || pilotTalent.id;
     Pilot Talent Type:
     {
       pilotTalent.talent_type_id && (
-        <PageRef
+        <ObjRef
           obj={pilotTalentTypes[pilotTalent.talent_type_id]}
           version={version}
         />
