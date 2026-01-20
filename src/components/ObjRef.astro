@@ -1,11 +1,9 @@
 ---
-import Icon from './Icon.astro';
-import LocalizedText from './LocalizedText.astro';
-import StatEmbedLocalizedText from './StatEmbedLocalizedText.astro';
+import ObjRefContent from './ObjRefContent.astro';
+import ObjRefHover from './ObjRefHover.astro';
 import { getObjRefData } from '../utils/obj_ref';
 import type { ParseObject } from '../types/parse_object';
 import type { StatValueChoices } from './StatEmbedLocalizedText.astro';
-import { getDefaultString } from '../utils/localization';
 import '../styles/ObjRef.css';
 
 interface Props {
@@ -29,6 +27,9 @@ const {
 // Get the page reference data (localization key, icon path, hex color)
 const pageData = getObjRefData(obj);
 
+// If useHref is not specified, default to True if object has a href
+const useHref = pageData.useHref ?? true;
+
 const pageUrl = `/${obj.parseObjectUrl}/${obj.id}/${version}`;
 
 if (useOnHover && !pageData.description) {
@@ -39,43 +40,18 @@ if (useOnHover && !pageData.description) {
 ---
 
 <span class="page-ref-wrapper">
-  <a href={pageUrl}>
-    <!-- Show icon if supported and enabled -->
-    {
-      showIcon && pageData.iconPath && (
-        <Icon
-          iconPath={pageData.iconPath}
-          altText={`${getDefaultString(pageData.localizationKey)} icon`}
-          size={iconSize}
-          color={pageData.hexColor}
-        />
-      )
-    }
-    <!-- Show text with colored div if iconPath not supported, otherwise show just text-->
-    {
-      !pageData.iconPath && pageData.hexColor ? (
-        <div
-          style={`display: inline-block; padding: 2px 8px; background-color: #${pageData.hexColor}; border-radius: 4px;`}
-        >
-          <LocalizedText
-            tag="span"
-            localizationKey={pageData.localizationKey}
-          />
-        </div>
-      ) : (
-        <LocalizedText tag="span" localizationKey={pageData.localizationKey} />
-      )
-    }
-  </a>
-  {
-    useOnHover && pageData.description && (
-      <span class="hover-tooltip">
-        <StatEmbedLocalizedText
-          tag="span"
-          localizationKey={pageData.description}
-          statValueChoices={onHoverStatChoices || {}}
-        />
-      </span>
-    )
-  }
+  {useHref ? (
+    <a href={pageUrl}>
+      <ObjRefContent pageData={pageData} showIcon={showIcon} iconSize={iconSize} />
+    </a>
+  ) : (
+    <span>
+      <ObjRefContent pageData={pageData} showIcon={showIcon} iconSize={iconSize} />
+    </span>
+  )}
+  <ObjRefHover 
+    pageData={pageData} 
+    useOnHover={useOnHover} 
+    onHoverStatChoices={onHoverStatChoices} 
+  />
 </span>

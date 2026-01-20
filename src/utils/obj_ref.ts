@@ -16,6 +16,7 @@ export interface ObjRefData {
   iconPath: string;
   hexColor?: string;
   description?: LocalizationKey;
+  useHref?: boolean; // defaults to True
 }
 
 // For each class, define a method to retrieve the ObjRefData
@@ -86,6 +87,7 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
         localizationKey: rarity.name,
         iconPath: '',
         hexColor: rarity.hex,
+        useHref: false,
       };
     }
     default:
