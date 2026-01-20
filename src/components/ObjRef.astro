@@ -1,5 +1,6 @@
 ---
-import ObjRefContent from './ObjRefContent.astro';
+import ObjRefIcon from './ObjRefIcon.astro';
+import ObjRefText from './ObjRefText.astro';
 import ObjRefHover from './ObjRefHover.astro';
 import { getObjRefData } from '../utils/obj_ref';
 import type { ParseObject } from '../types/parse_object';
@@ -40,28 +41,24 @@ if (useOnHover && !objRefData.hoverText) {
 ---
 
 <span class="page-ref-wrapper">
-  {
-    useHref ? (
-      <a href={pageUrl}>
-        <ObjRefContent
-          objRefData={objRefData}
-          showIcon={showIcon}
-          iconSize={iconSize}
-        />
-      </a>
-    ) : (
-      <span>
-        <ObjRefContent
-          objRefData={objRefData}
-          showIcon={showIcon}
-          iconSize={iconSize}
-        />
-      </span>
-    )
-  }
-  <ObjRefHover
-    objRefData={objRefData}
-    useOnHover={useOnHover}
-    onHoverStatChoices={onHoverStatChoices}
+  {useHref ? (
+    <a href={pageUrl}>
+      {showIcon && objRefData.iconPath && (
+        <ObjRefIcon objRefData={objRefData} iconSize={iconSize} />
+      )}
+      <ObjRefText objRefData={objRefData} />
+    </a>
+  ) : (
+    <span>
+      {showIcon && objRefData.iconPath && (
+        <ObjRefIcon objRefData={objRefData} iconSize={iconSize} />
+      )}
+      <ObjRefText objRefData={objRefData} />
+    </span>
+  )}
+  <ObjRefHover 
+    objRefData={objRefData} 
+    useOnHover={useOnHover} 
+    onHoverStatChoices={onHoverStatChoices} 
   />
 </span>

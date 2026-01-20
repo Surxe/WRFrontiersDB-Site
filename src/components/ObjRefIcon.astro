@@ -1,0 +1,21 @@
+---
+import Icon from './Icon.astro';
+import type { ObjRefData } from '../utils/obj_ref';
+import { getDefaultString } from '../utils/localization';
+
+interface Props {
+  objRefData: ObjRefData;
+  iconSize: number;
+}
+
+const { objRefData, iconSize } = Astro.props;
+---
+
+{objRefData.iconPath && (
+  <Icon
+    iconPath={objRefData.iconPath}
+    altText={`${getDefaultString(objRefData.text)} icon`}
+    size={iconSize}
+    color={objRefData.iconColor}
+  />
+)}
