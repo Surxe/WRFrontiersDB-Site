@@ -1,12 +1,9 @@
 name: Run Tests
 
 on:
-  # Trigger on pull requests to any branch
   pull_request:
-    branches:
-      - '**'
-  
-  # Allow manual workflow dispatch
+    branches: ['main']
+    
   workflow_dispatch:
 
 jobs:
