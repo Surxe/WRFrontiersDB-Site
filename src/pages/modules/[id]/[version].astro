@@ -12,7 +12,7 @@ import {
   getVersionsData,
 } from '../../../utils/parse_object';
 import { getDefaultString } from '../../../utils/localization';
-import ObjRef from '../../../components/ObjRef.astro';
+import ObjRef from '../../../components/obj_ref/ObjRef.astro';
 
 export async function getStaticPaths() {
   return await generateObjectStaticPaths('Objects/Module.json', true);

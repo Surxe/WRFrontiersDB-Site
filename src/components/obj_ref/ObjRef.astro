@@ -1,0 +1,80 @@
+---
+import ObjRefIconText from './ObjRefIconText.astro';
+import ObjRefHover from './ObjRefHover.astro';
+import { getObjRefData } from '../../utils/obj_ref';
+import type { ParseObject } from '../../types/parse_object';
+import type { StatValueChoices } from '../StatEmbedLocalizedText.astro';
+import '../../styles/ObjRef.css';
+
+// Always color background if the objRefData supports it
+// Always color icon if the objRefData supports it
+// Use Icon only if showIcon
+// Use href only if useHref
+// Use hover only if useOnHover
+
+interface Props {
+  obj: ParseObject;
+  version: string;
+  iconSize?: number;
+  showIcon?: boolean;
+  useOnHover?: boolean;
+  onHoverStatChoices?: StatValueChoices;
+  useHref?: boolean;
+}
+
+const {
+  obj,
+  version,
+  iconSize = 24,
+  showIcon = true,
+  useOnHover = false,
+  onHoverStatChoices,
+  useHref = true,
+} = Astro.props;
+
+// Get the page reference data (localization key, icon path, hex color)
+const objRefData = getObjRefData(obj);
+
+const pageUrl = `/${obj.parseObjectUrl}/${obj.id}/${version}`;
+
+// Validate hover
+if (useOnHover && !objRefData.hoverText) {
+  throw new Error(
+    'useOnHover is enabled but no hoverText is available for this object.'
+  );
+}
+
+// Validate href
+if (useHref && !pageUrl) {
+  throw new Error(
+    'useHref is enabled but no page URL is available for this object.'
+  );
+}
+---
+
+<span class="page-ref-wrapper">
+  {
+    useHref ? (
+      <a href={pageUrl}>
+        <ObjRefIconText
+          objRefData={objRefData}
+          showIcon={showIcon}
+          iconSize={iconSize}
+        />
+      </a>
+    ) : (
+      <span>
+        <ObjRefIconText
+          objRefData={objRefData}
+          showIcon={showIcon}
+          iconSize={iconSize}
+        />
+      </span>
+    )
+  }
+  <ObjRefHover
+    objRefData={objRefData}
+    useOnHover={useOnHover}
+    onHoverStatChoices={onHoverStatChoices}
+  />
+</span>
