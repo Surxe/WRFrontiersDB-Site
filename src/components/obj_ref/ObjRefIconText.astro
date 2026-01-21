@@ -13,20 +13,24 @@ interface Props {
 const { objRefData, showIcon, iconSize } = Astro.props;
 ---
 
-{showIcon && objRefData.iconPath && (
-  <Icon
-    iconPath={objRefData.iconPath}
-    altText={`${getDefaultString(objRefData.text)} icon`}
-    size={iconSize}
-    color={objRefData.iconColor}
-  />
-)}
-{objRefData.textBackgroundColor ? (
-  <div
-    style={`display: inline-block; padding: 2px 8px; background-color: #${objRefData.textBackgroundColor}; border-radius: 4px;`}
-  >
+{
+  showIcon && objRefData.iconPath && (
+    <Icon
+      iconPath={objRefData.iconPath}
+      altText={`${getDefaultString(objRefData.text)} icon`}
+      size={iconSize}
+      color={objRefData.iconColor}
+    />
+  )
+}
+{
+  objRefData.textBackgroundColor ? (
+    <div
+      style={`display: inline-block; padding: 2px 8px; background-color: #${objRefData.textBackgroundColor}; border-radius: 4px;`}
+    >
+      <LocalizedText tag="span" localizationKey={objRefData.text} />
+    </div>
+  ) : (
     <LocalizedText tag="span" localizationKey={objRefData.text} />
-  </div>
-) : (
-  <LocalizedText tag="span" localizationKey={objRefData.text} />
-)}
+  )
+}

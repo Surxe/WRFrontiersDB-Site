@@ -29,7 +29,7 @@ const {
   showIcon = true,
   useOnHover = false,
   onHoverStatChoices,
-  useHref = true
+  useHref = true,
 } = Astro.props;
 
 // Get the page reference data (localization key, icon path, hex color)
@@ -53,26 +53,28 @@ if (useHref && !pageUrl) {
 ---
 
 <span class="page-ref-wrapper">
-  {useHref ? (
-    <a href={pageUrl}>
-      <ObjRefIconText 
-        objRefData={objRefData} 
-        showIcon={showIcon} 
-        iconSize={iconSize} 
-      />
-    </a>
-  ) : (
-    <span>
-      <ObjRefIconText 
-        objRefData={objRefData} 
-        showIcon={showIcon} 
-        iconSize={iconSize} 
-      />
-    </span>
-  )}
-  <ObjRefHover 
-    objRefData={objRefData} 
-    useOnHover={useOnHover} 
-    onHoverStatChoices={onHoverStatChoices} 
+  {
+    useHref ? (
+      <a href={pageUrl}>
+        <ObjRefIconText
+          objRefData={objRefData}
+          showIcon={showIcon}
+          iconSize={iconSize}
+        />
+      </a>
+    ) : (
+      <span>
+        <ObjRefIconText
+          objRefData={objRefData}
+          showIcon={showIcon}
+          iconSize={iconSize}
+        />
+      </span>
+    )
+  }
+  <ObjRefHover
+    objRefData={objRefData}
+    useOnHover={useOnHover}
+    onHoverStatChoices={onHoverStatChoices}
   />
 </span>
