@@ -13,6 +13,7 @@ interface Props {
   showIcon?: boolean;
   useOnHover?: boolean;
   onHoverStatChoices?: StatValueChoices;
+  useHref?: boolean;
 }
 
 const {
@@ -22,19 +23,25 @@ const {
   showIcon = true,
   useOnHover = false,
   onHoverStatChoices,
+  useHref = true
 } = Astro.props;
 
 // Get the page reference data (localization key, icon path, hex color)
 const objRefData = getObjRefData(obj);
 
-// If useHref is not specified, default to True if object has a href
-const useHref = true;
-
 const pageUrl = `/${obj.parseObjectUrl}/${obj.id}/${version}`;
 
+// Validate hover
 if (useOnHover && !objRefData.hoverText) {
   throw new Error(
-    'useOnHover is enabled but no description is available for this object.'
+    'useOnHover is enabled but no hoverText is available for this object.'
+  );
+}
+
+// Validate href
+if (useHref && !pageUrl) {
+  throw new Error(
+    'useHref is enabled but no page URL is available for this object.'
   );
 }
 ---
