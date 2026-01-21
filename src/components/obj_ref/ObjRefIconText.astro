@@ -21,14 +21,11 @@ const { objRefData, showIcon, iconSize } = Astro.props;
     color={objRefData.iconColor}
   />
 )}
-{!objRefData.iconPath && objRefData.iconColor ? (
+{objRefData.textBackgroundColor ? (
   <div
-    style={`display: inline-block; padding: 2px 8px; background-color: #${objRefData.iconColor}; border-radius: 4px;`}
+    style={`display: inline-block; padding: 2px 8px; background-color: #${objRefData.textBackgroundColor}; border-radius: 4px;`}
   >
-    <LocalizedText
-      tag="span"
-      localizationKey={objRefData.text}
-    />
+    <LocalizedText tag="span" localizationKey={objRefData.text} />
   </div>
 ) : (
   <LocalizedText tag="span" localizationKey={objRefData.text} />

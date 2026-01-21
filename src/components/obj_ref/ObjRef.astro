@@ -6,6 +6,12 @@ import type { ParseObject } from '../../types/parse_object';
 import type { StatValueChoices } from '../StatEmbedLocalizedText.astro';
 import '../../styles/ObjRef.css';
 
+// Always color background if the objRefData supports it
+// Always color icon if the objRefData supports it
+// Use Icon only if showIcon
+// Use href only if useHref
+// Use hover only if useOnHover
+
 interface Props {
   obj: ParseObject;
   version: string;
