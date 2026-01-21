@@ -36,9 +36,9 @@ describe('getObjRefData', () => {
       const result = getObjRefData(module);
 
       expect(result).toEqual({
-        localizationKey: mockLocalizationKey,
+        text: mockLocalizationKey,
         iconPath: '/path/to/icon',
-        description: mockLocalizationKey,
+        hoverText: mockLocalizationKey,
       });
     });
 
@@ -76,9 +76,9 @@ describe('getObjRefData', () => {
       const result = getObjRefData(pilotClass);
 
       expect(result).toEqual({
-        localizationKey: mockLocalizationKey,
+        text: mockLocalizationKey,
         iconPath: '/path/to/badge',
-        hexColor: '#FF5733',
+        iconColor: '#FF5733',
       });
     });
   });
@@ -105,7 +105,7 @@ describe('getObjRefData', () => {
       const result = getObjRefData(pilot);
 
       expect(result).toEqual({
-        localizationKey: mockLocalizationKey,
+        text: mockLocalizationKey,
         iconPath: '/path/to/pilot',
       });
     });
@@ -128,9 +128,9 @@ describe('getObjRefData', () => {
       const result = getObjRefData(pilotTalent);
 
       expect(result).toEqual({
-        localizationKey: mockLocalizationKey,
+        text: mockLocalizationKey,
         iconPath: '/path/to/talent',
-        description: mockLocalizationKey,
+        hoverText: mockLocalizationKey,
       });
     });
   });
@@ -148,9 +148,9 @@ describe('getObjRefData', () => {
       const result = getObjRefData(pilotTalentType);
 
       expect(result).toEqual({
-        localizationKey: mockLocalizationKey,
+        text: mockLocalizationKey,
         iconPath: '/path/to/talent_type',
-        description: mockLocalizationKey,
+        hoverText: mockLocalizationKey,
       });
     });
   });
@@ -167,7 +167,7 @@ describe('getObjRefData', () => {
       const result = getObjRefData(pilotPersonality);
 
       expect(result).toEqual({
-        localizationKey: mockLocalizationKey,
+        text: mockLocalizationKey,
         iconPath: '/path/to/personality',
       });
     });
@@ -204,7 +204,7 @@ describe('getObjRefData', () => {
 
       // This should compile without errors due to overloads
       const result = getObjRefData(module);
-      expect(result.localizationKey).toBe(mockLocalizationKey);
+      expect(result.text).toBe(mockLocalizationKey);
     });
 
     it('should accept Pilot type directly', () => {
@@ -227,7 +227,7 @@ describe('getObjRefData', () => {
 
       // This should compile without errors due to overloads
       const result = getObjRefData(pilot);
-      expect(result.localizationKey).toBe(mockLocalizationKey);
+      expect(result.text).toBe(mockLocalizationKey);
     });
   });
 });
