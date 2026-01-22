@@ -1,0 +1,41 @@
+---
+import ObjRef from '../obj_ref/ObjRef.astro';
+import type { PilotTalentType } from '../../types/pilot';
+
+interface Props {
+  level?: {
+    talents?: string[];
+    talent_type_id?: string;
+  };
+  talentIndex: number;
+  maxTalents: number;
+  pilotTalentTypes?: Record<string, PilotTalentType>;
+  version: string;
+}
+
+/*
+Create table data cells that look like this for the respective levels:
+Level 1-5:
+TalentType (rowspan=maxTalents)
+*/
+
+const { level, talentIndex, maxTalents, pilotTalentTypes, version } =
+  Astro.props;
+---
+
+{/* Talent column */}
+{/* For level 5, use rowspan and only render on first talent row */}
+{/* For levels 1 and 2-4, render for each talent index */}
+
+{
+  talentIndex === 0 && (
+    <td rowspan={maxTalents}>
+      {level?.talent_type_id && (
+        <ObjRef
+          obj={pilotTalentTypes[level.talent_type_id]}
+          version={version}
+        />
+      )}
+    </td>
+  )
+}

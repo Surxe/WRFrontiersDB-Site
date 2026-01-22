@@ -1,18 +1,35 @@
 ---
 import ObjRef from '../obj_ref/ObjRef.astro';
-import LevelTableData from './LevelTableData.astro';
-import type { Pilot, PilotTalent } from '../../types/pilot';
+import LevelPilotTalenttd from './LevelPilotTalenttd.astro';
+import LevelPilotTalentTypetd from './LevelPilotTalentTypetd.astro';
+import type { Pilot, PilotTalent, PilotTalentType } from '../../types/pilot';
 
 interface Props {
+  id: string;
   pilots: [string, Pilot][];
-  pilotTalents: Record<string, PilotTalent>;
+  pilotTalents?: Record<string, PilotTalent>;
+  pilotTalentTypes?: Record<string, PilotTalentType>;
   version: string;
 }
 
-const { pilots, pilotTalents, version } = Astro.props;
+// if pilotTalents is provided, use LevelPilotTalenttd
+// if pilotTalentTypes is provided, use LevelPilotTalentTypetd
+// otherwise, throw error
+
+const { id, pilots, pilotTalents, pilotTalentTypes, version } = Astro.props;
+
+// Validate that at least one of the required props is provided
+if (!pilotTalents && !pilotTalentTypes) {
+  throw new Error('Either pilotTalents or pilotTalentTypes must be provided');
+}
+if (pilotTalents && pilotTalentTypes) {
+  throw new Error(
+    'Only one of pilotTalents or pilotTalentTypes can be provided'
+  );
+}
 ---
 
-<table>
+<table id={id}>
   <thead>
     <tr>
       <th>Pilot Name</th>
@@ -44,14 +61,26 @@ const { pilots, pilotTalents, version } = Astro.props;
               )}
               {/* Levels 1-5 */}
               {[0, 1, 2, 3, 4].map((levelIndex) => (
-                <LevelTableData
-                  levelIndex={levelIndex}
-                  level={pilot.levels[levelIndex]}
-                  talentIndex={talentIndex}
-                  maxTalents={maxTalents}
-                  pilotTalents={pilotTalents}
-                  version={version}
-                />
+                <>
+                  {pilotTalents ? (
+                    <LevelPilotTalenttd
+                      levelIndex={levelIndex}
+                      level={pilot.levels[levelIndex]}
+                      talentIndex={talentIndex}
+                      maxTalents={maxTalents}
+                      pilotTalents={pilotTalents}
+                      version={version}
+                    />
+                  ) : (
+                    <LevelPilotTalentTypetd
+                      level={pilot.levels[levelIndex]}
+                      talentIndex={talentIndex}
+                      maxTalents={maxTalents}
+                      pilotTalentTypes={pilotTalentTypes}
+                      version={version}
+                    />
+                  )}
+                </>
               ))}
             </tr>
           )

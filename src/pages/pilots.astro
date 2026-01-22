@@ -4,6 +4,7 @@ import ParseObjectListPage from '../components/ParseObjectListPage.astro';
 import { getAllVersions, getParseObjects } from '../utils/parse_object';
 import PilotTables from '../components/pilot/Tables.astro';
 import type { Pilot } from '../types/pilot';
+import '../styles/pilots.css';
 
 const { versions, latestVersion } = getAllVersions();
 
@@ -11,7 +12,11 @@ const { versions, latestVersion } = getAllVersions();
 const pilots = getParseObjects<Pilot>('Objects/Pilot.json', latestVersion);
 ---
 
-<ParseObjectListPage title="Pilots" version={latestVersion}>
+<ParseObjectListPage
+  title="Pilots"
+  version={latestVersion}
+  jsFileName="pilots.js"
+>
   <BackToHome />
   <h1>Pilots</h1>
 
