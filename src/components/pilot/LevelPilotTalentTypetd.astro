@@ -1,7 +1,6 @@
 ---
 import ObjRef from '../obj_ref/ObjRef.astro';
 import type { PilotTalentType } from '../../types/pilot';
-import { getParseObjects } from '../../utils/parse_object';
 
 interface Props {
   level?: {
@@ -10,6 +9,7 @@ interface Props {
   };
   talentIndex: number;
   maxTalents: number;
+  pilotTalentTypes?: Record<string, PilotTalentType>;
   version: string;
 }
 
@@ -19,12 +19,8 @@ Level 1-5:
 TalentType (rowspan=maxTalents)
 */
 
-const { level, talentIndex, maxTalents, version } = Astro.props;
-
-const pilotTalentTypes = getParseObjects<PilotTalentType>(
-  'Objects/PilotTalentType.json',
-  version
-);
+const { level, talentIndex, maxTalents, pilotTalentTypes, version } =
+  Astro.props;
 ---
 
 {/* Talent column */}

@@ -2,7 +2,7 @@
 import PilotTable from './Table.astro';
 import { getParseObjects } from '../../utils/parse_object';
 import { prepareObjectList, groupBy, sortGroups } from '../../utils/list';
-import type { Pilot, PilotType, PilotTalent } from '../../types/pilot';
+import type { Pilot, PilotType, PilotTalent, PilotTalentType } from '../../types/pilot';
 import ObjRef from '../obj_ref/ObjRef.astro';
 
 interface Props {
@@ -19,6 +19,10 @@ const pilotTypes = getParseObjects<PilotType>(
 );
 const pilotTalents = getParseObjects<PilotTalent>(
   'Objects/PilotTalent.json',
+  version
+);
+const pilotTalentTypes = getParseObjects<PilotTalentType>(
+  'Objects/PilotTalentType.json',
   version
 );
 const rarities = getParseObjects('Objects/Rarity.json', version);
@@ -59,6 +63,7 @@ the other columns have rowspan to center them within their group of rows
       <PilotTable
         pilots={pilotEntries}
         pilotTalents={pilotTalents}
+        pilotTalentTypes={pilotTalentTypes}
         version={version}
       />
     </section>

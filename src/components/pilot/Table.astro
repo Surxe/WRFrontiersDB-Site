@@ -2,15 +2,20 @@
 import ObjRef from '../obj_ref/ObjRef.astro';
 import LevelPilotTalenttd from './LevelPilotTalenttd.astro';
 import LevelPilotTalentTypetd from './LevelPilotTalentTypetd.astro';
-import type { Pilot, PilotTalent } from '../../types/pilot';
+import type { Pilot, PilotTalent, PilotTalentType } from '../../types/pilot';
 
 interface Props {
   pilots: [string, Pilot][];
-  pilotTalents: Record<string, PilotTalent>;
+  pilotTalents?: Record<string, PilotTalent>;
+  pilotTalentTypes?: Record<string, PilotTalentType>;
   version: string;
 }
 
-const { pilots, pilotTalents, version } = Astro.props;
+// if pilotTalents is provided, use LevelPilotTalenttd
+// if pilotTalentTypes is provided, use LevelPilotTalentTypetd
+// otherwise, throw error
+
+const { pilots, pilotTalents, pilotTalentTypes, version } = Astro.props;
 ---
 
 <table>
@@ -59,6 +64,7 @@ const { pilots, pilotTalents, version } = Astro.props;
                   level={pilot.levels[levelIndex]}
                   talentIndex={talentIndex}
                   maxTalents={maxTalents}
+                  pilotTalentTypes={pilotTalentTypes}
                   version={version}
                 />
               ))}
