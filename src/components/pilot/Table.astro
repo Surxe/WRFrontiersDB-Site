@@ -1,6 +1,6 @@
 ---
 import ObjRef from '../obj_ref/ObjRef.astro';
-import LevelTableData from './LevelTableData.astro';
+import LevelPilotTalenttd from './LevelPilotTalenttd.astro';
 import type { Pilot, PilotTalent } from '../../types/pilot';
 
 interface Props {
@@ -44,7 +44,7 @@ const { pilots, pilotTalents, version } = Astro.props;
               )}
               {/* Levels 1-5 */}
               {[0, 1, 2, 3, 4].map((levelIndex) => (
-                <LevelTableData
+                <LevelPilotTalenttd
                   levelIndex={levelIndex}
                   level={pilot.levels[levelIndex]}
                   talentIndex={talentIndex}
