@@ -2,7 +2,12 @@
 import PilotTable from './Table.astro';
 import { getParseObjects } from '../../utils/parse_object';
 import { prepareObjectList, groupBy, sortGroups } from '../../utils/list';
-import type { Pilot, PilotType, PilotTalent, PilotTalentType } from '../../types/pilot';
+import type {
+  Pilot,
+  PilotType,
+  PilotTalent,
+  PilotTalentType,
+} from '../../types/pilot';
 import ObjRef from '../obj_ref/ObjRef.astro';
 
 interface Props {

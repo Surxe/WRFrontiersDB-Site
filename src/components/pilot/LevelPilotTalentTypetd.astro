@@ -27,13 +27,15 @@ const { level, talentIndex, maxTalents, pilotTalentTypes, version } =
 {/* For level 5, use rowspan and only render on first talent row */}
 {/* For levels 1 and 2-4, render for each talent index */}
 
-{talentIndex === 0 && (
-  <td rowspan={maxTalents}>
-    {level?.talent_type_id && (
-      <ObjRef
-        obj={pilotTalentTypes[level.talent_type_id]}
-        version={version}
-      />
-    )}
-  </td>
-)}
+{
+  talentIndex === 0 && (
+    <td rowspan={maxTalents}>
+      {level?.talent_type_id && (
+        <ObjRef
+          obj={pilotTalentTypes[level.talent_type_id]}
+          version={version}
+        />
+      )}
+    </td>
+  )
+}

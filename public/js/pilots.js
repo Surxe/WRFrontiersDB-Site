@@ -1,7 +1,9 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
   const pilotTalentTable = document.getElementById('pilots-table-pilot-talent');
-  const pilotTalentTypeTable = document.getElementById('pilots-table-pilot-talent-type');
-  
+  const pilotTalentTypeTable = document.getElementById(
+    'pilots-table-pilot-talent-type'
+  );
+
   if (!pilotTalentTable || !pilotTalentTypeTable) {
     console.warn('Pilot tables not found');
     return;
@@ -26,18 +28,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Add click handlers
   const buttons = switcherContainer.querySelectorAll('.switcher-btn');
-  buttons.forEach(button => {
-    button.addEventListener('click', function() {
+  buttons.forEach((button) => {
+    button.addEventListener('click', function () {
       // Remove active class from all buttons
-      buttons.forEach(btn => btn.classList.remove('active'));
-      
+      buttons.forEach((btn) => btn.classList.remove('active'));
+
       // Add active class to clicked button
       this.classList.add('active');
-      
+
       // Hide all tables
       pilotTalentTable.style.display = 'none';
       pilotTalentTypeTable.style.display = 'none';
-      
+
       // Show selected table
       const tableType = this.getAttribute('data-table');
       if (tableType === 'pilot-talent') {

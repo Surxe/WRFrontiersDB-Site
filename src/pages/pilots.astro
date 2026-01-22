@@ -11,7 +11,11 @@ const { versions, latestVersion } = getAllVersions();
 const pilots = getParseObjects<Pilot>('Objects/Pilot.json', latestVersion);
 ---
 
-<ParseObjectListPage title="Pilots" version={latestVersion} jsFileName="pilots.js">
+<ParseObjectListPage
+  title="Pilots"
+  version={latestVersion}
+  jsFileName="pilots.js"
+>
   <BackToHome />
   <h1>Pilots</h1>
 
@@ -28,7 +32,7 @@ const pilots = getParseObjects<Pilot>('Objects/Pilot.json', latestVersion);
       margin: 20px 0;
       text-align: center;
     }
-    
+
     .switcher-buttons {
       display: inline-flex;
       gap: 10px;
@@ -37,7 +41,7 @@ const pilots = getParseObjects<Pilot>('Objects/Pilot.json', latestVersion);
       border-radius: 8px;
       border: 1px solid #ddd;
     }
-    
+
     .switcher-btn {
       padding: 8px 16px;
       border: none;
@@ -49,18 +53,18 @@ const pilots = getParseObjects<Pilot>('Objects/Pilot.json', latestVersion);
       transition: all 0.2s ease;
       color: #666;
     }
-    
+
     .switcher-btn:hover {
       background: #e9e9e9;
       color: #333;
     }
-    
+
     .switcher-btn.active {
       background: #007bff;
       color: white;
       box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
     }
-    
+
     .switcher-btn.active:hover {
       background: #0056b3;
     }
