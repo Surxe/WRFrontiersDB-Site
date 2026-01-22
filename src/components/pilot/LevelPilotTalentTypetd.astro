@@ -4,7 +4,6 @@ import type { PilotTalentType } from '../../types/pilot';
 import { getParseObjects } from '../../utils/parse_object';
 
 interface Props {
-  levelIndex: number; // 0 for level 1, 1 for level 2, 2 for level 3, 3 for level 4, 4 for level 5
   level?: {
     talents?: string[];
     talent_type_id?: string;
@@ -16,18 +15,11 @@ interface Props {
 
 /*
 Create table data cells that look like this for the respective levels:
-Level 1-4:
-TalentType1
-TalentType2
-TalentType3
-
-Level 5: 
-TalentType1 (rowspan=maxTalents)
-
-To summarize: Levels 1-4 have 3 talents, level 5 has 1 talent. 
+Level 1-5:
+TalentType (rowspan=maxTalents)
 */
 
-const { levelIndex, level, talentIndex, maxTalents, version } = Astro.props;
+const { level, talentIndex, maxTalents, version } = Astro.props;
 
 const pilotTalentTypes = getParseObjects<PilotTalentType>(
   'Objects/PilotTalentType.json',

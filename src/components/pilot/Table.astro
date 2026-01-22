@@ -56,7 +56,6 @@ const { pilots, pilotTalents, version } = Astro.props;
               ))} */}
               {[0, 1, 2, 3, 4].map((levelIndex) => (
                 <LevelPilotTalentTypetd
-                  levelIndex={levelIndex}
                   level={pilot.levels[levelIndex]}
                   talentIndex={talentIndex}
                   maxTalents={maxTalents}
