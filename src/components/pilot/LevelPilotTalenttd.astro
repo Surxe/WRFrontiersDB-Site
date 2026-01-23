@@ -4,6 +4,7 @@ import type { PilotTalent } from '../../types/pilot';
 import type { ModuleStat } from '../../types/module';
 import { getParseObjects } from '../../utils/parse_object';
 import { getStatValueChoices } from '../../utils/stat';
+import StatEmbedLocalizedText from '../StatEmbedLocalizedText.astro';
 
 interface Props {
   levelIndex: number; // 0 for level 1, 1 for level 2, 2 for level 3, 3 for level 4, 4 for level 5
@@ -15,6 +16,7 @@ interface Props {
   maxTalents: number;
   pilotTalents: Record<string, PilotTalent>;
   version: string;
+  fullOrOnHover?: 'full' | 'onHover';
 }
 
 /*
@@ -30,7 +32,7 @@ Talent1 (rowspan=maxTalents)
 To summarize: Levels 1-4 have 3 talents, level 5 has 1 talent. 
 */
 
-const { levelIndex, level, talentIndex, maxTalents, pilotTalents, version } =
+const { levelIndex, level, talentIndex, maxTalents, pilotTalents, version, fullOrOnHover='onHover' } =
   Astro.props;
 
 // Load ModuleStats for stat replacements
@@ -69,8 +71,13 @@ const getTalentData = (levelIdx: number, talentIdx: number) => {
               <ObjRef
                 obj={talent}
                 version={version}
-                useOnHover={true}
-                onHoverStatChoices={statValueChoices}
+                useOnHover={fullOrOnHover === 'onHover'}
+                onHoverStatChoices={statValueChoices ? statValueChoices : undefined}
+              />
+              <StatEmbedLocalizedText
+                tag="span"
+                localizationKey={talent.description}
+                statValueChoices={statValueChoices}
               />
             )}
           </td>
@@ -87,8 +94,13 @@ const getTalentData = (levelIdx: number, talentIdx: number) => {
               <ObjRef
                 obj={talent}
                 version={version}
-                useOnHover={true}
-                onHoverStatChoices={statValueChoices}
+                useOnHover={fullOrOnHover === 'onHover'}
+                onHoverStatChoices={statValueChoices ? statValueChoices : undefined}
+              />
+              <StatEmbedLocalizedText
+                tag="span"
+                localizationKey={talent.description}
+                statValueChoices={statValueChoices}
               />
             )}
           </td>
