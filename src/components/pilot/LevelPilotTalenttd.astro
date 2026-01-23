@@ -53,41 +53,24 @@ const getTalentData = (levelIdx: number, talentIdx: number) => {
   const statValueChoices = getStatValueChoices(talent.stats, moduleStats);
   return { talent, statValueChoices };
 };
+
+// Pre-compute rendering logic
+const shouldRender = levelIndex === 4 ? talentIndex === 0 : true;
+const rowspan = levelIndex === 4 ? maxTalents : undefined;
+const talentData = shouldRender ? getTalentData(levelIndex, talentIndex) : null;
 ---
 
 {/* Talent column */}
 {/* For level 5, use rowspan and only render on first talent row */}
 {/* For levels 1 and 2-4, render for each talent index */}
 {
-  levelIndex === 4 && talentIndex === 0
-    ? (() => {
-        const { talent, statValueChoices } = getTalentData(
-          levelIndex,
-          talentIndex
-        );
-        return (
-          <TalentCell
-            talent={talent}
-            version={version}
-            statValueChoices={statValueChoices}
-            fullOrOnHover={fullOrOnHover}
-            rowspan={maxTalents}
-          />
-        );
-      })()
-    : levelIndex !== 4 &&
-      (() => {
-        const { talent, statValueChoices } = getTalentData(
-          levelIndex,
-          talentIndex
-        );
-        return (
-          <TalentCell
-            talent={talent}
-            version={version}
-            statValueChoices={statValueChoices}
-            fullOrOnHover={fullOrOnHover}
-          />
-        );
-      })()
+  shouldRender && talentData && talentData.talent && (
+    <TalentCell
+      talent={talentData.talent}
+      version={version}
+      statValueChoices={talentData.statValueChoices}
+      fullOrOnHover={fullOrOnHover}
+      rowspan={rowspan}
+    />
+  )
 }

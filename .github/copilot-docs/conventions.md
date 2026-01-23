@@ -49,3 +49,8 @@ Example: [modules/[id]/[version].astro](../../src/pages/modules/[id]/[version].a
 - **File Names**: Snake case for multi-word pages (e.g., `pilot_personalities.astro`)
 - **Component Names**: PascalCase (e.g., `ParseObjectList.astro`)
 - **Test Files**: `{fileName}/{functionOrInterfaceName}.ts` in `tests/` subdirectories
+
+# Code Practices
+
+- **Type Safety**: Use TypeScript interfaces for all data structures
+- **IIFE Functions**: Avoid at all costs using IIFE functions
