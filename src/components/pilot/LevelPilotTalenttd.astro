@@ -1,10 +1,9 @@
 ---
-import ObjRef from '../obj_ref/ObjRef.astro';
+import TalentCell from './TalentCell.astro';
 import type { PilotTalent } from '../../types/pilot';
 import type { ModuleStat } from '../../types/module';
 import { getParseObjects } from '../../utils/parse_object';
 import { getStatValueChoices } from '../../utils/stat';
-import StatEmbedLocalizedText from '../StatEmbedLocalizedText.astro';
 
 interface Props {
   levelIndex: number; // 0 for level 1, 1 for level 2, 2 for level 3, 3 for level 4, 4 for level 5
@@ -54,72 +53,24 @@ const getTalentData = (levelIdx: number, talentIdx: number) => {
   const statValueChoices = getStatValueChoices(talent.stats, moduleStats);
   return { talent, statValueChoices };
 };
+
+// Pre-compute rendering logic
+const shouldRender = levelIndex === 4 ? talentIndex === 0 : true;
+const rowspan = levelIndex === 4 ? maxTalents : undefined;
+const talentData = shouldRender ? getTalentData(levelIndex, talentIndex) : null;
 ---
 
 {/* Talent column */}
 {/* For level 5, use rowspan and only render on first talent row */}
 {/* For levels 1 and 2-4, render for each talent index */}
 {
-  levelIndex === 4
-    ? talentIndex === 0 &&
-      (() => {
-        const { talent, statValueChoices } = getTalentData(
-          levelIndex,
-          talentIndex
-        );
-        return (
-          <td rowspan={maxTalents}>
-            {talent && (
-              <>
-                <ObjRef
-                  obj={talent}
-                  version={version}
-                  useOnHover={fullOrOnHover === 'onHover'}
-                  onHoverStatChoices={statValueChoices}
-                />
-                {fullOrOnHover === 'full' && (
-                  <>
-                    <span>: </span>
-                    <StatEmbedLocalizedText
-                      tag="span"
-                      localizationKey={talent.description}
-                      statValueChoices={statValueChoices}
-                    />
-                  </>
-                )}
-              </>
-            )}
-          </td>
-        );
-      })()
-    : (() => {
-        const { talent, statValueChoices } = getTalentData(
-          levelIndex,
-          talentIndex
-        );
-        return (
-          <td>
-            {talent && (
-              <>
-                <ObjRef
-                  obj={talent}
-                  version={version}
-                  useOnHover={fullOrOnHover === 'onHover'}
-                  onHoverStatChoices={statValueChoices}
-                />
-                {fullOrOnHover === 'full' && (
-                  <>
-                    <span>: </span>
-                    <StatEmbedLocalizedText
-                      tag="span"
-                      localizationKey={talent.description}
-                      statValueChoices={statValueChoices}
-                    />
-                  </>
-                )}
-              </>
-            )}
-          </td>
-        );
-      })()
+  shouldRender && talentData && talentData.talent && (
+    <TalentCell
+      talent={talentData.talent}
+      version={version}
+      statValueChoices={talentData.statValueChoices}
+      fullOrOnHover={fullOrOnHover}
+      rowspan={rowspan}
+    />
+  )
 }

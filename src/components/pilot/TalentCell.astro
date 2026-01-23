@@ -1,0 +1,38 @@
+---
+import ObjRef from '../obj_ref/ObjRef.astro';
+import StatEmbedLocalizedText from '../StatEmbedLocalizedText.astro';
+import type { PilotTalent } from '../../types/pilot';
+
+interface Props {
+  talent: PilotTalent;
+  version: string;
+  statValueChoices: any;
+  fullOrOnHover?: 'full' | 'onHover';
+  rowspan?: number;
+}
+
+const { talent, version, statValueChoices, fullOrOnHover = 'full', rowspan } = Astro.props;
+---
+
+<td rowspan={rowspan}>
+  {talent && (
+    <>
+      <ObjRef
+        obj={talent}
+        version={version}
+        useOnHover={fullOrOnHover === 'onHover'}
+        onHoverStatChoices={statValueChoices}
+      />
+      {fullOrOnHover === 'full' && (
+        <>
+          <span>: </span>
+          <StatEmbedLocalizedText
+            tag="span"
+            localizationKey={talent.description}
+            statValueChoices={statValueChoices}
+          />
+        </>
+      )}
+    </>
+  )}
+</td>
