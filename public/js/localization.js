@@ -141,9 +141,9 @@ function replaceStatPlaceholders(text, choiceMap, currentChoice, locData) {
         locData
       );
 
-      // Replace all occurrences of {shortKey} with the formatted value
+      // Replace all occurrences of {shortKey} with the formatted value wrapped in strong tags
       const regex = new RegExp(`\\{${shortKey}\\}`, 'g');
-      result = result.replace(regex, formattedValue);
+      result = result.replace(regex, `<strong>${formattedValue}</strong>`);
     }
     // If value not found, leave placeholder intact
   }
@@ -188,7 +188,7 @@ export function updateLocalizedElements(locData, selectors) {
           }
         }
 
-        element.textContent = localizedText;
+        element.innerHTML = localizedText;
       }
     });
   });
