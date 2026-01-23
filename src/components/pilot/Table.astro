@@ -10,13 +10,14 @@ interface Props {
   pilotTalents?: Record<string, PilotTalent>;
   pilotTalentTypes?: Record<string, PilotTalentType>;
   version: string;
+  fullOrOnHover?: 'full' | 'onHover' | undefined;
 }
 
 // if pilotTalents is provided, use LevelPilotTalenttd
 // if pilotTalentTypes is provided, use LevelPilotTalentTypetd
 // otherwise, throw error
 
-const { id, pilots, pilotTalents, pilotTalentTypes, version } = Astro.props;
+const { id, pilots, pilotTalents, pilotTalentTypes, version, fullOrOnHover } = Astro.props;
 
 // Validate that at least one of the required props is provided
 if (!pilotTalents && !pilotTalentTypes) {
@@ -70,6 +71,7 @@ if (pilotTalents && pilotTalentTypes) {
                       maxTalents={maxTalents}
                       pilotTalents={pilotTalents}
                       version={version}
+                      fullOrOnHover={fullOrOnHover}
                     />
                   ) : (
                     <LevelPilotTalentTypetd
