@@ -9,7 +9,7 @@ interface Props {
   };
   talentIndex: number;
   maxTalents: number;
-  pilotTalentTypes: Record<string, PilotTalentType>;
+  pilotTalentTypes?: Record<string, PilotTalentType>;
   version: string;
 }
 
@@ -30,7 +30,7 @@ const { level, talentIndex, maxTalents, pilotTalentTypes, version } =
 {
   talentIndex === 0 && (
     <td rowspan={maxTalents}>
-      {level?.talent_type_id && (
+      {level?.talent_type_id && pilotTalentTypes && (
         <ObjRef
           obj={pilotTalentTypes[level.talent_type_id]}
           version={version}
