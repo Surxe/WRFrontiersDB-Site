@@ -1,13 +1,9 @@
 document.addEventListener('DOMContentLoaded', function () {
-  const pilotTalentHoverTable = document.getElementById('pilots-table-pilot-talent-hover');
-  const pilotTalentTypeTable = document.getElementById(
-    'pilots-table-pilot-talent-type'
-  );
-  const pilotTalentFullTable = document.getElementById(
-    'pilots-table-pilot-talent-full'
-  );
+  const pilotTalentHoverTables = document.querySelectorAll('.pilots-table-pilot-talent-hover');
+  const pilotTalentTypeTables = document.querySelectorAll('.pilots-table-pilot-talent-type');
+  const pilotTalentFullTables = document.querySelectorAll('.pilots-table-pilot-talent-full');
 
-  if (!pilotTalentHoverTable || !pilotTalentTypeTable || !pilotTalentFullTable) {
+  if (pilotTalentHoverTables.length === 0 || pilotTalentTypeTables.length === 0 || pilotTalentFullTables.length === 0) {
     console.warn('Pilot tables not found');
     return;
   }
@@ -29,8 +25,8 @@ document.addEventListener('DOMContentLoaded', function () {
     </div>
   `;
 
-  // Insert switcher before the first table
-  pilotTalentHoverTable.parentNode.insertBefore(switcherContainer, pilotTalentHoverTable);
+  // Insert switcher before the first hover table
+  pilotTalentHoverTables[0].parentNode.insertBefore(switcherContainer, pilotTalentHoverTables[0]);
 
   // Add click handlers
   const buttons = switcherContainer.querySelectorAll('.switcher-btn');
@@ -43,24 +39,24 @@ document.addEventListener('DOMContentLoaded', function () {
       this.classList.add('active');
 
       // Hide all tables
-      pilotTalentHoverTable.style.display = 'none';
-      pilotTalentTypeTable.style.display = 'none';
-      pilotTalentFullTable.style.display = 'none';
+      pilotTalentHoverTables.forEach(table => table.style.display = 'none');
+      pilotTalentTypeTables.forEach(table => table.style.display = 'none');
+      pilotTalentFullTables.forEach(table => table.style.display = 'none');
 
-      // Show selected table
+      // Show selected tables
       const tableType = this.getAttribute('data-table');
       if (tableType === 'pilot-talent-hover') {
-        pilotTalentHoverTable.style.display = 'table';
+        pilotTalentHoverTables.forEach(table => table.style.display = 'table');
       } else if (tableType === 'pilot-talent-type') {
-        pilotTalentTypeTable.style.display = 'table';
+        pilotTalentTypeTables.forEach(table => table.style.display = 'table');
       } else if (tableType === 'pilot-talent-full') {
-        pilotTalentFullTable.style.display = 'table';
+        pilotTalentFullTables.forEach(table => table.style.display = 'table');
       }
     });
   });
 
-  // Initially hide all but the hover table
-  pilotTalentTypeTable.style.display = 'none';
-  pilotTalentFullTable.style.display = 'none';
-  pilotTalentHoverTable.style.display = 'table';
+  // Initially hide all but the hover tables
+  pilotTalentTypeTables.forEach(table => table.style.display = 'none');
+  pilotTalentFullTables.forEach(table => table.style.display = 'none');
+  pilotTalentHoverTables.forEach(table => table.style.display = 'table');
 });
