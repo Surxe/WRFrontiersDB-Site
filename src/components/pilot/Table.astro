@@ -17,7 +17,14 @@ interface Props {
 // if pilotTalentTypes is provided, use LevelPilotTalentTypetd
 // otherwise, throw error
 
-const { tableClass, pilots, pilotTalents, pilotTalentTypes, version, fullOrOnHover } = Astro.props;
+const {
+  tableClass,
+  pilots,
+  pilotTalents,
+  pilotTalentTypes,
+  version,
+  fullOrOnHover,
+} = Astro.props;
 
 // Validate that at least one of the required props is provided
 if (!pilotTalents && !pilotTalentTypes) {

@@ -78,12 +78,14 @@ const getTalentData = (levelIdx: number, talentIdx: number) => {
                   onHoverStatChoices={statValueChoices}
                 />
                 {fullOrOnHover === 'full' && (
-                  <span>: </span>
-                  <StatEmbedLocalizedText
-                    tag="span"
-                    localizationKey={talent.description}
-                    statValueChoices={statValueChoices}
-                  />
+                  <>
+                    <span>: </span>
+                    <StatEmbedLocalizedText
+                      tag="span"
+                      localizationKey={talent.description}
+                      statValueChoices={statValueChoices}
+                    />
+                  </>
                 )}
               </>
             )}
@@ -106,12 +108,14 @@ const getTalentData = (levelIdx: number, talentIdx: number) => {
                   onHoverStatChoices={statValueChoices}
                 />
                 {fullOrOnHover === 'full' && (
-                  <span>: </span>
-                  <StatEmbedLocalizedText
-                    tag="span"
-                    localizationKey={talent.description}
-                    statValueChoices={statValueChoices}
-                  />
+                  <>
+                    <span>: </span>
+                    <StatEmbedLocalizedText
+                      tag="span"
+                      localizationKey={talent.description}
+                      statValueChoices={statValueChoices}
+                    />
+                  </>
                 )}
               </>
             )}
