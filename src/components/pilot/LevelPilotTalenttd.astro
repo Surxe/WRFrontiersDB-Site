@@ -4,17 +4,19 @@ import type { PilotTalent } from '../../types/pilot';
 import type { ModuleStat } from '../../types/module';
 import { getParseObjects } from '../../utils/parse_object';
 import { getStatValueChoices } from '../../utils/stat';
+import StatEmbedLocalizedText from '../StatEmbedLocalizedText.astro';
 
 interface Props {
   levelIndex: number; // 0 for level 1, 1 for level 2, 2 for level 3, 3 for level 4, 4 for level 5
-  level?: {
-    talents?: string[];
-    talent_type_id?: string;
+  level: {
+    talents: string[];
+    talent_type_id: string;
   };
   talentIndex: number;
   maxTalents: number;
   pilotTalents: Record<string, PilotTalent>;
   version: string;
+  fullOrOnHover?: 'full' | 'onHover';
 }
 
 /*
@@ -30,8 +32,12 @@ Talent1 (rowspan=maxTalents)
 To summarize: Levels 1-4 have 3 talents, level 5 has 1 talent. 
 */
 
-const { levelIndex, level, talentIndex, maxTalents, pilotTalents, version } =
+const { levelIndex, level, talentIndex, maxTalents, pilotTalents, version, fullOrOnHover='full' } =
   Astro.props;
+
+if (fullOrOnHover !== 'full' && fullOrOnHover !== 'onHover') {
+  throw new Error('fullOrOnHover must be "full" or "onHover"');
+}
 
 // Load ModuleStats for stat replacements
 const moduleStats = getParseObjects<ModuleStat>(
@@ -43,11 +49,9 @@ const moduleStats = getParseObjects<ModuleStat>(
 // because level 5 only has one talent slot
 const getTalentData = (levelIdx: number, talentIdx: number) => {
   const talentId =
-    levelIdx === 4 ? level?.talents?.[0] : level?.talents?.[talentIdx];
-  const talent = talentId ? pilotTalents[talentId] : undefined;
-  const statValueChoices = talent
-    ? getStatValueChoices(talent.stats, moduleStats)
-    : undefined;
+    levelIdx === 4 ? level.talents[0] : level.talents[talentIdx];
+  const talent = pilotTalents[talentId];
+  const statValueChoices = getStatValueChoices(talent.stats, moduleStats);
   return { talent, statValueChoices };
 };
 ---
@@ -66,12 +70,24 @@ const getTalentData = (levelIdx: number, talentIdx: number) => {
         return (
           <td rowspan={maxTalents}>
             {talent && (
-              <ObjRef
-                obj={talent}
-                version={version}
-                useOnHover={true}
-                onHoverStatChoices={statValueChoices}
-              />
+              <>
+                <ObjRef
+                  obj={talent}
+                  version={version}
+                  useOnHover={fullOrOnHover === 'onHover'}
+                  onHoverStatChoices={statValueChoices}
+                />
+                {fullOrOnHover === 'full' && (
+                  <>
+                    <span>: </span>
+                    <StatEmbedLocalizedText
+                      tag="span"
+                      localizationKey={talent.description}
+                      statValueChoices={statValueChoices}
+                    />
+                  </>
+                )}
+              </>
             )}
           </td>
         );
@@ -84,12 +100,24 @@ const getTalentData = (levelIdx: number, talentIdx: number) => {
         return (
           <td>
             {talent && (
-              <ObjRef
-                obj={talent}
-                version={version}
-                useOnHover={true}
-                onHoverStatChoices={statValueChoices}
-              />
+              <>
+                <ObjRef
+                  obj={talent}
+                  version={version}
+                  useOnHover={fullOrOnHover === 'onHover'}
+                  onHoverStatChoices={statValueChoices}
+                />
+                {fullOrOnHover === 'full' && (
+                  <>
+                    <span>: </span>
+                    <StatEmbedLocalizedText
+                      tag="span"
+                      localizationKey={talent.description}
+                      statValueChoices={statValueChoices}
+                    />
+                  </>
+                )}
+              </>
             )}
           </td>
         );

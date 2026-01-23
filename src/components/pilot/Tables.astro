@@ -66,13 +66,21 @@ the other columns have rowspan to center them within their group of rows
         />
       </h2>
       <PilotTable
-        id="pilots-table-pilot-talent"
+        tableClass="pilots-table-pilot-talent-hover"
         pilots={pilotEntries}
         pilotTalents={pilotTalents}
         version={version}
+        fullOrOnHover="onHover"
       />
       <PilotTable
-        id="pilots-table-pilot-talent-type"
+        tableClass="pilots-table-pilot-talent-full"
+        pilots={pilotEntries}
+        pilotTalents={pilotTalents}
+        version={version}
+        fullOrOnHover="full"
+      />
+      <PilotTable
+        tableClass="pilots-table-pilot-talent-type"
         pilots={pilotEntries}
         pilotTalentTypes={pilotTalentTypes}
         version={version}
