@@ -32,7 +32,7 @@ Talent1 (rowspan=maxTalents)
 To summarize: Levels 1-4 have 3 talents, level 5 has 1 talent. 
 */
 
-const { levelIndex, level, talentIndex, maxTalents, pilotTalents, version, fullOrOnHover='onHover' } =
+const { levelIndex, level, talentIndex, maxTalents, pilotTalents, version, fullOrOnHover='full' } =
   Astro.props;
 
 // Load ModuleStats for stat replacements
@@ -68,17 +68,21 @@ const getTalentData = (levelIdx: number, talentIdx: number) => {
         return (
           <td rowspan={maxTalents}>
             {talent && (
-              <ObjRef
-                obj={talent}
-                version={version}
-                useOnHover={fullOrOnHover === 'onHover'}
-                onHoverStatChoices={statValueChoices ? statValueChoices : undefined}
-              />
-              <StatEmbedLocalizedText
-                tag="span"
-                localizationKey={talent.description}
-                statValueChoices={statValueChoices}
-              />
+              <>
+                <ObjRef
+                  obj={talent}
+                  version={version}
+                  useOnHover={fullOrOnHover === 'onHover'}
+                  onHoverStatChoices={statValueChoices ? statValueChoices : undefined}
+                />
+                {fullOrOnHover === 'full' && (
+                  <StatEmbedLocalizedText
+                    tag="span"
+                    localizationKey={talent.description}
+                    statValueChoices={statValueChoices}
+                  />
+                )}
+              </>
             )}
           </td>
         );
@@ -91,17 +95,21 @@ const getTalentData = (levelIdx: number, talentIdx: number) => {
         return (
           <td>
             {talent && (
-              <ObjRef
-                obj={talent}
-                version={version}
-                useOnHover={fullOrOnHover === 'onHover'}
-                onHoverStatChoices={statValueChoices ? statValueChoices : undefined}
-              />
-              <StatEmbedLocalizedText
-                tag="span"
-                localizationKey={talent.description}
-                statValueChoices={statValueChoices}
-              />
+              <>
+                <ObjRef
+                  obj={talent}
+                  version={version}
+                  useOnHover={fullOrOnHover === 'onHover'}
+                  onHoverStatChoices={statValueChoices ? statValueChoices : undefined}
+                />
+                {fullOrOnHover === 'full' && (
+                  <StatEmbedLocalizedText
+                    tag="span"
+                    localizationKey={talent.description}
+                    statValueChoices={statValueChoices}
+                  />
+                )}
+              </>
             )}
           </td>
         );
