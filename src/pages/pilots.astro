@@ -10,6 +10,8 @@ const { versions, latestVersion } = getAllVersions();
 
 // Load pilots
 const pilots = getParseObjects<Pilot>('Objects/Pilot.json', latestVersion);
+
+const pilot = pilots['DA_Pilot_Common1.0']; // Pick an arbitary pilot. All are validated to have the same reputation costs by Parser
 ---
 
 <ParseObjectListPage
@@ -18,7 +20,6 @@ const pilots = getParseObjects<Pilot>('Objects/Pilot.json', latestVersion);
   jsFileName="pilots.js"
 >
   <BackToHome />
-  <h1>Pilots</h1>
 
   <p>
     Showing pilots from latest version: {versions[latestVersion].title} ({
@@ -26,5 +27,28 @@ const pilots = getParseObjects<Pilot>('Objects/Pilot.json', latestVersion);
     })
   </p>
 
+  <h1>Pilots</h1>
   <PilotTables pilots={pilots} version={latestVersion} />
+
+  <h2>Reputation Costs</h2>
+  <!--Table for reputation costs-->
+  <p>All pilots have the same reputation costs.</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Level</th>
+        <th>Reputation Cost</th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        pilot.levels?.map((level, index) => (
+          <tr>
+            <td>{index + 1}</td>
+            <td>{level.reputation_cost || 'N/A'}</td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
 </ParseObjectListPage>
