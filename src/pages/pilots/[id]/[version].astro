@@ -24,7 +24,6 @@ import { getDefaultString } from '../../../utils/localization';
 import { getStatValueChoices } from '../../../utils/stat';
 import type { ModuleStat } from '../../../types/module';
 
-
 export async function getStaticPaths() {
   return await generateObjectStaticPaths('Objects/Pilot.json');
 }
@@ -139,7 +138,10 @@ const defaultName = getDefaultString(pilot.first_name) || pilot.id;
                       obj={pilotTalents[talent_id]}
                       version={version}
                       useOnHover={true}
-                      onHoverStatChoices={getStatValueChoices(pilotTalents[talent_id].stats, moduleStats)}
+                      onHoverStatChoices={getStatValueChoices(
+                        pilotTalents[talent_id].stats,
+                        moduleStats
+                      )}
                     />
                   </span>
                 ))}
