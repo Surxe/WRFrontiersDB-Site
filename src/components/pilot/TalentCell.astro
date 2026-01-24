@@ -40,14 +40,13 @@ const moduleStats = getParseObjects<ModuleStat>(
           onHoverStatChoices={statValueChoices}
         />
         {fullOrOnHover === 'full' && (
-          <>
-            <span>: </span>
+          <div>
             <StatEmbedLocalizedText
               tag="span"
               localizationKey={talent.description}
               statValueChoices={getStatValueChoices(talent.stats, moduleStats)}
             />
-          </>
+          </div>
         )}
       </>
     )
