@@ -21,6 +21,8 @@ import {
 } from '../../../utils/parse_object';
 import ObjRef from '../../../components/obj_ref/ObjRef.astro';
 import { getDefaultString } from '../../../utils/localization';
+import { getStatValueChoices } from '../../../utils/stat';
+import type { ModuleStat } from '../../../types/module';
 
 export async function getStaticPaths() {
   return await generateObjectStaticPaths('Objects/Pilot.json');
@@ -42,6 +44,12 @@ const pilotTypes = getParseObjects<PilotType>(
   'Objects/PilotType.json',
   version
 );
+// Load ModuleStats for stat replacements
+const moduleStats = getParseObjects<ModuleStat>(
+  'Objects/ModuleStat.json',
+  version
+);
+
 const rarity = getParseObject<Rarity>(
   pilotTypes[pilot.pilot_type_id].rarity_id,
   version,
@@ -124,14 +132,19 @@ const defaultName = getDefaultString(pilot.first_name) || pilot.id;
             </td>
             <td>
               <div>
-                {level.talents?.map((talent_id) => {
-                  const talent = pilotTalents[talent_id];
-                  return (
-                    <span>
-                      <ObjRef obj={talent} version={version} />
-                    </span>
-                  );
-                })}
+                {level.talents?.map((talent_id) => (
+                  <span>
+                    <ObjRef
+                      obj={pilotTalents[talent_id]}
+                      version={version}
+                      useOnHover={true}
+                      onHoverStatChoices={getStatValueChoices(
+                        pilotTalents[talent_id].stats,
+                        moduleStats
+                      )}
+                    />
+                  </span>
+                ))}
               </div>
             </td>
           </tr>

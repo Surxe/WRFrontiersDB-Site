@@ -2,6 +2,9 @@
 import ObjRef from '../obj_ref/ObjRef.astro';
 import StatEmbedLocalizedText from '../StatEmbedLocalizedText.astro';
 import type { PilotTalent } from '../../types/pilot';
+import { getStatValueChoices } from '../../utils/stat';
+import { getParseObjects } from '../../utils/parse_object';
+import type { ModuleStat } from '../../types/module';
 
 interface Props {
   talent: PilotTalent;
@@ -11,28 +14,42 @@ interface Props {
   rowspan?: number;
 }
 
-const { talent, version, statValueChoices, fullOrOnHover = 'full', rowspan } = Astro.props;
+const {
+  talent,
+  version,
+  statValueChoices,
+  fullOrOnHover = 'full',
+  rowspan,
+} = Astro.props;
+
+// Load ModuleStats for stat replacements
+const moduleStats = getParseObjects<ModuleStat>(
+  'Objects/ModuleStat.json',
+  version
+);
 ---
 
 <td rowspan={rowspan}>
-  {talent && (
-    <>
-      <ObjRef
-        obj={talent}
-        version={version}
-        useOnHover={fullOrOnHover === 'onHover'}
-        onHoverStatChoices={statValueChoices}
-      />
-      {fullOrOnHover === 'full' && (
-        <>
-          <span>: </span>
-          <StatEmbedLocalizedText
-            tag="span"
-            localizationKey={talent.description}
-            statValueChoices={statValueChoices}
-          />
-        </>
-      )}
-    </>
-  )}
+  {
+    talent && (
+      <>
+        <ObjRef
+          obj={talent}
+          version={version}
+          useOnHover={fullOrOnHover === 'onHover'}
+          onHoverStatChoices={statValueChoices}
+        />
+        {fullOrOnHover === 'full' && (
+          <>
+            <span>: </span>
+            <StatEmbedLocalizedText
+              tag="span"
+              localizationKey={talent.description}
+              statValueChoices={getStatValueChoices(talent.stats, moduleStats)}
+            />
+          </>
+        )}
+      </>
+    )
+  }
 </td>
