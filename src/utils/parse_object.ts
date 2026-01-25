@@ -119,71 +119,67 @@ export async function generateObjectStaticPaths(
   parseObjectPath: string = 'Objects/Module.json',
   prodReadyOnly: boolean = false
 ): Promise<StaticPathsResult[]> {
-  const versionsPath = path.join(
+  // Extract object type from path (e.g., "Objects/Module.json" -> "Module")
+  const objectType = path.basename(parseObjectPath, '.json');
+  
+  // Load the precomputed summary for this object type
+  const summaryPath = path.join(
     process.cwd(),
-    'WRFrontiersDB-Data/versions.json'
+    'WRFrontiersDB-Data/summaries',
+    `${objectType}.json`
   );
-  const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8')) as Record<
-    string,
-    VersionInfo
-  >;
+  
+  let objectChangeVersions: Record<string, string[]> = {};
+  if (fs.existsSync(summaryPath)) {
+    objectChangeVersions = JSON.parse(fs.readFileSync(summaryPath, 'utf8')) as Record<string, string[]>;
+  } else {
+    console.warn(`Summary file not found: ${summaryPath}`);
+    return [];
+  }
 
   const paths: StaticPathsResult[] = [];
-  const objectVersionsMap = new Map<string, string[]>(); // Build lookup table once
 
-  // For each version, load its objects and create paths
-  for (const version of Object.keys(versions)) {
-    try {
-      const objectsPath = path.join(
-        process.cwd(),
-        'WRFrontiersDB-Data/archive',
-        version,
-        parseObjectPath
-      );
-      if (fs.existsSync(objectsPath)) {
-        const objects = JSON.parse(
-          fs.readFileSync(objectsPath, 'utf8')
-        ) as Record<string, ParseObject>;
-
-        // For each object in this version, create a path and track versions
-        for (const [objectId, obj] of Object.entries(objects) as [
-          string,
-          ParseObject,
-        ][]) {
-          // Skip objects that are not ready for production if prodReadyOnly is true
-          if (
-            prodReadyOnly &&
-            (!obj.production_status || obj.production_status !== 'Ready')
-          ) {
-            continue;
+  // For each object in the summary, create paths for each version it was changed in
+  for (const [objectId, versions] of Object.entries(objectChangeVersions)) {
+    for (const version of versions) {
+      // Load the specific object to check production status if needed
+      if (prodReadyOnly) {
+        try {
+          const objectPath = path.join(
+            process.cwd(),
+            'WRFrontiersDB-Data/archive',
+            version,
+            parseObjectPath
+          );
+          
+          if (fs.existsSync(objectPath)) {
+            const objects = JSON.parse(
+              fs.readFileSync(objectPath, 'utf8')
+            ) as Record<string, ParseObject>;
+            
+            const obj = objects[objectId];
+            if (!obj || (!obj.production_status || obj.production_status !== 'Ready')) {
+              continue; // Skip non-production ready objects
+            }
+          } else {
+            continue; // Skip if object file doesn't exist for this version
           }
-
-          paths.push({
-            params: { id: objectId, version },
-            props: {
-              objectVersions: objectVersionsMap.get(objectId) || [],
-            },
-          });
-
-          // Build reverse lookup: which versions have this object
-          if (!objectVersionsMap.has(objectId)) {
-            objectVersionsMap.set(objectId, []);
-          }
-          objectVersionsMap.get(objectId)!.push(version);
+        } catch {
+          console.warn(
+            `Could not load object ${objectId} for version ${version} from ${parseObjectPath}`
+          );
+          continue;
         }
       }
-    } catch {
-      console.warn(
-        `Could not load objects for version ${version} from ${parseObjectPath}`
-      );
+
+      paths.push({
+        params: { id: objectId, version },
+        props: {
+          objectVersions: versions, // Use the change versions from summary
+        },
+      });
     }
   }
 
-  // Update paths with complete version lists
-  return paths.map((pathItem) => ({
-    ...pathItem,
-    props: {
-      objectVersions: objectVersionsMap.get(pathItem.params.id) || [],
-    },
-  }));
+  return paths;
 }
