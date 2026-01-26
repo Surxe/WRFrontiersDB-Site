@@ -1,0 +1,31 @@
+---
+import fs from 'fs';
+import path from 'path';
+
+export const prerender = false;
+
+const { id } = Astro.params;
+
+// Read summary directly - O(1) file access + O(1) lookup
+const summaryPath = path.join(
+  import.meta.env.PWD,
+  'WRFrontiersDB-Data/summaries/Module.json'
+);
+
+if (!fs.existsSync(summaryPath)) {
+  return Astro.redirect('/modules');
+}
+
+const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf8')) as Record<string, string[]>;
+const versions = summary[id as string];
+
+if (!versions) {
+  return Astro.redirect('/modules');
+}
+
+// Get the latest change version (last item in the array)
+const latestVersion = versions[versions.length - 1];
+
+// Redirect to the latest version
+return Astro.redirect(`/modules/${id}/${latestVersion}`);
+---
