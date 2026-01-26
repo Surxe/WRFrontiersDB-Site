@@ -1,0 +1,17 @@
+---
+import { getLatestVersionForObject } from '../../utils/summary';
+
+export const prerender = false;
+
+const { id } = Astro.params;
+
+// Get the latest version for this pilot talent type
+const latestVersion = getLatestVersionForObject(id as string, 'PilotTalentType');
+
+if (!latestVersion) {
+  return Astro.redirect('/pilot_talent_types');
+}
+
+// Redirect to the latest version
+return Astro.redirect(`/pilot_talent_types/${id}/${latestVersion}`);
+---
