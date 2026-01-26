@@ -9,7 +9,7 @@ import fs from 'fs';
 export function getSummaryPath(objectType: string): string {
   return path.join(
     import.meta.env.PWD,
-    'WRFontiersDB-Data/summaries',
+    'WRFrontiersDB-Data/summaries',
     `${objectType}.json`
   );
 }
