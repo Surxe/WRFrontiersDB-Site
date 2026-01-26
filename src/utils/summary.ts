@@ -21,23 +21,31 @@ export function getSummaryPath(objectType: string): string {
  * @param objectType - The object type (e.g., 'Module', 'Pilot', 'Ability')
  * @returns The latest version string (never null)
  */
-export function getLatestVersionForObject(objectId: string, objectType: string): string {
+export function getLatestVersionForObject(
+  objectId: string,
+  objectType: string
+): string {
   const summaryPath = getSummaryPath(objectType);
-  
+
   if (fs.existsSync(summaryPath)) {
     try {
-      const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf8')) as Record<string, string[]>;
+      const summary = JSON.parse(
+        fs.readFileSync(summaryPath, 'utf8')
+      ) as Record<string, string[]>;
       const versions = summary[objectId];
-      
+
       if (versions && versions.length > 0) {
         // Return the last item (latest version from summary)
         return versions[versions.length - 1];
       }
     } catch (error) {
-      console.warn(`Failed to read or parse summary file: ${summaryPath}`, error);
+      console.warn(
+        `Failed to read or parse summary file: ${summaryPath}`,
+        error
+      );
     }
   }
-  
+
   // Fallback to overall latest version
   const { latestVersion } = getAllVersions();
   return latestVersion;

@@ -121,7 +121,11 @@ export function getParseObject<T = ParseObject>(
  * @param parseObjectPath - Path to the object file (e.g., 'Objects/Module.json')
  * @returns true if the object exists and has production_status === 'Ready', false otherwise
  */
-export function isObjectProductionReady(objectId: string, version: string, parseObjectPath: string): boolean {
+export function isObjectProductionReady(
+  objectId: string,
+  version: string,
+  parseObjectPath: string
+): boolean {
   try {
     const objectPath = path.join(
       process.cwd(),
@@ -129,15 +133,16 @@ export function isObjectProductionReady(objectId: string, version: string, parse
       version,
       parseObjectPath
     );
-    
+
     if (!fs.existsSync(objectPath)) {
       return false;
     }
-    
-    const objects = JSON.parse(
-      fs.readFileSync(objectPath, 'utf8')
-    ) as Record<string, ParseObject>;
-    
+
+    const objects = JSON.parse(fs.readFileSync(objectPath, 'utf8')) as Record<
+      string,
+      ParseObject
+    >;
+
     const obj = objects[objectId];
     return obj && obj.production_status === 'Ready';
   } catch {
@@ -152,19 +157,21 @@ export async function generateObjectStaticPaths(
 ): Promise<StaticPathsResult[]> {
   // Extract object type from path (e.g., "Objects/Module.json" -> "Module")
   const objectType = path.basename(parseObjectPath, '.json');
-  
+
   // Load the precomputed summary for this object type
   const summaryPath = path.join(
     process.cwd(),
     'WRFrontiersDB-Data/summaries',
     `${objectType}.json`
   );
-  
+
   let objectChangeVersions: Record<string, string[]> = {};
   let summaryExists = false;
-  
+
   if (fs.existsSync(summaryPath)) {
-    objectChangeVersions = JSON.parse(fs.readFileSync(summaryPath, 'utf8')) as Record<string, string[]>;
+    objectChangeVersions = JSON.parse(
+      fs.readFileSync(summaryPath, 'utf8')
+    ) as Record<string, string[]>;
     summaryExists = true;
   } else {
     console.warn(`Summary file not found: ${summaryPath}`);
@@ -179,10 +186,13 @@ export async function generateObjectStaticPaths(
     // For each object in the summary, create paths for each version it was changed in
     for (const [objectId, versions] of Object.entries(objectChangeVersions)) {
       processedObjects.add(objectId);
-      
+
       for (const version of versions) {
         // Load the specific object to check production status if needed
-        if (prodReadyOnly && !isObjectProductionReady(objectId, version, parseObjectPath)) {
+        if (
+          prodReadyOnly &&
+          !isObjectProductionReady(objectId, version, parseObjectPath)
+        ) {
           continue;
         }
 
@@ -204,19 +214,22 @@ export async function generateObjectStaticPaths(
       latestVersion,
       parseObjectPath
     );
-    
+
     if (fs.existsSync(latestObjectPath)) {
       const allObjects = JSON.parse(
         fs.readFileSync(latestObjectPath, 'utf8')
       ) as Record<string, ParseObject>;
-      
+
       for (const [objectId, obj] of Object.entries(allObjects)) {
         if (!processedObjects.has(objectId)) {
           // Skip production filtering if needed
-          if (prodReadyOnly && (!obj.production_status || obj.production_status !== 'Ready')) {
+          if (
+            prodReadyOnly &&
+            (!obj.production_status || obj.production_status !== 'Ready')
+          ) {
             continue;
           }
-          
+
           paths.push({
             params: { id: objectId, version: latestVersion },
             props: {

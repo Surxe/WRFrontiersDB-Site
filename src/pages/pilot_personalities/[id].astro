@@ -6,7 +6,10 @@ export const prerender = false;
 const { id } = Astro.params;
 
 // Get the latest version for this pilot personality
-const latestVersion = getLatestVersionForObject(id as string, 'PilotPersonality');
+const latestVersion = getLatestVersionForObject(
+  id as string,
+  'PilotPersonality'
+);
 
 if (!latestVersion) {
   return Astro.redirect('/pilot_personalities');
