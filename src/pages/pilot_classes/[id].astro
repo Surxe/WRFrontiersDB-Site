@@ -1,0 +1,17 @@
+---
+import { getLatestVersionForObject } from '../../utils/summary';
+
+export const prerender = false;
+
+const { id } = Astro.params;
+
+// Get the latest version for this pilot class
+const latestVersion = getLatestVersionForObject(id as string, 'PilotClass');
+
+if (!latestVersion) {
+  return Astro.redirect('/pilot_classes');
+}
+
+// Redirect to the latest version
+return Astro.redirect(`/pilot_classes/${id}/${latestVersion}`);
+---

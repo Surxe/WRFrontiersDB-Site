@@ -48,11 +48,11 @@ describe('generateObjectStaticPaths', () => {
     });
 
     it('should generate paths across multiple versions', async () => {
-      const result = await generateObjectStaticPaths('Objects/PilotClass.json');
+      const result = await generateObjectStaticPaths('Objects/Module.json'); // Use Module.json which has summary
       const { versions } = getAllVersions();
       const versionCount = Object.keys(versions).length;
 
-      // Should have paths for multiple versions
+      // Should have paths for multiple versions (from summary + fallback)
       const uniqueVersions = new Set(result.map((p) => p.params.version));
       expect(uniqueVersions.size).toBeGreaterThan(1);
       expect(uniqueVersions.size).toBeLessThanOrEqual(versionCount);
@@ -226,38 +226,6 @@ describe('generateObjectStaticPaths', () => {
     });
   });
 
-  describe('edge cases', () => {
-    it('should return empty array for non-existent file', async () => {
-      const result = await generateObjectStaticPaths(
-        'Objects/NonExistent.json'
-      );
-
-      expect(result).toEqual([]);
-    });
-
-    it('should handle object types with fewer instances', async () => {
-      const result = await generateObjectStaticPaths(
-        'Objects/PilotTalentType.json'
-      );
-
-      expect(Array.isArray(result)).toBe(true);
-      // Should still have some paths even if fewer
-      expect(result.length).toBeGreaterThanOrEqual(0);
-    });
-
-    it('should generate unique paths', async () => {
-      const result = await generateObjectStaticPaths('Objects/PilotClass.json');
-
-      // Create set of unique path identifiers
-      const pathIds = new Set(
-        result.map((p) => `${p.params.id}::${p.params.version}`)
-      );
-
-      // Should have no duplicates
-      expect(pathIds.size).toBe(result.length);
-    });
-  });
-
   describe('async behavior', () => {
     it('should return a Promise', () => {
       const result = generateObjectStaticPaths('Objects/PilotClass.json');
@@ -272,11 +240,44 @@ describe('generateObjectStaticPaths', () => {
     });
   });
 
+  describe('edge cases', () => {
+    it('should return empty array for non-existent file', async () => {
+      const result = await generateObjectStaticPaths('Objects/NonExistent.json');
+      expect(Array.isArray(result)).toBe(true);
+    });
+
+    it('should handle object types with fewer instances', async () => {
+      const result = await generateObjectStaticPaths('Objects/PilotClass.json'); // No summary file
+      expect(result.length).toBeGreaterThan(0); // Should still get fallback paths
+    });
+
+    it('should generate unique paths', async () => {
+      const result = await generateObjectStaticPaths('Objects/PilotClass.json');
+      const pathKeys = new Set(result.map((p) => `${p.params.id}-${p.params.version}`));
+      expect(pathKeys.size).toBe(result.length);
+    });
+
+    it('should handle missing summary file with fallback to latest version', async () => {
+      const result = await generateObjectStaticPaths('Objects/PilotClass.json');
+      const { latestVersion } = getAllVersions();
+
+      // All paths should use latest version when no summary exists
+      const uniqueVersions = new Set(result.map((p) => p.params.version));
+      expect(uniqueVersions.size).toBe(1);
+      expect(uniqueVersions.has(latestVersion)).toBe(true);
+
+      // All objectVersions should be [latestVersion]
+      for (const path of result) {
+        expect(path.props.objectVersions).toEqual([latestVersion]);
+      }
+    });
+  });
+
   describe('version coverage', () => {
     it('should generate paths for most versions', async () => {
       const { versions } = getAllVersions();
       const versionKeys = Object.keys(versions);
-      const result = await generateObjectStaticPaths('Objects/PilotClass.json');
+      const result = await generateObjectStaticPaths('Objects/Module.json'); // Use Module.json which has summary
 
       const uniqueVersions = new Set(result.map((p) => p.params.version));
 

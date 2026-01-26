@@ -8,7 +8,8 @@
 4. **Create list page**: `src/pages/{parseObject}s.astro` (properly pluralized) using `ParseObjectList`
 5. **Create detail page**: `src/pages/{parseObject}s/[id]/[version].astro` with `getStaticPaths()`
 6. **Call** `generateObjectStaticPaths("Objects/{parseObject}.json", true)`
-7. **Add link** to homepage ([index.astro](../../src/pages/index.astro))
+7. **Create version direct page**: `src/pages/{parseObject}s/[id].astro` with `getLatestVersionForObject()`
+8. **Add link** to homepage ([index.astro](../../src/pages/index.astro))
 
 ## Working with Icons/Textures
 

@@ -24,7 +24,7 @@ interface Props {
 
 const {
   obj,
-  version,
+  version: _version,
   iconSize = 24,
   showIcon = true,
   useOnHover = false,
@@ -35,7 +35,7 @@ const {
 // Get the page reference data (localization key, icon path, hex color)
 const objRefData = getObjRefData(obj);
 
-const pageUrl = `/${obj.parseObjectUrl}/${obj.id}/${version}`;
+const pageUrl = `/${obj.parseObjectUrl}/${obj.id}`;
 
 // Validate hover
 if (useOnHover && !objRefData.hoverText) {
