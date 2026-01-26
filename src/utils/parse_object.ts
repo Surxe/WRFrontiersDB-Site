@@ -130,55 +130,100 @@ export async function generateObjectStaticPaths(
   );
   
   let objectChangeVersions: Record<string, string[]> = {};
+  let summaryExists = false;
+  
   if (fs.existsSync(summaryPath)) {
     objectChangeVersions = JSON.parse(fs.readFileSync(summaryPath, 'utf8')) as Record<string, string[]>;
+    summaryExists = true;
   } else {
     console.warn(`Summary file not found: ${summaryPath}`);
-    return [];
   }
 
   const paths: StaticPathsResult[] = [];
+  const { latestVersion } = getAllVersions();
+  const processedObjects = new Set<string>();
 
-  // For each object in the summary, create paths for each version it was changed in
-  for (const [objectId, versions] of Object.entries(objectChangeVersions)) {
-    for (const version of versions) {
-      // Load the specific object to check production status if needed
-      if (prodReadyOnly) {
-        try {
-          const objectPath = path.join(
-            process.cwd(),
-            'WRFrontiersDB-Data/archive',
-            version,
-            parseObjectPath
-          );
-          
-          if (fs.existsSync(objectPath)) {
-            const objects = JSON.parse(
-              fs.readFileSync(objectPath, 'utf8')
-            ) as Record<string, ParseObject>;
+  // Process objects from summary file
+  if (summaryExists) {
+    // For each object in the summary, create paths for each version it was changed in
+    for (const [objectId, versions] of Object.entries(objectChangeVersions)) {
+      processedObjects.add(objectId);
+      
+      for (const version of versions) {
+        // Load the specific object to check production status if needed
+        if (prodReadyOnly) {
+          try {
+            const objectPath = path.join(
+              process.cwd(),
+              'WRFontiersDB-Data/archive',
+              version,
+              parseObjectPath
+            );
             
-            const obj = objects[objectId];
-            if (!obj || (!obj.production_status || obj.production_status !== 'Ready')) {
-              continue; // Skip non-production ready objects
+            if (fs.existsSync(objectPath)) {
+              const objects = JSON.parse(
+                fs.readFileSync(objectPath, 'utf8')
+              ) as Record<string, ParseObject>;
+              
+              const obj = objects[objectId];
+              if (!obj || (!obj.production_status || obj.production_status !== 'Ready')) {
+                continue; // Skip non-production ready objects
+              }
+            } else {
+              continue; // Skip if object file doesn't exist for this version
             }
-          } else {
-            continue; // Skip if object file doesn't exist for this version
+          } catch {
+            console.warn(
+              `Could not load object ${objectId} for version ${version} from ${parseObjectPath}`
+            );
+            continue;
           }
-        } catch {
-          console.warn(
-            `Could not load object ${objectId} for version ${version} from ${parseObjectPath}`
-          );
-          continue;
+        }
+
+        paths.push({
+          params: { id: objectId, version },
+          props: {
+            objectVersions: versions, // Use the change versions from summary
+          },
+        });
+      }
+    }
+  }
+
+  // Process objects not in summary file (fallback to latest version only)
+  try {
+    const latestObjectPath = path.join(
+      process.cwd(),
+      'WRFrontiersDB-Data/archive',
+      latestVersion,
+      parseObjectPath
+    );
+    
+    if (fs.existsSync(latestObjectPath)) {
+      const allObjects = JSON.parse(
+        fs.readFileSync(latestObjectPath, 'utf8')
+      ) as Record<string, ParseObject>;
+      
+      for (const [objectId, obj] of Object.entries(allObjects)) {
+        if (!processedObjects.has(objectId)) {
+          // Skip production filtering if needed
+          if (prodReadyOnly && (!obj.production_status || obj.production_status !== 'Ready')) {
+            continue;
+          }
+          
+          paths.push({
+            params: { id: objectId, version: latestVersion },
+            props: {
+              objectVersions: [latestVersion], // Only latest version
+            },
+          });
         }
       }
-
-      paths.push({
-        params: { id: objectId, version },
-        props: {
-          objectVersions: versions, // Use the change versions from summary
-        },
-      });
     }
+  } catch (error) {
+    console.warn(
+      `Could not load objects from latest version ${latestVersion} for fallback processing: ${error}`
+    );
   }
 
   return paths;
