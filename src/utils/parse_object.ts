@@ -114,6 +114,37 @@ export function getParseObject<T = ParseObject>(
   return parseObject as T;
 }
 
+/**
+ * Checks if an object is production ready
+ * @param objectId - The object ID to check
+ * @param version - The version to check in
+ * @param parseObjectPath - Path to the object file (e.g., 'Objects/Module.json')
+ * @returns true if the object exists and has production_status === 'Ready', false otherwise
+ */
+export function isObjectProductionReady(objectId: string, version: string, parseObjectPath: string): boolean {
+  try {
+    const objectPath = path.join(
+      process.cwd(),
+      'WRFrontiersDB-Data/archive',
+      version,
+      parseObjectPath
+    );
+    
+    if (!fs.existsSync(objectPath)) {
+      return false;
+    }
+    
+    const objects = JSON.parse(
+      fs.readFileSync(objectPath, 'utf8')
+    ) as Record<string, ParseObject>;
+    
+    const obj = objects[objectId];
+    return obj && obj.production_status === 'Ready';
+  } catch {
+    return false;
+  }
+}
+
 // Generate static paths for all parse objects across versions
 export async function generateObjectStaticPaths(
   parseObjectPath: string = 'Objects/Module.json',
@@ -151,33 +182,8 @@ export async function generateObjectStaticPaths(
       
       for (const version of versions) {
         // Load the specific object to check production status if needed
-        if (prodReadyOnly) {
-          try {
-            const objectPath = path.join(
-              process.cwd(),
-              'WRFontiersDB-Data/archive',
-              version,
-              parseObjectPath
-            );
-            
-            if (fs.existsSync(objectPath)) {
-              const objects = JSON.parse(
-                fs.readFileSync(objectPath, 'utf8')
-              ) as Record<string, ParseObject>;
-              
-              const obj = objects[objectId];
-              if (!obj || (!obj.production_status || obj.production_status !== 'Ready')) {
-                continue; // Skip non-production ready objects
-              }
-            } else {
-              continue; // Skip if object file doesn't exist for this version
-            }
-          } catch {
-            console.warn(
-              `Could not load object ${objectId} for version ${version} from ${parseObjectPath}`
-            );
-            continue;
-          }
+        if (prodReadyOnly && !isObjectProductionReady(objectId, version, parseObjectPath)) {
+          continue;
         }
 
         paths.push({
