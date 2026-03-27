@@ -1,5 +1,5 @@
-import path from 'path';
-import fs from 'fs';
+import * as path from 'path';
+import * as fs from 'fs';
 import { getAllVersions } from './parse_object';
 
 /**
@@ -9,7 +9,7 @@ import { getAllVersions } from './parse_object';
  */
 export function getSummaryPath(objectType: string): string {
   return path.join(
-    import.meta.env.PWD,
+    process.cwd(),
     'WRFrontiersDB-Data/summaries',
     `${objectType}.json`
   );

@@ -26,11 +26,12 @@ export function enrichPilotTalents(
     for (const pilot of Object.values(pilots)) {
       let found = false;
 
-      // Check each level in the pilot
-      for (const [levelIndex, levelEntry] of pilot.levels.entries()) {
-        if (levelEntry.talents.includes(talentId)) {
-          levelFound = levelIndex + 1; // Levels are 1-based
-          talentTypeId = levelEntry.talent_type_id;
+      // Check each level in pilot
+      for (let i = 0; i < pilot.levels.length; i++) {
+        const levelEntry = pilot.levels[i];
+        if (levelEntry.talents_refs.includes(talentId)) {
+          levelFound = i + 1; // Levels are 1-based
+          talentTypeId = levelEntry.talent_type_ref;
           found = true;
           break;
         }
@@ -41,7 +42,7 @@ export function enrichPilotTalents(
 
     enriched[talentId] = {
       ...talent,
-      talent_type_id: talentTypeId,
+      talent_type_ref: talentTypeId,
       level: levelFound,
     };
   }

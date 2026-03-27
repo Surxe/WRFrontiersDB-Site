@@ -3,6 +3,8 @@ import type { ParseObject } from './parse_object';
 
 export const MODULE_URL = 'modules';
 export const MODULESTAT_URL = 'module_stats';
+export const MODULETYPE_URL = 'module_types';
+export const MODULECATEGORY_URL = 'module_categories';
 
 export interface ModuleStat extends ParseObject {
   parseObjectClass: 'ModuleStat';
@@ -24,7 +26,7 @@ export interface ModuleStat extends ParseObject {
 export interface ModuleRarity extends ParseObject {
   parseObjectClass: 'ModuleRarity';
   id: string;
-  rarity_id: string;
+  rarity_ref: string;
   sort_order: number;
 }
 
@@ -34,29 +36,54 @@ export interface Module extends ParseObject {
   parseObjectUrl: typeof MODULE_URL;
   production_status?: string;
   inventory_icon_path: string;
-  module_rarity_id: string;
+  module_rarity_ref: string;
   character_module_mounts: Array<{
-    character_module_id: string;
+    character_module_ref: string;
     mount: string;
   }>;
-  module_tags_ids?: string[];
+  module_tags_refs?: string[];
   name?: LocalizationKey; // TODO InvariantString support
   description?: LocalizationKey;
   text_tags?: LocalizationKey[];
   module_scalars: {
     default_scalars?: Record<string, unknown>;
-    primary_stat_id?: string;
-    secondary_stat_id?: string;
+    primary_stat_ref?: string;
+    secondary_stat_ref?: string;
     levels?: {
       constants: Record<string, unknown>;
-      variables?: Array<Record<string, unknown>>;
+      variables?: Array<{
+        upgrade_cost_ref?: string;
+        scrap_rewards_refs?: string[];
+        [key: string]: unknown;
+      }>;
     };
     module_name?: string;
   };
   abilities_scalars?: unknown; // TODO
-  faction_id: string;
-  module_classes_ids: string[];
-  module_stats_table_id?: string;
-  module_type_id: string;
-  module_socket_type_ids?: string[];
+  faction_ref: string;
+  module_classes_refs?: string[];
+  module_stats_table_ref?: string;
+  module_type_ref: string;
+  module_socket_type_refs?: string[];
+}
+
+export interface ModuleCategory extends ParseObject {
+  parseObjectClass: 'ModuleCategory';
+  parseObjectUrl: typeof MODULECATEGORY_URL;
+  id: string;
+  name: LocalizationKey;
+  blueprint_name: LocalizationKey;
+  tag_color?: string;
+  tag_background_color?: string;
+}
+
+export interface ModuleType extends ParseObject {
+  parseObjectClass: 'ModuleType';
+  parseObjectUrl: typeof MODULETYPE_URL;
+  id: string;
+  module_category_ref: string;
+  name: LocalizationKey;
+  blueprint_name: LocalizationKey;
+  tag_color?: string;
+  tag_background_color?: string;
 }

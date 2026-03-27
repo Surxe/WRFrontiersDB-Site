@@ -1,10 +1,11 @@
-import fs from 'fs';
-import path from 'path';
+import * as fs from 'fs';
+import * as path from 'path';
 import type { VersionsData, VersionInfo } from '../types/version';
 import type { StaticPathsResult, ParseObject } from '../types/parse_object';
 import * as moduleTypes from '../types/module';
 import * as pilotTypes from '../types/pilot';
 import * as rarityTypes from '../types/rarity';
+import { extractIdFromRef } from './object_reference';
 
 // Merge all exported constants from type modules
 const allTypeExports = {
@@ -12,6 +13,41 @@ const allTypeExports = {
   ...pilotTypes,
   ...rarityTypes,
 };
+
+/**
+ * Convert object references to legacy IDs for backward compatibility
+ * If a string is in OBJID_Class::id format, extract the id
+ * Otherwise return the string as-is
+ */
+function convertRefToId(ref: string): string {
+  if (ref.includes('::')) {
+    return extractIdFromRef(ref);
+  }
+  return ref;
+}
+
+/**
+ * Recursively convert all object references in an object to legacy IDs
+ */
+function convertRefsToIds(obj: unknown): unknown {
+  if (typeof obj === 'string') {
+    return convertRefToId(obj);
+  }
+  
+  if (Array.isArray(obj)) {
+    return obj.map(convertRefsToIds);
+  }
+  
+  if (obj && typeof obj === 'object') {
+    const result: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(obj)) {
+      result[key] = convertRefsToIds(value);
+    }
+    return result;
+  }
+  
+  return obj;
+}
 
 /**
  * Load parse objects from a specific version
@@ -47,8 +83,11 @@ export function getParseObjects<T = ParseObject>(
       // Add parseObjectClass and parseObjectUrl to each object
       const objectsWithType: Record<string, T> = {};
       for (const [key, value] of Object.entries(data)) {
+        // Convert object references to legacy IDs for backward compatibility
+        const convertedValue = convertRefsToIds(value);
+        
         objectsWithType[key] = {
-          ...(value as object),
+          ...(convertedValue as object),
           parseObjectClass,
           parseObjectUrl,
         } as T;
