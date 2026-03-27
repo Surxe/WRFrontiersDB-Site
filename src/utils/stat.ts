@@ -1,6 +1,7 @@
 import type { ModuleStat } from '../types/module';
 import type { StatValueChoices } from '../types/stat';
 import { getDefaultString } from './localization';
+import { resolveObjectRef } from './object_resolver';
 
 /**
  * Builds StatValueChoices from a stats array and ModuleStat objects.
@@ -22,7 +23,7 @@ export function getStatValueChoices(
   }
 
   stats.forEach(({ stat_ref, value }) => {
-    const statObject = moduleStats[stat_ref];
+    const statObject = resolveObjectRef(stat_ref, moduleStats);
     if (statObject) {
       // Get unit pattern (default to {Amount}{Unit} for older versions)
       const unitPattern =

@@ -9,9 +9,11 @@ import ParseObjectPage from '../../../components/ParseObjectPage.astro';
 import {
   generateObjectStaticPaths,
   getParseObject,
+  getParseObjects,
   getVersionsData,
 } from '../../../utils/parse_object';
 import { getDefaultString } from '../../../utils/localization';
+import { resolveObjectRef } from '../../../utils/object_resolver';
 import ObjRef from '../../../components/obj_ref/ObjRef.astro';
 
 export async function getStaticPaths() {
@@ -22,16 +24,10 @@ const { id, version } = Astro.params;
 const { objectVersions } = Astro.props;
 
 const module = getParseObject<Module>(id, version, 'Objects/Module.json');
-const moduleRarity = getParseObject<ModuleRarity>(
-  module.module_rarity_id,
-  version,
-  'Objects/ModuleRarity.json'
-);
-const rarity = getParseObject<Rarity>(
-  moduleRarity.rarity_id,
-  version,
-  'Objects/Rarity.json'
-);
+const allModuleRarities = getParseObjects<ModuleRarity>('Objects/ModuleRarity.json', version);
+const moduleRarity = resolveObjectRef(module.module_rarity_ref, allModuleRarities);
+const allRarities = getParseObjects<Rarity>('Objects/Rarity.json', version);
+const rarity = moduleRarity ? resolveObjectRef(moduleRarity.rarity_ref, allRarities) : undefined;
 
 if (!module.name) {
   throw new Error(`Module with id ${id} is missing name. 
@@ -70,7 +66,7 @@ const defaultName = getDefaultString(module.name) || module.id;
   <p>Language: <span id="current-lang">en</span></p>
   <p>
     Rarity:
-    <ObjRef obj={rarity} version={version} />
+    {rarity ? <ObjRef obj={rarity} version={version} /> : 'Unknown'}
   </p>
 
   <div id="stats">stats</div>
