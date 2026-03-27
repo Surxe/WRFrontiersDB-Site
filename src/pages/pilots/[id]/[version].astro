@@ -22,6 +22,7 @@ import {
 import { getDefaultString } from '../../../utils/localization';
 import { getStatValueChoices } from '../../../utils/stat';
 import { resolveObjectRef } from '../../../utils/object_resolver';
+import { extractIdFromRef } from '../../../utils/object_reference';
 import type { ModuleStat } from '../../../types/module';
 import ObjRef from '../../../components/obj_ref/ObjRef.astro';
 
@@ -52,7 +53,7 @@ const moduleStats = getParseObjects<ModuleStat>(
 );
 
 const rarity = pilotTypes && pilot.pilot_type_ref ? 
-  resolveObjectRef(pilotTypes[pilot.pilot_type_ref].rarity_ref, getParseObjects<Rarity>('Objects/Rarity.json', version)) : undefined;
+  resolveObjectRef(pilotTypes[extractIdFromRef(pilot.pilot_type_ref)].rarity_ref, getParseObjects<Rarity>('Objects/Rarity.json', version)) : undefined;
 const pilotClass = pilot.pilot_class_ref ? 
   resolveObjectRef(pilot.pilot_class_ref, getParseObjects<PilotClass>('Objects/PilotClass.json', version)) : undefined;
 const pilotPersonality = pilot.personality_ref ? 
@@ -118,7 +119,7 @@ const defaultName = getDefaultString(pilot.first_name) || pilot.id;
             <td>{index + 1}</td>
             <td>
               <ObjRef
-                obj={pilotTalentTypes[level.talent_type_ref]}
+                obj={pilotTalentTypes[extractIdFromRef(level.talent_type_ref)]}
                 version={version}
               />
             </td>
@@ -127,11 +128,11 @@ const defaultName = getDefaultString(pilot.first_name) || pilot.id;
                 {level.talents_refs?.map((talent_ref) => (
                   <span>
                     <ObjRef
-                      obj={pilotTalents[talent_ref]}
+                      obj={pilotTalents[extractIdFromRef(talent_ref)]}
                       version={version}
                       useOnHover={true}
                       onHoverStatChoices={getStatValueChoices(
-                        pilotTalents[talent_ref].stats,
+                        pilotTalents[extractIdFromRef(talent_ref)].stats,
                         moduleStats
                       )}
                     />
