@@ -1,6 +1,6 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
-import vercelStatic from '@astrojs/vercel/static';
+import vercelStatic from '@astrojs/vercel';
 import process from 'node:process';
 
 // Determine base path based on deployment environment
