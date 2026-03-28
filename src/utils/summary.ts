@@ -16,10 +16,20 @@ export function getSummaryPath(objectType: string): string {
 }
 
 /**
- * Gets the latest version for an object, falling back to the overall latest version if not found
+ * Gets the earliest version from the versions config
+ * @returns The earliest version string (first version in chronological order)
+ */
+export function getEarliestVersion(): string {
+  const { versions } = getAllVersions();
+  const versionKeys = Object.keys(versions);
+  return versionKeys[versionKeys.length - 1]; // Last item is earliest since they're sorted DESC
+}
+
+/**
+ * Gets the latest version for an object, falling back to the earliest version if not found
  * @param objectId - The object ID
  * @param objectType - The object type (e.g., 'Module', 'Pilot', 'Ability')
- * @returns The latest version string (never null)
+ * @returns The version string (never null)
  */
 export function getLatestVersionForObject(
   objectId: string,
@@ -44,9 +54,13 @@ export function getLatestVersionForObject(
         error
       );
     }
+  } else {
+    // Summary file doesn't exist, use earliest version for objects without summary
+    console.warn(
+      `Summary file not found for ${objectType}, using earliest version as fallback`
+    );
   }
 
-  // Fallback to overall latest version
-  const { latestVersion } = getAllVersions();
-  return latestVersion;
+  // Fallback to earliest version when summary file doesn't exist
+  return getEarliestVersion();
 }

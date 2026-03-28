@@ -178,7 +178,6 @@ export async function generateObjectStaticPaths(
   }
 
   const paths: StaticPathsResult[] = [];
-  const { latestVersion } = getAllVersions();
   const processedObjects = new Set<string>();
 
   // Process objects from summary file
@@ -206,21 +205,25 @@ export async function generateObjectStaticPaths(
     }
   }
 
-  // Process objects not in summary file (fallback to latest version only)
+  // Process objects not in summary file (fallback to earliest version only)
   try {
-    const latestObjectPath = path.join(
+    const { versions } = getAllVersions();
+    const earliestVersion = Object.keys(versions)[Object.keys(versions).length - 1];
+    
+    // Generate paths for earliest version when summary doesn't exist
+    const earliestObjectPath = path.join(
       process.cwd(),
       'WRFrontiersDB-Data/archive',
-      latestVersion,
+      earliestVersion,
       parseObjectPath
     );
 
-    if (fs.existsSync(latestObjectPath)) {
-      const allObjects = JSON.parse(
-        fs.readFileSync(latestObjectPath, 'utf8')
+    if (fs.existsSync(earliestObjectPath)) {
+      const earliestObjects = JSON.parse(
+        fs.readFileSync(earliestObjectPath, 'utf8')
       ) as Record<string, ParseObject>;
 
-      for (const [objectId, obj] of Object.entries(allObjects)) {
+      for (const [objectId, obj] of Object.entries(earliestObjects)) {
         if (!processedObjects.has(objectId)) {
           // Skip production filtering if needed
           if (
@@ -231,9 +234,9 @@ export async function generateObjectStaticPaths(
           }
 
           paths.push({
-            params: { id: objectId, version: latestVersion },
+            params: { id: objectId, version: earliestVersion },
             props: {
-              objectVersions: [latestVersion], // Only latest version
+              objectVersions: [earliestVersion], // Only earliest version
             },
           });
         }
@@ -241,7 +244,7 @@ export async function generateObjectStaticPaths(
     }
   } catch (error) {
     console.warn(
-      `Could not load objects from latest version ${latestVersion} for fallback processing: ${error}`
+      `Could not load objects from earliest version for fallback processing: ${error}`
     );
   }
 
@@ -306,6 +309,38 @@ export function generateObjectListStaticPaths(
     }
   }
 
-  // Fallback: return empty array if summary file doesn't exist
+  // Fallback: generate paths from data file when summary doesn't exist
+  console.warn(
+    `Summary file not found for ${objectType}, generating paths from data file using earliest version`
+  );
+  
+  const { versions } = getAllVersions();
+  const earliestVersion = Object.keys(versions)[Object.keys(versions).length - 1];
+  const objectPath = path.join(
+    process.cwd(),
+    'WRFrontiersDB-Data/archive',
+    earliestVersion,
+    `Objects/${objectType}.json`
+  );
+
+  if (fs.existsSync(objectPath)) {
+    try {
+      const allObjects = JSON.parse(
+        fs.readFileSync(objectPath, 'utf8')
+      ) as Record<string, ParseObject>;
+      
+      // Generate paths for all object IDs from the data file
+      return Object.keys(allObjects).map((id) => ({
+        params: { id },
+      }));
+    } catch (error) {
+      console.warn(
+        `Failed to read or parse data file: ${objectPath}`,
+        error
+      );
+    }
+  }
+
+  // Final fallback: return empty array
   return [];
 }
