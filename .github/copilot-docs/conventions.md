@@ -50,7 +50,28 @@ Example: [modules/[id]/[version].astro](../../src/pages/modules/[id]/[version].a
 - **Component Names**: PascalCase (e.g., `ParseObjectList.astro`)
 - **Test Files**: `{fileName}/{functionOrInterfaceName}.ts` in `tests/` subdirectories
 
-# Code Practices
+### Detail Page Redirect Logic
+
+When summary files are missing or incomplete, the system falls back to the earliest game version available:
+
+1. **Fallback Version Selection**: Uses `getEarliestVersion()` from `summary.ts` to get the first version in chronological order (e.g., "2025-03-04" Launch version)
+
+2. **Static Path Generation**: The `generateObjectStaticPaths()` function in `parse_object.ts` handles both cases:
+   - **With summary file**: Processes objects from summary file using their full version history
+   - **Without summary file**: Processes all objects from the earliest version data file, ensuring all objects have accessible detail pages
+
+3. **Implementation Details**:
+   - **Summary file check**: `fs.existsSync(summaryPath)` determines if summary exists
+   - **Fallback processing**: When summary doesn't exist, reads from earliest version data file
+   - **Path generation**: Creates static paths for all valid objects regardless of summary completeness
+   - **Error handling**: Proper logging for debugging missing data files
+
+This ensures that:
+- Objects with complete summary data get proper version-specific detail pages
+- Objects without summary data still get functional detail pages using the earliest available version
+- No 404 errors occur due to missing static paths
+
+**Example**: Pilot personalities without complete summary files redirect to "Launch (2025-03-04)" version, the earliest game version available.
 
 - **Type Safety**: Use TypeScript interfaces for all data structures
 - **IIFE Functions**: Avoid at all costs using IIFE functions
