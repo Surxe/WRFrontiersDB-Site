@@ -1,26 +1,28 @@
 # Object References: `ref` vs `id`
 
 ## Convention
-- **`ref`**: External object reference (URLs, components) ✅
-- **`id`**: Internal database identifier ❌
+- **`ref`**: Internal database reference (identifying which class an object belongs to) ✅
+- **`id`**: External identifier (URLs, components) ❌
 
 ## Usage
 
+Use id wherever possible. The data is stored as a reference, so when its accessed, it should be converted to an id using utility functions.
+
 ### Routes
 ```typescript
-const { ref } = Astro.params; // ✅
+const { id } = Astro.params; // ✅
 ```
 
 ### Components
 ```typescript
 interface Props {
-  ref: string; // ✅
+  id: string; // ✅
 }
 ```
 
 ### Lookups
 ```typescript
-const object = objects[ref]; // ✅
+const object = objects[id]; // ✅
 ```
 
 ## Files to Fix
