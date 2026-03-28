@@ -55,7 +55,12 @@ const moduleStats = getParseObjects<ModuleStat>(
 // because level 5 only has one talent slot
 const getTalentData = (levelIdx: number, talentIdx: number) => {
   const rawTalentId = levelIdx === 4 ? level.talents_refs[0] : level.talents_refs[talentIdx];
+  
   const talent = pilotTalents[rawTalentId];
+  if (!talent) {
+    throw new Error(`Talent "${rawTalentId}" not found in pilotTalents. Available: ${Object.keys(pilotTalents).slice(0, 10).join(', ')}`);
+  }
+  
   const statValueChoices = getStatValueChoices(talent.stats, moduleStats);
   return { talent, statValueChoices };
 };
