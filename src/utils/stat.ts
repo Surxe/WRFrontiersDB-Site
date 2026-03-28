@@ -26,9 +26,13 @@ export function getStatValueChoices(
   stats.forEach(({ stat_ref, value }) => {
     const statObject = resolveObjectRef(stat_ref, moduleStats);
     if (statObject) {
-      // Get unit pattern (default to {Amount}{Unit} for older versions)
-      const unitPattern =
-        getDefaultString(statObject.unit_pattern) || '{Amount}{Unit}';
+      // Get unit pattern (default to {Amount}{Unit} for older versions or invalid patterns)
+      let unitPattern = getDefaultString(statObject.unit_pattern) || '{Amount}{Unit}';
+  
+      // Fallback for invalid patterns that contain placeholder text
+      if (unitPattern === 'ModuleStatPattern_Default' || !unitPattern.includes('{Amount}')) {
+        unitPattern = '{Amount}{Unit}';
+      }
 
       // Apply unit scaler (default to 1.0)
       const scaler = statObject.unit_scaler ?? 1;
