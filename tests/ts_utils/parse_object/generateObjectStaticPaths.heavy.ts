@@ -18,15 +18,15 @@ describe('generateObjectStaticPaths - heavy performance tests', () => {
   }, 30000);
 
   it('should only include Ready objects when prodReadyOnly is true', async () => {
-    const result = await generateObjectStaticPaths(
-      'Objects/Module.json',
-      true
-    );
+    const result = await generateObjectStaticPaths('Objects/Module.json', true);
 
     // Check a few paths to verify they're Ready
     for (let i = 0; i < Math.min(5, result.length); i++) {
       const path = result[i];
-      const module = getParseObjects('Objects/Module.json', path.params.version)[path.params.id];
+      const module = getParseObjects(
+        'Objects/Module.json',
+        path.params.version
+      )[path.params.id];
       expect(module.production_status).toBe('Ready');
     }
   }, 30000);
@@ -37,8 +37,7 @@ describe('generateObjectStaticPaths - heavy performance tests', () => {
 
     // Find a module without production_status or with non-Ready status
     const nonReadyModule = Object.entries(allModules).find(
-      ([_, mod]) =>
-        !mod.production_status || mod.production_status !== 'Ready'
+      ([_, mod]) => !mod.production_status || mod.production_status !== 'Ready'
     );
 
     if (nonReadyModule) {
@@ -49,7 +48,9 @@ describe('generateObjectStaticPaths - heavy performance tests', () => {
 
       // The non-ready module should not be in the results
       const hasNonReady = result.some(
-        path => path.params.id === nonReadyModule[0] && path.params.version === testVersion
+        (path) =>
+          path.params.id === nonReadyModule[0] &&
+          path.params.version === testVersion
       );
       expect(hasNonReady).toBe(false);
     } else {

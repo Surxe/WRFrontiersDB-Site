@@ -103,7 +103,9 @@ describe('getStatValueChoices', () => {
   });
 
   it('should use default values when properties are undefined', () => {
-    const stats = [{ stat_ref: 'OBJID_ModuleStat::STAT_NO_SCALER.0', value: 10 }];
+    const stats = [
+      { stat_ref: 'OBJID_ModuleStat::STAT_NO_SCALER.0', value: 10 },
+    ];
 
     const result = getStatValueChoices(stats, mockModuleStats);
 

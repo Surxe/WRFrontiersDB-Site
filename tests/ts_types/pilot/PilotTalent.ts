@@ -323,7 +323,10 @@ describe('PilotTalent interface', () => {
                 );
 
                 if (
-                  Object.prototype.hasOwnProperty.call(selector, 'module_tags_refs')
+                  Object.prototype.hasOwnProperty.call(
+                    selector,
+                    'module_tags_refs'
+                  )
                 ) {
                   expect(Array.isArray(selector.module_tags_refs)).toBe(true);
                   selector.module_tags_refs.forEach((tag: unknown) => {
@@ -346,18 +349,22 @@ describe('PilotTalent interface', () => {
               Object.prototype.hasOwnProperty.call(buff, 'module_tag_selector')
             ) {
               expect(buff.module_tag_selector).toHaveProperty('list_operator');
-              expect(buff.module_tag_selector).toHaveProperty('module_tags_refs');
+              expect(buff.module_tag_selector).toHaveProperty(
+                'module_tags_refs'
+              );
               expect(typeof buff.module_tag_selector.list_operator).toBe(
                 'string'
               );
-              expect(Array.isArray(buff.module_tag_selector.module_tags_refs)).toBe(
-                true
-              );
+              expect(
+                Array.isArray(buff.module_tag_selector.module_tags_refs)
+              ).toBe(true);
 
-              buff.module_tag_selector.module_tags_refs.forEach((tag: unknown) => {
-                expect(tag).toHaveProperty('module_tag_ref');
-                expect(typeof tag.module_tag_ref).toBe('string');
-              });
+              buff.module_tag_selector.module_tags_refs.forEach(
+                (tag: unknown) => {
+                  expect(tag).toHaveProperty('module_tag_ref');
+                  expect(typeof tag.module_tag_ref).toBe('string');
+                }
+              );
             }
           });
         }

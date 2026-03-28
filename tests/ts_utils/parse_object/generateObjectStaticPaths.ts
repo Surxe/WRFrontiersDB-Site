@@ -1,9 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { generateObjectStaticPaths } from '../../../src/utils/parse_object';
-import {
-  getParseObjects,
-  getAllVersions,
-} from '../../../src/utils/parse_object';
+import { getAllVersions } from '../../../src/utils/parse_object';
 
 describe('generateObjectStaticPaths', () => {
   describe('basic functionality', () => {

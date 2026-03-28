@@ -6,7 +6,7 @@ import type { Module } from '../../../src/types/module';
 describe('Module interface', () => {
   let modules: Record<string, unknown>;
 
-let moduleArray: Module[];
+  let moduleArray: Module[];
 
   // Load real data from the latest version
   const archiveDir = path.join(process.cwd(), 'WRFrontiersDB-Data', 'archive');
@@ -19,7 +19,10 @@ let moduleArray: Module[];
     'Module.json'
   );
 
-  modules = JSON.parse(fs.readFileSync(modulePath, 'utf8')) as Record<string, Module>;
+  modules = JSON.parse(fs.readFileSync(modulePath, 'utf8')) as Record<
+    string,
+    Module
+  >;
   moduleArray = Object.values(modules);
 
   describe('Required fields', () => {
@@ -164,7 +167,9 @@ let moduleArray: Module[];
 
     it('should have at least one object with "module_socket_type_refs" field, but not all', () => {
       const withSocketTypes = moduleArray.filter(
-        (m) => Array.isArray(m.module_socket_type_refs) && m.module_socket_type_refs.length > 0
+        (m) =>
+          Array.isArray(m.module_socket_type_refs) &&
+          m.module_socket_type_refs.length > 0
       );
       expect(withSocketTypes.length).toBeGreaterThan(0);
       expect(withSocketTypes.length).toBeLessThan(moduleArray.length);
