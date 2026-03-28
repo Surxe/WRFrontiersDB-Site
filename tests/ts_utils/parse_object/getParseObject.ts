@@ -117,7 +117,7 @@ describe('getParseObject', () => {
       expect(result.inventory_icon_path).toBe(
         expectedModule.inventory_icon_path
       );
-      expect(result.module_rarity_id).toBe(expectedModule.module_rarity_id);
+      expect(result.module_rarity_ref).toBe(expectedModule.module_rarity_ref);
       expect(result.parseObjectClass).toBe('Module');
     });
   });
@@ -182,7 +182,7 @@ describe('getParseObject', () => {
 
       // TypeScript should infer Module type
       expect(result.inventory_icon_path).toBeDefined();
-      expect(result.module_rarity_id).toBeDefined();
+      expect(result.module_rarity_ref).toBeDefined();
     });
 
     it('should work with Pilot generic type', () => {
@@ -200,7 +200,7 @@ describe('getParseObject', () => {
 
       // TypeScript should infer Pilot type
       expect(result.first_name).toBeDefined();
-      expect(result.pilot_type_id).toBeDefined();
+      expect(result.pilot_type_ref).toBeDefined();
     });
 
     it('should work without explicit generic type', () => {

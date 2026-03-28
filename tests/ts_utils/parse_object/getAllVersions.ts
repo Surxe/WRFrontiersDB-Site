@@ -67,7 +67,7 @@ describe('getAllVersions', () => {
     const result = getAllVersions();
 
     const versionKeys = Object.keys(result.versions);
-    const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+    const datePattern = /^\d{4}-\d{2}-\d{2}(?:-\d+)?$/; // Accept YYYY-MM-DD or YYYY-MM-DD-N format
 
     // Check first few versions to verify format
     for (let i = 0; i < Math.min(5, versionKeys.length); i++) {

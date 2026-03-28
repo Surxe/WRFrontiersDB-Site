@@ -236,16 +236,16 @@ describe('PilotTalent interface', () => {
       pilotTalentArray.forEach((talent) => {
         expect(Array.isArray(talent.stats)).toBe(true);
         talent.stats.forEach((stat: unknown) => {
-          expect(stat).toHaveProperty('stat_id');
+          expect(stat).toHaveProperty('stat_ref');
           expect(stat).toHaveProperty('value');
-          expect(typeof stat.stat_id).toBe('string');
+          expect(typeof stat.stat_ref).toBe('string');
           expect(typeof stat.value).toBe('number');
         });
       });
     });
 
     it('should not have extra fields in stats objects', () => {
-      const allowedStatFields = new Set(['stat_id', 'value']);
+      const allowedStatFields = new Set(['stat_ref', 'value']);
 
       pilotTalentArray.forEach((talent) => {
         talent.stats.forEach((stat: unknown) => {
@@ -323,12 +323,12 @@ describe('PilotTalent interface', () => {
                 );
 
                 if (
-                  Object.prototype.hasOwnProperty.call(selector, 'module_tags')
+                  Object.prototype.hasOwnProperty.call(selector, 'module_tags_refs')
                 ) {
-                  expect(Array.isArray(selector.module_tags)).toBe(true);
-                  selector.module_tags.forEach((tag: unknown) => {
-                    expect(tag).toHaveProperty('module_tag_id');
-                    expect(typeof tag.module_tag_id).toBe('string');
+                  expect(Array.isArray(selector.module_tags_refs)).toBe(true);
+                  selector.module_tags_refs.forEach((tag: unknown) => {
+                    expect(tag).toHaveProperty('module_tag_ref');
+                    expect(typeof tag.module_tag_ref).toBe('string');
                   });
                 }
               });
@@ -346,17 +346,17 @@ describe('PilotTalent interface', () => {
               Object.prototype.hasOwnProperty.call(buff, 'module_tag_selector')
             ) {
               expect(buff.module_tag_selector).toHaveProperty('list_operator');
-              expect(buff.module_tag_selector).toHaveProperty('module_tags');
+              expect(buff.module_tag_selector).toHaveProperty('module_tags_refs');
               expect(typeof buff.module_tag_selector.list_operator).toBe(
                 'string'
               );
-              expect(Array.isArray(buff.module_tag_selector.module_tags)).toBe(
+              expect(Array.isArray(buff.module_tag_selector.module_tags_refs)).toBe(
                 true
               );
 
-              buff.module_tag_selector.module_tags.forEach((tag: unknown) => {
-                expect(tag).toHaveProperty('module_tag_id');
-                expect(typeof tag.module_tag_id).toBe('string');
+              buff.module_tag_selector.module_tags_refs.forEach((tag: unknown) => {
+                expect(tag).toHaveProperty('module_tag_ref');
+                expect(typeof tag.module_tag_ref).toBe('string');
               });
             }
           });

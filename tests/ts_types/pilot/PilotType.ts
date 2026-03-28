@@ -30,8 +30,8 @@ describe('PilotType interface', () => {
 
     it('should have "rarity_id" field in every object', () => {
       pilotTypeArray.forEach((pilotType) => {
-        expect(pilotType).toHaveProperty('rarity_id');
-        expect(typeof pilotType.rarity_id).toBe('string');
+        expect(pilotType).toHaveProperty('rarity_ref');
+        expect(typeof pilotType.rarity_ref).toBe('string');
       });
     });
 
@@ -49,8 +49,8 @@ describe('PilotType interface', () => {
 
     it('should have "group_reward_id" field in every object', () => {
       pilotTypeArray.forEach((pilotType) => {
-        expect(pilotType).toHaveProperty('group_reward_id');
-        expect(typeof pilotType.group_reward_id).toBe('string');
+        expect(pilotType).toHaveProperty('group_reward_ref');
+        expect(typeof pilotType.group_reward_ref).toBe('string');
       });
     });
   });
@@ -94,9 +94,9 @@ describe('PilotType interface', () => {
     it('should only have fields defined in the interface', () => {
       const allowedFields = new Set([
         'id',
-        'rarity_id',
+        'rarity_ref',
         'name',
-        'group_reward_id',
+        'group_reward_ref',
         'has_extended_bio',
         'can_change_talents',
         'sort_order',
@@ -138,9 +138,9 @@ describe('PilotType interface', () => {
     it('should have non-empty required string fields', () => {
       pilotTypeArray.forEach((pilotType) => {
         expect(pilotType.id.length).toBeGreaterThan(0);
-        expect(pilotType.rarity_id.length).toBeGreaterThan(0);
+        expect(pilotType.rarity_ref.length).toBeGreaterThan(0);
         expect(pilotType.name.en.length).toBeGreaterThan(0);
-        expect(pilotType.group_reward_id.length).toBeGreaterThan(0);
+        expect(pilotType.group_reward_ref.length).toBeGreaterThan(0);
       });
     });
 

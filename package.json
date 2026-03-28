@@ -12,6 +12,7 @@
     "lint": "eslint . --ext .js,.ts,.astro --max-warnings 0",
     "format:check": "prettier --check \"**/*.{js,ts,astro,json,md}\"",
     "vitest": "vitest run",
+    "vitest:heavy": "set HEAVY_TESTS=1 && vitest run",
     "format:fix": "prettier --write \"**/*.{js,ts,astro,json,md}\""
   },
   "dependencies": {

@@ -42,7 +42,7 @@ export function enrichPilotTalents(
 
     enriched[talentId] = {
       ...talent,
-      talent_type_ref: talentTypeId,
+      talent_type_id: talentTypeId,
       level: levelFound,
     };
   }

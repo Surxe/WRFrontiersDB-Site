@@ -4,8 +4,8 @@ import type { ModuleStat } from '../../../src/types/module';
 
 describe('getStatValueChoices', () => {
   const mockModuleStats: Record<string, ModuleStat> = {
-    STAT_ARMOR: {
-      id: 'STAT_ARMOR',
+    'STAT_ARMOR.0': {
+      id: 'STAT_ARMOR.0',
       parseObjectClass: 'ModuleStat',
       parseObjectUrl: 'module_stats',
       stat_name: { Key: 'stat_armor', TableNamespace: 'Stats', en: 'Armor' },
@@ -22,8 +22,8 @@ describe('getStatValueChoices', () => {
       decimal_places: 0,
       more_is_better: true,
     },
-    STAT_SPEED: {
-      id: 'STAT_SPEED',
+    'STAT_SPEED.0': {
+      id: 'STAT_SPEED.0',
       parseObjectClass: 'ModuleStat',
       parseObjectUrl: 'module_stats',
       stat_name: { Key: 'stat_speed', TableNamespace: 'Stats', en: 'Speed' },
@@ -40,8 +40,8 @@ describe('getStatValueChoices', () => {
       decimal_places: 2,
       more_is_better: true,
     },
-    STAT_NO_SCALER: {
-      id: 'STAT_NO_SCALER',
+    'STAT_NO_SCALER.0': {
+      id: 'STAT_NO_SCALER.0',
       parseObjectClass: 'ModuleStat',
       parseObjectUrl: 'module_stats',
       stat_name: {
@@ -72,91 +72,87 @@ describe('getStatValueChoices', () => {
 
   it('should build StatValueChoices with scaling applied', () => {
     const stats = [
-      { stat_id: 'STAT_ARMOR', value: 0.06 },
-      { stat_id: 'STAT_SPEED', value: 5.5 },
+      { stat_ref: 'OBJID_ModuleStat::STAT_ARMOR.0', value: 0.06 },
+      { stat_ref: 'OBJID_ModuleStat::STAT_SPEED.0', value: 5.5 },
     ];
 
     const result = getStatValueChoices(stats, mockModuleStats);
 
-    expect(result).toHaveProperty('STAT_ARMOR');
-    expect(result).toHaveProperty('STAT_SPEED');
+    expect(result).toHaveProperty('STAT_ARMOR.0');
+    expect(result).toHaveProperty('STAT_SPEED.0');
 
     // Check STAT_ARMOR (0.06 * 100 = 6)
-    expect(result.STAT_ARMOR.pattern).toBe('{Amount}{Unit}');
-    expect(result.STAT_ARMOR.shortKey).toBe('ArmorBoost');
-    expect(result.STAT_ARMOR.unitName).toEqual({
+    expect(result['STAT_ARMOR.0'].pattern).toBe('{Amount}{Unit}');
+    expect(result['STAT_ARMOR.0'].shortKey).toBe('ArmorBoost');
+    expect(result['STAT_ARMOR.0'].unitName).toEqual({
       Key: 'unit_percent',
       TableNamespace: 'Units',
       en: '%',
     });
-    expect(result.STAT_ARMOR.unitExponent).toBe(1.0);
-    expect(result.STAT_ARMOR.decimalPlaces).toBe(0);
-    expect(result.STAT_ARMOR.choices[0]).toBe(6);
+    expect(result['STAT_ARMOR.0'].unitExponent).toBe(1.0);
+    expect(result['STAT_ARMOR.0'].decimalPlaces).toBe(0);
+    expect(result['STAT_ARMOR.0'].choices[0]).toBe(6);
 
     // Check STAT_SPEED (5.5 * 1 = 5.5)
-    expect(result.STAT_SPEED.pattern).toBe('{Amount} {Unit}');
-    expect(result.STAT_SPEED.shortKey).toBe('SpeedBoost');
-    expect(result.STAT_SPEED.unitName).toEqual({
-      Key: 'unit_mps',
-      TableNamespace: 'Units',
-      en: 'm/s',
-    });
-    expect(result.STAT_SPEED.unitExponent).toBe(1.0);
-    expect(result.STAT_SPEED.decimalPlaces).toBe(2);
-    expect(result.STAT_SPEED.choices[0]).toBe(5.5);
+    expect(result['STAT_SPEED.0'].pattern).toBe('{Amount} {Unit}');
+    expect(result['STAT_SPEED.0'].shortKey).toBe('SpeedBoost');
+    expect(result['STAT_SPEED.0'].unitName?.Key).toBe('unit_mps');
+    expect(result['STAT_SPEED.0'].unitExponent).toBe(1.0);
+    expect(result['STAT_SPEED.0'].decimalPlaces).toBe(2);
+    expect(result['STAT_SPEED.0'].choices[0]).toBe(5.5);
   });
 
   it('should use default values when properties are undefined', () => {
-    const stats = [{ stat_id: 'STAT_NO_SCALER', value: 10 }];
+    const stats = [{ stat_ref: 'OBJID_ModuleStat::STAT_NO_SCALER.0', value: 10 }];
 
     const result = getStatValueChoices(stats, mockModuleStats);
 
-    expect(result).toHaveProperty('STAT_NO_SCALER');
+    expect(result).toHaveProperty('STAT_NO_SCALER.0');
     // Default pattern should be '{Amount}{Unit}'
-    expect(result.STAT_NO_SCALER.pattern).toBe('{Amount}{Unit}');
+    expect(result['STAT_NO_SCALER.0'].pattern).toBe('{Amount}{Unit}');
     // Default scaler should be 1 (10 * 1 = 10)
-    expect(result.STAT_NO_SCALER.choices[0]).toBe(10);
+    expect(result['STAT_NO_SCALER.0'].choices[0]).toBe(10);
     // unitName should be undefined
-    expect(result.STAT_NO_SCALER.unitName).toBeUndefined();
+    expect(result['STAT_NO_SCALER.0'].unitName).toBeUndefined();
     // unitExponent should be undefined
-    expect(result.STAT_NO_SCALER.unitExponent).toBeUndefined();
+    expect(result['STAT_NO_SCALER.0'].unitExponent).toBeUndefined();
     // decimalPlaces should be undefined
-    expect(result.STAT_NO_SCALER.decimalPlaces).toBeUndefined();
+    expect(result['STAT_NO_SCALER.0'].decimalPlaces).toBeUndefined();
   });
 
   it('should skip stats with missing ModuleStat objects', () => {
     const stats = [
-      { stat_id: 'STAT_ARMOR', value: 0.06 },
-      { stat_id: 'STAT_MISSING', value: 100 },
+      { stat_ref: 'OBJID_ModuleStat::STAT_ARMOR.0', value: 0.06 },
+      { stat_ref: 'OBJID_ModuleStat::STAT_MISSING.0', value: 100 },
     ];
 
     const result = getStatValueChoices(stats, mockModuleStats);
 
-    expect(result).toHaveProperty('STAT_ARMOR');
-    expect(result).not.toHaveProperty('STAT_MISSING');
+    expect(result).toHaveProperty('STAT_ARMOR.0');
+    expect(result).not.toHaveProperty('STAT_MISSING.0');
   });
 
   it('should handle multiple stats correctly', () => {
     const stats = [
-      { stat_id: 'STAT_ARMOR', value: 0.5 },
-      { stat_id: 'STAT_SPEED', value: 10 },
-      { stat_id: 'STAT_NO_SCALER', value: 7 },
+      { stat_ref: 'OBJID_ModuleStat::STAT_ARMOR.0', value: 0.5 },
+      { stat_ref: 'OBJID_ModuleStat::STAT_SPEED.0', value: 10 },
+      { stat_ref: 'OBJID_ModuleStat::STAT_NO_SCALER.0', value: 7 },
     ];
 
     const result = getStatValueChoices(stats, mockModuleStats);
 
     expect(Object.keys(result)).toHaveLength(3);
-    expect(result.STAT_ARMOR.choices[0]).toBe(50); // 0.5 * 100
-    expect(result.STAT_SPEED.choices[0]).toBe(10); // 10 * 1
-    expect(result.STAT_NO_SCALER.choices[0]).toBe(7); // 7 * 1
+    expect(result['STAT_ARMOR.0'].choices[0]).toBe(50); // 0.5 * 100
+    expect(result['STAT_SPEED.0'].choices[0]).toBe(10); // 10 * 1
+    expect(result['STAT_NO_SCALER.0'].choices[0]).toBe(7); // 7 * 1
   });
 
   it('should preserve all ModuleStat properties in StatValueChoices', () => {
-    const stats = [{ stat_id: 'STAT_ARMOR', value: 0.1 }];
+    const stats = [{ stat_ref: 'OBJID_ModuleStat::STAT_ARMOR.0', value: 0.1 }];
 
     const result = getStatValueChoices(stats, mockModuleStats);
 
-    const statChoice = result.STAT_ARMOR;
+    const statChoice = result['STAT_ARMOR.0'];
     expect(statChoice).toHaveProperty('pattern');
     expect(statChoice).toHaveProperty('unitName');
     expect(statChoice).toHaveProperty('unitExponent');
