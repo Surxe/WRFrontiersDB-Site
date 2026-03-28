@@ -5,6 +5,7 @@ import type { StaticPathsResult, ParseObject } from '../types/parse_object';
 import * as moduleTypes from '../types/module';
 import * as pilotTypes from '../types/pilot';
 import * as rarityTypes from '../types/rarity';
+import { getEarliestVersion } from './summary';
 
 // Merge all exported constants from type modules
 const allTypeExports = {
@@ -144,7 +145,7 @@ export function isObjectProductionReady(
     >;
 
     const obj = objects[objectId];
-    return obj && obj.production_status === 'Ready';
+    return obj && (obj.production_status === 'Ready' || obj.production_status === undefined);
   } catch {
     return false;
   }
@@ -179,6 +180,8 @@ export async function generateObjectStaticPaths(
 
   const paths: StaticPathsResult[] = [];
   const processedObjects = new Set<string>();
+  let allObjects: Record<string, ParseObject> = {};
+  const earliestVersion = getEarliestVersion();
 
   // Process objects from summary file
   if (summaryExists) {
@@ -205,30 +208,26 @@ export async function generateObjectStaticPaths(
     }
   }
 
-  // Process objects not in summary file (fallback to earliest version only)
+  // Always process objects that exist in data but not yet processed (fallback to earliest version)
   try {
-    const { versions } = getAllVersions();
-    const earliestVersion = Object.keys(versions)[Object.keys(versions).length - 1];
-    
-    // Generate paths for earliest version when summary doesn't exist
-    const earliestObjectPath = path.join(
+    const fallbackObjectPath = path.join(
       process.cwd(),
       'WRFrontiersDB-Data/archive',
       earliestVersion,
       parseObjectPath
     );
 
-    if (fs.existsSync(earliestObjectPath)) {
-      const earliestObjects = JSON.parse(
-        fs.readFileSync(earliestObjectPath, 'utf8')
+    if (fs.existsSync(fallbackObjectPath)) {
+      allObjects = JSON.parse(
+        fs.readFileSync(fallbackObjectPath, 'utf8')
       ) as Record<string, ParseObject>;
 
-      for (const [objectId, obj] of Object.entries(earliestObjects)) {
+      for (const [objectId, obj] of Object.entries(allObjects)) {
         if (!processedObjects.has(objectId)) {
           // Skip production filtering if needed
           if (
             prodReadyOnly &&
-            (!obj.production_status || obj.production_status !== 'Ready')
+            !(obj.production_status === 'Ready' || obj.production_status === undefined)
           ) {
             continue;
           }
@@ -244,7 +243,7 @@ export async function generateObjectStaticPaths(
     }
   } catch (error) {
     console.warn(
-      `Could not load objects from earliest version for fallback processing: ${error}`
+      `Could not load objects for fallback processing: ${error}`
     );
   }
 
@@ -261,6 +260,12 @@ export function generateObjectListStaticPaths(
     `${objectType}.json`
   );
 
+  const paths: { params: { id: string } }[] = [];
+  const earliestVersion = getEarliestVersion();
+  const processedObjects = new Set<string>();
+  let allObjects: Record<string, ParseObject> = {};
+
+  // Process objects from summary file if it exists
   if (fs.existsSync(summaryPath)) {
     try {
       const summary = JSON.parse(
@@ -268,79 +273,74 @@ export function generateObjectListStaticPaths(
       ) as Record<string, string[]>;
 
       // Get the latest version to validate objects exist
-      const { latestVersion } = getAllVersions();
       const objectPath = path.join(
         process.cwd(),
         'WRFrontiersDB-Data/archive',
-        latestVersion,
+        earliestVersion,
         `Objects/${objectType}.json`
       );
 
-      let validObjects: Record<string, string[]> = {};
-
-      // Only include objects that actually exist in the data
       if (fs.existsSync(objectPath)) {
-        const allObjects = JSON.parse(
+        allObjects = JSON.parse(
           fs.readFileSync(objectPath, 'utf8')
         ) as Record<string, ParseObject>;
 
+        // Add objects from summary
         for (const [objectId, versions] of Object.entries(summary)) {
           if (allObjects[objectId]) {
-            validObjects[objectId] = versions;
+            paths.push({ params: { id: objectId } });
+            processedObjects.add(objectId);
           } else {
             console.warn(
               `Object ${objectId} found in summary but not in data file for ${objectType}`
             );
           }
         }
-      } else {
-        console.warn(`Data file not found: ${objectPath}`);
       }
 
-      // Generate paths for all valid object IDs
-      return Object.keys(validObjects).map((id) => ({
-        params: { id },
-      }));
+      // Add objects that exist in data but not in summary
+      for (const objectId of Object.keys(allObjects)) {
+        if (!processedObjects.has(objectId)) {
+          paths.push({ params: { id: objectId } });
+        }
+      }
     } catch (error) {
       console.warn(
         `Failed to read or parse summary file: ${summaryPath}`,
         error
       );
     }
-  }
+  } else {
+    // Summary file doesn't exist, generate paths from data file using earliest version
+    console.warn(
+      `Summary file not found for ${objectType}, generating paths from data file using earliest version`
+    );
+    
+    const objectPath = path.join(
+      process.cwd(),
+      'WRFrontiersDB-Data/archive',
+      earliestVersion,
+      `Objects/${objectType}.json`
+    );
 
-  // Fallback: generate paths from data file when summary doesn't exist
-  console.warn(
-    `Summary file not found for ${objectType}, generating paths from data file using earliest version`
-  );
-  
-  const { versions } = getAllVersions();
-  const earliestVersion = Object.keys(versions)[Object.keys(versions).length - 1];
-  const objectPath = path.join(
-    process.cwd(),
-    'WRFrontiersDB-Data/archive',
-    earliestVersion,
-    `Objects/${objectType}.json`
-  );
-
-  if (fs.existsSync(objectPath)) {
-    try {
-      const allObjects = JSON.parse(
-        fs.readFileSync(objectPath, 'utf8')
-      ) as Record<string, ParseObject>;
-      
-      // Generate paths for all object IDs from the data file
-      return Object.keys(allObjects).map((id) => ({
-        params: { id },
-      }));
-    } catch (error) {
-      console.warn(
-        `Failed to read or parse data file: ${objectPath}`,
-        error
-      );
+    if (fs.existsSync(objectPath)) {
+      try {
+        allObjects = JSON.parse(
+          fs.readFileSync(objectPath, 'utf8')
+        ) as Record<string, ParseObject>;
+        
+        // Generate paths for all object IDs from the data file
+        for (const objectId of Object.keys(allObjects)) {
+          paths.push({ params: { id: objectId } });
+        }
+      } catch (error) {
+        console.warn(
+          `Failed to read or parse data file: ${objectPath}`,
+          error
+        );
+      }
     }
   }
 
-  // Final fallback: return empty array
-  return [];
+  return paths;
 }

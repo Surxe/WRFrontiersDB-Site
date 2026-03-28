@@ -13,7 +13,7 @@ import {
 import { getDefaultString } from '../../../utils/localization';
 
 export async function getStaticPaths() {
-  return await generateObjectStaticPaths('Objects/PilotPersonality.json');
+  return await generateObjectStaticPaths('Objects/PilotPersonality.json', true);
 }
 
 const { id, version } = Astro.params;
