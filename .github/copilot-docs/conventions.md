@@ -56,5 +56,6 @@ Example: [modules/[id]/[version].astro](../../src/pages/modules/[id]/[version].a
 - **IIFE Functions**: Avoid at all costs using IIFE functions
 
 # Error Handling
+
 When an error occurs due to a specific parse object having an undefined attribute, first check the `src/types/{parseObject}.ts` file to see if it should be required.
 If it should be required but was found with an undefined value, find specific parse objects that violate this and prompt the user to further research or update them.

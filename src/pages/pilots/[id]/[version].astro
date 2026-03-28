@@ -52,12 +52,28 @@ const moduleStats = getParseObjects<ModuleStat>(
   version
 );
 
-const rarity = pilotTypes && pilot.pilot_type_ref ? 
-  resolveObjectRef(pilotTypes[extractIdFromRef(pilot.pilot_type_ref)].rarity_ref, getParseObjects<Rarity>('Objects/Rarity.json', version)) : undefined;
-const pilotClass = pilot.pilot_class_ref ? 
-  resolveObjectRef(pilot.pilot_class_ref, getParseObjects<PilotClass>('Objects/PilotClass.json', version)) : undefined;
-const pilotPersonality = pilot.personality_ref ? 
-  resolveObjectRef(pilot.personality_ref, getParseObjects<PilotPersonality>('Objects/PilotPersonality.json', version)) : undefined;
+const rarity =
+  pilotTypes && pilot.pilot_type_ref
+    ? resolveObjectRef(
+        pilotTypes[extractIdFromRef(pilot.pilot_type_ref)].rarity_ref,
+        getParseObjects<Rarity>('Objects/Rarity.json', version)
+      )
+    : undefined;
+const pilotClass = pilot.pilot_class_ref
+  ? resolveObjectRef(
+      pilot.pilot_class_ref,
+      getParseObjects<PilotClass>('Objects/PilotClass.json', version)
+    )
+  : undefined;
+const pilotPersonality = pilot.personality_ref
+  ? resolveObjectRef(
+      pilot.personality_ref,
+      getParseObjects<PilotPersonality>(
+        'Objects/PilotPersonality.json',
+        version
+      )
+    )
+  : undefined;
 
 // Load version metadata
 const { versions, versionInfo } = getVersionsData(version);
@@ -159,7 +175,13 @@ const defaultName = getDefaultString(pilot.first_name) || pilot.id;
 
   <p>
     Personality:
-    {pilotPersonality ? <ObjRef obj={pilotPersonality} version={version} /> : 'Unknown'}
+    {
+      pilotPersonality ? (
+        <ObjRef obj={pilotPersonality} version={version} />
+      ) : (
+        'Unknown'
+      )
+    }
   </p>
   <p>faction_id placeholder</p>
 

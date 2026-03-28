@@ -38,7 +38,9 @@ const rarities = getParseObjects('Objects/Rarity.json', version);
 const entries = prepareObjectList(pilots, { prodReadyOnly: false });
 
 // Group by pilot type
-const grouped = groupBy(entries, ([_, pilot]) => extractIdFromRef(pilot.pilot_type_ref));
+const grouped = groupBy(entries, ([_, pilot]) =>
+  extractIdFromRef(pilot.pilot_type_ref)
+);
 
 // Define explicit sort order for pilot types
 const pilotTypeOrder: Record<string, number> = {
@@ -68,11 +70,7 @@ the other columns have rowspan to center them within their group of rows
           }
           const rarity = resolveObjectRef(pilotType.rarity_ref, rarities);
           return rarity ? (
-            <ObjRef
-              obj={rarity}
-              version={version}
-              useHref={false}
-            />
+            <ObjRef obj={rarity} version={version} useHref={false} />
           ) : (
             <span>Unknown Rarity</span>
           );

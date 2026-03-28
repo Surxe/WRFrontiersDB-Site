@@ -15,20 +15,24 @@ export interface ParsedObjectRef {
  */
 export function parseObjectRef(ref: string): ParsedObjectRef {
   if (!ref.includes('::')) {
-    throw new Error(`Invalid object reference format: ${ref}. Expected format: OBJID_Class::id`);
+    throw new Error(
+      `Invalid object reference format: ${ref}. Expected format: OBJID_Class::id`
+    );
   }
 
   const [classPart, id] = ref.split('::');
-  
+
   if (!classPart.startsWith('OBJID_')) {
-    throw new Error(`Invalid object reference class format: ${classPart}. Expected format: OBJID_Class`);
+    throw new Error(
+      `Invalid object reference class format: ${classPart}. Expected format: OBJID_Class`
+    );
   }
 
   const className = classPart.substring(6); // Remove 'OBJID_' prefix
 
   return {
     class: className,
-    id: id
+    id: id,
   };
 }
 

@@ -53,7 +53,10 @@ WRFrontiersDB-Data/  # External data repository (read-only)
 ## Quick Commands
 
 ```bash
-npm run dev      # Start dev server
-npx vitest       # Run tests in watch mode
-npx vitest run   # Run tests once
+npm run dev            # Start dev server
+npx vitest             # Run tests in watch mode
+npx vitest run         # Run tests once
+npm run lint           # Run linting
+npm run format:check   # Run formatting check
+npm run format:fix     # Run formatting fix
 ```

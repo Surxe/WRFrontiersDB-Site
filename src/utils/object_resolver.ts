@@ -26,7 +26,7 @@ export function resolveObjectRefs<T extends ParseObject>(
   objects: Record<string, T>
 ): T[] {
   if (!refs) return [];
-  
+
   const resolved: T[] = [];
   for (const ref of refs) {
     const obj = resolveObjectRef(ref, objects);

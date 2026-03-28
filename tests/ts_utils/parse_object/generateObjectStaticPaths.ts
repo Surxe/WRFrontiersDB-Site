@@ -242,7 +242,9 @@ describe('generateObjectStaticPaths', () => {
 
   describe('edge cases', () => {
     it('should return empty array for non-existent file', async () => {
-      const result = await generateObjectStaticPaths('Objects/NonExistent.json');
+      const result = await generateObjectStaticPaths(
+        'Objects/NonExistent.json'
+      );
       expect(Array.isArray(result)).toBe(true);
     });
 
@@ -253,7 +255,9 @@ describe('generateObjectStaticPaths', () => {
 
     it('should generate unique paths', async () => {
       const result = await generateObjectStaticPaths('Objects/PilotClass.json');
-      const pathKeys = new Set(result.map((p) => `${p.params.id}-${p.params.version}`));
+      const pathKeys = new Set(
+        result.map((p) => `${p.params.id}-${p.params.version}`)
+      );
       expect(pathKeys.size).toBe(result.length);
     });
 

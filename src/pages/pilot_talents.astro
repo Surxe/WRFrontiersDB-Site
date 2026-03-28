@@ -86,7 +86,11 @@ const sortedGroups = sortGroups(grouped, (a, b) => Number(a) - Number(b));
                 <td>
                   {talent.talent_type_ref && (
                     <ObjRef
-                      obj={pilotTalentTypes[extractIdFromRef(talent.talent_type_ref)]}
+                      obj={
+                        pilotTalentTypes[
+                          extractIdFromRef(talent.talent_type_ref)
+                        ]
+                      }
                       version={latestVersion}
                     />
                   )}
