@@ -53,7 +53,7 @@ if (pilotTalents && pilotTalentTypes) {
       pilots.map(([_id, pilot]) => {
         // Calculate max talents across all levels for this pilot
         const maxTalents = Math.max(
-          ...pilot.levels.map((level) => level?.talents?.length || 0)
+          ...pilot.levels.map((level) => level?.talents_refs?.length || 0)
         );
 
         return Array.from({ length: Math.max(1, maxTalents) }).map(

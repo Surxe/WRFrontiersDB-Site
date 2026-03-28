@@ -4,8 +4,8 @@ import type { PilotTalentType } from '../../types/pilot';
 
 interface Props {
   level?: {
-    talents?: string[];
-    talent_type_id?: string;
+    talents_refs?: string[];
+    talent_type_ref?: string;
   };
   talentIndex: number;
   maxTalents: number;
@@ -30,9 +30,9 @@ const { level, talentIndex, maxTalents, pilotTalentTypes, version } =
 {
   talentIndex === 0 && (
     <td rowspan={maxTalents}>
-      {level?.talent_type_id && pilotTalentTypes && (
+      {level?.talent_type_ref && pilotTalentTypes && (
         <ObjRef
-          obj={pilotTalentTypes[level.talent_type_id]}
+          obj={pilotTalentTypes[level.talent_type_ref]}
           version={version}
         />
       )}
