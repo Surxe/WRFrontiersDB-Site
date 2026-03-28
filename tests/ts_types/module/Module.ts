@@ -1,10 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'fs';
 import path from 'path';
+import type { Module } from '../../../src/types/module';
 
 describe('Module interface', () => {
   let modules: Record<string, unknown>;
-  let moduleArray: unknown[];
+
+let moduleArray: Module[];
 
   // Load real data from the latest version
   const archiveDir = path.join(process.cwd(), 'WRFrontiersDB-Data', 'archive');
@@ -17,7 +19,7 @@ describe('Module interface', () => {
     'Module.json'
   );
 
-  modules = JSON.parse(fs.readFileSync(modulePath, 'utf-8'));
+  modules = JSON.parse(fs.readFileSync(modulePath, 'utf8')) as Record<string, Module>;
   moduleArray = Object.values(modules);
 
   describe('Required fields', () => {
@@ -35,10 +37,10 @@ describe('Module interface', () => {
       });
     });
 
-    it('should have "module_rarity_id" field in every object', () => {
+    it('should have "module_rarity_ref" field in every object', () => {
       moduleArray.forEach((module) => {
-        expect(module).toHaveProperty('module_rarity_id');
-        expect(typeof module.module_rarity_id).toBe('string');
+        expect(module).toHaveProperty('module_rarity_ref');
+        expect(typeof module.module_rarity_ref).toBe('string');
       });
     });
 
@@ -56,24 +58,24 @@ describe('Module interface', () => {
       });
     });
 
-    it('should have "faction_id" field in every object', () => {
+    it('should have "faction_ref" field in every object', () => {
       moduleArray.forEach((module) => {
-        expect(module).toHaveProperty('faction_id');
-        expect(typeof module.faction_id).toBe('string');
+        expect(module).toHaveProperty('faction_ref');
+        expect(typeof module.faction_ref).toBe('string');
       });
     });
 
-    it('should have "module_classes_ids" array field in every object', () => {
+    it('should have "module_classes_refs" array field in every object', () => {
       moduleArray.forEach((module) => {
-        expect(module).toHaveProperty('module_classes_ids');
-        expect(Array.isArray(module.module_classes_ids)).toBe(true);
+        expect(module).toHaveProperty('module_classes_refs');
+        expect(Array.isArray(module.module_classes_refs)).toBe(true);
       });
     });
 
     it('should have "module_type_id" field in every object', () => {
       moduleArray.forEach((module) => {
-        expect(module).toHaveProperty('module_type_id');
-        expect(typeof module.module_type_id).toBe('string');
+        expect(module).toHaveProperty('module_type_ref');
+        expect(typeof module.module_type_ref).toBe('string');
       });
     });
   });
@@ -92,12 +94,12 @@ describe('Module interface', () => {
 
     it('should have at least one object with "module_tags_ids" field, but not all', () => {
       const withModuleTags = moduleArray.filter((m) =>
-        Object.prototype.hasOwnProperty.call(m, 'module_tags_ids')
+        Object.prototype.hasOwnProperty.call(m, 'module_tags_refs')
       );
       expect(withModuleTags.length).toBeGreaterThan(0);
       expect(withModuleTags.length).toBeLessThan(moduleArray.length);
       withModuleTags.forEach((module) => {
-        expect(Array.isArray(module.module_tags_ids)).toBe(true);
+        expect(Array.isArray(module.module_tags_refs)).toBe(true);
       });
     });
 
@@ -151,23 +153,23 @@ describe('Module interface', () => {
 
     it('should have at least one object with "module_stats_table_id" field, but not all', () => {
       const withModuleStatsTable = moduleArray.filter((m) =>
-        Object.prototype.hasOwnProperty.call(m, 'module_stats_table_id')
+        Object.prototype.hasOwnProperty.call(m, 'module_stats_table_ref')
       );
       expect(withModuleStatsTable.length).toBeGreaterThan(0);
       expect(withModuleStatsTable.length).toBeLessThan(moduleArray.length);
       withModuleStatsTable.forEach((module) => {
-        expect(typeof module.module_stats_table_id).toBe('string');
+        expect(typeof module.module_stats_table_ref).toBe('string');
       });
     });
 
-    it('should have at least one object with "module_socket_type_ids" field, but not all', () => {
-      const withSocketTypes = moduleArray.filter((m) =>
-        Object.prototype.hasOwnProperty.call(m, 'module_socket_type_ids')
+    it('should have at least one object with "module_socket_type_refs" field, but not all', () => {
+      const withSocketTypes = moduleArray.filter(
+        (m) => Array.isArray(m.module_socket_type_refs) && m.module_socket_type_refs.length > 0
       );
       expect(withSocketTypes.length).toBeGreaterThan(0);
       expect(withSocketTypes.length).toBeLessThan(moduleArray.length);
       withSocketTypes.forEach((module) => {
-        expect(Array.isArray(module.module_socket_type_ids)).toBe(true);
+        expect(Array.isArray(module.module_socket_type_refs)).toBe(true);
       });
     });
   });
@@ -178,19 +180,19 @@ describe('Module interface', () => {
         'id',
         'production_status',
         'inventory_icon_path',
-        'module_rarity_id',
+        'module_rarity_ref',
         'character_module_mounts',
-        'module_tags_ids',
+        'module_tags_refs',
         'name',
         'description',
         'text_tags',
         'module_scalars',
         'abilities_scalars',
-        'faction_id',
-        'module_classes_ids',
-        'module_stats_table_id',
-        'module_type_id',
-        'module_socket_type_ids',
+        'faction_ref',
+        'module_classes_refs',
+        'module_stats_table_ref',
+        'module_type_ref',
+        'module_socket_type_refs',
         // parseObjectClass is added at build time, not in raw data
       ]);
 
@@ -212,9 +214,9 @@ describe('Module interface', () => {
         expect(Array.isArray(mod.character_module_mounts)).toBe(true);
         (mod.character_module_mounts as Record<string, unknown>[]).forEach(
           (mount) => {
-            expect(mount).toHaveProperty('character_module_id');
+            expect(mount).toHaveProperty('character_module_ref');
             expect(mount).toHaveProperty('mount');
-            expect(typeof mount.character_module_id).toBe('string');
+            expect(typeof mount.character_module_ref).toBe('string');
             expect(typeof mount.mount).toBe('string');
           }
         );
@@ -222,7 +224,7 @@ describe('Module interface', () => {
     });
 
     it('should not have extra fields in character_module_mounts objects', () => {
-      const allowedMountFields = new Set(['character_module_id', 'mount']);
+      const allowedMountFields = new Set(['character_module_ref', 'mount']);
 
       moduleArray.forEach((module) => {
         const mod = module as Record<string, unknown>;
@@ -354,9 +356,9 @@ describe('Module interface', () => {
       moduleArray.forEach((module) => {
         expect(module.id.length).toBeGreaterThan(0);
         expect(module.inventory_icon_path.length).toBeGreaterThan(0);
-        expect(module.module_rarity_id.length).toBeGreaterThan(0);
-        expect(module.faction_id.length).toBeGreaterThan(0);
-        expect(module.module_type_id.length).toBeGreaterThan(0);
+        expect(module.module_rarity_ref.length).toBeGreaterThan(0);
+        expect(module.faction_ref.length).toBeGreaterThan(0);
+        expect(module.module_type_ref.length).toBeGreaterThan(0);
       });
     });
 
@@ -376,7 +378,7 @@ describe('Module interface', () => {
 
     it('should have non-empty module_classes_ids array', () => {
       moduleArray.forEach((module) => {
-        expect(module.module_classes_ids.length).toBeGreaterThan(0);
+        expect(module.module_classes_refs.length).toBeGreaterThan(0);
       });
     });
 
