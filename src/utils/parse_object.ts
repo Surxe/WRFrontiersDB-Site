@@ -247,3 +247,63 @@ export async function generateObjectStaticPaths(
 
   return paths;
 }
+
+// Generate static paths for object list pages (e.g., /modules, /pilots, etc.)
+export function generateObjectListStaticPaths(
+  objectType: string
+): { params: { id: string } }[] {
+  const summaryPath = path.join(
+    process.cwd(),
+    'WRFrontiersDB-Data/summaries',
+    `${objectType}.json`
+  );
+
+  if (fs.existsSync(summaryPath)) {
+    try {
+      const summary = JSON.parse(
+        fs.readFileSync(summaryPath, 'utf8')
+      ) as Record<string, string[]>;
+      
+      // Get the latest version to validate objects exist
+      const { latestVersion } = getAllVersions();
+      const objectPath = path.join(
+        process.cwd(),
+        'WRFrontiersDB-Data/archive',
+        latestVersion,
+        `Objects/${objectType}.json`
+      );
+      
+      let validObjects: Record<string, string[]> = {};
+      
+      // Only include objects that actually exist in the data
+      if (fs.existsSync(objectPath)) {
+        const allObjects = JSON.parse(
+          fs.readFileSync(objectPath, 'utf8')
+        ) as Record<string, ParseObject>;
+        
+        for (const [objectId, versions] of Object.entries(summary)) {
+          if (allObjects[objectId]) {
+            validObjects[objectId] = versions;
+          } else {
+            console.warn(`Object ${objectId} found in summary but not in data file for ${objectType}`);
+          }
+        }
+      } else {
+        console.warn(`Data file not found: ${objectPath}`);
+      }
+      
+      // Generate paths for all valid object IDs
+      return Object.keys(validObjects).map(id => ({
+        params: { id }
+      }));
+    } catch (error) {
+      console.warn(
+        `Failed to read or parse summary file: ${summaryPath}`,
+        error
+      );
+    }
+  }
+  
+  // Fallback: return empty array if summary file doesn't exist
+  return [];
+}

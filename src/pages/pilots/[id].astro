@@ -1,7 +1,12 @@
 ---
 import { getLatestVersionForObject } from '../../utils/summary';
+import { generateObjectListStaticPaths } from '../../utils/parse_object';
 
 export const prerender = true;
+
+export async function getStaticPaths() {
+  return generateObjectListStaticPaths('Pilot');
+}
 
 const { id } = Astro.params;
 
