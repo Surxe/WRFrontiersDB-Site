@@ -265,7 +265,6 @@ export function generateObjectListStaticPaths(
   const paths: { params: { id: string } }[] = [];
   const earliestVersion = getEarliestVersion();
   const processedObjects = new Set<string>();
-  let allObjects: Record<string, ParseObject> = {};
 
   // Process objects from summary file if it exists
   if (fs.existsSync(summaryPath)) {
@@ -274,36 +273,11 @@ export function generateObjectListStaticPaths(
         fs.readFileSync(summaryPath, 'utf8')
       ) as Record<string, string[]>;
 
-      // Get the latest version to validate objects exist
-      const objectPath = path.join(
-        process.cwd(),
-        'WRFrontiersDB-Data/archive',
-        earliestVersion,
-        `Objects/${objectType}.json`
-      );
-
-      if (fs.existsSync(objectPath)) {
-        allObjects = JSON.parse(
-          fs.readFileSync(objectPath, 'utf8')
-        ) as Record<string, ParseObject>;
-
-        // Add objects from summary
-        for (const [objectId, versions] of Object.entries(summary)) {
-          if (allObjects[objectId]) {
-            paths.push({ params: { id: objectId } });
-            processedObjects.add(objectId);
-          } else {
-            console.warn(
-              `Object ${objectId} found in summary but not in data file for ${objectType}`
-            );
-          }
-        }
-      }
-
-      // Add objects that exist in data but not in summary
-      for (const objectId of Object.keys(allObjects)) {
-        if (!processedObjects.has(objectId)) {
+      // Add objects from summary - each gets all its versions
+      for (const [objectId, versions] of Object.entries(summary)) {
+        if (versions.length > 0) {
           paths.push({ params: { id: objectId } });
+          processedObjects.add(objectId);
         }
       }
     } catch (error) {
@@ -327,11 +301,11 @@ export function generateObjectListStaticPaths(
 
     if (fs.existsSync(objectPath)) {
       try {
-        allObjects = JSON.parse(
+        const allObjects = JSON.parse(
           fs.readFileSync(objectPath, 'utf8')
         ) as Record<string, ParseObject>;
         
-        // Generate paths for all object IDs from the data file
+        // Generate paths for all object IDs from data file
         for (const objectId of Object.keys(allObjects)) {
           paths.push({ params: { id: objectId } });
         }

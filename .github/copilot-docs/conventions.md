@@ -80,6 +80,9 @@ For example, Module Rarity's might not have ever been changed since their initia
 4. Redirects to `/modules/DA_Module_Ability_AmmoGenerator.1/2025-12-23`
 5. `[id]/[version].astro` renders the full detail page
 
+#### Listed Versions
+On each object list page, e.g. `/modules`, will be an `Available Versions` section that lists all versions that the object has been modified in. If the object has no summary entry or the file does not exist, it will only list the earliest version.
+
 
 ## Development
 - **Type Safety**: Use TypeScript interfaces for all data structures

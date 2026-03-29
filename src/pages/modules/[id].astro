@@ -2,12 +2,14 @@
 import { getLatestVersionForObject } from '../../utils/summary';
 import { generateObjectListStaticPaths } from '../../utils/parse_object';
 
-export const prerender = true;
+// Always return the static paths for routing, but only prerender in production
+export const prerender = import.meta.env.PROD;
 
 export async function getStaticPaths() {
   return generateObjectListStaticPaths('Module');
 }
 
+// Get the ID from params
 const { id } = Astro.params;
 
 // Get the latest version for this module
