@@ -5,6 +5,7 @@ import type { StaticPathsResult, ParseObject } from '../types/parse_object';
 import * as moduleTypes from '../types/module';
 import * as pilotTypes from '../types/pilot';
 import * as rarityTypes from '../types/rarity';
+import { getEarliestVersion } from './summary';
 
 // File cache to avoid repeated reads
 const fileCache = new Map<string, any>();
@@ -223,8 +224,12 @@ export async function generateObjectStaticPaths(
     }
   }
 
-  // Process objects not in summary file (fallback to latest version only)
+  // Process objects not in summary file (fallback to earliest and latest versions)
   try {
+    const { latestVersion } = getAllVersions();
+    const earliestVersion = getEarliestVersion();
+    
+    // Check latest version first
     const latestObjectPath = path.join(
       process.cwd(),
       'WRFrontiersDB-Data/archive',
@@ -245,18 +250,42 @@ export async function generateObjectStaticPaths(
             continue;
           }
 
+          // Generate path for latest version
           paths.push({
             params: { id: objectId, version: latestVersion },
             props: {
               objectVersions: [latestVersion], // Only latest version
             },
           });
+
+          // Also generate path for earliest version if different from latest
+          if (earliestVersion !== latestVersion) {
+            const earliestObjectPath = path.join(
+              process.cwd(),
+              'WRFrontiersDB-Data/archive',
+              earliestVersion,
+              parseObjectPath
+            );
+
+            if (fs.existsSync(earliestObjectPath)) {
+              const earliestObjects = readJsonFile(earliestObjectPath) as Record<string, ParseObject>;
+              
+              if (earliestObjects[objectId]) {
+                paths.push({
+                  params: { id: objectId, version: earliestVersion },
+                  props: {
+                    objectVersions: [earliestVersion], // Only earliest version
+                  },
+                });
+              }
+            }
+          }
         }
       }
     }
   } catch (error) {
     console.warn(
-      `Could not load objects from latest version ${latestVersion} for fallback processing: ${error}`
+      `Could not load objects from latest version for fallback processing: ${error}`
     );
   }
 
@@ -291,14 +320,23 @@ export function generateObjectListStaticPaths(
       // Only include objects that actually exist in the data
       if (fs.existsSync(objectPath)) {
         const allObjects = readJsonFile(objectPath) as Record<string, ParseObject>;
+        const processedObjects = new Set<string>();
 
         for (const [objectId, versions] of Object.entries(summary)) {
           if (allObjects[objectId]) {
             validObjects[objectId] = versions;
+            processedObjects.add(objectId);
           } else {
             console.warn(
               `Object ${objectId} found in summary but not in data file for ${objectType}`
             );
+          }
+        }
+
+        // Add objects that exist in data but not in summary
+        for (const [objectId, _obj] of Object.entries(allObjects)) {
+          if (!processedObjects.has(objectId)) {
+            validObjects[objectId] = []; // Empty array indicates not in summary
           }
         }
       } else {
