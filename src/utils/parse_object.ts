@@ -145,7 +145,9 @@ export function isObjectProductionReady(
     >;
 
     const obj = objects[objectId];
-    return obj && (obj.production_status === 'Ready' || obj.production_status === undefined);
+    return obj && 
+           (obj.production_status === 'Ready' || obj.production_status === undefined) &&
+           obj.name != null; // Ensure object has a name
   } catch {
     return false;
   }

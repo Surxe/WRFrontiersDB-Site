@@ -52,31 +52,40 @@ Example: [modules/[id]/[version].astro](../../src/pages/modules/[id]/[version].a
 
 ### Detail Page Redirect Logic
 
-When summary files are missing or incomplete, the system falls back to the earliest game version available:
+The redirect system follows a three-step flow to ensure users always reach the correct versioned detail page.
+The following example uses the Module object type:
 
-1. **Fallback Version Selection**: Uses `getEarliestVersion()` from `summary.ts` to get the first version in chronological order (e.g., "2025-03-04" Launch version)
+1. `/modules` (list page)
+2. `/modules/{moduleId}` (redirect page)
+3. `/modules/{moduleId}/{latestVersion}` (versioned detail page)
 
-2. **Static Path Generation**: The `generateObjectStaticPaths()` function in `parse_object.ts` handles both cases:
-   - **With summary file**: Processes objects from summary file using their full version history
-   - **Without summary file**: Processes all objects from the earliest version data file, ensuring all objects have accessible detail pages
+#### Version Resolution Logic
 
-3. **Implementation Details**:
-   - **Summary file check**: `fs.existsSync(summaryPath)` determines if summary exists
-   - **Fallback processing**: When summary doesn't exist, reads from earliest version data file
-   - **Path generation**: Creates static paths for all valid objects regardless of summary completeness
-   - **Error handling**: Proper logging for debugging missing data files
+The summary file for a given object type specifies the versions that the object was modified in, starting with the version they were added in.
 
-This ensures that:
-- Objects with complete summary data get proper version-specific detail pages
-- Objects without summary data still get functional detail pages using the earliest available version
-- No 404 errors occur due to missing static paths
+If a given object was added in the first version and never modified, they will not have an entry in the summary file.
 
-**Example**: Pilot personalities without complete summary files redirect to "Launch (2025-03-04)" version, the earliest game version available.
+If every entry in a given summary file meets the above criteria, the entire summary file will not exist. 
+For example, Module Rarity's might not have ever been changed since their initial release, meaning the entire `ModuleRarity.json` summary file will not exist.
 
+**Redirect Scenarios**:
+1. Summary file does not exist -> Use earliest version
+2. Entry within summary file does not exist -> Use earliest version
+3. Entry within summary file exists -> Use the latest version from the entry
+
+**Example Flow**:
+1. User clicks "Ammo Fabricator" on `/modules` page
+2. Browser navigates to `/modules/DA_Module_Ability_AmmoGenerator.1`
+3. `[id].astro` determines latest version is "2025-12-23" 
+4. Redirects to `/modules/DA_Module_Ability_AmmoGenerator.1/2025-12-23`
+5. `[id]/[version].astro` renders the full detail page
+
+
+## Development
 - **Type Safety**: Use TypeScript interfaces for all data structures
 - **IIFE Functions**: Avoid at all costs using IIFE functions
 
-# Error Handling
+## Error Handling
 
 When an error occurs due to a specific parse object having an undefined attribute, first check the `src/types/{parseObject}.ts` file to see if it should be required.
 If it should be required but was found with an undefined value, find specific parse objects that violate this and prompt the user to further research or update them.
