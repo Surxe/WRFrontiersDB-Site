@@ -19,10 +19,12 @@ import {
   getParseObject,
   getVersionsData,
 } from '../../../utils/parse_object';
-import ObjRef from '../../../components/obj_ref/ObjRef.astro';
 import { getDefaultString } from '../../../utils/localization';
 import { getStatValueChoices } from '../../../utils/stat';
+import { resolveObjectRef } from '../../../utils/object_resolver';
+import { extractIdFromRef } from '../../../utils/object_reference';
 import type { ModuleStat } from '../../../types/module';
+import ObjRef from '../../../components/obj_ref/ObjRef.astro';
 
 export async function getStaticPaths() {
   return await generateObjectStaticPaths('Objects/Pilot.json');
@@ -50,21 +52,28 @@ const moduleStats = getParseObjects<ModuleStat>(
   version
 );
 
-const rarity = getParseObject<Rarity>(
-  pilotTypes[pilot.pilot_type_id].rarity_id,
-  version,
-  'Objects/Rarity.json'
-);
-const pilotClass = getParseObject<PilotClass>(
-  pilot.pilot_class_id,
-  version,
-  'Objects/PilotClass.json'
-);
-const pilotPersonality = getParseObject<PilotPersonality>(
-  pilot.personality_id,
-  version,
-  'Objects/PilotPersonality.json'
-);
+const rarity =
+  pilotTypes && pilot.pilot_type_ref
+    ? resolveObjectRef(
+        pilotTypes[extractIdFromRef(pilot.pilot_type_ref)].rarity_ref,
+        getParseObjects<Rarity>('Objects/Rarity.json', version)
+      )
+    : undefined;
+const pilotClass = pilot.pilot_class_ref
+  ? resolveObjectRef(
+      pilot.pilot_class_ref,
+      getParseObjects<PilotClass>('Objects/PilotClass.json', version)
+    )
+  : undefined;
+const pilotPersonality = pilot.personality_ref
+  ? resolveObjectRef(
+      pilot.personality_ref,
+      getParseObjects<PilotPersonality>(
+        'Objects/PilotPersonality.json',
+        version
+      )
+    )
+  : undefined;
 
 // Load version metadata
 const { versions, versionInfo } = getVersionsData(version);
@@ -104,7 +113,7 @@ const defaultName = getDefaultString(pilot.first_name) || pilot.id;
   <Icon iconPath={pilot.image_path} altText={`${defaultName} portrait`} />
 
   <p id="pilot-sell-price-currency">
-    Sell Price Currency: {pilot.sell_price.currency_id}
+    Sell Price Currency: {pilot.sell_price.currency_ref}
   </p>
   <p id="pilot-sell-price-amount">
     Sell Price Amount: {pilot.sell_price.amount}
@@ -126,20 +135,20 @@ const defaultName = getDefaultString(pilot.first_name) || pilot.id;
             <td>{index + 1}</td>
             <td>
               <ObjRef
-                obj={pilotTalentTypes[level.talent_type_id]}
+                obj={pilotTalentTypes[extractIdFromRef(level.talent_type_ref)]}
                 version={version}
               />
             </td>
             <td>
               <div>
-                {level.talents?.map((talent_id) => (
+                {level.talents_refs?.map((talent_ref) => (
                   <span>
                     <ObjRef
-                      obj={pilotTalents[talent_id]}
+                      obj={pilotTalents[extractIdFromRef(talent_ref)]}
                       version={version}
                       useOnHover={true}
                       onHoverStatChoices={getStatValueChoices(
-                        pilotTalents[talent_id].stats,
+                        pilotTalents[extractIdFromRef(talent_ref)].stats,
                         moduleStats
                       )}
                     />
@@ -155,16 +164,24 @@ const defaultName = getDefaultString(pilot.first_name) || pilot.id;
 
   <!-- Hyperlinks to the referenced ids pilot_type_id, pilot_class_id, personality_id -->
   <p>
-    Rarity
-    <ObjRef obj={rarity} version={version} useHref={false} />
+    Rarity:
+    {rarity ? <ObjRef obj={rarity} version={version} /> : 'Unknown'}
   </p>
+
   <p>
-    Pilot Class
-    <ObjRef obj={pilotClass} version={version} />
+    Pilot Class:
+    {pilotClass ? <ObjRef obj={pilotClass} version={version} /> : 'Unknown'}
   </p>
+
   <p>
-    Pilot Personality
-    <ObjRef obj={pilotPersonality} version={version} />
+    Personality:
+    {
+      pilotPersonality ? (
+        <ObjRef obj={pilotPersonality} version={version} />
+      ) : (
+        'Unknown'
+      )
+    }
   </p>
   <p>faction_id placeholder</p>
 

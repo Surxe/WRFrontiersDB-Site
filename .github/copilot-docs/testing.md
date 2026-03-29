@@ -4,6 +4,11 @@
 
 This project uses **Vitest** for unit and integration testing.
 
+**Quick Reference**
+
+- Run all non-heavy tests: `npm run vitest`
+- Run all regular and heavy tests: `npm run vitest:heavy`
+
 ### Setup
 
 ```bash

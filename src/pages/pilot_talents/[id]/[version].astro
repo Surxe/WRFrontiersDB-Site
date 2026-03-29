@@ -13,9 +13,10 @@ import {
   getVersionsData,
 } from '../../../utils/parse_object';
 import { enrichPilotTalents } from '../../../utils/pilot';
-import { getStatValueChoices } from '../../../utils/stat';
-import ObjRef from '../../../components/obj_ref/ObjRef.astro';
 import { getDefaultString } from '../../../utils/localization';
+import { getStatValueChoices } from '../../../utils/stat';
+import { extractIdFromRef } from '../../../utils/object_reference';
+import ObjRef from '../../../components/obj_ref/ObjRef.astro';
 
 export async function getStaticPaths() {
   return await generateObjectStaticPaths('Objects/PilotTalent.json');
@@ -104,9 +105,9 @@ const defaultName = getDefaultString(pilotTalent.name) || pilotTalent.id;
   <p>
     Pilot Talent Type:
     {
-      pilotTalent.talent_type_id && (
+      pilotTalent.talent_type_ref && (
         <ObjRef
-          obj={pilotTalentTypes[pilotTalent.talent_type_id]}
+          obj={pilotTalentTypes[extractIdFromRef(pilotTalent.talent_type_ref)]}
           version={version}
         />
       )

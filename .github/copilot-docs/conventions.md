@@ -50,7 +50,45 @@ Example: [modules/[id]/[version].astro](../../src/pages/modules/[id]/[version].a
 - **Component Names**: PascalCase (e.g., `ParseObjectList.astro`)
 - **Test Files**: `{fileName}/{functionOrInterfaceName}.ts` in `tests/` subdirectories
 
-# Code Practices
+### Detail Page Redirect Logic
 
+The redirect system follows a three-step flow to ensure users always reach the correct versioned detail page.
+The following example uses the Module object type:
+
+1. `/modules` (list page)
+2. `/modules/{moduleId}` (redirect page)
+3. `/modules/{moduleId}/{latestVersion}` (versioned detail page)
+
+#### Version Resolution Logic
+
+The summary file for a given object type specifies the versions that the object was modified in, starting with the version they were added in.
+
+If a given object was added in the first version and never modified, they will not have an entry in the summary file.
+
+If every entry in a given summary file meets the above criteria, the entire summary file will not exist. 
+For example, Module Rarity's might not have ever been changed since their initial release, meaning the entire `ModuleRarity.json` summary file will not exist.
+
+**Redirect Scenarios**:
+1. Summary file does not exist -> Use earliest version
+2. Entry within summary file does not exist -> Use earliest version
+3. Entry within summary file exists -> Use the latest version from the entry
+
+**Example Flow**:
+1. User clicks "Ammo Fabricator" on `/modules` page
+2. Browser navigates to `/modules/DA_Module_Ability_AmmoGenerator.1`
+3. `[id].astro` determines latest version is "2025-12-23" 
+4. Redirects to `/modules/DA_Module_Ability_AmmoGenerator.1/2025-12-23`
+5. `[id]/[version].astro` renders the full detail page
+
+#### Listed Versions
+On each object list page, e.g. `/modules`, will be an `Available Versions` section that lists all versions that the object has been modified in. If the object has no summary entry or the file does not exist, it will only list the earliest version.
+
+
+## Development
 - **Type Safety**: Use TypeScript interfaces for all data structures
 - **IIFE Functions**: Avoid at all costs using IIFE functions
+
+## Error Handling
+
+When an error occurs due to a specific parse object having an undefined attribute, first check the `src/types/{parseObject}.ts` file to see if it should be required.
+If it should be required but was found with an undefined value, find specific parse objects that violate this and prompt the user to further research or update them.

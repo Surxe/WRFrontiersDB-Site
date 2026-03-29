@@ -5,6 +5,7 @@ import { getAllVersions, getParseObjects } from '../utils/parse_object';
 import { prepareObjectList, groupBy, sortGroups } from '../utils/list';
 import { enrichPilotTalents } from '../utils/pilot';
 import { getStatValueChoices } from '../utils/stat';
+import { extractIdFromRef } from '../utils/object_reference';
 import type { PilotTalent, PilotTalentType, Pilot } from '../types/pilot';
 import type { ModuleStat } from '../types/module';
 import StatEmbedLocalizedText from '../components/StatEmbedLocalizedText.astro';
@@ -83,9 +84,13 @@ const sortedGroups = sortGroups(grouped, (a, b) => Number(a) - Number(b));
                   />
                 </td>
                 <td>
-                  {talent.talent_type_id && (
+                  {talent.talent_type_ref && (
                     <ObjRef
-                      obj={pilotTalentTypes[talent.talent_type_id]}
+                      obj={
+                        pilotTalentTypes[
+                          extractIdFromRef(talent.talent_type_ref)
+                        ]
+                      }
                       version={latestVersion}
                     />
                   )}

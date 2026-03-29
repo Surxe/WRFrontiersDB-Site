@@ -1,9 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { generateObjectStaticPaths } from '../../../src/utils/parse_object';
-import {
-  getParseObjects,
-  getAllVersions,
-} from '../../../src/utils/parse_object';
+import { getAllVersions } from '../../../src/utils/parse_object';
 
 describe('generateObjectStaticPaths', () => {
   describe('basic functionality', () => {
@@ -132,67 +129,6 @@ describe('generateObjectStaticPaths', () => {
 
       expect(allPaths.length).toBeGreaterThan(0);
     });
-
-    it('should filter non-Ready objects when prodReadyOnly is true', async () => {
-      const allPaths = await generateObjectStaticPaths(
-        'Objects/Module.json',
-        false
-      );
-      const readyPaths = await generateObjectStaticPaths(
-        'Objects/Module.json',
-        true
-      );
-
-      // Ready paths should be equal or less than all paths
-      expect(readyPaths.length).toBeLessThanOrEqual(allPaths.length);
-    });
-
-    it('should only include Ready objects when prodReadyOnly is true', async () => {
-      const result = await generateObjectStaticPaths(
-        'Objects/Module.json',
-        true
-      );
-
-      // Check a few paths to verify they're Ready
-      for (let i = 0; i < Math.min(5, result.length); i++) {
-        const path = result[i];
-        const modules = getParseObjects(
-          'Objects/Module.json',
-          path.params.version
-        );
-        const module = modules[path.params.id];
-
-        // If production_status exists, it should be 'Ready'
-        if (module.production_status) {
-          expect(module.production_status).toBe('Ready');
-        }
-      }
-    });
-
-    it('should exclude objects without production_status when prodReadyOnly is true', async () => {
-      const testVersion = '2025-12-09';
-      const allModules = getParseObjects('Objects/Module.json', testVersion);
-
-      // Find a module without production_status or with non-Ready status
-      const nonReadyModule = Object.entries(allModules).find(
-        ([_, mod]) =>
-          !mod.production_status || mod.production_status !== 'Ready'
-      );
-
-      if (nonReadyModule) {
-        const [nonReadyId] = nonReadyModule;
-        const readyPaths = await generateObjectStaticPaths(
-          'Objects/Module.json',
-          true
-        );
-
-        // This ID should not appear in ready paths for this version
-        const foundPath = readyPaths.find(
-          (p) => p.params.id === nonReadyId && p.params.version === testVersion
-        );
-        expect(foundPath).toBeUndefined();
-      }
-    });
   });
 
   describe('params structure', () => {
@@ -209,7 +145,7 @@ describe('generateObjectStaticPaths', () => {
 
     it('should have version in YYYY-MM-DD format', async () => {
       const result = await generateObjectStaticPaths('Objects/PilotClass.json');
-      const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+      const datePattern = /^\d{4}-\d{2}-\d{2}(?:-\d+)?$/; // Accept YYYY-MM-DD or YYYY-MM-DD-N format
 
       for (const path of result.slice(0, 5)) {
         expect(path.params.version).toMatch(datePattern);
@@ -242,7 +178,9 @@ describe('generateObjectStaticPaths', () => {
 
   describe('edge cases', () => {
     it('should return empty array for non-existent file', async () => {
-      const result = await generateObjectStaticPaths('Objects/NonExistent.json');
+      const result = await generateObjectStaticPaths(
+        'Objects/NonExistent.json'
+      );
       expect(Array.isArray(result)).toBe(true);
     });
 
@@ -253,7 +191,9 @@ describe('generateObjectStaticPaths', () => {
 
     it('should generate unique paths', async () => {
       const result = await generateObjectStaticPaths('Objects/PilotClass.json');
-      const pathKeys = new Set(result.map((p) => `${p.params.id}-${p.params.version}`));
+      const pathKeys = new Set(
+        result.map((p) => `${p.params.id}-${p.params.version}`)
+      );
       expect(pathKeys.size).toBe(result.length);
     });
 

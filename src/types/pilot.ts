@@ -17,9 +17,9 @@ export interface PilotTalentType extends ParseObject {
 
 export interface PilotType extends ParseObject {
   parseObjectClass: 'PilotType';
-  rarity_id: string; // TODO
+  rarity_ref: string; // TODO
   name: LocalizationKey;
-  group_reward_id: string; // TODO
+  group_reward_ref: string; // TODO
   has_extended_bio?: boolean;
   can_change_talents?: boolean;
   sort_order?: number;
@@ -51,7 +51,7 @@ export interface PilotTalent extends ParseObject {
   short_ui_description?: LocalizationKey;
   image_path: string;
   stats: {
-    stat_id: string; // TODO
+    stat_ref: string; // TODO
     value: number;
   }[];
   buffs?: {
@@ -64,13 +64,13 @@ export interface PilotTalent extends ParseObject {
     AbilitySelectors?: {
       allowed_placement_types: string[];
       module_tags?: {
-        module_tag_id: string;
+        module_tag_ref: string;
       }[];
     }[];
     module_tag_selector?: {
       list_operator: string;
       module_tags: {
-        module_tag_id: string; // TODO
+        module_tag_ref: string; // TODO
       }[];
     };
     [key: string]: unknown;
@@ -102,20 +102,20 @@ export interface Pilot extends ParseObject {
   second_name?: LocalizationKey;
   image_path: string;
   bio: LocalizationKey;
-  pilot_type_id: string;
-  pilot_class_id: string;
-  personality_id: string;
-  faction_id: string; // TODO
+  pilot_type_ref: string;
+  pilot_class_ref: string;
+  personality_ref: string;
+  faction_ref: string; // TODO
   sell_price: {
-    currency_id: string; // TODO
+    currency_ref: string; // TODO
     amount: number;
   };
   levels: {
-    talent_type_id: string;
-    talents: string[];
+    talent_type_ref: string;
+    talents_refs: string[];
     reputation_cost?: number;
     upgrade_cost?: {
-      currency_id: string; // TODO
+      currency_ref: string; // TODO
       amount: number;
     }; // Not used in game
   }[];

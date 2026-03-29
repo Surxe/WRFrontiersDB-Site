@@ -1,18 +1,20 @@
 import type { ModuleStat } from '../types/module';
-import type { StatValueChoices } from '../components/StatEmbedLocalizedText.astro';
+import type { StatValueChoices } from '../types/stat';
 import { getDefaultString } from './localization';
+import { resolveObjectRef } from './object_resolver';
+import { extractIdFromRef } from './object_reference';
 
 /**
  * Builds StatValueChoices from a stats array and ModuleStat objects.
  *
  * Applies unit scaling and formatting for each stat in the array.
  *
- * @param stats - Array of {stat_id, value} from a talent or similar object
+ * @param stats - Array of {stat_ref, value} from a talent or similar object
  * @param moduleStats - Record of all ModuleStat objects
  * @returns StatValueChoices object for use with StatEmbedLocalizedText component
  */
 export function getStatValueChoices(
-  stats: Array<{ stat_id: string; value: number }> | undefined,
+  stats: Array<{ stat_ref: string; value: number }> | undefined,
   moduleStats: Record<string, ModuleStat>
 ): StatValueChoices {
   const statValueChoices: StatValueChoices = {};
@@ -21,8 +23,8 @@ export function getStatValueChoices(
     return statValueChoices;
   }
 
-  stats.forEach(({ stat_id, value }) => {
-    const statObject = moduleStats[stat_id];
+  stats.forEach(({ stat_ref, value }) => {
+    const statObject = resolveObjectRef(stat_ref, moduleStats);
     if (statObject) {
       // Get unit pattern (default to {Amount}{Unit} for older versions)
       const unitPattern =
@@ -32,7 +34,8 @@ export function getStatValueChoices(
       const scaler = statObject.unit_scaler ?? 1;
       const scaledValue = value * scaler;
 
-      statValueChoices[stat_id] = {
+      const statId = extractIdFromRef(stat_ref);
+      statValueChoices[statId] = {
         pattern: unitPattern,
         unitName: statObject.unit_name,
         unitExponent: statObject.unit_exponent,

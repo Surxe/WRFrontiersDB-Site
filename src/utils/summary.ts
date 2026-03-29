@@ -1,5 +1,5 @@
-import path from 'path';
-import fs from 'fs';
+import * as path from 'path';
+import * as fs from 'fs';
 import { getAllVersions } from './parse_object';
 
 /**
@@ -9,14 +9,24 @@ import { getAllVersions } from './parse_object';
  */
 export function getSummaryPath(objectType: string): string {
   return path.join(
-    import.meta.env.PWD,
+    process.cwd(),
     'WRFrontiersDB-Data/summaries',
     `${objectType}.json`
   );
 }
 
 /**
- * Gets the latest version for an object, falling back to the overall latest version if not found
+ * Gets the earliest version from the versions.json file
+ * @returns The earliest version string
+ */
+export function getEarliestVersion(): string {
+  const { versions } = getAllVersions();
+  const versionKeys = Object.keys(versions);
+  return versionKeys[versionKeys.length - 1]; // Last key = earliest version (sorted DESC)
+}
+
+/**
+ * Gets the latest version for an object, falling back to the earliest version if not found
  * @param objectId - The object ID
  * @param objectType - The object type (e.g., 'Module', 'Pilot', 'Ability')
  * @returns The latest version string (never null)
@@ -46,7 +56,6 @@ export function getLatestVersionForObject(
     }
   }
 
-  // Fallback to overall latest version
-  const { latestVersion } = getAllVersions();
-  return latestVersion;
+  // Fallback to earliest version (not latest)
+  return getEarliestVersion();
 }

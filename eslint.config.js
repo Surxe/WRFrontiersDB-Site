@@ -12,6 +12,7 @@ export default [
       'node_modules/',
       '.astro/',
       'public/WRFrontiersDB-Data/',
+      '.vercel/output/',
     ],
   },
 

@@ -61,29 +61,29 @@ describe('Pilot interface', () => {
 
     it('should have "pilot_type_id" field in every object', () => {
       pilotArray.forEach((pilot) => {
-        expect(pilot).toHaveProperty('pilot_type_id');
-        expect(typeof pilot.pilot_type_id).toBe('string');
+        expect(pilot).toHaveProperty('pilot_type_ref');
+        expect(typeof pilot.pilot_type_ref).toBe('string');
       });
     });
 
     it('should have "pilot_class_id" field in every object', () => {
       pilotArray.forEach((pilot) => {
-        expect(pilot).toHaveProperty('pilot_class_id');
-        expect(typeof pilot.pilot_class_id).toBe('string');
+        expect(pilot).toHaveProperty('pilot_class_ref');
+        expect(typeof pilot.pilot_class_ref).toBe('string');
       });
     });
 
     it('should have "personality_id" field in every object', () => {
       pilotArray.forEach((pilot) => {
-        expect(pilot).toHaveProperty('personality_id');
-        expect(typeof pilot.personality_id).toBe('string');
+        expect(pilot).toHaveProperty('personality_ref');
+        expect(typeof pilot.personality_ref).toBe('string');
       });
     });
 
     it('should have "faction_id" field in every object', () => {
       pilotArray.forEach((pilot) => {
-        expect(pilot).toHaveProperty('faction_id');
-        expect(typeof pilot.faction_id).toBe('string');
+        expect(pilot).toHaveProperty('faction_ref');
+        expect(typeof pilot.faction_ref).toBe('string');
       });
     });
 
@@ -91,9 +91,9 @@ describe('Pilot interface', () => {
       pilotArray.forEach((pilot) => {
         expect(pilot).toHaveProperty('sell_price');
         expect(typeof pilot.sell_price).toBe('object');
-        expect(pilot.sell_price).toHaveProperty('currency_id');
+        expect(pilot.sell_price).toHaveProperty('currency_ref');
         expect(pilot.sell_price).toHaveProperty('amount');
-        expect(typeof pilot.sell_price.currency_id).toBe('string');
+        expect(typeof pilot.sell_price.currency_ref).toBe('string');
         expect(typeof pilot.sell_price.amount).toBe('number');
       });
     });
@@ -133,10 +133,10 @@ describe('Pilot interface', () => {
         'second_name',
         'image_path',
         'bio',
-        'pilot_type_id',
-        'pilot_class_id',
-        'personality_id',
-        'faction_id',
+        'pilot_type_ref',
+        'pilot_class_ref',
+        'personality_ref',
+        'faction_ref',
         'sell_price',
         'levels',
         // parseObjectClass is added at build time, not in raw data
@@ -197,16 +197,16 @@ describe('Pilot interface', () => {
     it('should have valid sell_price structure', () => {
       pilotArray.forEach((pilot) => {
         expect(pilot.sell_price).toBeDefined();
-        expect(pilot.sell_price.currency_id).toBeDefined();
+        expect(pilot.sell_price.currency_ref).toBeDefined();
         expect(pilot.sell_price.amount).toBeDefined();
-        expect(typeof pilot.sell_price.currency_id).toBe('string');
+        expect(typeof pilot.sell_price.currency_ref).toBe('string');
         expect(typeof pilot.sell_price.amount).toBe('number');
         expect(pilot.sell_price.amount).toBeGreaterThanOrEqual(0);
       });
     });
 
     it('should not have extra fields in sell_price objects', () => {
-      const allowedSellPriceFields = new Set(['currency_id', 'amount']);
+      const allowedSellPriceFields = new Set(['currency_ref', 'amount']);
 
       pilotArray.forEach((pilot) => {
         const actualFields = Object.keys(pilot.sell_price);
@@ -227,10 +227,10 @@ describe('Pilot interface', () => {
         expect(pilot.levels.length).toBeGreaterThan(0);
 
         pilot.levels.forEach((level: unknown) => {
-          expect(level).toHaveProperty('talent_type_id');
-          expect(level).toHaveProperty('talents');
-          expect(typeof level.talent_type_id).toBe('string');
-          expect(Array.isArray(level.talents)).toBe(true);
+          expect(level).toHaveProperty('talent_type_ref');
+          expect(level).toHaveProperty('talents_refs');
+          expect(typeof level.talent_type_ref).toBe('string');
+          expect(Array.isArray(level.talents_refs)).toBe(true);
         });
       });
     });
@@ -255,9 +255,9 @@ describe('Pilot interface', () => {
       pilotArray.forEach((pilot) => {
         pilot.levels.forEach((level: unknown) => {
           if (Object.prototype.hasOwnProperty.call(level, 'upgrade_cost')) {
-            expect(level.upgrade_cost).toHaveProperty('currency_id');
+            expect(level.upgrade_cost).toHaveProperty('currency_ref');
             expect(level.upgrade_cost).toHaveProperty('amount');
-            expect(typeof level.upgrade_cost.currency_id).toBe('string');
+            expect(typeof level.upgrade_cost.currency_ref).toBe('string');
             expect(typeof level.upgrade_cost.amount).toBe('number');
             expect(level.upgrade_cost.amount).toBeGreaterThanOrEqual(0);
           }
@@ -268,8 +268,8 @@ describe('Pilot interface', () => {
     it('should have non-empty talents array in each level', () => {
       pilotArray.forEach((pilot) => {
         pilot.levels.forEach((level: unknown) => {
-          expect(level.talents.length).toBeGreaterThan(0);
-          level.talents.forEach((talent: unknown) => {
+          expect(level.talents_refs.length).toBeGreaterThan(0);
+          level.talents_refs.forEach((talent: unknown) => {
             expect(typeof talent).toBe('string');
             expect(talent.length).toBeGreaterThan(0);
           });
@@ -279,8 +279,8 @@ describe('Pilot interface', () => {
 
     it('should not have extra fields in level objects', () => {
       const allowedLevelFields = new Set([
-        'talent_type_id',
-        'talents',
+        'talent_type_ref',
+        'talents_refs',
         'reputation_cost',
         'upgrade_cost',
       ]);
@@ -299,7 +299,7 @@ describe('Pilot interface', () => {
     });
 
     it('should not have extra fields in upgrade_cost objects when present', () => {
-      const allowedUpgradeCostFields = new Set(['currency_id', 'amount']);
+      const allowedUpgradeCostFields = new Set(['currency_ref', 'amount']);
 
       pilotArray.forEach((pilot) => {
         pilot.levels.forEach((level: unknown) => {
@@ -329,10 +329,10 @@ describe('Pilot interface', () => {
         expect(pilot.id.length).toBeGreaterThan(0);
         expect(pilot.first_name.en.length).toBeGreaterThan(0);
         expect(pilot.image_path.length).toBeGreaterThan(0);
-        expect(pilot.pilot_type_id.length).toBeGreaterThan(0);
-        expect(pilot.pilot_class_id.length).toBeGreaterThan(0);
-        expect(pilot.personality_id.length).toBeGreaterThan(0);
-        expect(pilot.faction_id.length).toBeGreaterThan(0);
+        expect(pilot.pilot_type_ref.length).toBeGreaterThan(0);
+        expect(pilot.pilot_class_ref.length).toBeGreaterThan(0);
+        expect(pilot.personality_ref.length).toBeGreaterThan(0);
+        expect(pilot.faction_ref.length).toBeGreaterThan(0);
       });
     });
 
