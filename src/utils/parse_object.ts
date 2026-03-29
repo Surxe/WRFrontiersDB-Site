@@ -176,7 +176,7 @@ export async function generateObjectStaticPaths(
       // Skip production filtering if needed
       if (
         prodReadyOnly &&
-        (!obj.production_status || obj.production_status !== 'Ready')
+        (!obj.production_status || obj.production_status !== 'Ready' || !obj.name || obj.name === '')
       ) {
         continue;
       }
@@ -196,7 +196,8 @@ export async function generateObjectStaticPaths(
 
 // Generate static paths for object list pages (e.g., /modules, /pilots, etc.) - latest version only
 export function generateObjectListStaticPaths(
-  objectType: string
+  objectType: string,
+  prodReadyOnly: boolean = false
 ): { params: { id: string } }[] {
   const latestVersion = getLatestVersion();
   const objectPath = path.join(
@@ -209,9 +210,18 @@ export function generateObjectListStaticPaths(
   if (fs.existsSync(objectPath)) {
     try {
       const allObjects = readJsonFile(objectPath) as Record<string, ParseObject>;
+      let objectIds = Object.keys(allObjects);
 
-      // Generate paths for all object IDs
-      return Object.keys(allObjects).map((id) => ({
+      // Apply production filtering if needed
+      if (prodReadyOnly) {
+        objectIds = objectIds.filter((id) => {
+          const obj = allObjects[id];
+          return obj.production_status === 'Ready' && obj.name != null && obj.name !== '';
+        });
+      }
+
+      // Generate paths for filtered object IDs
+      return objectIds.map((id) => ({
         params: { id },
       }));
     } catch (error) {

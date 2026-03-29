@@ -18,7 +18,7 @@ import ObjRef from '../../components/obj_ref/ObjRef.astro';
 export const prerender = true;
 
 export async function getStaticPaths() {
-  return generateObjectListStaticPaths('Module');
+  return generateObjectListStaticPaths('Module', true);
 }
 
 const { id } = Astro.params;

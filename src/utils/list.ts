@@ -15,7 +15,9 @@ export function prepareObjectList<T extends ParseObject>(
   let entries = Object.entries(objects);
 
   if (prodReadyOnly) {
-    entries = entries.filter(([_, obj]) => obj.production_status === 'Ready');
+    entries = entries.filter(([_, obj]) => 
+      obj.production_status === 'Ready' && obj.name != null && obj.name !== ''
+    );
   }
 
   if (sortBy) {
