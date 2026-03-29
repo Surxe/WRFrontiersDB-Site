@@ -6,12 +6,33 @@ import * as moduleTypes from '../types/module';
 import * as pilotTypes from '../types/pilot';
 import * as rarityTypes from '../types/rarity';
 
+// File cache to avoid repeated reads
+const fileCache = new Map<string, any>();
+
 // Merge all exported constants from type modules
 const allTypeExports = {
   ...moduleTypes,
   ...pilotTypes,
   ...rarityTypes,
 };
+
+/**
+ * Cached file reader to reduce file handle usage
+ */
+function readJsonFile(filePath: string): any {
+  if (fileCache.has(filePath)) {
+    return fileCache.get(filePath);
+  }
+  
+  try {
+    const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    fileCache.set(filePath, data);
+    return data;
+  } catch (error) {
+    console.warn(`Failed to read JSON file: ${filePath}`, error);
+    return null;
+  }
+}
 
 /**
  * Load parse objects from a specific version
@@ -32,7 +53,7 @@ export function getParseObjects<T = ParseObject>(
       parseObjectFile
     );
     if (fs.existsSync(objectsPath)) {
-      const data = JSON.parse(fs.readFileSync(objectsPath, 'utf8'));
+      const data = readJsonFile(objectsPath);
 
       // Extract parseObjectClass from parseObjectFile (e.g., "Objects/Module.json" -> "Module")
       const fileName = parseObjectFile.split('/').pop() || '';
@@ -71,10 +92,7 @@ export function getAllVersions(): {
     process.cwd(),
     'WRFrontiersDB-Data/versions.json'
   );
-  const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8')) as Record<
-    string,
-    VersionInfo
-  >;
+  const versions = readJsonFile(versionsPath) as Record<string, VersionInfo>;
   const latestVersion = Object.keys(versions)[0]; // First in the object since they're sorted by date DESC
 
   return { versions, latestVersion };
@@ -87,10 +105,7 @@ export function getVersionsData(version: string): VersionsData {
     process.cwd(),
     'WRFrontiersDB-Data/versions.json'
   );
-  const versions = JSON.parse(fs.readFileSync(versionsPath, 'utf8')) as Record<
-    string,
-    VersionInfo
-  >;
+  const versions = readJsonFile(versionsPath) as Record<string, VersionInfo>;
   const versionInfo = versions[version];
 
   return { versions, versionInfo };
@@ -126,6 +141,14 @@ export function isObjectProductionReady(
   version: string,
   parseObjectPath: string
 ): boolean {
+  const cacheKey = `${parseObjectPath}/${version}`;
+  
+  if (fileCache.has(cacheKey)) {
+    const objects = fileCache.get(cacheKey);
+    const obj = objects[objectId];
+    return obj && obj.production_status === 'Ready';
+  }
+
   try {
     const objectPath = path.join(
       process.cwd(),
@@ -138,11 +161,7 @@ export function isObjectProductionReady(
       return false;
     }
 
-    const objects = JSON.parse(fs.readFileSync(objectPath, 'utf8')) as Record<
-      string,
-      ParseObject
-    >;
-
+    const objects = readJsonFile(objectPath) as Record<string, ParseObject>;
     const obj = objects[objectId];
     return obj && obj.production_status === 'Ready';
   } catch {
@@ -169,9 +188,7 @@ export async function generateObjectStaticPaths(
   let summaryExists = false;
 
   if (fs.existsSync(summaryPath)) {
-    objectChangeVersions = JSON.parse(
-      fs.readFileSync(summaryPath, 'utf8')
-    ) as Record<string, string[]>;
+    objectChangeVersions = readJsonFile(summaryPath) as Record<string, string[]>;
     summaryExists = true;
   } else {
     console.warn(`Summary file not found: ${summaryPath}`);
@@ -216,9 +233,7 @@ export async function generateObjectStaticPaths(
     );
 
     if (fs.existsSync(latestObjectPath)) {
-      const allObjects = JSON.parse(
-        fs.readFileSync(latestObjectPath, 'utf8')
-      ) as Record<string, ParseObject>;
+      const allObjects = readJsonFile(latestObjectPath) as Record<string, ParseObject>;
 
       for (const [objectId, obj] of Object.entries(allObjects)) {
         if (!processedObjects.has(objectId)) {
@@ -260,9 +275,7 @@ export function generateObjectListStaticPaths(
 
   if (fs.existsSync(summaryPath)) {
     try {
-      const summary = JSON.parse(
-        fs.readFileSync(summaryPath, 'utf8')
-      ) as Record<string, string[]>;
+      const summary = readJsonFile(summaryPath) as Record<string, string[]>;
 
       // Get the latest version to validate objects exist
       const { latestVersion } = getAllVersions();
@@ -277,9 +290,7 @@ export function generateObjectListStaticPaths(
 
       // Only include objects that actually exist in the data
       if (fs.existsSync(objectPath)) {
-        const allObjects = JSON.parse(
-          fs.readFileSync(objectPath, 'utf8')
-        ) as Record<string, ParseObject>;
+        const allObjects = readJsonFile(objectPath) as Record<string, ParseObject>;
 
         for (const [objectId, versions] of Object.entries(summary)) {
           if (allObjects[objectId]) {
