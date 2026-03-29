@@ -1,6 +1,21 @@
 ---
-import { getLatestVersionForObject } from '../../utils/summary';
-import { generateObjectListStaticPaths } from '../../utils/parse_object';
+import type { PilotTalentType, PilotTalent, Pilot } from '../../types/pilot';
+import type { ModuleStat } from '../../types/module';
+import Icon from '../../components/Icon.astro';
+import LocalizedText from '../../components/LocalizedText.astro';
+import StatEmbedLocalizedText from '../../components/StatEmbedLocalizedText.astro';
+import ObjectPageScripts from '../../components/ObjectPageScripts.astro';
+import ParseObjectPage from '../../components/ParseObjectPage.astro';
+import ObjRef from '../../components/obj_ref/ObjRef.astro';
+import {
+  getLatestVersion,
+  getParseObject,
+  getParseObjects,
+  generateObjectListStaticPaths,
+} from '../../utils/parse_object';
+import { enrichPilotTalents } from '../../utils/pilot';
+import { getStatValueChoices } from '../../utils/stat';
+import { getDefaultString } from '../../utils/localization';
 
 export const prerender = true;
 
@@ -9,17 +24,105 @@ export async function getStaticPaths() {
 }
 
 const { id } = Astro.params;
+const latestVersion = getLatestVersion();
 
-// Get the latest version for this pilot talent type
-const latestVersion = getLatestVersionForObject(
-  id as string,
-  'PilotTalentType'
+const pilotTalentType = getParseObject<PilotTalentType>(
+  id,
+  latestVersion,
+  'Objects/PilotTalentType.json'
 );
 
-if (!latestVersion) {
-  return Astro.redirect('/pilot_talent_types');
-}
+// Load ModuleStats for stat replacements (even though PilotTalentType doesn't have stats)
+const moduleStats = getParseObjects<ModuleStat>(
+  'Objects/ModuleStat.json',
+  latestVersion
+);
 
-// Redirect to the latest version
-return Astro.redirect(`/pilot_talent_types/${id}/${latestVersion}`);
+// Load and enrich pilot talents
+const pilots = getParseObjects<Pilot>('Objects/Pilot.json', latestVersion);
+const pilotTalents = getParseObjects<PilotTalent>(
+  'Objects/PilotTalent.json',
+  latestVersion
+);
+const enrichedTalents = enrichPilotTalents(pilotTalents, pilots);
+
+// Filter talents that belong to this talent type
+const talentsForType = Object.entries(enrichedTalents)
+  .filter(([_, talent]) => talent.talent_type_id === id)
+  .sort(([_a, a], [_b, b]) => (a.level || 999) - (b.level || 999));
+
+// Extract English text as fallback
+const defaultName =
+  getDefaultString(pilotTalentType.name) || pilotTalentType.id;
 ---
+
+<ParseObjectPage>
+  <LocalizedText
+    id="pilot-talent-type-name-title"
+    tag="title"
+    localizationKey={pilotTalentType.name}
+    slot="head"
+  />
+  <p>
+    Back to <a href="/pilot_talent_types">Pilot Talent Types</a>
+  </p>
+  <LocalizedText
+    id="pilot-talent-type-name"
+    tag="h1"
+    localizationKey={pilotTalentType.name}
+  />
+
+  <Icon iconPath={pilotTalentType.image_path} altText={`${defaultName} icon`} />
+
+  {
+    pilotTalentType.description && (
+      <LocalizedText
+        id="pilot-talent-type-desc"
+        tag="p"
+        localizationKey={pilotTalentType.description}
+      />
+    )
+  }
+
+  <h2>Pilot Talents</h2>
+  <p>
+    Level: {talentsForType.length > 0 ? talentsForType[0][1].level : 'Unknown'}
+  </p>
+  {
+    talentsForType.length > 0 ? (
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          {talentsForType.map(([_talentId, talent]) => (
+            <tr>
+              <td>
+                <ObjRef obj={talent} version={latestVersion} />
+              </td>
+              <td>
+                <StatEmbedLocalizedText
+                  tag="span"
+                  localizationKey={talent.description}
+                  statValueChoices={getStatValueChoices(
+                    talent.stats,
+                    moduleStats
+                  )}
+                />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    ) : (
+      <p>No talents found for this type.</p>
+    )
+  }
+
+  <p>Language: <span id="current-lang">en</span></p>
+
+  <ObjectPageScripts version={latestVersion} objectData={pilotTalentType} />
+</ParseObjectPage>

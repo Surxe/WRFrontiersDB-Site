@@ -1,6 +1,19 @@
 ---
-import { getLatestVersionForObject } from '../../utils/summary';
-import { generateObjectListStaticPaths } from '../../utils/parse_object';
+import type { Module, ModuleRarity } from '../../types/module';
+import type { Rarity } from '../../types/rarity';
+import Icon from '../../components/Icon.astro';
+import LocalizedText from '../../components/LocalizedText.astro';
+import ObjectPageScripts from '../../components/ObjectPageScripts.astro';
+import ParseObjectPage from '../../components/ParseObjectPage.astro';
+import {
+  getLatestVersion,
+  getParseObject,
+  getParseObjects,
+  generateObjectListStaticPaths,
+} from '../../utils/parse_object';
+import { getDefaultString } from '../../utils/localization';
+import { resolveObjectRef } from '../../utils/object_resolver';
+import ObjRef from '../../components/obj_ref/ObjRef.astro';
 
 export const prerender = true;
 
@@ -9,14 +22,63 @@ export async function getStaticPaths() {
 }
 
 const { id } = Astro.params;
+const latestVersion = getLatestVersion();
 
-// Get the latest version for this module
-const latestVersion = getLatestVersionForObject(id as string, 'Module');
+const module = getParseObject<Module>(id, latestVersion, 'Objects/Module.json');
+const allModuleRarities = getParseObjects<ModuleRarity>(
+  'Objects/ModuleRarity.json',
+  latestVersion
+);
+const moduleRarity = resolveObjectRef(
+  module.module_rarity_ref,
+  allModuleRarities
+);
+const allRarities = getParseObjects<Rarity>('Objects/Rarity.json', latestVersion);
+const rarity = moduleRarity
+  ? resolveObjectRef(moduleRarity.rarity_ref, allRarities)
+  : undefined;
 
-if (!latestVersion) {
-  return Astro.redirect('/modules');
+if (!module.name) {
+  throw new Error(`Module with id ${id} is missing name. 
+  This is expected only for non production ready modules.`);
 }
 
-// Redirect to the latest version
-return Astro.redirect(`/modules/${id}/${latestVersion}`);
+// Extract English text as fallback
+const defaultName = getDefaultString(module.name) || module.id;
 ---
+
+<ParseObjectPage>
+  <LocalizedText
+    id="module-name-title"
+    tag="title"
+    localizationKey={module.name}
+    slot="head"
+  />
+  <p>Back to <a href="/modules">Modules</a></p>
+  <LocalizedText id="module-name" tag="h1" localizationKey={module.name} />
+
+  <Icon iconPath={module.inventory_icon_path} altText={`${defaultName} icon`} />
+
+  {
+    module.description && (
+      <LocalizedText
+        id="module-desc"
+        tag="p"
+        localizationKey={module.description}
+      />
+    )
+  }
+  <p>Language: <span id="current-lang">en</span></p>
+  <p>
+    Rarity:
+    {rarity ? <ObjRef obj={rarity} version={latestVersion} /> : 'Unknown'}
+  </p>
+
+  <div id="stats">stats</div>
+
+  <ObjectPageScripts
+    version={latestVersion}
+    objectData={module}
+    jsFileName="module_page.js"
+  />
+</ParseObjectPage>

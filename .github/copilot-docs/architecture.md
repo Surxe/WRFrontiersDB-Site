@@ -11,14 +11,15 @@
 
 - **Framework**: Astro 5.x with static output (`output: 'static'`)
 - **Base path**: `/` (always)
-- **URL pattern**: `/{parseObject}/{id}/{version}` (e.g., `/modules/MOD_ArmorShield/2025-12-09`)
+- **URL pattern**: `/{parseObject}/{id}` (e.g., `/modules/MOD_ArmorShield`)
+- **Version support**: Only latest version is supported; historical versions have been removed
 
 ## Build-time vs Runtime
 
 ### Build-time (Node.js)
 
 - `src/utils/parse_object.ts`: Loads JSON from filesystem using `fs` and `path`
-- `generateObjectStaticPaths()`: Creates all static routes during build
+- `generateObjectListStaticPaths()`: Creates static routes for latest version only
 - Type definitions in `src/types/`
 
 ### Runtime (Browser)

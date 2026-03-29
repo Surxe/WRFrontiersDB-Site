@@ -3,13 +3,12 @@
 ## Adding a New Object Type
 
 1. **Study JSON structure** in `public/WRFrontiersDB-Data/archive/{version}/Objects/{parseObject}.json`
-2. **Create type interface** in `src/types/{parseObject}.ts` (e.g., `export interface Weapon { ... }`) with the url constant for `parseObjectUrl`
+2. **Create type interface** in `src/types/{parseObject}.ts` (e.g., `export interface Weapon { ... }`) with url constant for `parseObjectUrl`
 3. **Configure ObjRef overload** in `src/utils/obj_ref.ts`'s `getObjRefData` function
 4. **Create list page**: `src/pages/{parseObject}s.astro` (properly pluralized) using `ParseObjectList`
-5. **Create detail page**: `src/pages/{parseObject}s/[id]/[version].astro` with `getStaticPaths()`
-6. **Call** `generateObjectStaticPaths("Objects/{parseObject}.json", true)`
-7. **Create version direct page**: `src/pages/{parseObject}s/[id].astro` with `getLatestVersionForObject()`
-8. **Add link** to homepage ([index.astro](../../src/pages/index.astro))
+5. **Create detail page**: `src/pages/{parseObject}s/[id].astro` with `getStaticPaths()`
+6. **Call** `generateObjectListStaticPaths("{parseObject}")`
+7. **Add link** to homepage ([index.astro](../../src/pages/index.astro))
 
 ## Working with Icons/Textures
 
@@ -37,6 +36,5 @@ Injected by `ObjectPageScripts` component using `<script type="application/json"
 
 ## Working with Versions
 
-- **Latest version**: `Object.keys(versions)[0]` (versions are ordered newest-first)
-- **Version metadata**: Use `getVersionsData(version)` to get `versionInfo`
-- **Version navigation**: Use `VersionList` component for version switcher UI
+- **Latest version**: `getLatestVersion()` returns the current latest version
+- **Version support**: Only latest version is supported; no version navigation or historical data

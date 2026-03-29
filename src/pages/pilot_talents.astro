@@ -1,7 +1,7 @@
 ---
 import BackToHome from '../components/BackToHome.astro';
 import ParseObjectListPage from '../components/ParseObjectListPage.astro';
-import { getAllVersions, getParseObjects } from '../utils/parse_object';
+import { getLatestVersion, getParseObjects } from '../utils/parse_object';
 import { prepareObjectList, groupBy, sortGroups } from '../utils/list';
 import { enrichPilotTalents } from '../utils/pilot';
 import { getStatValueChoices } from '../utils/stat';
@@ -11,7 +11,7 @@ import type { ModuleStat } from '../types/module';
 import StatEmbedLocalizedText from '../components/StatEmbedLocalizedText.astro';
 import ObjRef from '../components/obj_ref/ObjRef.astro';
 
-const { versions, latestVersion } = getAllVersions();
+const latestVersion = getLatestVersion();
 
 // Load all data
 const pilotTalents = getParseObjects<PilotTalent>(
@@ -50,9 +50,7 @@ const sortedGroups = sortGroups(grouped, (a, b) => Number(a) - Number(b));
   <h1>Pilot Talents</h1>
 
   <p>
-    Showing pilot talents from latest version: {versions[latestVersion].title} ({
-      latestVersion
-    })
+    Showing pilot talents from latest version ({latestVersion})
   </p>
 
   {

@@ -1,13 +1,13 @@
 ---
 import BackToHome from '../components/BackToHome.astro';
 import ParseObjectListPage from '../components/ParseObjectListPage.astro';
-import { getAllVersions, getParseObjects } from '../utils/parse_object';
+import { getLatestVersion, getParseObjects } from '../utils/parse_object';
 import { prepareObjectList, groupBy, sortGroups } from '../utils/list';
 import type { PilotTalentType, Pilot } from '../types/pilot';
 import LocalizedText from '../components/LocalizedText.astro';
 import ObjRef from '../components/obj_ref/ObjRef.astro';
 
-const { versions, latestVersion } = getAllVersions();
+const latestVersion = getLatestVersion();
 
 // Load pilot talent types and pilots
 const pilotTalentTypes = getParseObjects<PilotTalentType>(
@@ -57,9 +57,7 @@ const sortedGroups = sortGroups(grouped, (a, b) => Number(a) - Number(b));
   <h1>Pilot Talent Types</h1>
 
   <p>
-    Showing pilot talent types from latest version: {
-      versions[latestVersion].title
-    } ({latestVersion})
+    Showing pilot talent types from latest version ({latestVersion})
   </p>
 
   {

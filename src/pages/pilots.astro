@@ -1,12 +1,12 @@
 ---
 import BackToHome from '../components/BackToHome.astro';
 import ParseObjectListPage from '../components/ParseObjectListPage.astro';
-import { getAllVersions, getParseObjects } from '../utils/parse_object';
+import { getLatestVersion, getParseObjects } from '../utils/parse_object';
 import PilotTables from '../components/pilot/Tables.astro';
 import type { Pilot } from '../types/pilot';
 import '../styles/pilots.css';
 
-const { versions, latestVersion } = getAllVersions();
+const latestVersion = getLatestVersion();
 
 // Load pilots
 const pilots = getParseObjects<Pilot>('Objects/Pilot.json', latestVersion);
@@ -22,9 +22,7 @@ const pilot = pilots['DA_Pilot_Common1.0']; // Pick an arbitary pilot. All are v
   <BackToHome />
 
   <p>
-    Showing pilots from latest version: {versions[latestVersion].title} ({
-      latestVersion
-    })
+    Showing pilots from latest version ({latestVersion})
   </p>
 
   <h1>Pilots</h1>

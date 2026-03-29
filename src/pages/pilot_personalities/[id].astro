@@ -1,6 +1,15 @@
 ---
-import { getLatestVersionForObject } from '../../utils/summary';
-import { generateObjectListStaticPaths } from '../../utils/parse_object';
+import type { PilotPersonality } from '../../types/pilot';
+import Icon from '../../components/Icon.astro';
+import LocalizedText from '../../components/LocalizedText.astro';
+import ObjectPageScripts from '../../components/ObjectPageScripts.astro';
+import ParseObjectPage from '../../components/ParseObjectPage.astro';
+import {
+  getLatestVersion,
+  getParseObject,
+  generateObjectListStaticPaths,
+} from '../../utils/parse_object';
+import { getDefaultString } from '../../utils/localization';
 
 export const prerender = true;
 
@@ -9,17 +18,38 @@ export async function getStaticPaths() {
 }
 
 const { id } = Astro.params;
+const latestVersion = getLatestVersion();
 
-// Get the latest version for this pilot personality
-const latestVersion = getLatestVersionForObject(
-  id as string,
-  'PilotPersonality'
+const pilotPersonality = getParseObject<PilotPersonality>(
+  id,
+  latestVersion,
+  'Objects/PilotPersonality.json'
 );
 
-if (!latestVersion) {
-  return Astro.redirect('/pilot_personalities');
-}
-
-// Redirect to the latest version
-return Astro.redirect(`/pilot_personalities/${id}/${latestVersion}`);
+// Extract English text as fallback
+const defaultName =
+  getDefaultString(pilotPersonality.name) || pilotPersonality.id;
 ---
+
+<ParseObjectPage>
+  <LocalizedText
+    id="pilot-personality-name-title"
+    tag="title"
+    localizationKey={pilotPersonality.name}
+    slot="head"
+  />
+  <p>
+    Back to <a href="/pilot_personalities">Pilot Personalities</a>
+  </p>
+  <LocalizedText
+    id="pilot-personality-name"
+    tag="h1"
+    localizationKey={pilotPersonality.name}
+  />
+
+  <Icon iconPath={pilotPersonality.icon_path} altText={`${defaultName} icon`} />
+
+  <p>Language: <span id="current-lang">en</span></p>
+
+  <ObjectPageScripts version={latestVersion} objectData={pilotPersonality} />
+</ParseObjectPage>

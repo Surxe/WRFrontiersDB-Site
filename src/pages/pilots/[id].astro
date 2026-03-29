@@ -1,6 +1,29 @@
 ---
-import { getLatestVersionForObject } from '../../utils/summary';
-import { generateObjectListStaticPaths } from '../../utils/parse_object';
+import {
+  type PilotClass,
+  type PilotPersonality,
+  type PilotType,
+  type Pilot,
+  type PilotTalent,
+  type PilotTalentType,
+} from '../../types/pilot';
+import { type Rarity } from '../../types/rarity';
+import Icon from '../../components/Icon.astro';
+import LocalizedText from '../../components/LocalizedText.astro';
+import ObjectPageScripts from '../../components/ObjectPageScripts.astro';
+import ParseObjectPage from '../../components/ParseObjectPage.astro';
+import {
+  getLatestVersion,
+  getParseObjects,
+  getParseObject,
+  generateObjectListStaticPaths,
+} from '../../utils/parse_object';
+import { getDefaultString } from '../../utils/localization';
+import { getStatValueChoices } from '../../utils/stat';
+import { resolveObjectRef } from '../../utils/object_resolver';
+import { extractIdFromRef } from '../../utils/object_reference';
+import type { ModuleStat } from '../../types/module';
+import ObjRef from '../../components/obj_ref/ObjRef.astro';
 
 export const prerender = true;
 
@@ -9,14 +32,158 @@ export async function getStaticPaths() {
 }
 
 const { id } = Astro.params;
+const latestVersion = getLatestVersion();
 
-// Get the latest version for this pilot
-const latestVersion = getLatestVersionForObject(id as string, 'Pilot');
+const pilot = getParseObject<Pilot>(id, latestVersion, 'Objects/Pilot.json');
+const pilotTalents = getParseObjects<PilotTalent>(
+  'Objects/PilotTalent.json',
+  latestVersion
+);
+const pilotTalentTypes = getParseObjects<PilotTalentType>(
+  'Objects/PilotTalentType.json',
+  latestVersion
+);
+const pilotTypes = getParseObjects<PilotType>(
+  'Objects/PilotType.json',
+  latestVersion
+);
+// Load ModuleStats for stat replacements
+const moduleStats = getParseObjects<ModuleStat>(
+  'Objects/ModuleStat.json',
+  latestVersion
+);
 
-if (!latestVersion) {
-  return Astro.redirect('/pilots');
-}
+const rarity =
+  pilotTypes && pilot.pilot_type_ref
+    ? resolveObjectRef(
+        pilotTypes[extractIdFromRef(pilot.pilot_type_ref)].rarity_ref,
+        getParseObjects<Rarity>('Objects/Rarity.json', latestVersion)
+      )
+    : undefined;
+const pilotClass = pilot.pilot_class_ref
+  ? resolveObjectRef(
+      pilot.pilot_class_ref,
+      getParseObjects<PilotClass>('Objects/PilotClass.json', latestVersion)
+    )
+  : undefined;
+const pilotPersonality = pilot.personality_ref
+  ? resolveObjectRef(
+      pilot.personality_ref,
+      getParseObjects<PilotPersonality>(
+        'Objects/PilotPersonality.json',
+        latestVersion
+      )
+    )
+  : undefined;
 
-// Redirect to the latest version
-return Astro.redirect(`/pilots/${id}/${latestVersion}`);
+// Extract English text as fallback
+const defaultName = getDefaultString(pilot.first_name) || pilot.id;
 ---
+
+<ParseObjectPage>
+  <LocalizedText
+    id="pilot-name-title"
+    tag="title"
+    localizationKey={pilot.first_name}
+    slot="head"
+  />
+  <p>Back to <a href="/pilots">Pilots</a></p>
+  <p>
+    <LocalizedText
+      id="pilot-first-name"
+      tag="span"
+      localizationKey={pilot.first_name}
+    />
+    {' '}
+    {
+      pilot.second_name && (
+        <LocalizedText
+          id="pilot-second-name"
+          tag="span"
+          localizationKey={pilot.second_name}
+        />
+      )
+    }
+  </p>
+
+  <LocalizedText id="pilot-bio" tag="p" localizationKey={pilot.bio} />
+
+  <Icon iconPath={pilot.image_path} altText={`${defaultName} portrait`} />
+
+  <p id="pilot-sell-price-currency">
+    Sell Price Currency: {pilot.sell_price.currency_ref}
+  </p>
+  <p id="pilot-sell-price-amount">
+    Sell Price Amount: {pilot.sell_price.amount}
+  </p>
+
+  <h3>Levels</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Level</th>
+        <th>Talent Type</th>
+        <th>Talents</th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        pilot.levels?.map((level, index) => (
+          <tr>
+            <td>{index + 1}</td>
+            <td>
+              <ObjRef
+                obj={pilotTalentTypes[extractIdFromRef(level.talent_type_ref)]}
+                version={latestVersion}
+              />
+            </td>
+            <td>
+              <div>
+                {level.talents_refs?.map((talent_ref) => (
+                  <span>
+                    <ObjRef
+                      obj={pilotTalents[extractIdFromRef(talent_ref)]}
+                      version={latestVersion}
+                      useOnHover={true}
+                      onHoverStatChoices={getStatValueChoices(
+                        pilotTalents[extractIdFromRef(talent_ref)].stats,
+                        moduleStats
+                      )}
+                    />
+                  </span>
+                ))}
+              </div>
+            </td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+
+  <!-- Hyperlinks to the referenced ids pilot_type_id, pilot_class_id, personality_id -->
+  <p>
+    Rarity:
+    {rarity ? <ObjRef obj={rarity} version={latestVersion} /> : 'Unknown'}
+  </p>
+
+  <p>
+    Pilot Class:
+    {pilotClass ? <ObjRef obj={pilotClass} version={latestVersion} /> : 'Unknown'}
+  </p>
+
+  <p>
+    Personality:
+    {
+      pilotPersonality ? (
+        <ObjRef obj={pilotPersonality} version={latestVersion} />
+      ) : (
+        'Unknown'
+      )
+    }
+  </p>
+  <p>faction_id placeholder</p>
+
+  <p>Language: <span id="current-lang">en</span></p>
+
+  <ObjectPageScripts version={latestVersion} objectData={pilot} />
+</ParseObjectPage>
