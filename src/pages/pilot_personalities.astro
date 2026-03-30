@@ -2,9 +2,9 @@
 import ParseObjectList from '../components/ParseObjectList.astro';
 import BackToHome from '../components/BackToHome.astro';
 import ParseObjectListPage from '../components/ParseObjectListPage.astro';
-import { getAllVersions } from '../utils/parse_object';
+import { getLatestVersion } from '../utils/parse_object';
 
-const { versions, latestVersion } = getAllVersions();
+const latestVersion = getLatestVersion();
 ---
 
 <ParseObjectListPage title="Pilot Personalities" version={latestVersion}>
@@ -12,9 +12,7 @@ const { versions, latestVersion } = getAllVersions();
   <h1>Pilot Personalities</h1>
 
   <p>
-    Showing pilot personalities from latest version: {
-      versions[latestVersion].title
-    } ({latestVersion})
+    Showing pilot personalities from latest version ({latestVersion})
   </p>
 
   <ParseObjectList

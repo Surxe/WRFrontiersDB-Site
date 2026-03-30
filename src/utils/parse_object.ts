@@ -1,14 +1,12 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import type { VersionsData, VersionInfo } from '../types/version';
 import type { StaticPathsResult, ParseObject } from '../types/parse_object';
 import * as moduleTypes from '../types/module';
 import * as pilotTypes from '../types/pilot';
 import * as rarityTypes from '../types/rarity';
-import { getEarliestVersion } from './summary';
 
 // File cache to avoid repeated reads
-const fileCache = new Map<string, any>();
+const fileCache = new Map<string, Record<string, any>>();
 
 // Merge all exported constants from type modules
 const allTypeExports = {
@@ -84,33 +82,16 @@ export function getParseObjects<T = ParseObject>(
   return {};
 }
 
-// Get all versions and the latest version
-export function getAllVersions(): {
-  versions: Record<string, VersionInfo>;
-  latestVersion: string;
-} {
+// Get the latest version only
+export function getLatestVersion(): string {
   const versionsPath = path.join(
     process.cwd(),
     'WRFrontiersDB-Data/versions.json'
   );
-  const versions = readJsonFile(versionsPath) as Record<string, VersionInfo>;
-  const latestVersion = Object.keys(versions)[0]; // First in the object since they're sorted by date DESC
-
-  return { versions, latestVersion };
+  const versions = readJsonFile(versionsPath) as Record<string, any>;
+  return Object.keys(versions)[0]; // First in the object since they're sorted by date DESC
 }
 
-// Get all versions data from versions.json and the specific version element
-// Having all versions is necessary for listing the versions the ParseObject exists in
-export function getVersionsData(version: string): VersionsData {
-  const versionsPath = path.join(
-    process.cwd(),
-    'WRFrontiersDB-Data/versions.json'
-  );
-  const versions = readJsonFile(versionsPath) as Record<string, VersionInfo>;
-  const versionInfo = versions[version];
-
-  return { versions, versionInfo };
-}
 
 // Get a specific parse object by ID and version
 export function getParseObject<T = ParseObject>(
@@ -146,8 +127,11 @@ export function isObjectProductionReady(
   
   if (fileCache.has(cacheKey)) {
     const objects = fileCache.get(cacheKey);
-    const obj = objects[objectId];
-    return obj && obj.production_status === 'Ready';
+    if (objects) {
+      const obj = objects[objectId];
+      return obj && obj.production_status === 'Ready';
+    }
+    return false;
   }
 
   try {
@@ -170,191 +154,84 @@ export function isObjectProductionReady(
   }
 }
 
-// Generate static paths for all parse objects across versions
+// Generate static paths for objects in latest version only
 export async function generateObjectStaticPaths(
   parseObjectPath: string = 'Objects/Module.json',
   prodReadyOnly: boolean = false
 ): Promise<StaticPathsResult[]> {
-  // Extract object type from path (e.g., "Objects/Module.json" -> "Module")
-  const objectType = path.basename(parseObjectPath, '.json');
-
-  // Load the precomputed summary for this object type
-  const summaryPath = path.join(
+  const latestVersion = getLatestVersion();
+  const objectsPath = path.join(
     process.cwd(),
-    'WRFrontiersDB-Data/summaries',
-    `${objectType}.json`
+    'WRFrontiersDB-Data/archive',
+    latestVersion,
+    parseObjectPath
   );
 
-  let objectChangeVersions: Record<string, string[]> = {};
-  let summaryExists = false;
-
-  if (fs.existsSync(summaryPath)) {
-    objectChangeVersions = readJsonFile(summaryPath) as Record<string, string[]>;
-    summaryExists = true;
-  } else {
-    console.warn(`Summary file not found: ${summaryPath}`);
-  }
-
   const paths: StaticPathsResult[] = [];
-  const { latestVersion } = getAllVersions();
-  const processedObjects = new Set<string>();
 
-  // Process objects from summary file
-  if (summaryExists) {
-    // For each object in the summary, create paths for each version it was changed in
-    for (const [objectId, versions] of Object.entries(objectChangeVersions)) {
-      processedObjects.add(objectId);
+  if (fs.existsSync(objectsPath)) {
+    const allObjects = readJsonFile(objectsPath) as Record<string, ParseObject>;
 
-      for (const version of versions) {
-        // Load the specific object to check production status if needed
-        if (
-          prodReadyOnly &&
-          !isObjectProductionReady(objectId, version, parseObjectPath)
-        ) {
-          continue;
-        }
-
-        paths.push({
-          params: { id: objectId, version },
-          props: {
-            objectVersions: versions, // Use the change versions from summary
-          },
-        });
+    for (const [objectId, obj] of Object.entries(allObjects)) {
+      // Skip production filtering if needed
+      if (
+        prodReadyOnly &&
+        (!obj.production_status || obj.production_status !== 'Ready' || !obj.name || obj.name === '')
+      ) {
+        continue;
       }
+
+      // Generate path for latest version only
+      paths.push({
+        params: { id: objectId, version: latestVersion },
+        props: {
+          objectVersions: [latestVersion],
+        },
+      });
     }
-  }
-
-  // Process objects not in summary file (fallback to earliest and latest versions)
-  try {
-    const { latestVersion } = getAllVersions();
-    const earliestVersion = getEarliestVersion();
-    
-    // Check latest version first
-    const latestObjectPath = path.join(
-      process.cwd(),
-      'WRFrontiersDB-Data/archive',
-      latestVersion,
-      parseObjectPath
-    );
-
-    if (fs.existsSync(latestObjectPath)) {
-      const allObjects = readJsonFile(latestObjectPath) as Record<string, ParseObject>;
-
-      for (const [objectId, obj] of Object.entries(allObjects)) {
-        if (!processedObjects.has(objectId)) {
-          // Skip production filtering if needed
-          if (
-            prodReadyOnly &&
-            (!obj.production_status || obj.production_status !== 'Ready')
-          ) {
-            continue;
-          }
-
-          // Generate path for latest version
-          paths.push({
-            params: { id: objectId, version: latestVersion },
-            props: {
-              objectVersions: [latestVersion], // Only latest version
-            },
-          });
-
-          // Also generate path for earliest version if different from latest
-          if (earliestVersion !== latestVersion) {
-            const earliestObjectPath = path.join(
-              process.cwd(),
-              'WRFrontiersDB-Data/archive',
-              earliestVersion,
-              parseObjectPath
-            );
-
-            if (fs.existsSync(earliestObjectPath)) {
-              const earliestObjects = readJsonFile(earliestObjectPath) as Record<string, ParseObject>;
-              
-              if (earliestObjects[objectId]) {
-                paths.push({
-                  params: { id: objectId, version: earliestVersion },
-                  props: {
-                    objectVersions: [earliestVersion], // Only earliest version
-                  },
-                });
-              }
-            }
-          }
-        }
-      }
-    }
-  } catch (error) {
-    console.warn(
-      `Could not load objects from latest version for fallback processing: ${error}`
-    );
   }
 
   return paths;
 }
 
-// Generate static paths for object list pages (e.g., /modules, /pilots, etc.)
+// Generate static paths for object list pages (e.g., /modules, /pilots, etc.) - latest version only
 export function generateObjectListStaticPaths(
-  objectType: string
+  objectType: string,
+  prodReadyOnly: boolean = false
 ): { params: { id: string } }[] {
-  const summaryPath = path.join(
+  const latestVersion = getLatestVersion();
+  const objectPath = path.join(
     process.cwd(),
-    'WRFrontiersDB-Data/summaries',
-    `${objectType}.json`
+    'WRFrontiersDB-Data/archive',
+    latestVersion,
+    `Objects/${objectType}.json`
   );
 
-  if (fs.existsSync(summaryPath)) {
+  if (fs.existsSync(objectPath)) {
     try {
-      const summary = readJsonFile(summaryPath) as Record<string, string[]>;
+      const allObjects = readJsonFile(objectPath) as Record<string, ParseObject>;
+      let objectIds = Object.keys(allObjects);
 
-      // Get the latest version to validate objects exist
-      const { latestVersion } = getAllVersions();
-      const objectPath = path.join(
-        process.cwd(),
-        'WRFrontiersDB-Data/archive',
-        latestVersion,
-        `Objects/${objectType}.json`
-      );
-
-      let validObjects: Record<string, string[]> = {};
-
-      // Only include objects that actually exist in the data
-      if (fs.existsSync(objectPath)) {
-        const allObjects = readJsonFile(objectPath) as Record<string, ParseObject>;
-        const processedObjects = new Set<string>();
-
-        for (const [objectId, versions] of Object.entries(summary)) {
-          if (allObjects[objectId]) {
-            validObjects[objectId] = versions;
-            processedObjects.add(objectId);
-          } else {
-            console.warn(
-              `Object ${objectId} found in summary but not in data file for ${objectType}`
-            );
-          }
-        }
-
-        // Add objects that exist in data but not in summary
-        for (const [objectId, _obj] of Object.entries(allObjects)) {
-          if (!processedObjects.has(objectId)) {
-            validObjects[objectId] = []; // Empty array indicates not in summary
-          }
-        }
-      } else {
-        console.warn(`Data file not found: ${objectPath}`);
+      // Apply production filtering if needed
+      if (prodReadyOnly) {
+        objectIds = objectIds.filter((id) => {
+          const obj = allObjects[id];
+          return obj.production_status === 'Ready' && obj.name != null && obj.name !== '';
+        });
       }
 
-      // Generate paths for all valid object IDs
-      return Object.keys(validObjects).map((id) => ({
+      // Generate paths for filtered object IDs
+      return objectIds.map((id) => ({
         params: { id },
       }));
     } catch (error) {
       console.warn(
-        `Failed to read or parse summary file: ${summaryPath}`,
+        `Failed to read or parse data file: ${objectPath}`,
         error
       );
     }
   }
 
-  // Fallback: return empty array if summary file doesn't exist
+  // Fallback: return empty array if data file doesn't exist
   return [];
 }

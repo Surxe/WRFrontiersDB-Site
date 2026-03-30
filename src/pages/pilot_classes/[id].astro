@@ -1,6 +1,15 @@
 ---
-import { getLatestVersionForObject } from '../../utils/summary';
-import { generateObjectListStaticPaths } from '../../utils/parse_object';
+import type { PilotClass } from '../../types/pilot';
+import Icon from '../../components/Icon.astro';
+import LocalizedText from '../../components/LocalizedText.astro';
+import ObjectPageScripts from '../../components/ObjectPageScripts.astro';
+import ParseObjectPage from '../../components/ParseObjectPage.astro';
+import {
+  getLatestVersion,
+  getParseObject,
+  generateObjectListStaticPaths,
+} from '../../utils/parse_object';
+import { getDefaultString } from '../../utils/localization';
 
 export const prerender = true;
 
@@ -9,14 +18,41 @@ export async function getStaticPaths() {
 }
 
 const { id } = Astro.params;
+const latestVersion = getLatestVersion();
 
-// Get the latest version for this pilot class
-const latestVersion = getLatestVersionForObject(id as string, 'PilotClass');
+const pilotClass = getParseObject<PilotClass>(
+  id,
+  latestVersion,
+  'Objects/PilotClass.json'
+);
 
-if (!latestVersion) {
-  return Astro.redirect('/pilot_classes');
-}
-
-// Redirect to the latest version
-return Astro.redirect(`/pilot_classes/${id}/${latestVersion}`);
+// Extract English text as fallback
+const defaultName = getDefaultString(pilotClass.name) || pilotClass.id;
 ---
+
+<ParseObjectPage>
+  <LocalizedText
+    id="pilot-class-name-title"
+    tag="title"
+    localizationKey={pilotClass.name}
+    slot="head"
+  />
+  <p>
+    Back to <a href="/pilot_classes">Pilot Classes</a>
+  </p>
+  <LocalizedText
+    id="pilot-class-name"
+    tag="h1"
+    localizationKey={pilotClass.name}
+  />
+
+  <Icon
+    iconPath={pilotClass.badge.image_path}
+    altText={`${defaultName} icon`}
+    color={pilotClass.badge.hex}
+  />
+
+  <p>Language: <span id="current-lang">en</span></p>
+
+  <ObjectPageScripts version={latestVersion} objectData={pilotClass} />
+</ParseObjectPage>
