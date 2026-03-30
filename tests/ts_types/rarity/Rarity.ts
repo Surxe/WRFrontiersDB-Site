@@ -8,11 +8,7 @@ describe('Rarity interface', () => {
 
   // Load real data from the current directory
   const currentDir = path.join(process.cwd(), 'WRFrontiersDB-Data', 'current');
-  const rarityPath = path.join(
-    currentDir,
-    'Objects',
-    'Rarity.json'
-  );
+  const rarityPath = path.join(currentDir, 'Objects', 'Rarity.json');
 
   rarities = JSON.parse(fs.readFileSync(rarityPath, 'utf-8'));
   rarityArray = Object.values(rarities);

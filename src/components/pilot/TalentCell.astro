@@ -21,9 +21,7 @@ const {
 } = Astro.props;
 
 // Load ModuleStats for stat replacements
-const moduleStats = getParseObjects<ModuleStat>(
-  'Objects/ModuleStat.json'
-);
+const moduleStats = getParseObjects<ModuleStat>('Objects/ModuleStat.json');
 ---
 
 <td rowspan={rowspan}>

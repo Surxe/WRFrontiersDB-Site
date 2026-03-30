@@ -9,9 +9,9 @@ function initializeModulePage() {
       console.error('Object data element not found');
       return;
     }
-    
+
     const module = JSON.parse(el.textContent.replace(/&quot;/g, '"'));
-    
+
     const statsEl = document.getElementById('stats');
     if (statsEl) {
       statsEl.innerHTML = `

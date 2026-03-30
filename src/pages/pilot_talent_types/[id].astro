@@ -30,15 +30,11 @@ const pilotTalentType = getParseObject<PilotTalentType>(
 );
 
 // Load ModuleStats for stat replacements (even though PilotTalentType doesn't have stats)
-const moduleStats = getParseObjects<ModuleStat>(
-  'Objects/ModuleStat.json'
-);
+const moduleStats = getParseObjects<ModuleStat>('Objects/ModuleStat.json');
 
 // Load and enrich pilot talents
 const pilots = getParseObjects<Pilot>('Objects/Pilot.json');
-const pilotTalents = getParseObjects<PilotTalent>(
-  'Objects/PilotTalent.json'
-);
+const pilotTalents = getParseObjects<PilotTalent>('Objects/PilotTalent.json');
 const enrichedTalents = enrichPilotTalents(pilotTalents, pilots);
 
 // Filter talents that belong to this talent type

@@ -51,6 +51,7 @@ Example: [modules/[id].astro](../../src/pages/modules/[id].astro)
 - **Test Files**: `{fileName}/{functionOrInterfaceName}.ts` in `tests/` subdirectories
 
 ## Development
+
 - **Type Safety**: Use TypeScript interfaces for all data structures
 - **IIFE Functions**: Avoid at all costs using IIFE functions
 

@@ -25,9 +25,7 @@ const { id } = Astro.params;
 
 // Load pilots to enrich talent data
 const pilots = getParseObjects<Pilot>('Objects/Pilot.json');
-const pilotTalents = getParseObjects<PilotTalent>(
-  'Objects/PilotTalent.json'
-);
+const pilotTalents = getParseObjects<PilotTalent>('Objects/PilotTalent.json');
 const enrichedTalents = enrichPilotTalents(pilotTalents, pilots);
 const pilotTalentTypes = getParseObjects<PilotTalentType>(
   'Objects/PilotTalentType.json'
@@ -36,9 +34,7 @@ const pilotTalentTypes = getParseObjects<PilotTalentType>(
 const pilotTalent = enrichedTalents[id];
 
 // Load ModuleStats for stat replacements
-const moduleStats = getParseObjects<ModuleStat>(
-  'Objects/ModuleStat.json'
-);
+const moduleStats = getParseObjects<ModuleStat>('Objects/ModuleStat.json');
 
 // Build statValueChoices from talent.stats
 const statValueChoices = getStatValueChoices(pilotTalent.stats, moduleStats);
@@ -97,12 +93,11 @@ const defaultName = getDefaultString(pilotTalent.name) || pilotTalent.id;
   <p>
     Pilot Talent Type:
     {
-      pilotTalent.talent_type_id && (() => {
-        const talentType = pilotTalentTypes[pilotTalent.talent_type_id];
-        return talentType ? (
-          <ObjRef obj={talentType} />
-        ) : null;
-      })()
+      pilotTalent.talent_type_id &&
+        (() => {
+          const talentType = pilotTalentTypes[pilotTalent.talent_type_id];
+          return talentType ? <ObjRef obj={talentType} /> : null;
+        })()
     }
   </p>
 

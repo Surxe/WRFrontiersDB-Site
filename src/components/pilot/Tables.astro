@@ -19,12 +19,8 @@ interface Props {
 const { pilots } = Astro.props;
 
 // Load pilot types, and pilot talents
-const pilotTypes = getParseObjects<PilotType>(
-  'Objects/PilotType.json'
-);
-const pilotTalents = getParseObjects<PilotTalent>(
-  'Objects/PilotTalent.json'
-);
+const pilotTypes = getParseObjects<PilotType>('Objects/PilotType.json');
+const pilotTalents = getParseObjects<PilotTalent>('Objects/PilotTalent.json');
 const pilotTalentTypes = getParseObjects<PilotTalentType>(
   'Objects/PilotTalentType.json'
 );
@@ -59,9 +55,7 @@ const convertedPilots = convertTalentRefsToRawIds(pilots);
 const entries = prepareObjectList(convertedPilots, { prodReadyOnly: false });
 
 // Group by pilot type
-const grouped = groupBy(entries, ([_, pilot]) =>
-  refToId(pilot.pilot_type_ref)
-);
+const grouped = groupBy(entries, ([_, pilot]) => refToId(pilot.pilot_type_ref));
 
 // Define explicit sort order for pilot types
 const pilotTypeOrder: Record<string, number> = {

@@ -22,7 +22,7 @@ function readJsonFile(filePath: string): any {
   if (fileCache.has(filePath)) {
     return fileCache.get(filePath);
   }
-  
+
   try {
     const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
     fileCache.set(filePath, data);
@@ -79,8 +79,6 @@ export function getParseObjects<T = ParseObject>(
   return {};
 }
 
-
-
 // Get a specific parse object by ID
 export function getParseObject<T = ParseObject>(
   id: string,
@@ -90,9 +88,7 @@ export function getParseObject<T = ParseObject>(
   const parseObject = objects[id];
 
   if (!parseObject) {
-    throw new Error(
-      `Object ${id} not found in ${parseObjectFile}`
-    );
+    throw new Error(`Object ${id} not found in ${parseObjectFile}`);
   }
 
   return parseObject as T;
@@ -109,7 +105,7 @@ export function isObjectProductionReady(
   parseObjectPath: string
 ): boolean {
   const cacheKey = parseObjectPath;
-  
+
   if (fileCache.has(cacheKey)) {
     const objects = fileCache.get(cacheKey);
     if (objects) {
@@ -158,7 +154,10 @@ export async function generateObjectStaticPaths(
       // Skip production filtering if needed
       if (
         prodReadyOnly &&
-        (!obj.production_status || obj.production_status !== 'Ready' || !obj.name || obj.name === '')
+        (!obj.production_status ||
+          obj.production_status !== 'Ready' ||
+          !obj.name ||
+          obj.name === '')
       ) {
         continue;
       }
@@ -187,14 +186,21 @@ export function generateObjectListStaticPaths(
 
   if (fs.existsSync(objectPath)) {
     try {
-      const allObjects = readJsonFile(objectPath) as Record<string, ParseObject>;
+      const allObjects = readJsonFile(objectPath) as Record<
+        string,
+        ParseObject
+      >;
       let objectIds = Object.keys(allObjects);
 
       // Apply production filtering if needed
       if (prodReadyOnly) {
         objectIds = objectIds.filter((id) => {
           const obj = allObjects[id];
-          return obj.production_status === 'Ready' && obj.name != null && obj.name !== '';
+          return (
+            obj.production_status === 'Ready' &&
+            obj.name != null &&
+            obj.name !== ''
+          );
         });
       }
 
@@ -203,10 +209,7 @@ export function generateObjectListStaticPaths(
         params: { id },
       }));
     } catch (error) {
-      console.warn(
-        `Failed to read or parse data file: ${objectPath}`,
-        error
-      );
+      console.warn(`Failed to read or parse data file: ${objectPath}`, error);
     }
   }
 

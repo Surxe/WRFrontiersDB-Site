@@ -6,10 +6,7 @@ import type { PilotClass } from '../types/pilot';
 import { prepareObjectList } from '../utils/list';
 import ObjRef from '../components/obj_ref/ObjRef.astro';
 
-
-const pilotClasses = getParseObjects<PilotClass>(
-  'Objects/PilotClass.json'
-);
+const pilotClasses = getParseObjects<PilotClass>('Objects/PilotClass.json');
 
 // Prepare and filter modules
 const entries = prepareObjectList(pilotClasses, { prodReadyOnly: false });
@@ -19,9 +16,7 @@ const entries = prepareObjectList(pilotClasses, { prodReadyOnly: false });
   <BackToHome />
   <h1>Pilot Classes</h1>
 
-  <p>
-    Showing pilot classes from current version
-  </p>
+  <p>Showing pilot classes from current version</p>
 
   <ul>
     {

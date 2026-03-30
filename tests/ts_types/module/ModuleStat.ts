@@ -7,11 +7,7 @@ import type { LocalizationKey } from '../../../src/types/localization';
 describe('ModuleStat interface', () => {
   // Get the current directory
   const currentDir = path.join(process.cwd(), 'WRFrontiersDB-Data', 'current');
-  const moduleStatPath = path.join(
-    currentDir,
-    'Objects',
-    'ModuleStat.json'
-  );
+  const moduleStatPath = path.join(currentDir, 'Objects', 'ModuleStat.json');
 
   const data = JSON.parse(fs.readFileSync(moduleStatPath, 'utf-8'));
   const moduleStats = Object.values(data) as ModuleStat[];

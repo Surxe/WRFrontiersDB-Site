@@ -19,8 +19,7 @@ Level 1-5:
 TalentType (rowspan=maxTalents)
 */
 
-const { level, talentIndex, maxTalents, pilotTalentTypes } =
-  Astro.props;
+const { level, talentIndex, maxTalents, pilotTalentTypes } = Astro.props;
 ---
 
 {/* Talent column */}
@@ -31,9 +30,7 @@ const { level, talentIndex, maxTalents, pilotTalentTypes } =
   talentIndex === 0 && (
     <td rowspan={maxTalents}>
       {level?.talent_type_ref && pilotTalentTypes && (
-        <ObjRef
-          obj={pilotTalentTypes[refToId(level.talent_type_ref)]}
-        />
+        <ObjRef obj={pilotTalentTypes[refToId(level.talent_type_ref)]} />
       )}
     </td>
   )

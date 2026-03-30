@@ -16,7 +16,5 @@ const { title, jsFileName } = Astro.props;
   <slot name="head" slot="head" />
   <slot />
 
-  {
-  <ParseObjectListPageScripts jsFileName={jsFileName} />
-  }
+  {(<ParseObjectListPageScripts jsFileName={jsFileName} />)}
 </Page>

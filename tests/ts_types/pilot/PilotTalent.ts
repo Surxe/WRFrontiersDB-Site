@@ -8,11 +8,7 @@ describe('PilotTalent interface', () => {
 
   // Load real data from the current directory
   const currentDir = path.join(process.cwd(), 'WRFrontiersDB-Data', 'current');
-  const pilotTalentPath = path.join(
-    currentDir,
-    'Objects',
-    'PilotTalent.json'
-  );
+  const pilotTalentPath = path.join(currentDir, 'Objects', 'PilotTalent.json');
 
   pilotTalents = JSON.parse(fs.readFileSync(pilotTalentPath, 'utf-8'));
   pilotTalentArray = Object.values(pilotTalents);

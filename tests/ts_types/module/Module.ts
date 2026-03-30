@@ -10,11 +10,7 @@ describe('Module interface', () => {
 
   // Load real data from the current directory
   const currentDir = path.join(process.cwd(), 'WRFrontiersDB-Data', 'current');
-  const modulePath = path.join(
-    currentDir,
-    'Objects',
-    'Module.json'
-  );
+  const modulePath = path.join(currentDir, 'Objects', 'Module.json');
 
   modules = JSON.parse(fs.readFileSync(modulePath, 'utf8')) as Record<
     string,

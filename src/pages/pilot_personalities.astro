@@ -2,18 +2,13 @@
 import ParseObjectList from '../components/ParseObjectList.astro';
 import BackToHome from '../components/BackToHome.astro';
 import ParseObjectListPage from '../components/ParseObjectListPage.astro';
-
 ---
 
 <ParseObjectListPage title="Pilot Personalities">
   <BackToHome />
   <h1>Pilot Personalities</h1>
 
-  <p>
-    Showing pilot personalities from latest version (current)
-  </p>
+  <p>Showing pilot personalities from latest version (current)</p>
 
-  <ParseObjectList
-    parseObjectFile="Objects/PilotPersonality.json"
-  />
+  <ParseObjectList parseObjectFile="Objects/PilotPersonality.json" />
 </ParseObjectListPage>

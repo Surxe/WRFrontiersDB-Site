@@ -7,7 +7,6 @@ import type { PilotTalentType, Pilot } from '../types/pilot';
 import LocalizedText from '../components/LocalizedText.astro';
 import ObjRef from '../components/obj_ref/ObjRef.astro';
 
-
 // Load pilot talent types and pilots
 const pilotTalentTypes = getParseObjects<PilotTalentType>(
   'Objects/PilotTalentType.json'
@@ -54,9 +53,7 @@ const sortedGroups = sortGroups(grouped, (a, b) => Number(a) - Number(b));
   <BackToHome />
   <h1>Pilot Talent Types</h1>
 
-  <p>
-    Showing pilot talent types from current version
-  </p>
+  <p>Showing pilot talent types from current version</p>
 
   {
     sortedGroups.map(([levelNum, pilotTalentTypeEntries]) => (

@@ -33,19 +33,13 @@ export async function getStaticPaths() {
 const { id } = Astro.params;
 
 const pilot = getParseObject<Pilot>(id, 'Objects/Pilot.json');
-const pilotTalents = getParseObjects<PilotTalent>(
-  'Objects/PilotTalent.json'
-);
+const pilotTalents = getParseObjects<PilotTalent>('Objects/PilotTalent.json');
 const pilotTalentTypes = getParseObjects<PilotTalentType>(
   'Objects/PilotTalentType.json'
 );
-const pilotTypes = getParseObjects<PilotType>(
-  'Objects/PilotType.json'
-);
+const pilotTypes = getParseObjects<PilotType>('Objects/PilotType.json');
 // Load ModuleStats for stat replacements
-const moduleStats = getParseObjects<ModuleStat>(
-  'Objects/ModuleStat.json'
-);
+const moduleStats = getParseObjects<ModuleStat>('Objects/ModuleStat.json');
 
 const rarity =
   pilotTypes && pilot.pilot_type_ref
@@ -63,9 +57,7 @@ const pilotClass = pilot.pilot_class_ref
 const pilotPersonality = pilot.personality_ref
   ? resolveObjectRef(
       pilot.personality_ref,
-      getParseObjects<PilotPersonality>(
-        'Objects/PilotPersonality.json'
-      )
+      getParseObjects<PilotPersonality>('Objects/PilotPersonality.json')
     )
   : undefined;
 
@@ -125,9 +117,7 @@ const defaultName = getDefaultString(pilot.first_name) || pilot.id;
           <tr>
             <td>{index + 1}</td>
             <td>
-              <ObjRef
-                obj={pilotTalentTypes[refToId(level.talent_type_ref)]}
-              />
+              <ObjRef obj={pilotTalentTypes[refToId(level.talent_type_ref)]} />
             </td>
             <td>
               <div>
@@ -164,13 +154,7 @@ const defaultName = getDefaultString(pilot.first_name) || pilot.id;
 
   <p>
     Personality:
-    {
-      pilotPersonality ? (
-        <ObjRef obj={pilotPersonality} />
-      ) : (
-        'Unknown'
-      )
-    }
+    {pilotPersonality ? <ObjRef obj={pilotPersonality} /> : 'Unknown'}
   </p>
   <p>faction_id placeholder</p>
 
