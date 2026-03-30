@@ -64,26 +64,6 @@ const getTalentData = (levelIdx: number, talentIdx: number) => {
     );
   }
 
-  // Defensive: Check if talent has stats array
-  if (
-    !talent.stats ||
-    !Array.isArray(talent.stats) ||
-    talent.stats.length === 0
-  ) {
-    return {
-      talent: {
-        id: talent.id,
-        name: talent.name?.Key || 'No name',
-        description: talent.description?.Key || 'No description',
-        stats: [],
-        ui_description: talent.ui_description?.Key || 'No UI description',
-        short_ui_description:
-          talent.short_ui_description?.Key || 'No short UI description',
-      },
-      statValueChoices: {},
-    };
-  }
-
   const statValueChoices = getStatValueChoices(talent.stats, moduleStats);
   return { talent, statValueChoices };
 };
