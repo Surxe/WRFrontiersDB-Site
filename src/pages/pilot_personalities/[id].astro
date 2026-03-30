@@ -5,7 +5,6 @@ import LocalizedText from '../../components/LocalizedText.astro';
 import ObjectPageScripts from '../../components/ObjectPageScripts.astro';
 import ParseObjectPage from '../../components/ParseObjectPage.astro';
 import {
-  getLatestVersion,
   getParseObject,
   generateObjectListStaticPaths,
 } from '../../utils/parse_object';
@@ -18,11 +17,9 @@ export async function getStaticPaths() {
 }
 
 const { id } = Astro.params;
-const latestVersion = getLatestVersion();
 
 const pilotPersonality = getParseObject<PilotPersonality>(
   id,
-  latestVersion,
   'Objects/PilotPersonality.json'
 );
 
@@ -51,5 +48,5 @@ const defaultName =
 
   <p>Language: <span id="current-lang">en</span></p>
 
-  <ObjectPageScripts version={latestVersion} objectData={pilotPersonality} />
+  <ObjectPageScripts objectData={pilotPersonality} />
 </ParseObjectPage>

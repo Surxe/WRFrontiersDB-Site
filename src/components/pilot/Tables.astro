@@ -14,25 +14,21 @@ import ObjRef from '../obj_ref/ObjRef.astro';
 
 interface Props {
   pilots: Record<string, Pilot>;
-  version: string;
 }
 
-const { pilots, version } = Astro.props;
+const { pilots } = Astro.props;
 
 // Load pilot types, and pilot talents
 const pilotTypes = getParseObjects<PilotType>(
-  'Objects/PilotType.json',
-  version
+  'Objects/PilotType.json'
 );
 const pilotTalents = getParseObjects<PilotTalent>(
-  'Objects/PilotTalent.json',
-  version
+  'Objects/PilotTalent.json'
 );
 const pilotTalentTypes = getParseObjects<PilotTalentType>(
-  'Objects/PilotTalentType.json',
-  version
+  'Objects/PilotTalentType.json'
 );
-const rarities = getParseObjects('Objects/Rarity.json', version);
+const rarities = getParseObjects('Objects/Rarity.json');
 
 // Convert talent refs to raw IDs for component lookup
 const convertTalentRefsToRawIds = (pilots: Record<string, Pilot>) => {
@@ -95,7 +91,7 @@ the other columns have rowspan to center them within their group of rows
           }
           const rarity = resolveObjectRef(pilotType.rarity_ref, rarities);
           return rarity ? (
-            <ObjRef obj={rarity} version={version} useHref={false} />
+            <ObjRef obj={rarity} useHref={false} />
           ) : (
             <span>Unknown Rarity</span>
           );
@@ -119,7 +115,6 @@ the other columns have rowspan to center them within their group of rows
         tableClass="pilots-table-pilot-talent-type"
         pilots={pilotEntries}
         pilotTalentTypes={pilotTalentTypes}
-        version={version}
       />
     </section>
   ))

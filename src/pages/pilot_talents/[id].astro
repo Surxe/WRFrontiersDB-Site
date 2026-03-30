@@ -7,7 +7,6 @@ import StatEmbedLocalizedText from '../../components/StatEmbedLocalizedText.astr
 import ObjectPageScripts from '../../components/ObjectPageScripts.astro';
 import ParseObjectPage from '../../components/ParseObjectPage.astro';
 import {
-  getLatestVersion,
   getParseObjects,
   generateObjectListStaticPaths,
 } from '../../utils/parse_object';
@@ -23,26 +22,22 @@ export async function getStaticPaths() {
 }
 
 const { id } = Astro.params;
-const latestVersion = getLatestVersion();
 
 // Load pilots to enrich talent data
-const pilots = getParseObjects<Pilot>('Objects/Pilot.json', latestVersion);
+const pilots = getParseObjects<Pilot>('Objects/Pilot.json');
 const pilotTalents = getParseObjects<PilotTalent>(
-  'Objects/PilotTalent.json',
-  latestVersion
+  'Objects/PilotTalent.json'
 );
 const enrichedTalents = enrichPilotTalents(pilotTalents, pilots);
 const pilotTalentTypes = getParseObjects<PilotTalentType>(
-  'Objects/PilotTalentType.json',
-  latestVersion
+  'Objects/PilotTalentType.json'
 );
 
 const pilotTalent = enrichedTalents[id];
 
 // Load ModuleStats for stat replacements
 const moduleStats = getParseObjects<ModuleStat>(
-  'Objects/ModuleStat.json',
-  latestVersion
+  'Objects/ModuleStat.json'
 );
 
 // Build statValueChoices from talent.stats
@@ -105,7 +100,7 @@ const defaultName = getDefaultString(pilotTalent.name) || pilotTalent.id;
       pilotTalent.talent_type_id && (() => {
         const talentType = pilotTalentTypes[pilotTalent.talent_type_id];
         return talentType ? (
-          <ObjRef obj={talentType} version={latestVersion} />
+          <ObjRef obj={talentType} />
         ) : null;
       })()
     }
@@ -119,5 +114,5 @@ const defaultName = getDefaultString(pilotTalent.name) || pilotTalent.id;
 
   <p>Language: <span id="current-lang">en</span></p>
 
-  <ObjectPageScripts version={latestVersion} objectData={pilotTalent} />
+  <ObjectPageScripts objectData={pilotTalent} />
 </ParseObjectPage>

@@ -1,35 +1,33 @@
 ---
 import BackToHome from '../components/BackToHome.astro';
 import ParseObjectListPage from '../components/ParseObjectListPage.astro';
-import { getLatestVersion, getParseObjects } from '../utils/parse_object';
+import { getParseObjects } from '../utils/parse_object';
 import type { PilotClass } from '../types/pilot';
 import { prepareObjectList } from '../utils/list';
 import ObjRef from '../components/obj_ref/ObjRef.astro';
 
-const latestVersion = getLatestVersion();
 
 const pilotClasses = getParseObjects<PilotClass>(
-  'Objects/PilotClass.json',
-  latestVersion
+  'Objects/PilotClass.json'
 );
 
 // Prepare and filter modules
 const entries = prepareObjectList(pilotClasses, { prodReadyOnly: false });
 ---
 
-<ParseObjectListPage title="Pilot Classes" version={latestVersion}>
+<ParseObjectListPage title="Pilot Classes">
   <BackToHome />
   <h1>Pilot Classes</h1>
 
   <p>
-    Showing pilot classes from latest version ({latestVersion})
+    Showing pilot classes from current version
   </p>
 
   <ul>
     {
       entries.map(([_id, pilotClass]) => (
         <li>
-          <ObjRef obj={pilotClass} version={latestVersion} />
+          <ObjRef obj={pilotClass} />
         </li>
       ))
     }

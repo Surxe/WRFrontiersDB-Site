@@ -1,22 +1,21 @@
 ---
 import BackToHome from '../components/BackToHome.astro';
 import ParseObjectListPage from '../components/ParseObjectListPage.astro';
-import { getLatestVersion, getParseObjects } from '../utils/parse_object';
+import { getParseObjects } from '../utils/parse_object';
 import PilotTables from '../components/pilot/Tables.astro';
 import type { Pilot } from '../types/pilot';
 import '../styles/pilots.css';
 
-const latestVersion = getLatestVersion();
+const version = 'current';
 
 // Load pilots
-const pilots = getParseObjects<Pilot>('Objects/Pilot.json', latestVersion);
+const pilots = getParseObjects<Pilot>('Objects/Pilot.json');
 
 const pilot = pilots['DA_Pilot_Common1.0']; // Pick an arbitary pilot. All are validated to have the same reputation costs by Parser
 ---
 
 <ParseObjectListPage
   title="Pilots"
-  version={latestVersion}
   jsFileName="pilots.js"
 >
   <BackToHome />

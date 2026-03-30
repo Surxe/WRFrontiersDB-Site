@@ -1,7 +1,7 @@
 ---
 import BackToHome from '../components/BackToHome.astro';
 import ParseObjectListPage from '../components/ParseObjectListPage.astro';
-import { getLatestVersion, getParseObjects } from '../utils/parse_object';
+import { getParseObjects } from '../utils/parse_object';
 import { prepareObjectList, groupBy, sortGroups } from '../utils/list';
 import { enrichPilotTalents } from '../utils/pilot';
 import { getStatValueChoices } from '../utils/stat';
@@ -10,26 +10,22 @@ import type { ModuleStat } from '../types/module';
 import StatEmbedLocalizedText from '../components/StatEmbedLocalizedText.astro';
 import ObjRef from '../components/obj_ref/ObjRef.astro';
 
-const latestVersion = getLatestVersion();
 
 // Load all data
 const pilotTalents = getParseObjects<PilotTalent>(
-  'Objects/PilotTalent.json',
-  latestVersion
+  'Objects/PilotTalent.json'
 );
 const pilotTalentTypes = getParseObjects<PilotTalentType>(
-  'Objects/PilotTalentType.json',
-  latestVersion
+  'Objects/PilotTalentType.json'
 );
-const pilots = getParseObjects<Pilot>('Objects/Pilot.json', latestVersion);
+const pilots = getParseObjects<Pilot>('Objects/Pilot.json');
 
 // Enrich talents with type and level information
 const enrichedTalents = enrichPilotTalents(pilotTalents, pilots);
 
 // Load ModuleStats for stat replacements
 const moduleStats = getParseObjects<ModuleStat>(
-  'Objects/ModuleStat.json',
-  latestVersion
+  'Objects/ModuleStat.json'
 );
 
 // Prepare and filter
@@ -44,12 +40,12 @@ const grouped = groupBy(entries, ([_, talent]) =>
 const sortedGroups = sortGroups(grouped, (a, b) => Number(a) - Number(b));
 ---
 
-<ParseObjectListPage title="Pilot Talents" version={latestVersion}>
+<ParseObjectListPage title="Pilot Talents">
   <BackToHome />
   <h1>Pilot Talents</h1>
 
   <p>
-    Showing pilot talents from latest version ({latestVersion})
+    Showing pilot talents from current version
   </p>
 
   {
@@ -68,7 +64,7 @@ const sortedGroups = sortGroups(grouped, (a, b) => Number(a) - Number(b));
             {pilotTalentEntries.map(([_id, talent]) => (
               <tr>
                 <td>
-                  <ObjRef obj={talent} version={latestVersion} />
+                  <ObjRef obj={talent} />
                 </td>
                 <td>
                   <StatEmbedLocalizedText
@@ -84,7 +80,6 @@ const sortedGroups = sortGroups(grouped, (a, b) => Number(a) - Number(b));
                   {talent.talent_type_id && (
                     <ObjRef
                       obj={pilotTalentTypes[talent.talent_type_id]}
-                      version={latestVersion}
                     />
                   )}
                 </td>
