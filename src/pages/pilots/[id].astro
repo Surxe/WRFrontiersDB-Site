@@ -21,7 +21,7 @@ import {
 import { getDefaultString } from '../../utils/localization';
 import { getStatValueChoices } from '../../utils/stat';
 import { resolveObjectRef } from '../../utils/object_resolver';
-import { extractIdFromRef } from '../../utils/object_reference';
+import { refToId } from '../../utils/object_reference';
 import type { ModuleStat } from '../../types/module';
 import ObjRef from '../../components/obj_ref/ObjRef.astro';
 
@@ -56,7 +56,7 @@ const moduleStats = getParseObjects<ModuleStat>(
 const rarity =
   pilotTypes && pilot.pilot_type_ref
     ? resolveObjectRef(
-        pilotTypes[extractIdFromRef(pilot.pilot_type_ref)].rarity_ref,
+        pilotTypes[refToId(pilot.pilot_type_ref)].rarity_ref,
         getParseObjects<Rarity>('Objects/Rarity.json', latestVersion)
       )
     : undefined;
@@ -133,7 +133,7 @@ const defaultName = getDefaultString(pilot.first_name) || pilot.id;
             <td>{index + 1}</td>
             <td>
               <ObjRef
-                obj={pilotTalentTypes[extractIdFromRef(level.talent_type_ref)]}
+                obj={pilotTalentTypes[refToId(level.talent_type_ref)]}
                 version={latestVersion}
               />
             </td>
@@ -142,11 +142,11 @@ const defaultName = getDefaultString(pilot.first_name) || pilot.id;
                 {level.talents_refs?.map((talent_ref) => (
                   <span>
                     <ObjRef
-                      obj={pilotTalents[extractIdFromRef(talent_ref)]}
+                      obj={pilotTalents[refToId(talent_ref)]}
                       version={latestVersion}
                       useOnHover={true}
                       onHoverStatChoices={getStatValueChoices(
-                        pilotTalents[extractIdFromRef(talent_ref)].stats,
+                        pilotTalents[refToId(talent_ref)].stats,
                         moduleStats
                       )}
                     />

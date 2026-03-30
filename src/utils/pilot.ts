@@ -1,4 +1,4 @@
-import { extractIdFromRef, idToRef } from './object_reference';
+import { refToId, idToRef } from './object_reference';
 import type { PilotTalent, Pilot } from '../types/pilot';
 
 /**
@@ -36,7 +36,7 @@ export function enrichPilotTalents(
         
         if (levelEntry.talents_refs.includes(talentFullRef)) {
           levelFound = i + 1; // Levels are 1-based
-          talentTypeId = extractIdFromRef(levelEntry.talent_type_ref);
+          talentTypeId = refToId(levelEntry.talent_type_ref);
           found = true;
           break;
         }

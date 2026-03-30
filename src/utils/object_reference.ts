@@ -51,7 +51,7 @@ export function createObjectRef(objectClass: string, id: string): string {
  * @param ref - The object reference string
  * @returns The extracted ID
  */
-export function extractIdFromRef(ref: string): string {
+export function refToId(ref: string): string {
   return parseObjectRef(ref).id;
 }
 
@@ -104,5 +104,5 @@ export function idToRef(id: string, objectType: string): string {
  * @returns Legacy ID
  */
 export function refToLegacyId(ref: string): string {
-  return extractIdFromRef(ref);
+  return refToId(ref);
 }

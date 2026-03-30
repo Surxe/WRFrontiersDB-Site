@@ -3,7 +3,7 @@ import PilotTable from './Table.astro';
 import { getParseObjects } from '../../utils/parse_object';
 import { prepareObjectList, groupBy, sortGroups } from '../../utils/list';
 import { resolveObjectRef } from '../../utils/object_resolver';
-import { extractIdFromRef } from '../../utils/object_reference';
+import { refToId } from '../../utils/object_reference';
 import type {
   Pilot,
   PilotType,
@@ -64,7 +64,7 @@ const entries = prepareObjectList(convertedPilots, { prodReadyOnly: false });
 
 // Group by pilot type
 const grouped = groupBy(entries, ([_, pilot]) =>
-  extractIdFromRef(pilot.pilot_type_ref)
+  refToId(pilot.pilot_type_ref)
 );
 
 // Define explicit sort order for pilot types
