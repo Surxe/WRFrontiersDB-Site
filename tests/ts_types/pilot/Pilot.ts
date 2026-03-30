@@ -6,13 +6,10 @@ describe('Pilot interface', () => {
   let pilots: Record<string, unknown>;
   let pilotArray: unknown[];
 
-  // Load real data from the latest version
-  const archiveDir = path.join(process.cwd(), 'WRFrontiersDB-Data', 'archive');
-  const versions = fs.readdirSync(archiveDir).sort().reverse();
-  const latestVersion = versions[0];
+  // Load real data from the current directory
+  const currentDir = path.join(process.cwd(), 'WRFrontiersDB-Data', 'current');
   const pilotPath = path.join(
-    archiveDir,
-    latestVersion,
+    currentDir,
     'Objects',
     'Pilot.json'
   );

@@ -6,13 +6,10 @@ describe('Rarity interface', () => {
   let rarities: Record<string, unknown>;
   let rarityArray: unknown[];
 
-  // Load real data from the latest version
-  const archiveDir = path.join(process.cwd(), 'WRFrontiersDB-Data', 'archive');
-  const versions = fs.readdirSync(archiveDir).sort().reverse();
-  const latestVersion = versions[0];
+  // Load real data from the current directory
+  const currentDir = path.join(process.cwd(), 'WRFrontiersDB-Data', 'current');
   const rarityPath = path.join(
-    archiveDir,
-    latestVersion,
+    currentDir,
     'Objects',
     'Rarity.json'
   );

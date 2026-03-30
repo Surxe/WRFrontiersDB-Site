@@ -13,7 +13,6 @@ import LocalizedText from '../../components/LocalizedText.astro';
 import ObjectPageScripts from '../../components/ObjectPageScripts.astro';
 import ParseObjectPage from '../../components/ParseObjectPage.astro';
 import {
-  getLatestVersion,
   getParseObjects,
   getParseObject,
   generateObjectListStaticPaths,
@@ -32,46 +31,40 @@ export async function getStaticPaths() {
 }
 
 const { id } = Astro.params;
-const latestVersion = getLatestVersion();
 
-const pilot = getParseObject<Pilot>(id, latestVersion, 'Objects/Pilot.json');
+const pilot = getParseObject<Pilot>(id, 'Objects/Pilot.json');
 const pilotTalents = getParseObjects<PilotTalent>(
-  'Objects/PilotTalent.json',
-  latestVersion
+  'Objects/PilotTalent.json'
 );
 const pilotTalentTypes = getParseObjects<PilotTalentType>(
-  'Objects/PilotTalentType.json',
-  latestVersion
+  'Objects/PilotTalentType.json'
 );
 const pilotTypes = getParseObjects<PilotType>(
-  'Objects/PilotType.json',
-  latestVersion
+  'Objects/PilotType.json'
 );
 // Load ModuleStats for stat replacements
 const moduleStats = getParseObjects<ModuleStat>(
-  'Objects/ModuleStat.json',
-  latestVersion
+  'Objects/ModuleStat.json'
 );
 
 const rarity =
   pilotTypes && pilot.pilot_type_ref
     ? resolveObjectRef(
         pilotTypes[refToId(pilot.pilot_type_ref)].rarity_ref,
-        getParseObjects<Rarity>('Objects/Rarity.json', latestVersion)
+        getParseObjects<Rarity>('Objects/Rarity.json')
       )
     : undefined;
 const pilotClass = pilot.pilot_class_ref
   ? resolveObjectRef(
       pilot.pilot_class_ref,
-      getParseObjects<PilotClass>('Objects/PilotClass.json', latestVersion)
+      getParseObjects<PilotClass>('Objects/PilotClass.json')
     )
   : undefined;
 const pilotPersonality = pilot.personality_ref
   ? resolveObjectRef(
       pilot.personality_ref,
       getParseObjects<PilotPersonality>(
-        'Objects/PilotPersonality.json',
-        latestVersion
+        'Objects/PilotPersonality.json'
       )
     )
   : undefined;
@@ -134,7 +127,6 @@ const defaultName = getDefaultString(pilot.first_name) || pilot.id;
             <td>
               <ObjRef
                 obj={pilotTalentTypes[refToId(level.talent_type_ref)]}
-                version={latestVersion}
               />
             </td>
             <td>
@@ -143,7 +135,6 @@ const defaultName = getDefaultString(pilot.first_name) || pilot.id;
                   <span>
                     <ObjRef
                       obj={pilotTalents[refToId(talent_ref)]}
-                      version={latestVersion}
                       useOnHover={true}
                       onHoverStatChoices={getStatValueChoices(
                         pilotTalents[refToId(talent_ref)].stats,
@@ -163,19 +154,19 @@ const defaultName = getDefaultString(pilot.first_name) || pilot.id;
   <!-- Hyperlinks to the referenced ids pilot_type_id, pilot_class_id, personality_id -->
   <p>
     Rarity:
-    {rarity ? <ObjRef obj={rarity} version={latestVersion} /> : 'Unknown'}
+    {rarity ? <ObjRef obj={rarity} /> : 'Unknown'}
   </p>
 
   <p>
     Pilot Class:
-    {pilotClass ? <ObjRef obj={pilotClass} version={latestVersion} /> : 'Unknown'}
+    {pilotClass ? <ObjRef obj={pilotClass} /> : 'Unknown'}
   </p>
 
   <p>
     Personality:
     {
       pilotPersonality ? (
-        <ObjRef obj={pilotPersonality} version={latestVersion} />
+        <ObjRef obj={pilotPersonality} />
       ) : (
         'Unknown'
       )
@@ -185,5 +176,5 @@ const defaultName = getDefaultString(pilot.first_name) || pilot.id;
 
   <p>Language: <span id="current-lang">en</span></p>
 
-  <ObjectPageScripts version={latestVersion} objectData={pilot} />
+  <ObjectPageScripts objectData={pilot} />
 </ParseObjectPage>
