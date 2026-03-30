@@ -31,13 +31,10 @@ export function enrichPilotTalents(
       for (let i = 0; i < pilot.levels.length; i++) {
         const levelEntry = pilot.levels[i];
         
-        // Check if talent reference is already a full reference or just an ID
-        const isFullRef = levelEntry.talents_refs.some(ref => 
-          ref.startsWith('OBJID_PilotTalent::')
-        );
+        // Convert talentId to full reference format for comparison
+        const talentFullRef = `OBJID_PilotTalent::${talentId}`;
         
-        if (levelEntry.talents_refs.includes(talentId) || 
-            (isFullRef && levelEntry.talents_refs.includes(`OBJID_PilotTalent::${talentId}`))) {
+        if (levelEntry.talents_refs.includes(talentFullRef)) {
           levelFound = i + 1; // Levels are 1-based
           talentTypeId = extractIdFromRef(levelEntry.talent_type_ref);
           found = true;
