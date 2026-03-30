@@ -14,7 +14,6 @@ import {
 import { enrichPilotTalents } from '../../utils/pilot';
 import { getDefaultString } from '../../utils/localization';
 import { getStatValueChoices } from '../../utils/stat';
-import { extractIdFromRef } from '../../utils/object_reference';
 import ObjRef from '../../components/obj_ref/ObjRef.astro';
 
 export const prerender = true;
@@ -103,9 +102,8 @@ const defaultName = getDefaultString(pilotTalent.name) || pilotTalent.id;
   <p>
     Pilot Talent Type:
     {
-      pilotTalent.talent_type_ref && (() => {
-        const typeId = extractIdFromRef(pilotTalent.talent_type_ref!);
-        const talentType = pilotTalentTypes[typeId];
+      pilotTalent.talent_type_id && (() => {
+        const talentType = pilotTalentTypes[pilotTalent.talent_type_id];
         return talentType ? (
           <ObjRef obj={talentType} version={latestVersion} />
         ) : null;

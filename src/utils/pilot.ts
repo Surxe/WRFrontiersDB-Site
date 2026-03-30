@@ -1,3 +1,4 @@
+import { extractIdFromRef } from './object_reference';
 import type { PilotTalent, Pilot } from '../types/pilot';
 
 /**
@@ -29,9 +30,16 @@ export function enrichPilotTalents(
       // Check each level in pilot
       for (let i = 0; i < pilot.levels.length; i++) {
         const levelEntry = pilot.levels[i];
-        if (levelEntry.talents_refs.includes(talentId)) {
+        
+        // Check if talent reference is already a full reference or just an ID
+        const isFullRef = levelEntry.talents_refs.some(ref => 
+          ref.startsWith('OBJID_PilotTalent::')
+        );
+        
+        if (levelEntry.talents_refs.includes(talentId) || 
+            (isFullRef && levelEntry.talents_refs.includes(`OBJID_PilotTalent::${talentId}`))) {
           levelFound = i + 1; // Levels are 1-based
-          talentTypeId = levelEntry.talent_type_ref;
+          talentTypeId = extractIdFromRef(levelEntry.talent_type_ref);
           found = true;
           break;
         }
