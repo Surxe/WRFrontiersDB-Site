@@ -9,7 +9,6 @@ interface Props {
   pilots: [string, Pilot][];
   pilotTalents?: Record<string, PilotTalent>;
   pilotTalentTypes?: Record<string, PilotTalentType>;
-  version: string;
   fullOrOnHover?: 'full' | 'onHover' | undefined;
 }
 
@@ -22,7 +21,6 @@ const {
   pilots,
   pilotTalents,
   pilotTalentTypes,
-  version,
   fullOrOnHover,
 } = Astro.props;
 
@@ -63,7 +61,7 @@ if (pilotTalents && pilotTalentTypes) {
               {talentIndex === 0 && (
                 <>
                   <td rowspan={maxTalents}>
-                    <ObjRef obj={pilot} version={version} iconSize={48} />
+                    <ObjRef obj={pilot} iconSize={48} />
                   </td>
                 </>
               )}
@@ -77,7 +75,6 @@ if (pilotTalents && pilotTalentTypes) {
                       talentIndex={talentIndex}
                       maxTalents={maxTalents}
                       pilotTalents={pilotTalents}
-                      version={version}
                       fullOrOnHover={fullOrOnHover}
                     />
                   ) : (
@@ -86,7 +83,6 @@ if (pilotTalents && pilotTalentTypes) {
                       talentIndex={talentIndex}
                       maxTalents={maxTalents}
                       pilotTalentTypes={pilotTalentTypes}
-                      version={version}
                     />
                   )}
                 </>

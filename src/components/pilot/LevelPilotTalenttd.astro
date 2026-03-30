@@ -14,7 +14,6 @@ interface Props {
   talentIndex: number;
   maxTalents: number;
   pilotTalents: Record<string, PilotTalent>;
-  version: string;
   fullOrOnHover?: 'full' | 'onHover';
 }
 
@@ -37,7 +36,6 @@ const {
   talentIndex,
   maxTalents,
   pilotTalents,
-  version,
   fullOrOnHover = 'full',
 } = Astro.props;
 
@@ -47,8 +45,7 @@ if (fullOrOnHover !== 'full' && fullOrOnHover !== 'onHover') {
 
 // Load ModuleStats for stat replacements
 const moduleStats = getParseObjects<ModuleStat>(
-  'Objects/ModuleStat.json',
-  version
+  'Objects/ModuleStat.json'
 );
 
 // For level 5, always use the first talent; for others, use the current talentIndex
@@ -81,7 +78,6 @@ const talentData = shouldRender ? getTalentData(levelIndex, talentIndex) : null;
   shouldRender && talentData && talentData.talent && (
     <TalentCell
       talent={talentData.talent}
-      version={version}
       statValueChoices={talentData.statValueChoices}
       fullOrOnHover={fullOrOnHover}
       rowspan={rowspan}

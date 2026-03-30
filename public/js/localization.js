@@ -20,7 +20,7 @@ export async function loadLanguage(lang, version) {
 
   try {
     const response = await fetch(
-      `/WRFrontiersDB-Data/archive/${version}/Localization/${lang}.json`
+      `/WRFrontiersDB-Data/current/Localization/${lang}.json`
     );
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     localizationCache[cacheKey] = await response.json();
@@ -196,7 +196,7 @@ export function updateLocalizedElements(locData, selectors) {
 
 /**
  * Full localization update for a page
- * @param {string} version - Game version for this page
+ * @param {string} version - Game version for this page (ignored, always uses current)
  * @param {string|string[]} selectors - Elements to localize
  */
 export async function initializeLocalization(
@@ -212,7 +212,7 @@ export async function initializeLocalization(
   }
 
   // Load and apply localization
-  const locData = await loadLanguage(currentLang, version);
+  const locData = await loadLanguage(currentLang, 'current');
   if (locData) {
     updateLocalizedElements(locData, selectors);
   }
@@ -221,9 +221,9 @@ export async function initializeLocalization(
 /**
  * Sets the current stat choice for elements with stat value choices
  * @param {number} choiceIndex - Index of the choice to use (0-based)
- * @param {string} version - Game version for re-localization
+ * @param {string} version - Game version for re-localization (ignored, always uses current)
  */
-export async function setStatChoice(choiceIndex, version) {
+export async function setStatChoice(choiceIndex, _version) {
   // Update data-current-choice on all elements with stat choices
   const elements = document.querySelectorAll('[data-stat-value-choices]');
   elements.forEach((element) => {
@@ -233,6 +233,6 @@ export async function setStatChoice(choiceIndex, version) {
   // Re-run localization to apply new choice
   const currentLang = getCurrentLanguage();
   const locData =
-    currentLang === 'en' ? {} : await loadLanguage(currentLang, version);
+    currentLang === 'en' ? {} : await loadLanguage(currentLang, 'current');
   updateLocalizedElements(locData || {}, '[data-loc-key]');
 }

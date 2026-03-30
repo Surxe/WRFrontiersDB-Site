@@ -6,7 +6,6 @@ import PilotTables from '../components/pilot/Tables.astro';
 import type { Pilot } from '../types/pilot';
 import '../styles/pilots.css';
 
-const version = 'current';
 
 // Load pilots
 const pilots = getParseObjects<Pilot>('Objects/Pilot.json');
@@ -21,11 +20,11 @@ const pilot = pilots['DA_Pilot_Common1.0']; // Pick an arbitary pilot. All are v
   <BackToHome />
 
   <p>
-    Showing pilots from latest version ({latestVersion})
+    Showing pilots from current version
   </p>
 
   <h1>Pilots</h1>
-  <PilotTables pilots={pilots} version={latestVersion} />
+  <PilotTables pilots={pilots} />
 
   <h2>Reputation Costs</h2>
   <!--Table for reputation costs-->
