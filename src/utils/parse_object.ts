@@ -5,9 +5,6 @@ import * as moduleTypes from '../types/module';
 import * as pilotTypes from '../types/pilot';
 import * as rarityTypes from '../types/rarity';
 
-// File cache to avoid repeated reads
-const fileCache = new Map<string, Record<string, any>>();
-
 // Merge all exported constants from type modules
 const allTypeExports = {
   ...moduleTypes,
@@ -16,17 +13,11 @@ const allTypeExports = {
 };
 
 /**
- * Cached file reader to reduce file handle usage
+ * Simple file reader
  */
-function readJsonFile(filePath: string): any {
-  if (fileCache.has(filePath)) {
-    return fileCache.get(filePath);
-  }
-
+function readJsonFile(filePath: string): Record<string, ParseObject> | null {
   try {
-    const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-    fileCache.set(filePath, data);
-    return data;
+    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
   } catch (error) {
     console.warn(`Failed to read JSON file: ${filePath}`, error);
     return null;
@@ -50,6 +41,10 @@ export function getParseObjects<T = ParseObject>(
     );
     if (fs.existsSync(objectsPath)) {
       const data = readJsonFile(objectsPath);
+      
+      if (!data) {
+        return {};
+      }
 
       // Extract parseObjectClass from parseObjectFile (e.g., "Objects/Module.json" -> "Module")
       const fileName = parseObjectFile.split('/').pop() || '';
@@ -104,17 +99,6 @@ export function isObjectProductionReady(
   objectId: string,
   parseObjectPath: string
 ): boolean {
-  const cacheKey = parseObjectPath;
-
-  if (fileCache.has(cacheKey)) {
-    const objects = fileCache.get(cacheKey);
-    if (objects) {
-      const obj = objects[objectId];
-      return obj && obj.production_status === 'Ready';
-    }
-    return false;
-  }
-
   try {
     const objectPath = path.join(
       process.cwd(),
