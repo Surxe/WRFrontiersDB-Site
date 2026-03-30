@@ -17,7 +17,7 @@ const entries = prepareObjectList(modules, { prodReadyOnly: true });
 // Group by module_type_id
 const grouped = groupBy(
   entries,
-  ([_, module]) => module.module_type_id || 'Unknown'
+  ([_, module]) => module.module_type_ref || 'Unknown'
 );
 
 // Sort groups alphabetically
