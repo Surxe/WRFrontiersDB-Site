@@ -4,15 +4,9 @@ import type { Module } from '../../../src/types/module';
 import type { Pilot } from '../../../src/types/pilot';
 
 describe('getParseObjects', () => {
-  // Use real version from the data archive
-  const testVersion = '2025-12-09';
-
   describe('successful loading', () => {
     it('should load Module objects and add parseObjectClass', () => {
-      const result = getParseObjects<Module>(
-        'Objects/Module.json',
-        testVersion
-      );
+      const result = getParseObjects<Module>('Objects/Module.json');
 
       // Should return a non-empty object
       expect(Object.keys(result).length).toBeGreaterThan(0);
@@ -27,7 +21,7 @@ describe('getParseObjects', () => {
     });
 
     it('should load Pilot objects and add parseObjectClass', () => {
-      const result = getParseObjects<Pilot>('Objects/Pilot.json', testVersion);
+      const result = getParseObjects<Pilot>('Objects/Pilot.json');
 
       expect(Object.keys(result).length).toBeGreaterThan(0);
 
@@ -40,10 +34,7 @@ describe('getParseObjects', () => {
     });
 
     it('should extract parseObjectClass from different file paths', () => {
-      const pilotClasses = getParseObjects(
-        'Objects/PilotClass.json',
-        testVersion
-      );
+      const pilotClasses = getParseObjects('Objects/PilotClass.json');
 
       expect(Object.keys(pilotClasses).length).toBeGreaterThan(0);
 
@@ -51,22 +42,8 @@ describe('getParseObjects', () => {
       expect(pilotClasses[firstKey].parseObjectClass).toBe('PilotClass');
     });
 
-    it('should handle different versions', () => {
-      // Test with an older version
-      const olderVersion = '2025-11-25';
-      const result = getParseObjects('Objects/Module.json', olderVersion);
-
-      expect(Object.keys(result).length).toBeGreaterThan(0);
-
-      const firstKey = Object.keys(result)[0];
-      expect(result[firstKey].parseObjectClass).toBe('Module');
-    });
-
     it('should preserve all original object properties', () => {
-      const result = getParseObjects<Module>(
-        'Objects/Module.json',
-        testVersion
-      );
+      const result = getParseObjects<Module>('Objects/Module.json');
       const firstKey = Object.keys(result)[0];
       const module = result[firstKey];
 
@@ -85,22 +62,15 @@ describe('getParseObjects', () => {
   });
 
   describe('error handling', () => {
-    it('should return empty object for non-existent version', () => {
-      const result = getParseObjects('Objects/Module.json', '2000-01-01');
-
-      expect(result).toEqual({});
-      expect(Object.keys(result).length).toBe(0);
-    });
-
     it('should return empty object for non-existent file', () => {
-      const result = getParseObjects('Objects/NonExistent.json', testVersion);
+      const result = getParseObjects('Objects/NonExistent.json');
 
       expect(result).toEqual({});
       expect(Object.keys(result).length).toBe(0);
     });
 
     it('should return empty object for invalid path', () => {
-      const result = getParseObjects('InvalidPath/File.json', testVersion);
+      const result = getParseObjects('InvalidPath/File.json');
 
       expect(result).toEqual({});
     });
@@ -108,7 +78,7 @@ describe('getParseObjects', () => {
 
   describe('parseObjectClass extraction', () => {
     it('should extract class name from simple file path', () => {
-      const result = getParseObjects('Objects/Module.json', testVersion);
+      const result = getParseObjects('Objects/Module.json');
       const firstKey = Object.keys(result)[0];
 
       expect(result[firstKey].parseObjectClass).toBe('Module');
@@ -116,7 +86,7 @@ describe('getParseObjects', () => {
 
     it('should handle nested paths correctly', () => {
       // Even if path has multiple parts, should extract from filename
-      const result = getParseObjects('Objects/PilotTalent.json', testVersion);
+      const result = getParseObjects('Objects/PilotTalent.json');
       const firstKey = Object.keys(result)[0];
 
       expect(result[firstKey].parseObjectClass).toBe('PilotTalent');
@@ -125,7 +95,7 @@ describe('getParseObjects', () => {
 
   describe('return type', () => {
     it('should return Record<string, T> structure', () => {
-      const result = getParseObjects('Objects/Module.json', testVersion);
+      const result = getParseObjects('Objects/Module.json');
 
       // Should be an object (not array)
       expect(typeof result).toBe('object');
@@ -142,11 +112,8 @@ describe('getParseObjects', () => {
 
     it('should allow generic type parameter', () => {
       // Test that TypeScript generic works
-      const modules = getParseObjects<Module>(
-        'Objects/Module.json',
-        testVersion
-      );
-      const pilots = getParseObjects<Pilot>('Objects/Pilot.json', testVersion);
+      const modules = getParseObjects<Module>('Objects/Module.json');
+      const pilots = getParseObjects<Pilot>('Objects/Pilot.json');
 
       const moduleKey = Object.keys(modules)[0];
       const pilotKey = Object.keys(pilots)[0];

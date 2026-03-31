@@ -8,16 +8,19 @@ describe('prepareObjectList', () => {
       obj1: {
         id: 'obj1',
         production_status: 'Ready',
+        name: 'obj1',
         parseObjectClass: 'Test',
       },
       obj2: {
         id: 'obj2',
         production_status: 'NotReady',
+        name: 'obj2',
         parseObjectClass: 'Test',
       },
       obj3: {
         id: 'obj3',
         production_status: 'Ready',
+        name: 'obj3',
         parseObjectClass: 'Test',
       },
     };
@@ -37,19 +40,22 @@ describe('prepareObjectList', () => {
       obj1: {
         id: 'obj1',
         production_status: 'Ready',
+        name: 'obj1',
         parseObjectClass: 'Test',
       },
       obj2: {
         id: 'obj2',
         production_status: 'NotReady',
+        name: 'obj2',
         parseObjectClass: 'Test',
       },
       obj3: {
         id: 'obj3',
         production_status: 'Ready',
+        name: 'obj3',
         parseObjectClass: 'Test',
       },
-      obj4: { id: 'obj4', parseObjectClass: 'Test' }, // No production_status
+      obj4: { id: 'obj4', name: 'obj4', parseObjectClass: 'Test' }, // No production_status
     };
 
     const result = prepareObjectList(objects, { prodReadyOnly: true });
@@ -66,16 +72,19 @@ describe('prepareObjectList', () => {
       obj1: {
         id: 'obj1',
         production_status: 'Ready',
+        name: 'obj1',
         parseObjectClass: 'Test',
       },
       obj2: {
         id: 'obj2',
         production_status: 'Ready',
+        name: 'obj2',
         parseObjectClass: 'Test',
       },
       obj3: {
         id: 'obj3',
         production_status: 'Ready',
+        name: 'obj3',
         parseObjectClass: 'Test',
       },
     };
@@ -96,21 +105,25 @@ describe('prepareObjectList', () => {
       zebra: {
         id: 'zebra',
         production_status: 'Ready',
+        name: 'zebra',
         parseObjectClass: 'Test',
       },
       apple: {
         id: 'apple',
         production_status: 'NotReady',
+        name: 'apple',
         parseObjectClass: 'Test',
       },
       banana: {
         id: 'banana',
         production_status: 'Ready',
+        name: 'banana',
         parseObjectClass: 'Test',
       },
       cherry: {
         id: 'cherry',
         production_status: 'Ready',
+        name: 'cherry',
         parseObjectClass: 'Test',
       },
     };
