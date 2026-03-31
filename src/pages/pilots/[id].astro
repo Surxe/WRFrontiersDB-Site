@@ -24,7 +24,7 @@ import { refToId } from '../../utils/object_reference';
 import type { ModuleStat } from '../../types/module';
 import ObjRef from '../../components/obj_ref/ObjRef.astro';
 
-export const prerender = false;
+export const prerender = true;
 
 export async function getStaticPaths() {
   return generateObjectListStaticPaths('Pilot');

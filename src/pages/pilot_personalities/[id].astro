@@ -10,7 +10,7 @@ import {
 } from '../../utils/parse_object';
 import { getDefaultString } from '../../utils/localization';
 
-export const prerender = false;
+export const prerender = true;
 
 export async function getStaticPaths() {
   return generateObjectListStaticPaths('PilotPersonality');
