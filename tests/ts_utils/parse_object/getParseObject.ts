@@ -77,9 +77,7 @@ describe('getParseObject', () => {
 
       expect(() => {
         getParseObject(nonExistentId, 'Objects/Module.json');
-      }).toThrow(
-        `Object ${nonExistentId} not found in Objects/Module.json`
-      );
+      }).toThrow(`Object ${nonExistentId} not found in Objects/Module.json`);
     });
 
     it('should throw error with correct message for different files', () => {
@@ -88,9 +86,7 @@ describe('getParseObject', () => {
 
       expect(() => {
         getParseObject(nonExistentId, parseObjectFile);
-      }).toThrow(
-        `Object ${nonExistentId} not found in ${parseObjectFile}`
-      );
+      }).toThrow(`Object ${nonExistentId} not found in ${parseObjectFile}`);
     });
 
     it('should throw error when file does not exist', () => {

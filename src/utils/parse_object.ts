@@ -41,7 +41,7 @@ export function getParseObjects<T = ParseObject>(
     );
     if (fs.existsSync(objectsPath)) {
       const data = readJsonFile(objectsPath);
-      
+
       if (!data) {
         return {};
       }
