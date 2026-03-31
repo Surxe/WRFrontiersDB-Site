@@ -16,20 +16,20 @@ This skill provides a guided review process for comparing TypeScript interfaces 
 
 ### 1. Load Interface and Data
 ```bash
-# Load interface definitions and data samples
-# This step reads all interface files and data files for analysis
+# Load interface definitions and data samples from current directory
+# Reads interfaces from src/types/ and data from WRFrontiersDB-Data/current/Objects/
 ```
 
 ### 2. AI-Powered Analysis
 ```bash
 # Analyze patterns and identify discrepancies using language model reasoning
-# Compare interface fields against actual data structure
+# Compare interface fields against actual data structure from WRFrontiersDB-Data/current/
 ```
 
 ### 3. Guided Review Discussion
 ```bash
 # Present findings as discussion points and questions
-# Provide context for interface design decisions
+# Include file links when referencing missing attributes or data samples
 ```
 
 ## TODO Field Handling
@@ -64,16 +64,16 @@ This skill provides a guided review process for comparing TypeScript interfaces 
 The skill will ask questions like:
 
 ### Missing Fields
-> "I notice field 'faction_ref' appears in 85% of module objects but isn't in the interface. Should this be added as an optional field, or is this intentional?"
+> "I notice field 'faction_ref' appears in 85% of module objects but isn't in the Module interface. See data samples in `WRFrontiersDB-Data/current/Objects/Module.json` [line 45, 67, 89]. Should this be added as an optional field, or is this intentional?"
 
 ### Optional Field Patterns
-> "Field 'module_tags_refs' is marked optional but appears in 95% of modules. Consider making it required, or keep it optional for edge cases?"
+> "Field 'module_tags_refs' is marked optional but appears in 95% of modules. Consider making it required, or keep it optional for edge cases? Data examples: `WRFrontiersDB-Data/current/Objects/Module.json` [lines 23-34, 56-78]"
 
 ### Extra Fields
-> "Interface has field 'abilities_scalars' marked as TODO, but I see this field in some data objects. Is this planned for future implementation?"
+> "Interface has field 'abilities_scalars' marked as TODO, but I see this field in some data objects. Is this planned for future implementation? Data examples: `WRFrontiersDB-Data/current/Objects/Module.json` [lines 102-145]"
 
 ### Type Considerations
-> "Field 'character_module_mounts' is defined as an array of objects with specific structure. Does this match how the data is actually used?"
+> "Field 'character_module_mounts' is defined as an array of objects with specific structure. Does this match how the data is actually used? Data examples: `WRFrontiersDB-Data/current/Objects/Module.json` [lines 40-44]"
 
 ## Analysis Summary Format
 
@@ -86,6 +86,7 @@ The skill will ask questions like:
 - **List**: Fields present in data but not in interface
 - **Frequency**: How often do these fields appear?
 - **Questions**: Should these be added to interface, or are they internal data?
+- **File references**: Include direct links to `WRFrontiersDB-Data/current/Objects/{Type}.json` with line numbers
 
 ### Optional vs Required Analysis
 - **Patterns**: Fields marked optional vs actual presence
