@@ -16,9 +16,19 @@ This skill provides a comprehensive testing workflow for the WRFrontiersDB-Site 
 
 ### 1. Start Development Server
 ```bash
-npm run dev
+# Set up cleanup trap to kill dev server on skill completion
+trap 'pkill -f "npm run dev" || true' EXIT
+
+npm run dev &
+# Wait for server to start (usually on http://localhost:4321 or similar)
+sleep 5
 ```
-Wait for the server to start (usually on http://localhost:4321 or similar).
+
+**Alternative Method**: If trap doesn't work, you can also kill by port:
+```bash
+# Kill by port at the end
+lsof -ti:4323 | xargs kill -9 2>/dev/null || true
+```
 
 ### 2. Launch Playwright Testing
 Use Playwright to open and navigate the dev site automatically.
