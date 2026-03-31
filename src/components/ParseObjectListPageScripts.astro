@@ -1,17 +1,16 @@
 ---
 export interface Props {
-  version: string;
   jsFileName?: string;
 }
 
-const { version, jsFileName } = Astro.props;
+const { jsFileName } = Astro.props;
 ---
 
 <!--Common astro scripts for all ParseObjectList pages--><!--Initialize localization on all the localizeable elements-->
-<script type="module" define:vars={{ version }}>
+<script type="module">
   const localizationModule = await import('/js/localization.js');
   const { initializeLocalization } = localizationModule;
-  initializeLocalization(version);
+  initializeLocalization('current');
 </script>
 
 <!--Load the specific JS file for this list page, only if jsFileName is provided-->{

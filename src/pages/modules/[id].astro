@@ -6,7 +6,6 @@ import LocalizedText from '../../components/LocalizedText.astro';
 import ObjectPageScripts from '../../components/ObjectPageScripts.astro';
 import ParseObjectPage from '../../components/ParseObjectPage.astro';
 import {
-  getLatestVersion,
   getParseObject,
   getParseObjects,
   generateObjectListStaticPaths,
@@ -15,25 +14,22 @@ import { getDefaultString } from '../../utils/localization';
 import { resolveObjectRef } from '../../utils/object_resolver';
 import ObjRef from '../../components/obj_ref/ObjRef.astro';
 
-export const prerender = true;
 
 export async function getStaticPaths() {
   return generateObjectListStaticPaths('Module', true);
 }
 
 const { id } = Astro.params;
-const latestVersion = getLatestVersion();
 
-const module = getParseObject<Module>(id, latestVersion, 'Objects/Module.json');
+const module = getParseObject<Module>(id, 'Objects/Module.json');
 const allModuleRarities = getParseObjects<ModuleRarity>(
-  'Objects/ModuleRarity.json',
-  latestVersion
+  'Objects/ModuleRarity.json'
 );
 const moduleRarity = resolveObjectRef(
   module.module_rarity_ref,
   allModuleRarities
 );
-const allRarities = getParseObjects<Rarity>('Objects/Rarity.json', latestVersion);
+const allRarities = getParseObjects<Rarity>('Objects/Rarity.json');
 const rarity = moduleRarity
   ? resolveObjectRef(moduleRarity.rarity_ref, allRarities)
   : undefined;
@@ -71,14 +67,10 @@ const defaultName = getDefaultString(module.name) || module.id;
   <p>Language: <span id="current-lang">en</span></p>
   <p>
     Rarity:
-    {rarity ? <ObjRef obj={rarity} version={latestVersion} /> : 'Unknown'}
+    {rarity ? <ObjRef obj={rarity} /> : 'Unknown'}
   </p>
 
   <div id="stats">stats</div>
 
-  <ObjectPageScripts
-    version={latestVersion}
-    objectData={module}
-    jsFileName="module_page.js"
-  />
+  <ObjectPageScripts objectData={module} jsFileName="module_page.js" />
 </ParseObjectPage>

@@ -51,7 +51,7 @@ export function createObjectRef(objectClass: string, id: string): string {
  * @param ref - The object reference string
  * @returns The extracted ID
  */
-export function extractIdFromRef(ref: string): string {
+export function refToId(ref: string): string {
   return parseObjectRef(ref).id;
 }
 
@@ -89,10 +89,20 @@ export function legacyIdToRef(id: string, objectClass: string): string {
 }
 
 /**
+ * Convert an ID to object reference format
+ * @param id - The object ID (e.g., "DA_Module_AmmoFabricator.0")
+ * @param objectType - The object type (e.g., "Module", "PilotTalent", "PilotTalentType")
+ * @returns Object reference string (e.g., "OBJID_Module::DA_Module_AmmoFabricator.0")
+ */
+export function idToRef(id: string, objectType: string): string {
+  return `OBJID_${objectType}::${id}`;
+}
+
+/**
  * Convert object reference to legacy ID format
  * @param ref - The object reference string
  * @returns Legacy ID
  */
 export function refToLegacyId(ref: string): string {
-  return extractIdFromRef(ref);
+  return refToId(ref);
 }

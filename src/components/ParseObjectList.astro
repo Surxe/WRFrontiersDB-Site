@@ -5,13 +5,12 @@ import { prepareObjectList } from '../utils/list';
 
 export interface Props {
   parseObjectFile: string;
-  version: string;
   prodReadyOnly?: boolean;
 }
 
-const { parseObjectFile, version, prodReadyOnly = false } = Astro.props;
+const { parseObjectFile, prodReadyOnly = false } = Astro.props;
 
-const objects = getParseObjects(parseObjectFile, version);
+const objects = getParseObjects(parseObjectFile);
 let entries = prepareObjectList(objects, { prodReadyOnly });
 
 // Creates list of links to parse objects. Not to be confused with a ParseObjectListPage, which is a full page wrapper.
@@ -21,7 +20,7 @@ let entries = prepareObjectList(objects, { prodReadyOnly });
   {
     entries.map(([_, obj]) => (
       <li>
-        <ObjRef obj={obj} version={version} />
+        <ObjRef obj={obj} />
       </li>
     ))
   }

@@ -1,5 +1,5 @@
 import type { ParseObject } from '../types/parse_object';
-import { extractIdFromRef } from './object_reference';
+import { refToId } from './object_reference';
 
 /**
  * Resolve an object reference to an actual object
@@ -11,7 +11,7 @@ export function resolveObjectRef<T extends ParseObject>(
   ref: string,
   objects: Record<string, T>
 ): T | undefined {
-  const id = extractIdFromRef(ref);
+  const id = refToId(ref);
   return objects[id];
 }
 

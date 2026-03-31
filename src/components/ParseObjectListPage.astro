@@ -4,11 +4,10 @@ import ParseObjectListPageScripts from './ParseObjectListPageScripts.astro';
 
 export interface Props {
   title?: string;
-  version?: string;
   jsFileName?: string;
 }
 
-const { title, version, jsFileName } = Astro.props;
+const { title, jsFileName } = Astro.props;
 
 // Basic page layout for ParseObjectList pages, e.g. pages/modules.astro
 ---
@@ -17,9 +16,5 @@ const { title, version, jsFileName } = Astro.props;
   <slot name="head" slot="head" />
   <slot />
 
-  {
-    version && (
-      <ParseObjectListPageScripts version={version} jsFileName={jsFileName} />
-    )
-  }
+  {(<ParseObjectListPageScripts jsFileName={jsFileName} />)}
 </Page>

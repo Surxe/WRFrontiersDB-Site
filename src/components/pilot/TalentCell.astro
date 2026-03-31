@@ -8,7 +8,6 @@ import type { ModuleStat } from '../../types/module';
 
 interface Props {
   talent: PilotTalent;
-  version: string;
   statValueChoices: any;
   fullOrOnHover?: 'full' | 'onHover';
   rowspan?: number;
@@ -16,17 +15,13 @@ interface Props {
 
 const {
   talent,
-  version,
   statValueChoices,
   fullOrOnHover = 'full',
   rowspan,
 } = Astro.props;
 
 // Load ModuleStats for stat replacements
-const moduleStats = getParseObjects<ModuleStat>(
-  'Objects/ModuleStat.json',
-  version
-);
+const moduleStats = getParseObjects<ModuleStat>('Objects/ModuleStat.json');
 ---
 
 <td rowspan={rowspan}>
@@ -35,7 +30,6 @@ const moduleStats = getParseObjects<ModuleStat>(
       <>
         <ObjRef
           obj={talent}
-          version={version}
           useOnHover={fullOrOnHover === 'onHover'}
           onHoverStatChoices={statValueChoices}
         />

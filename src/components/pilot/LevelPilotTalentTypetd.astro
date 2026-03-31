@@ -1,7 +1,7 @@
 ---
 import ObjRef from '../obj_ref/ObjRef.astro';
 import type { PilotTalentType } from '../../types/pilot';
-import { extractIdFromRef } from '../../utils/object_reference';
+import { refToId } from '../../utils/object_reference';
 
 interface Props {
   level?: {
@@ -11,7 +11,6 @@ interface Props {
   talentIndex: number;
   maxTalents: number;
   pilotTalentTypes?: Record<string, PilotTalentType>;
-  version: string;
 }
 
 /*
@@ -20,8 +19,7 @@ Level 1-5:
 TalentType (rowspan=maxTalents)
 */
 
-const { level, talentIndex, maxTalents, pilotTalentTypes, version } =
-  Astro.props;
+const { level, talentIndex, maxTalents, pilotTalentTypes } = Astro.props;
 ---
 
 {/* Talent column */}
@@ -32,10 +30,7 @@ const { level, talentIndex, maxTalents, pilotTalentTypes, version } =
   talentIndex === 0 && (
     <td rowspan={maxTalents}>
       {level?.talent_type_ref && pilotTalentTypes && (
-        <ObjRef
-          obj={pilotTalentTypes[extractIdFromRef(level.talent_type_ref)]}
-          version={version}
-        />
+        <ObjRef obj={pilotTalentTypes[refToId(level.talent_type_ref)]} />
       )}
     </td>
   )

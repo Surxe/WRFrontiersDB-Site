@@ -2,21 +2,13 @@
 import ParseObjectList from '../components/ParseObjectList.astro';
 import BackToHome from '../components/BackToHome.astro';
 import ParseObjectListPage from '../components/ParseObjectListPage.astro';
-import { getLatestVersion } from '../utils/parse_object';
-
-const latestVersion = getLatestVersion();
 ---
 
-<ParseObjectListPage title="Pilot Personalities" version={latestVersion}>
+<ParseObjectListPage title="Pilot Personalities">
   <BackToHome />
   <h1>Pilot Personalities</h1>
 
-  <p>
-    Showing pilot personalities from latest version ({latestVersion})
-  </p>
+  <p>Showing pilot personalities from latest version (current)</p>
 
-  <ParseObjectList
-    parseObjectFile="Objects/PilotPersonality.json"
-    version={latestVersion}
-  />
+  <ParseObjectList parseObjectFile="Objects/PilotPersonality.json" />
 </ParseObjectListPage>

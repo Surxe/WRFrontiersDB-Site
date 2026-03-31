@@ -6,16 +6,9 @@ describe('PilotClass interface', () => {
   let pilotClasses: Record<string, unknown>;
   let pilotClassArray: unknown[];
 
-  // Load real data from the latest version
-  const archiveDir = path.join(process.cwd(), 'WRFrontiersDB-Data', 'archive');
-  const versions = fs.readdirSync(archiveDir).sort().reverse();
-  const latestVersion = versions[0];
-  const pilotClassPath = path.join(
-    archiveDir,
-    latestVersion,
-    'Objects',
-    'PilotClass.json'
-  );
+  // Load real data from the current directory
+  const currentDir = path.join(process.cwd(), 'WRFrontiersDB-Data', 'current');
+  const pilotClassPath = path.join(currentDir, 'Objects', 'PilotClass.json');
 
   pilotClasses = JSON.parse(fs.readFileSync(pilotClassPath, 'utf-8'));
   pilotClassArray = Object.values(pilotClasses);

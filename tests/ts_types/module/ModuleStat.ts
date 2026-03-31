@@ -5,16 +5,9 @@ import type { ModuleStat } from '../../../src/types/module';
 import type { LocalizationKey } from '../../../src/types/localization';
 
 describe('ModuleStat interface', () => {
-  // Get the latest version directory
-  const archiveDir = path.join(process.cwd(), 'WRFrontiersDB-Data', 'archive');
-  const versions = fs.readdirSync(archiveDir).sort().reverse();
-  const latestVersion = versions[0];
-  const moduleStatPath = path.join(
-    archiveDir,
-    latestVersion,
-    'Objects',
-    'ModuleStat.json'
-  );
+  // Get the current directory
+  const currentDir = path.join(process.cwd(), 'WRFrontiersDB-Data', 'current');
+  const moduleStatPath = path.join(currentDir, 'Objects', 'ModuleStat.json');
 
   const data = JSON.parse(fs.readFileSync(moduleStatPath, 'utf-8'));
   const moduleStats = Object.values(data) as ModuleStat[];

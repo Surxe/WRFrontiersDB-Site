@@ -14,7 +14,6 @@ interface Props {
   talentIndex: number;
   maxTalents: number;
   pilotTalents: Record<string, PilotTalent>;
-  version: string;
   fullOrOnHover?: 'full' | 'onHover';
 }
 
@@ -37,7 +36,6 @@ const {
   talentIndex,
   maxTalents,
   pilotTalents,
-  version,
   fullOrOnHover = 'full',
 } = Astro.props;
 
@@ -46,10 +44,7 @@ if (fullOrOnHover !== 'full' && fullOrOnHover !== 'onHover') {
 }
 
 // Load ModuleStats for stat replacements
-const moduleStats = getParseObjects<ModuleStat>(
-  'Objects/ModuleStat.json',
-  version
-);
+const moduleStats = getParseObjects<ModuleStat>('Objects/ModuleStat.json');
 
 // For level 5, always use the first talent; for others, use the current talentIndex
 // because level 5 only has one talent slot
@@ -62,26 +57,6 @@ const getTalentData = (levelIdx: number, talentIdx: number) => {
     throw new Error(
       `Talent "${rawTalentId}" not found in pilotTalents. Available: ${Object.keys(pilotTalents).slice(0, 10).join(', ')}`
     );
-  }
-
-  // Defensive: Check if talent has stats array
-  if (
-    !talent.stats ||
-    !Array.isArray(talent.stats) ||
-    talent.stats.length === 0
-  ) {
-    return {
-      talent: {
-        id: talent.id,
-        name: talent.name?.Key || 'No name',
-        description: talent.description?.Key || 'No description',
-        stats: [],
-        ui_description: talent.ui_description?.Key || 'No UI description',
-        short_ui_description:
-          talent.short_ui_description?.Key || 'No short UI description',
-      },
-      statValueChoices: {},
-    };
   }
 
   const statValueChoices = getStatValueChoices(talent.stats, moduleStats);
@@ -101,7 +76,6 @@ const talentData = shouldRender ? getTalentData(levelIndex, talentIndex) : null;
   shouldRender && talentData && talentData.talent && (
     <TalentCell
       talent={talentData.talent}
-      version={version}
       statValueChoices={talentData.statValueChoices}
       fullOrOnHover={fullOrOnHover}
       rowspan={rowspan}

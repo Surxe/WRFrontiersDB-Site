@@ -1,3 +1,4 @@
+import { refToId, idToRef } from './object_reference';
 import type { PilotTalent, Pilot } from '../types/pilot';
 
 /**
@@ -29,9 +30,13 @@ export function enrichPilotTalents(
       // Check each level in pilot
       for (let i = 0; i < pilot.levels.length; i++) {
         const levelEntry = pilot.levels[i];
-        if (levelEntry.talents_refs.includes(talentId)) {
+
+        // Convert talentId to full reference format for comparison
+        const talentFullRef = idToRef(talentId, 'PilotTalent');
+
+        if (levelEntry.talents_refs.includes(talentFullRef)) {
           levelFound = i + 1; // Levels are 1-based
-          talentTypeId = levelEntry.talent_type_ref;
+          talentTypeId = refToId(levelEntry.talent_type_ref);
           found = true;
           break;
         }

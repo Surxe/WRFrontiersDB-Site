@@ -5,26 +5,19 @@ import LocalizedText from '../../components/LocalizedText.astro';
 import ObjectPageScripts from '../../components/ObjectPageScripts.astro';
 import ParseObjectPage from '../../components/ParseObjectPage.astro';
 import {
-  getLatestVersion,
   getParseObject,
   generateObjectListStaticPaths,
 } from '../../utils/parse_object';
 import { getDefaultString } from '../../utils/localization';
 
-export const prerender = true;
 
 export async function getStaticPaths() {
   return generateObjectListStaticPaths('PilotClass');
 }
 
 const { id } = Astro.params;
-const latestVersion = getLatestVersion();
 
-const pilotClass = getParseObject<PilotClass>(
-  id,
-  latestVersion,
-  'Objects/PilotClass.json'
-);
+const pilotClass = getParseObject<PilotClass>(id, 'Objects/PilotClass.json');
 
 // Extract English text as fallback
 const defaultName = getDefaultString(pilotClass.name) || pilotClass.id;
@@ -54,5 +47,5 @@ const defaultName = getDefaultString(pilotClass.name) || pilotClass.id;
 
   <p>Language: <span id="current-lang">en</span></p>
 
-  <ObjectPageScripts version={latestVersion} objectData={pilotClass} />
+  <ObjectPageScripts objectData={pilotClass} />
 </ParseObjectPage>

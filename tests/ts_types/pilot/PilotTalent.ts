@@ -6,16 +6,9 @@ describe('PilotTalent interface', () => {
   let pilotTalents: Record<string, unknown>;
   let pilotTalentArray: unknown[];
 
-  // Load real data from the latest version
-  const archiveDir = path.join(process.cwd(), 'WRFrontiersDB-Data', 'archive');
-  const versions = fs.readdirSync(archiveDir).sort().reverse();
-  const latestVersion = versions[0];
-  const pilotTalentPath = path.join(
-    archiveDir,
-    latestVersion,
-    'Objects',
-    'PilotTalent.json'
-  );
+  // Load real data from the current directory
+  const currentDir = path.join(process.cwd(), 'WRFrontiersDB-Data', 'current');
+  const pilotTalentPath = path.join(currentDir, 'Objects', 'PilotTalent.json');
 
   pilotTalents = JSON.parse(fs.readFileSync(pilotTalentPath, 'utf-8'));
   pilotTalentArray = Object.values(pilotTalents);

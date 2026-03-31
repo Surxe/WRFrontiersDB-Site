@@ -1,20 +1,17 @@
 ---
 import BackToHome from '../components/BackToHome.astro';
 import ParseObjectListPage from '../components/ParseObjectListPage.astro';
-import { getLatestVersion, getParseObjects } from '../utils/parse_object';
+import { getParseObjects } from '../utils/parse_object';
 import { prepareObjectList, groupBy, sortGroups } from '../utils/list';
 import type { PilotTalentType, Pilot } from '../types/pilot';
 import LocalizedText from '../components/LocalizedText.astro';
 import ObjRef from '../components/obj_ref/ObjRef.astro';
 
-const latestVersion = getLatestVersion();
-
 // Load pilot talent types and pilots
 const pilotTalentTypes = getParseObjects<PilotTalentType>(
-  'Objects/PilotTalentType.json',
-  latestVersion
+  'Objects/PilotTalentType.json'
 );
-const pilots = getParseObjects<Pilot>('Objects/Pilot.json', latestVersion);
+const pilots = getParseObjects<Pilot>('Objects/Pilot.json');
 
 // For each pilot talent type,
 //  find what level it appears at
@@ -52,13 +49,11 @@ const grouped = groupBy(
 const sortedGroups = sortGroups(grouped, (a, b) => Number(a) - Number(b));
 ---
 
-<ParseObjectListPage title="Pilot Talent Types" version={latestVersion}>
+<ParseObjectListPage title="Pilot Talent Types">
   <BackToHome />
   <h1>Pilot Talent Types</h1>
 
-  <p>
-    Showing pilot talent types from latest version ({latestVersion})
-  </p>
+  <p>Showing pilot talent types from current version</p>
 
   {
     sortedGroups.map(([levelNum, pilotTalentTypeEntries]) => (
@@ -75,7 +70,7 @@ const sortedGroups = sortGroups(grouped, (a, b) => Number(a) - Number(b));
             {pilotTalentTypeEntries.map(([_id, talentType]) => (
               <tr>
                 <td>
-                  <ObjRef obj={talentType} version={latestVersion} />
+                  <ObjRef obj={talentType} />
                 </td>
                 <td>
                   <LocalizedText

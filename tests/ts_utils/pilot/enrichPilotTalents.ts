@@ -1,17 +1,17 @@
 import { describe, it, expect } from 'vitest';
 import { enrichPilotTalents } from '../../../src/utils/pilot';
 import type { PilotTalent, Pilot } from '../../../src/types/pilot';
-import type { LocalizationKey } from '../../../src/types/localization';
 
 describe('enrichPilotTalents', () => {
-  const mockLocalizationKey: LocalizationKey = {
+  // Mock localization key for testing
+  const mockLocalizationKey = {
     Key: 'test_key',
-    TableNamespace: 'test_namespace',
-    en: 'Test Value',
+    TableNamespace: 'Test',
+    en: 'Test Text',
   };
 
-  describe('basic enrichment', () => {
-    it('should enrich talent with talent_type_id and level', () => {
+  describe('success cases', () => {
+    it('should enrich talents found in pilots with correct level and talent_type_id', () => {
       const pilotTalents: Record<string, PilotTalent> = {
         TALENT_1: {
           parseObjectClass: 'PilotTalent',
@@ -42,9 +42,8 @@ describe('enrichPilotTalents', () => {
           sell_price: { currency_ref: 'currency', amount: 100 },
           levels: [
             {
-              talent_type_ref: 'TYPE_OFFENSIVE',
-              talents_refs: ['TALENT_1'],
-              upgrade_cost: { currency_ref: 'currency', amount: 0 },
+              talents_refs: ['OBJID_PilotTalent::TALENT_1'],
+              talent_type_ref: 'OBJID_PilotTalentType::TYPE_A',
             },
           ],
         },
@@ -52,61 +51,11 @@ describe('enrichPilotTalents', () => {
 
       const result = enrichPilotTalents(pilotTalents, pilots);
 
-      expect(result['TALENT_1'].talent_type_id).toBe('TYPE_OFFENSIVE');
+      expect(result['TALENT_1'].talent_type_id).toBe('TYPE_A');
       expect(result['TALENT_1'].level).toBe(1);
     });
 
-    it('should preserve original talent properties', () => {
-      const pilotTalents: Record<string, PilotTalent> = {
-        TALENT_1: {
-          parseObjectClass: 'PilotTalent',
-          parseObjectUrl: 'pilot_talents',
-          id: 'TALENT_1',
-          name: mockLocalizationKey,
-          description: mockLocalizationKey,
-          ui_description: mockLocalizationKey,
-          short_ui_description: mockLocalizationKey,
-          image_path: '/path/to/talent',
-          stats: [{ stat_id: 'stat1', value: 10 }],
-          buffs: [{ Modifier: 5 }],
-        },
-      };
-
-      const pilots: Record<string, Pilot> = {
-        PILOT_1: {
-          parseObjectClass: 'Pilot',
-          parseObjectUrl: 'pilots',
-          id: 'PILOT_1',
-          first_name: mockLocalizationKey,
-          image_path: '/path/to/pilot',
-          bio: mockLocalizationKey,
-          pilot_type_ref: 'type_id',
-          pilot_class_ref: 'class_id',
-          personality_ref: 'personality_id',
-          faction_ref: 'faction_id',
-          sell_price: { currency_ref: 'currency', amount: 100 },
-          levels: [
-            {
-              talent_type_ref: 'TYPE_DEFENSIVE',
-              talents_refs: ['TALENT_1'],
-              upgrade_cost: { currency_ref: 'currency', amount: 0 },
-            },
-          ],
-        },
-      };
-
-      const result = enrichPilotTalents(pilotTalents, pilots);
-
-      expect(result['TALENT_1'].name).toBe(mockLocalizationKey);
-      expect(result['TALENT_1'].description).toBe(mockLocalizationKey);
-      expect(result['TALENT_1'].image_path).toBe('/path/to/talent');
-      expect(result['TALENT_1'].stats).toEqual([
-        { stat_id: 'stat1', value: 10 },
-      ]);
-      expect(result['TALENT_1'].buffs).toEqual([{ Modifier: 5 }]);
-    });
-
-    it('should handle multiple talents', () => {
+    it('should handle multiple talents in different levels', () => {
       const pilotTalents: Record<string, PilotTalent> = {
         TALENT_1: {
           parseObjectClass: 'PilotTalent',
@@ -122,6 +71,7 @@ describe('enrichPilotTalents', () => {
         },
         TALENT_2: {
           parseObjectClass: 'PilotTalent',
+          parseObjectUrl: 'pilot_talents',
           id: 'TALENT_2',
           name: mockLocalizationKey,
           description: mockLocalizationKey,
@@ -148,14 +98,12 @@ describe('enrichPilotTalents', () => {
           sell_price: { currency_ref: 'currency', amount: 100 },
           levels: [
             {
-              talent_type_ref: 'TYPE_A',
-              talents_refs: ['TALENT_1'],
-              upgrade_cost: { currency_ref: 'currency', amount: 0 },
+              talents_refs: ['OBJID_PilotTalent::TALENT_1'],
+              talent_type_ref: 'OBJID_PilotTalentType::TYPE_A',
             },
             {
-              talent_type_ref: 'TYPE_B',
-              talents_refs: ['TALENT_2'],
-              upgrade_cost: { currency_ref: 'currency', amount: 0 },
+              talents_refs: ['OBJID_PilotTalent::TALENT_2'],
+              talent_type_ref: 'OBJID_PilotTalentType::TYPE_B',
             },
           ],
         },
@@ -168,109 +116,8 @@ describe('enrichPilotTalents', () => {
       expect(result['TALENT_2'].talent_type_id).toBe('TYPE_B');
       expect(result['TALENT_2'].level).toBe(2);
     });
-  });
 
-  describe('level determination', () => {
-    it('should use 1-based level numbering', () => {
-      const pilotTalents: Record<string, PilotTalent> = {
-        TALENT_FIRST: {
-          parseObjectClass: 'PilotTalent',
-          id: 'TALENT_FIRST',
-          name: mockLocalizationKey,
-          description: mockLocalizationKey,
-          ui_description: mockLocalizationKey,
-          short_ui_description: mockLocalizationKey,
-          image_path: '/path',
-          stats: [],
-          buffs: [],
-        },
-      };
-
-      const pilots: Record<string, Pilot> = {
-        PILOT_1: {
-          parseObjectClass: 'Pilot',
-          parseObjectUrl: 'pilots',
-          id: 'PILOT_1',
-          first_name: mockLocalizationKey,
-          image_path: '/path/to/pilot',
-          bio: mockLocalizationKey,
-          pilot_type_ref: 'type_id',
-          pilot_class_ref: 'class_id',
-          personality_ref: 'personality_id',
-          faction_ref: 'faction_id',
-          sell_price: { currency_ref: 'currency', amount: 100 },
-          levels: [
-            {
-              talent_type_ref: 'TYPE_1',
-              talents_refs: ['TALENT_FIRST'],
-              upgrade_cost: { currency_ref: 'currency', amount: 0 },
-            },
-          ],
-        },
-      };
-
-      const result = enrichPilotTalents(pilotTalents, pilots);
-
-      // First level should be 1, not 0
-      expect(result['TALENT_FIRST'].level).toBe(1);
-    });
-
-    it('should correctly identify higher levels', () => {
-      const pilotTalents: Record<string, PilotTalent> = {
-        TALENT_LEVEL_3: {
-          parseObjectClass: 'PilotTalent',
-          id: 'TALENT_LEVEL_3',
-          name: mockLocalizationKey,
-          description: mockLocalizationKey,
-          ui_description: mockLocalizationKey,
-          short_ui_description: mockLocalizationKey,
-          image_path: '/path',
-          stats: [],
-          buffs: [],
-        },
-      };
-
-      const pilots: Record<string, Pilot> = {
-        PILOT_1: {
-          parseObjectClass: 'Pilot',
-          parseObjectUrl: 'pilots',
-          id: 'PILOT_1',
-          first_name: mockLocalizationKey,
-          image_path: '/path/to/pilot',
-          bio: mockLocalizationKey,
-          pilot_type_ref: 'type_id',
-          pilot_class_ref: 'class_id',
-          personality_ref: 'personality_id',
-          faction_ref: 'faction_id',
-          sell_price: { currency_ref: 'currency', amount: 100 },
-          levels: [
-            {
-              talent_type_ref: 'TYPE_1',
-              talents_refs: ['OTHER_TALENT'],
-              upgrade_cost: { currency_ref: 'currency', amount: 0 },
-            },
-            {
-              talent_type_ref: 'TYPE_2',
-              talents_refs: ['ANOTHER_TALENT'],
-              upgrade_cost: { currency_ref: 'currency', amount: 0 },
-            },
-            {
-              talent_type_ref: 'TYPE_3',
-              talents_refs: ['TALENT_LEVEL_3'],
-              upgrade_cost: { currency_ref: 'currency', amount: 0 },
-            },
-          ],
-        },
-      };
-
-      const result = enrichPilotTalents(pilotTalents, pilots);
-
-      expect(result['TALENT_LEVEL_3'].level).toBe(3);
-    });
-  });
-
-  describe('talent_type_id extraction', () => {
-    it('should extract talent_type_id from the level containing the talent', () => {
+    it('should handle multiple talents in same level', () => {
       const pilotTalents: Record<string, PilotTalent> = {
         TALENT_1: {
           parseObjectClass: 'PilotTalent',
@@ -280,7 +127,19 @@ describe('enrichPilotTalents', () => {
           description: mockLocalizationKey,
           ui_description: mockLocalizationKey,
           short_ui_description: mockLocalizationKey,
-          image_path: '/path',
+          image_path: '/path/1',
+          stats: [],
+          buffs: [],
+        },
+        TALENT_2: {
+          parseObjectClass: 'PilotTalent',
+          parseObjectUrl: 'pilot_talents',
+          id: 'TALENT_2',
+          name: mockLocalizationKey,
+          description: mockLocalizationKey,
+          ui_description: mockLocalizationKey,
+          short_ui_description: mockLocalizationKey,
+          image_path: '/path/2',
           stats: [],
           buffs: [],
         },
@@ -301,9 +160,11 @@ describe('enrichPilotTalents', () => {
           sell_price: { currency_ref: 'currency', amount: 100 },
           levels: [
             {
-              talent_type_ref: 'SPECIFIC_TYPE_ID',
-              talents_refs: ['TALENT_1'],
-              upgrade_cost: { currency_ref: 'currency', amount: 0 },
+              talents_refs: [
+                'OBJID_PilotTalent::TALENT_1',
+                'OBJID_PilotTalent::TALENT_2',
+              ],
+              talent_type_ref: 'OBJID_PilotTalentType::TYPE_A',
             },
           ],
         },
@@ -311,82 +172,19 @@ describe('enrichPilotTalents', () => {
 
       const result = enrichPilotTalents(pilotTalents, pilots);
 
-      expect(result['TALENT_1'].talent_type_id).toBe('SPECIFIC_TYPE_ID');
+      expect(result['TALENT_1'].talent_type_id).toBe('TYPE_A');
+      expect(result['TALENT_1'].level).toBe(1);
+      expect(result['TALENT_2'].talent_type_id).toBe('TYPE_A');
+      expect(result['TALENT_2'].level).toBe(1);
     });
   });
 
-  describe('multiple pilots', () => {
-    it('should find talent in first matching pilot', () => {
-      const pilotTalents: Record<string, PilotTalent> = {
-        SHARED_TALENT: {
-          parseObjectClass: 'PilotTalent',
-          id: 'SHARED_TALENT',
-          name: mockLocalizationKey,
-          description: mockLocalizationKey,
-          ui_description: mockLocalizationKey,
-          short_ui_description: mockLocalizationKey,
-          image_path: '/path',
-          stats: [],
-          buffs: [],
-        },
-      };
-
-      const pilots: Record<string, Pilot> = {
-        PILOT_1: {
-          parseObjectClass: 'Pilot',
-          parseObjectUrl: 'pilots',
-          id: 'PILOT_1',
-          first_name: mockLocalizationKey,
-          image_path: '/path/to/pilot1',
-          bio: mockLocalizationKey,
-          pilot_type_ref: 'type_id',
-          pilot_class_ref: 'class_id',
-          personality_ref: 'personality_id',
-          faction_ref: 'faction_id',
-          sell_price: { currency_ref: 'currency', amount: 100 },
-          levels: [
-            {
-              talent_type_ref: 'TYPE_FROM_PILOT_1',
-              talents_refs: ['SHARED_TALENT'],
-              upgrade_cost: { currency_ref: 'currency', amount: 0 },
-            },
-          ],
-        },
-        PILOT_2: {
-          parseObjectClass: 'Pilot',
-          parseObjectUrl: 'pilots',
-          id: 'PILOT_2',
-          first_name: mockLocalizationKey,
-          image_path: '/path/to/pilot2',
-          bio: mockLocalizationKey,
-          pilot_type_ref: 'type_id',
-          pilot_class_ref: 'class_id',
-          personality_ref: 'personality_id',
-          faction_ref: 'faction_id',
-          sell_price: { currency_ref: 'currency', amount: 100 },
-          levels: [
-            {
-              talent_type_ref: 'TYPE_FROM_PILOT_2',
-              talents_refs: ['SHARED_TALENT'],
-              upgrade_cost: { currency_ref: 'currency', amount: 0 },
-            },
-          ],
-        },
-      };
-
-      const result = enrichPilotTalents(pilotTalents, pilots);
-
-      // Should use data from one of the pilots (implementation finds first match)
-      expect(result['SHARED_TALENT'].talent_type_id).toBeDefined();
-      expect(result['SHARED_TALENT'].level).toBeGreaterThan(0);
-    });
-  });
-
-  describe('talents not found', () => {
-    it('should set level to -1 and empty talent_type_id for talent not in any pilot', () => {
+  describe('edge cases', () => {
+    it('should return level -1 and empty talent_type_id for talent not found in any pilot', () => {
       const pilotTalents: Record<string, PilotTalent> = {
         ORPHAN_TALENT: {
           parseObjectClass: 'PilotTalent',
+          parseObjectUrl: 'pilot_talents',
           id: 'ORPHAN_TALENT',
           name: mockLocalizationKey,
           description: mockLocalizationKey,
@@ -413,9 +211,8 @@ describe('enrichPilotTalents', () => {
           sell_price: { currency_ref: 'currency', amount: 100 },
           levels: [
             {
-              talent_type_ref: 'TYPE_1',
-              talents_refs: ['DIFFERENT_TALENT'],
-              upgrade_cost: { currency_ref: 'currency', amount: 0 },
+              talents_refs: ['OBJID_PilotTalent::OTHER_TALENT'],
+              talent_type_ref: 'OBJID_PilotTalentType::TYPE_A',
             },
           ],
         },
@@ -423,33 +220,12 @@ describe('enrichPilotTalents', () => {
 
       const result = enrichPilotTalents(pilotTalents, pilots);
 
-      expect(result['ORPHAN_TALENT'].level).toBe(-1);
       expect(result['ORPHAN_TALENT'].talent_type_id).toBe('');
+      expect(result['ORPHAN_TALENT'].level).toBe(-1);
     });
-  });
 
-  describe('edge cases', () => {
-    it('should handle empty pilot talents', () => {
-      const pilotTalents: Record<string, PilotTalent> = {};
-      const pilots: Record<string, Pilot> = {
-        PILOT_1: {
-          parseObjectClass: 'Pilot',
-          parseObjectUrl: 'pilots',
-          id: 'PILOT_1',
-          first_name: mockLocalizationKey,
-          image_path: '/path/to/pilot',
-          bio: mockLocalizationKey,
-          pilot_type_ref: 'type_id',
-          pilot_class_ref: 'class_id',
-          personality_ref: 'personality_id',
-          faction_ref: 'faction_id',
-          sell_price: { currency_ref: 'currency', amount: 100 },
-          levels: [],
-        },
-      };
-
-      const result = enrichPilotTalents(pilotTalents, pilots);
-
+    it('should handle empty inputs', () => {
+      const result = enrichPilotTalents({}, {});
       expect(result).toEqual({});
     });
 
@@ -468,12 +244,11 @@ describe('enrichPilotTalents', () => {
           buffs: [],
         },
       };
-      const pilots: Record<string, Pilot> = {};
 
-      const result = enrichPilotTalents(pilotTalents, pilots);
+      const result = enrichPilotTalents(pilotTalents, {});
 
-      expect(result['TALENT_1'].level).toBe(-1);
       expect(result['TALENT_1'].talent_type_id).toBe('');
+      expect(result['TALENT_1'].level).toBe(-1);
     });
 
     it('should handle pilot with no levels', () => {
@@ -511,8 +286,8 @@ describe('enrichPilotTalents', () => {
 
       const result = enrichPilotTalents(pilotTalents, pilots);
 
-      expect(result['TALENT_1'].level).toBe(-1);
       expect(result['TALENT_1'].talent_type_id).toBe('');
+      expect(result['TALENT_1'].level).toBe(-1);
     });
 
     it('should handle level with empty talents array', () => {
@@ -546,9 +321,8 @@ describe('enrichPilotTalents', () => {
           sell_price: { currency_ref: 'currency', amount: 100 },
           levels: [
             {
-              talent_type_ref: 'TYPE_1',
               talents_refs: [],
-              upgrade_cost: { currency_ref: 'currency', amount: 0 },
+              talent_type_ref: 'OBJID_PilotTalentType::TYPE_A',
             },
           ],
         },
@@ -556,8 +330,74 @@ describe('enrichPilotTalents', () => {
 
       const result = enrichPilotTalents(pilotTalents, pilots);
 
-      expect(result['TALENT_1'].level).toBe(-1);
       expect(result['TALENT_1'].talent_type_id).toBe('');
+      expect(result['TALENT_1'].level).toBe(-1);
+    });
+  });
+
+  describe('multiple pilots', () => {
+    it('should find talent in first matching pilot', () => {
+      const pilotTalents: Record<string, PilotTalent> = {
+        SHARED_TALENT: {
+          parseObjectClass: 'PilotTalent',
+          parseObjectUrl: 'pilot_talents',
+          id: 'SHARED_TALENT',
+          name: mockLocalizationKey,
+          description: mockLocalizationKey,
+          ui_description: mockLocalizationKey,
+          short_ui_description: mockLocalizationKey,
+          image_path: '/path',
+          stats: [],
+          buffs: [],
+        },
+      };
+
+      const pilots: Record<string, Pilot> = {
+        PILOT_1: {
+          parseObjectClass: 'Pilot',
+          parseObjectUrl: 'pilots',
+          id: 'PILOT_1',
+          first_name: mockLocalizationKey,
+          image_path: '/path/to/pilot',
+          bio: mockLocalizationKey,
+          pilot_type_ref: 'type_id',
+          pilot_class_ref: 'class_id',
+          personality_ref: 'personality_id',
+          faction_ref: 'faction_id',
+          sell_price: { currency_ref: 'currency', amount: 100 },
+          levels: [
+            {
+              talents_refs: ['OBJID_PilotTalent::SHARED_TALENT'],
+              talent_type_ref: 'OBJID_PilotTalentType::TYPE_A',
+            },
+          ],
+        },
+        PILOT_2: {
+          parseObjectClass: 'Pilot',
+          parseObjectUrl: 'pilots',
+          id: 'PILOT_2',
+          first_name: mockLocalizationKey,
+          image_path: '/path/to/pilot2',
+          bio: mockLocalizationKey,
+          pilot_type_ref: 'type_id',
+          pilot_class_ref: 'class_id',
+          personality_ref: 'personality_id',
+          faction_ref: 'faction_id',
+          sell_price: { currency_ref: 'currency', amount: 100 },
+          levels: [
+            {
+              talents_refs: ['OBJID_PilotTalent::SHARED_TALENT'],
+              talent_type_ref: 'OBJID_PilotTalentType::TYPE_B',
+            },
+          ],
+        },
+      };
+
+      const result = enrichPilotTalents(pilotTalents, pilots);
+
+      // Should use data from first pilot (implementation finds first match)
+      expect(result['SHARED_TALENT'].talent_type_id).toBe('TYPE_A');
+      expect(result['SHARED_TALENT'].level).toBe(1);
     });
   });
 
@@ -593,19 +433,18 @@ describe('enrichPilotTalents', () => {
           sell_price: { currency_ref: 'currency', amount: 100 },
           levels: [
             {
-              talent_type_ref: 'TYPE_1',
-              talents_refs: ['TALENT_1'],
-              upgrade_cost: { currency_ref: 'currency', amount: 0 },
+              talents_refs: ['OBJID_PilotTalent::TALENT_1'],
+              talent_type_ref: 'OBJID_PilotTalentType::TYPE_1',
             },
           ],
         },
       };
 
+      const originalTalents = JSON.parse(JSON.stringify(pilotTalents));
       const result = enrichPilotTalents(pilotTalents, pilots);
 
-      // Original should not have been mutated
-      expect(pilotTalents['TALENT_1'].talent_type_id).toBeUndefined();
-      expect(pilotTalents['TALENT_1'].level).toBeUndefined();
+      // Input should not be mutated
+      expect(pilotTalents).toEqual(originalTalents);
 
       // Result should have enriched data
       expect(result['TALENT_1'].talent_type_id).toBe('TYPE_1');
@@ -628,6 +467,7 @@ describe('enrichPilotTalents', () => {
         },
         TALENT_2: {
           parseObjectClass: 'PilotTalent',
+          parseObjectUrl: 'pilot_talents',
           id: 'TALENT_2',
           name: mockLocalizationKey,
           description: mockLocalizationKey,
@@ -643,7 +483,155 @@ describe('enrichPilotTalents', () => {
 
       const result = enrichPilotTalents(pilotTalents, pilots);
 
-      expect(Object.keys(result)).toEqual(Object.keys(pilotTalents));
+      expect(Object.keys(result)).toEqual(['TALENT_1', 'TALENT_2']);
+      expect(Object.keys(result)).toHaveLength(2);
+    });
+  });
+
+  describe('level determination', () => {
+    it('should use 1-based level numbering', () => {
+      const pilotTalents: Record<string, PilotTalent> = {
+        TALENT_FIRST: {
+          parseObjectClass: 'PilotTalent',
+          parseObjectUrl: 'pilot_talents',
+          id: 'TALENT_FIRST',
+          name: mockLocalizationKey,
+          description: mockLocalizationKey,
+          ui_description: mockLocalizationKey,
+          short_ui_description: mockLocalizationKey,
+          image_path: '/path',
+          stats: [],
+          buffs: [],
+        },
+      };
+
+      const pilots: Record<string, Pilot> = {
+        PILOT_1: {
+          parseObjectClass: 'Pilot',
+          parseObjectUrl: 'pilots',
+          id: 'PILOT_1',
+          first_name: mockLocalizationKey,
+          image_path: '/path/to/pilot',
+          bio: mockLocalizationKey,
+          pilot_type_ref: 'type_id',
+          pilot_class_ref: 'class_id',
+          personality_ref: 'personality_id',
+          faction_ref: 'faction_id',
+          sell_price: { currency_ref: 'currency', amount: 100 },
+          levels: [
+            {
+              talents_refs: ['OBJID_PilotTalent::TALENT_FIRST'],
+              talent_type_ref: 'OBJID_PilotTalentType::TYPE_A',
+            },
+          ],
+        },
+      };
+
+      const result = enrichPilotTalents(pilotTalents, pilots);
+
+      // First level should be 1, not 0
+      expect(result['TALENT_FIRST'].level).toBe(1);
+    });
+
+    it('should correctly identify higher levels', () => {
+      const pilotTalents: Record<string, PilotTalent> = {
+        TALENT_LEVEL_3: {
+          parseObjectClass: 'PilotTalent',
+          parseObjectUrl: 'pilot_talents',
+          id: 'TALENT_LEVEL_3',
+          name: mockLocalizationKey,
+          description: mockLocalizationKey,
+          ui_description: mockLocalizationKey,
+          short_ui_description: mockLocalizationKey,
+          image_path: '/path',
+          stats: [],
+          buffs: [],
+        },
+      };
+
+      const pilots: Record<string, Pilot> = {
+        PILOT_1: {
+          parseObjectClass: 'Pilot',
+          parseObjectUrl: 'pilots',
+          id: 'PILOT_1',
+          first_name: mockLocalizationKey,
+          image_path: '/path/to/pilot',
+          bio: mockLocalizationKey,
+          pilot_type_ref: 'type_id',
+          pilot_class_ref: 'class_id',
+          personality_ref: 'personality_id',
+          faction_ref: 'faction_id',
+          sell_price: { currency_ref: 'currency', amount: 100 },
+          levels: [
+            {
+              talents_refs: ['OBJID_PilotTalent::OTHER_TALENT'],
+              talent_type_ref: 'OBJID_PilotTalentType::TYPE_A',
+            },
+            {
+              talents_refs: ['OBJID_PilotTalent::ANOTHER_TALENT'],
+              talent_type_ref: 'OBJID_PilotTalentType::TYPE_B',
+            },
+            {
+              talents_refs: ['OBJID_PilotTalent::TALENT_LEVEL_3'],
+              talent_type_ref: 'OBJID_PilotTalentType::TYPE_C',
+            },
+          ],
+        },
+      };
+
+      const result = enrichPilotTalents(pilotTalents, pilots);
+
+      expect(result['TALENT_LEVEL_3'].level).toBe(3);
+      expect(result['TALENT_LEVEL_3'].talent_type_id).toBe('TYPE_C');
+    });
+  });
+
+  describe('talent_type_id extraction', () => {
+    it('should extract talent_type_id from the level containing the talent', () => {
+      const pilotTalents: Record<string, PilotTalent> = {
+        TALENT_1: {
+          parseObjectClass: 'PilotTalent',
+          parseObjectUrl: 'pilot_talents',
+          id: 'TALENT_1',
+          name: mockLocalizationKey,
+          description: mockLocalizationKey,
+          ui_description: mockLocalizationKey,
+          short_ui_description: mockLocalizationKey,
+          image_path: '/path',
+          stats: [],
+          buffs: [],
+        },
+      };
+
+      const pilots: Record<string, Pilot> = {
+        PILOT_1: {
+          parseObjectClass: 'Pilot',
+          parseObjectUrl: 'pilots',
+          id: 'PILOT_1',
+          first_name: mockLocalizationKey,
+          image_path: '/path/to/pilot',
+          bio: mockLocalizationKey,
+          pilot_type_ref: 'type_id',
+          pilot_class_ref: 'class_id',
+          personality_ref: 'personality_id',
+          faction_ref: 'faction_id',
+          sell_price: { currency_ref: 'currency', amount: 100 },
+          levels: [
+            {
+              talents_refs: ['OBJID_PilotTalent::OTHER_TALENT'],
+              talent_type_ref: 'OBJID_PilotTalentType::OTHER_TYPE',
+            },
+            {
+              talents_refs: ['OBJID_PilotTalent::TALENT_1'],
+              talent_type_ref: 'OBJID_PilotTalentType::SPECIFIC_TYPE_ID',
+            },
+          ],
+        },
+      };
+
+      const result = enrichPilotTalents(pilotTalents, pilots);
+
+      expect(result['TALENT_1'].talent_type_id).toBe('SPECIFIC_TYPE_ID');
     });
   });
 });

@@ -8,7 +8,6 @@ import ObjectPageScripts from '../../components/ObjectPageScripts.astro';
 import ParseObjectPage from '../../components/ParseObjectPage.astro';
 import ObjRef from '../../components/obj_ref/ObjRef.astro';
 import {
-  getLatestVersion,
   getParseObject,
   getParseObjects,
   generateObjectListStaticPaths,
@@ -17,33 +16,24 @@ import { enrichPilotTalents } from '../../utils/pilot';
 import { getStatValueChoices } from '../../utils/stat';
 import { getDefaultString } from '../../utils/localization';
 
-export const prerender = true;
 
 export async function getStaticPaths() {
   return generateObjectListStaticPaths('PilotTalentType');
 }
 
 const { id } = Astro.params;
-const latestVersion = getLatestVersion();
 
 const pilotTalentType = getParseObject<PilotTalentType>(
   id,
-  latestVersion,
   'Objects/PilotTalentType.json'
 );
 
 // Load ModuleStats for stat replacements (even though PilotTalentType doesn't have stats)
-const moduleStats = getParseObjects<ModuleStat>(
-  'Objects/ModuleStat.json',
-  latestVersion
-);
+const moduleStats = getParseObjects<ModuleStat>('Objects/ModuleStat.json');
 
 // Load and enrich pilot talents
-const pilots = getParseObjects<Pilot>('Objects/Pilot.json', latestVersion);
-const pilotTalents = getParseObjects<PilotTalent>(
-  'Objects/PilotTalent.json',
-  latestVersion
-);
+const pilots = getParseObjects<Pilot>('Objects/Pilot.json');
+const pilotTalents = getParseObjects<PilotTalent>('Objects/PilotTalent.json');
 const enrichedTalents = enrichPilotTalents(pilotTalents, pilots);
 
 // Filter talents that belong to this talent type
@@ -101,7 +91,7 @@ const defaultName =
           {talentsForType.map(([_talentId, talent]) => (
             <tr>
               <td>
-                <ObjRef obj={talent} version={latestVersion} />
+                <ObjRef obj={talent} />
               </td>
               <td>
                 <StatEmbedLocalizedText
@@ -124,5 +114,5 @@ const defaultName =
 
   <p>Language: <span id="current-lang">en</span></p>
 
-  <ObjectPageScripts version={latestVersion} objectData={pilotTalentType} />
+  <ObjectPageScripts objectData={pilotTalentType} />
 </ParseObjectPage>

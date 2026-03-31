@@ -8,16 +8,9 @@ describe('Module interface', () => {
 
   let moduleArray: Module[];
 
-  // Load real data from the latest version
-  const archiveDir = path.join(process.cwd(), 'WRFrontiersDB-Data', 'archive');
-  const versions = fs.readdirSync(archiveDir).sort().reverse();
-  const latestVersion = versions[0];
-  const modulePath = path.join(
-    archiveDir,
-    latestVersion,
-    'Objects',
-    'Module.json'
-  );
+  // Load real data from the current directory
+  const currentDir = path.join(process.cwd(), 'WRFrontiersDB-Data', 'current');
+  const modulePath = path.join(currentDir, 'Objects', 'Module.json');
 
   modules = JSON.parse(fs.readFileSync(modulePath, 'utf8')) as Record<
     string,

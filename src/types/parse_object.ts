@@ -1,6 +1,6 @@
 export interface StaticPathsResult {
-  params: { id: string; version: string };
-  props: { objectVersions: string[] };
+  params: { id: string };
+  props?: Record<string, unknown>;
 }
 
 export interface ParseObject {

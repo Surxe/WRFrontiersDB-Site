@@ -5,9 +5,6 @@ import * as moduleTypes from '../types/module';
 import * as pilotTypes from '../types/pilot';
 import * as rarityTypes from '../types/rarity';
 
-// File cache to avoid repeated reads
-const fileCache = new Map<string, Record<string, any>>();
-
 // Merge all exported constants from type modules
 const allTypeExports = {
   ...moduleTypes,
@@ -16,17 +13,11 @@ const allTypeExports = {
 };
 
 /**
- * Cached file reader to reduce file handle usage
+ * Simple file reader
  */
-function readJsonFile(filePath: string): any {
-  if (fileCache.has(filePath)) {
-    return fileCache.get(filePath);
-  }
-  
+function readJsonFile(filePath: string): Record<string, ParseObject> | null {
   try {
-    const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-    fileCache.set(filePath, data);
-    return data;
+    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
   } catch (error) {
     console.warn(`Failed to read JSON file: ${filePath}`, error);
     return null;
@@ -34,25 +25,26 @@ function readJsonFile(filePath: string): any {
 }
 
 /**
- * Load parse objects from a specific version
+ * Load parse objects from the current directory
  * Set each object's parseObjectClass attr based on the file name
  * @param parseObjectFile - The object file (e.g., "Objects/Module.json")
- * @param version - The version date string (e.g., "2025-03-04")
  * @returns Object containing parse objects, or empty object if loading fails
  */
 export function getParseObjects<T = ParseObject>(
-  parseObjectFile: string,
-  version: string
+  parseObjectFile: string
 ): Record<string, T> {
   try {
     const objectsPath = path.join(
       process.cwd(),
-      'WRFrontiersDB-Data/archive',
-      version,
+      'WRFrontiersDB-Data/current',
       parseObjectFile
     );
     if (fs.existsSync(objectsPath)) {
       const data = readJsonFile(objectsPath);
+
+      if (!data) {
+        return {};
+      }
 
       // Extract parseObjectClass from parseObjectFile (e.g., "Objects/Module.json" -> "Module")
       const fileName = parseObjectFile.split('/').pop() || '';
@@ -77,35 +69,21 @@ export function getParseObjects<T = ParseObject>(
       return objectsWithType;
     }
   } catch {
-    console.warn(`Could not load ${parseObjectFile} for version ${version}`);
+    console.warn(`Could not load ${parseObjectFile}`);
   }
   return {};
 }
 
-// Get the latest version only
-export function getLatestVersion(): string {
-  const versionsPath = path.join(
-    process.cwd(),
-    'WRFrontiersDB-Data/versions.json'
-  );
-  const versions = readJsonFile(versionsPath) as Record<string, any>;
-  return Object.keys(versions)[0]; // First in the object since they're sorted by date DESC
-}
-
-
-// Get a specific parse object by ID and version
+// Get a specific parse object by ID
 export function getParseObject<T = ParseObject>(
   id: string,
-  version: string,
   parseObjectFile: string = 'Objects/Module.json'
 ): T {
-  const objects = getParseObjects(parseObjectFile, version);
+  const objects = getParseObjects(parseObjectFile);
   const parseObject = objects[id];
 
   if (!parseObject) {
-    throw new Error(
-      `Object ${id} not found in ${parseObjectFile} for version ${version}`
-    );
+    throw new Error(`Object ${id} not found in ${parseObjectFile}`);
   }
 
   return parseObject as T;
@@ -114,31 +92,17 @@ export function getParseObject<T = ParseObject>(
 /**
  * Checks if an object is production ready
  * @param objectId - The object ID to check
- * @param version - The version to check in
  * @param parseObjectPath - Path to the object file (e.g., 'Objects/Module.json')
  * @returns true if the object exists and has production_status === 'Ready', false otherwise
  */
 export function isObjectProductionReady(
   objectId: string,
-  version: string,
   parseObjectPath: string
 ): boolean {
-  const cacheKey = `${parseObjectPath}/${version}`;
-  
-  if (fileCache.has(cacheKey)) {
-    const objects = fileCache.get(cacheKey);
-    if (objects) {
-      const obj = objects[objectId];
-      return obj && obj.production_status === 'Ready';
-    }
-    return false;
-  }
-
   try {
     const objectPath = path.join(
       process.cwd(),
-      'WRFrontiersDB-Data/archive',
-      version,
+      'WRFrontiersDB-Data/current',
       parseObjectPath
     );
 
@@ -154,16 +118,14 @@ export function isObjectProductionReady(
   }
 }
 
-// Generate static paths for objects in latest version only
+// Generate static paths for objects in current version only
 export async function generateObjectStaticPaths(
   parseObjectPath: string = 'Objects/Module.json',
   prodReadyOnly: boolean = false
 ): Promise<StaticPathsResult[]> {
-  const latestVersion = getLatestVersion();
   const objectsPath = path.join(
     process.cwd(),
-    'WRFrontiersDB-Data/archive',
-    latestVersion,
+    'WRFrontiersDB-Data/current',
     parseObjectPath
   );
 
@@ -176,17 +138,18 @@ export async function generateObjectStaticPaths(
       // Skip production filtering if needed
       if (
         prodReadyOnly &&
-        (!obj.production_status || obj.production_status !== 'Ready' || !obj.name || obj.name === '')
+        (!obj.production_status ||
+          obj.production_status !== 'Ready' ||
+          !obj.name ||
+          obj.name === '')
       ) {
         continue;
       }
 
-      // Generate path for latest version only
+      // Generate path for current version only
       paths.push({
-        params: { id: objectId, version: latestVersion },
-        props: {
-          objectVersions: [latestVersion],
-        },
+        params: { id: objectId },
+        props: {},
       });
     }
   }
@@ -194,29 +157,34 @@ export async function generateObjectStaticPaths(
   return paths;
 }
 
-// Generate static paths for object list pages (e.g., /modules, /pilots, etc.) - latest version only
+// Generate static paths for object list pages (e.g., /modules, /pilots, etc.) - current version only
 export function generateObjectListStaticPaths(
   objectType: string,
   prodReadyOnly: boolean = false
 ): { params: { id: string } }[] {
-  const latestVersion = getLatestVersion();
   const objectPath = path.join(
     process.cwd(),
-    'WRFrontiersDB-Data/archive',
-    latestVersion,
+    'WRFrontiersDB-Data/current',
     `Objects/${objectType}.json`
   );
 
   if (fs.existsSync(objectPath)) {
     try {
-      const allObjects = readJsonFile(objectPath) as Record<string, ParseObject>;
+      const allObjects = readJsonFile(objectPath) as Record<
+        string,
+        ParseObject
+      >;
       let objectIds = Object.keys(allObjects);
 
       // Apply production filtering if needed
       if (prodReadyOnly) {
         objectIds = objectIds.filter((id) => {
           const obj = allObjects[id];
-          return obj.production_status === 'Ready' && obj.name != null && obj.name !== '';
+          return (
+            obj.production_status === 'Ready' &&
+            obj.name != null &&
+            obj.name !== ''
+          );
         });
       }
 
@@ -225,10 +193,7 @@ export function generateObjectListStaticPaths(
         params: { id },
       }));
     } catch (error) {
-      console.warn(
-        `Failed to read or parse data file: ${objectPath}`,
-        error
-      );
+      console.warn(`Failed to read or parse data file: ${objectPath}`, error);
     }
   }
 
