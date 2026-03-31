@@ -16,7 +16,6 @@
     "format:fix": "prettier --write \"**/*.{js,ts,astro,json,md}\""
   },
   "dependencies": {
-    "@astrojs/vercel": "^9.0.4",
     "astro": "^5.16.6"
   },
   "devDependencies": {

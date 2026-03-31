@@ -14,7 +14,7 @@ import { getDefaultString } from '../../utils/localization';
 import { resolveObjectRef } from '../../utils/object_resolver';
 import ObjRef from '../../components/obj_ref/ObjRef.astro';
 
-export const prerender = true;
+export const prerender = false;
 
 export async function getStaticPaths() {
   return generateObjectListStaticPaths('Module', true);
