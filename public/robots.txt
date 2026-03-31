@@ -1,0 +1,37 @@
+# War Robots Frontiers Database - robots.txt
+# This file describes all pages and navigation patterns for search engine crawlers
+
+User-agent: *
+Allow: /
+
+# Main navigation pages
+Allow: /$
+Allow: /modules$
+Allow: /pilots$
+Allow: /pilot_talent_types$
+Allow: /pilot_personalities$
+Allow: /pilot_classes$
+Allow: /pilot_talents$
+
+# Detail pages for all object types
+# URL pattern: /{object_type}/{id}
+Allow: /modules/
+Allow: /pilots/
+Allow: /pilot_talent_types/
+Allow: /pilot_personalities/
+Allow: /pilot_classes/
+Allow: /pilot_talents/
+
+# Static assets
+Allow: /favicon.svg
+Allow: /js/
+Allow: /langs.json
+
+# Site structure summary:
+# - Home page: /
+# - List pages: /modules, /pilots, /pilot_talent_types, /pilot_personalities, /pilot_classes, /pilot_talents
+# - Detail pages: /{object_type}/{id} (e.g., /modules/ABC123, /pilots/DEF456)
+# - Static assets: /favicon.svg, /js/, /langs.json
+# 
+# The site is a static database for War Robots Frontiers game data,
+# containing information about modules, pilots, and related game objects.
