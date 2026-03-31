@@ -3,7 +3,7 @@
 ## Data Layer (WRFrontiersDB-Data/)
 
 - **External data source**: Separate repository as subfolder containing parsed game data
-- **Structure**: `archive/{version}/Objects/{ParseObject}.json` and `archive/{version}/Localization/{lang}.json`
+- **Structure**: `current/Objects/{ParseObject}.json` and `current/Localization/{lang}.json`
 - **versions.json**: Master version registry with metadata (title, date, manifest_id, patch_notes_url, is_season_release)
 - **Data is read-only**: Site consumes but never modifies WRFrontiersDB-Data files
 
@@ -26,4 +26,4 @@
 
 - Client-side localization lazy-loaded on language change
 - `public/js/*.js`: Plain JavaScript modules (not TypeScript)
-- Fetches localization JSON from `${window.__ASTRO_BASE_PATH__}public/WRFrontiersDB-Data/archive/{version}/Localization/{lang}.json`
+- Fetches localization JSON from `WRFrontiersDB-Data/current/Localization/{lang}.json`

@@ -2,7 +2,7 @@
 
 ## Adding a New Object Type
 
-1. **Study JSON structure** in `public/WRFrontiersDB-Data/archive/{version}/Objects/{parseObject}.json`
+1. **Study JSON structure** in `public/WRFrontiersDB-Data/current/Objects/{parseObject}.json`
 2. **Create type interface** in `src/types/{parseObject}.ts` (e.g., `export interface Weapon { ... }`) with url constant for `parseObjectUrl`
 3. **Configure ObjRef overload** in `src/utils/obj_ref.ts`'s `getObjRefData` function
 4. **Create list page**: `src/pages/{parseObject}s.astro` (properly pluralized) using `ParseObjectList`

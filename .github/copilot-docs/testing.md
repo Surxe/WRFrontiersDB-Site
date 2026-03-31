@@ -52,7 +52,7 @@ Tests for typescript interfaces should read real data and compare to the interfa
 
 Required and optional fields should NOT be determined dynamically.
 These tests should extend to nested fields as well.
-When reading in real objects, use dynamically the latest version dir within the archive dir
+When reading in real objects, use WRFrontiersDB-Data/current
 
 **IMPORTANT: While adding a test for an interface, if the interface does not accurately represent the Data, the interface should be updated, as opposed to modifying the test to work around the innaccurate interface.**
 
