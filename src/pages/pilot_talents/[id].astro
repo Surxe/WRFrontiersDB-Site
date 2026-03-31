@@ -15,7 +15,6 @@ import { getDefaultString } from '../../utils/localization';
 import { getStatValueChoices } from '../../utils/stat';
 import ObjRef from '../../components/obj_ref/ObjRef.astro';
 
-export const prerender = true;
 
 export async function getStaticPaths() {
   return generateObjectListStaticPaths('PilotTalent');
