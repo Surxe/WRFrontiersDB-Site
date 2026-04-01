@@ -67,7 +67,7 @@ The skill will ask questions like:
 > "I notice field 'faction_ref' appears in 85% of module objects but isn't in the Module interface. See data samples in `WRFrontiersDB-Data/current/Objects/Module.json` [line 45, 67, 89]. Should this be added as an optional field, or is this intentional?"
 
 ### Optional Field Patterns
-> "Field 'module_tags_refs' is marked optional but appears in 95% of modules. Consider making it required, or keep it optional for edge cases? Data examples: `WRFrontiersDB-Data/current/Objects/Module.json` [lines 23-34, 56-78]"
+> "Field 'module_tags_refs' is marked optional but appears in 95% of modules. Based on the 100% presence rule, this should be required since nearly all modules have this field. Data examples: `WRFrontiersDB-Data/current/Objects/Module.json` [lines 23-34, 56-78]"
 
 ### Extra Fields
 > "Interface has field 'abilities_scalars' marked as TODO, but I see this field in some data objects. Is this planned for future implementation? Data examples: `WRFrontiersDB-Data/current/Objects/Module.json` [lines 102-145]"
@@ -89,9 +89,10 @@ The skill will ask questions like:
 - **File references**: Include direct links to `WRFrontiersDB-Data/current/Objects/{Type}.json` with line numbers
 
 ### Optional vs Required Analysis
-- **Patterns**: Fields marked optional vs actual presence
-- **Recommendations**: Consider making fields required based on usage
-- **Questions**: Are optional fields truly optional or just rarely used?
+- **Clear rule**: Field should be **optional** if **at least 1 object** in the data does not have it
+- **Clear rule**: Field should be **required** only if **every object** in the data has it
+- **Current state analysis**: Compare interface optional/required marking against actual data presence
+- **Recommendations**: Suggest changes based on 100% presence rule for required fields
 
 ### TODO Fields Excluded
 - **Clear list**: All fields skipped due to TODO markers
