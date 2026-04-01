@@ -1,7 +1,6 @@
 ---
-import ObjRef from '../obj_ref/ObjRef.astro';
-import LevelPilotTalenttd from './LevelPilotTalenttd.astro';
-import LevelPilotTalentTypetd from './LevelPilotTalentTypetd.astro';
+import TalentRow from './TalentRow.astro';
+import TalentTypeRow from './TalentTypeRow.astro';
 import type { Pilot, PilotTalent, PilotTalentType } from '../../types/pilot';
 
 interface Props {
@@ -12,8 +11,8 @@ interface Props {
   fullOrOnHover?: 'full' | 'onHover' | undefined;
 }
 
-// if pilotTalents is provided, use LevelPilotTalenttd
-// if pilotTalentTypes is provided, use LevelPilotTalentTypetd
+// if pilotTalents is provided, use TalentRow
+// if pilotTalentTypes is provided, use TalentTypeRow
 // otherwise, throw error
 
 const { tableClass, pilots, pilotTalents, pilotTalentTypes, fullOrOnHover } =
@@ -43,49 +42,22 @@ if (pilotTalents && pilotTalentTypes) {
   </thead>
   <tbody>
     {
-      pilots.map(([_id, pilot]) => {
-        // Calculate max talents across all levels for this pilot
-        const maxTalents = Math.max(
-          ...pilot.levels.map((level) => level?.talents_refs?.length || 0)
-        );
-
-        return Array.from({ length: Math.max(1, maxTalents) }).map(
-          (_, talentIndex) => (
-            <tr>
-              {/* Pilot Name */}
-              {talentIndex === 0 && (
-                <>
-                  <td rowspan={maxTalents}>
-                    <ObjRef obj={pilot} iconSize={48} />
-                  </td>
-                </>
-              )}
-              {/* Levels 1-5 */}
-              {[0, 1, 2, 3, 4].map((levelIndex) => (
-                <>
-                  {pilotTalents ? (
-                    <LevelPilotTalenttd
-                      levelIndex={levelIndex}
-                      level={pilot.levels[levelIndex]}
-                      talentIndex={talentIndex}
-                      maxTalents={maxTalents}
-                      pilotTalents={pilotTalents}
-                      fullOrOnHover={fullOrOnHover}
-                    />
-                  ) : (
-                    <LevelPilotTalentTypetd
-                      level={pilot.levels[levelIndex]}
-                      talentIndex={talentIndex}
-                      maxTalents={maxTalents}
-                      pilotTalentTypes={pilotTalentTypes}
-                    />
-                  )}
-                </>
-              ))}
-            </tr>
-          )
-        );
-      })
+      pilots.map(([_id, pilot]) => (
+        <>
+          {pilotTalents ? (
+            <TalentRow
+              pilot={pilot}
+              pilotTalents={pilotTalents}
+              fullOrOnHover={fullOrOnHover}
+            />
+          ) : (
+            <TalentTypeRow
+              pilot={pilot}
+              pilotTalentTypes={pilotTalentTypes!}
+            />
+          )}
+        </>
+      ))
     }
   </tbody>
 </table>

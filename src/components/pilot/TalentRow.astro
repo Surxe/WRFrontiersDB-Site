@@ -1,0 +1,46 @@
+---
+import ObjRef from '../obj_ref/ObjRef.astro';
+import LevelPilotTalenttd from './LevelPilotTalenttd.astro';
+import type { Pilot, PilotTalent } from '../../types/pilot';
+
+interface Props {
+  pilot: Pilot;
+  pilotTalents: Record<string, PilotTalent>;
+  fullOrOnHover?: 'full' | 'onHover';
+}
+
+const { pilot, pilotTalents, fullOrOnHover } = Astro.props;
+
+// Calculate max talents across all levels for this pilot
+const maxTalents = Math.max(
+  ...pilot.levels.map((level) => level?.talents_refs?.length || 0)
+);
+---
+
+{
+  Array.from({ length: Math.max(1, maxTalents) }).map(
+    (_, talentIndex) => (
+      <tr>
+        {/* Pilot Name */}
+        {talentIndex === 0 && (
+          <>
+            <td rowspan={maxTalents}>
+              <ObjRef obj={pilot} iconSize={48} />
+            </td>
+          </>
+        )}
+        {/* Levels 1-5 */}
+        {[0, 1, 2, 3, 4].map((levelIndex) => (
+          <LevelPilotTalenttd
+            levelIndex={levelIndex}
+            level={pilot.levels[levelIndex]}
+            talentIndex={talentIndex}
+            maxTalents={maxTalents}
+            pilotTalents={pilotTalents}
+            fullOrOnHover={fullOrOnHover}
+          />
+        ))}
+      </tr>
+    )
+  )
+}
