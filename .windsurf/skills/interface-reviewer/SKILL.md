@@ -41,6 +41,27 @@ For precise, data-driven validation of missing attributes, use the **interface-d
 # Reads interfaces from src/types/ and data from WRFrontiersDB-Data/current/Objects/
 ```
 
+### Interface to Data File Mappings
+
+**Important:** Each interface in `src/types/` maps to a specific data file in `WRFrontiersDB-Data/current/Objects/`:
+
+| Interface | Data File | Example |
+|-----------|-----------|---------|
+| `PilotTalentType` | `PilotTalentType.json` | `src/types/pilot.ts` → `Objects/PilotTalentType.json` |
+| `PilotPersonality` | `PilotPersonality.json` | `src/types/pilot.ts` → `Objects/PilotPersonality.json` |
+| `PilotClass` | `PilotClass.json` | `src/types/pilot.ts` → `Objects/PilotClass.json` |
+| `PilotTalent` | `PilotTalent.json` | `src/types/pilot.ts` → `Objects/PilotTalent.json` |
+| `Pilot` | `Pilot.json` | `src/types/pilot.ts` → `Objects/Pilot.json` |
+| `PilotType` | `PilotType.json` | `src/types/pilot.ts` → `Objects/PilotType.json` |
+| `Module` | `Module.json` | `src/types/module.ts` → `Objects/Module.json` |
+| `ModuleStat` | `ModuleStat.json` | `src/types/module.ts` → `Objects/ModuleStat.json` |
+| `ModuleCategory` | `ModuleCategory.json` | `src/types/module.ts` → `Objects/ModuleCategory.json` |
+| `ModuleType` | `ModuleType.json` | `src/types/module.ts` → `Objects/ModuleType.json` |
+| `ModuleRarity` | `ModuleRarity.json` | `src/types/module.ts` → `Objects/ModuleRarity.json` |
+| `Rarity` | `Rarity.json` | `src/types/rarity.ts` → `Objects/Rarity.json` |
+
+**Key Point:** The `PilotTalentType` interface maps to `PilotTalentType.json`, NOT `Pilot.json`. Each interface typically maps to a data file with the same name as the interface.
+
 ### 2. AI-Powered Analysis
 ```bash
 # Analyze patterns and identify discrepancies using language model reasoning
@@ -94,16 +115,16 @@ For precise, data-driven validation of missing attributes, use the **interface-d
 The skill will ask questions like:
 
 ### Missing Fields
-> "I notice field 'faction_ref' appears in 85% of module objects but isn't in the Module interface. See data samples in `WRFrontiersDB-Data/current/Objects/Module.json` [line 45, 67, 89]. Should this be added as an optional field, or is this intentional?"
+> "I notice field 'has_extended_bio' appears in PilotType objects but isn't in the PilotType interface. See data samples in `WRFrontiersDB-Data/current/Objects/PilotType.json` [line 23]. Should this be added as an optional field, or is this intentional?"
 
 ### Optional Field Patterns
-> "Field 'module_tags_refs' is marked optional but appears in 95% of modules. Based on the 100% presence rule, this should be required since nearly all modules have this field. Data examples: `WRFrontiersDB-Data/current/Objects/Module.json` [lines 23-34, 56-78]"
+> "Field 'module_tags_refs' in Module interface is marked optional but appears in 95% of modules. Based on the 100% presence rule, this should be required since nearly all modules have this field. Data examples: `WRFrontiersDB-Data/current/Objects/Module.json` [lines 13-15, 573-576]"
 
-### Extra Fields
-> "Interface has field 'abilities_scalars' marked as TODO, but I see this field in some data objects. Is this planned for future implementation? Data examples: `WRFrontiersDB-Data/current/Objects/Module.json` [lines 102-145]"
+### Interface-Only Fields
+> "PilotType interface has field 'sort_order' but this field is not found in any PilotType.json data samples. Is this planned for future use or should be removed? Data file: `WRFrontiersDB-Data/current/Objects/PilotType.json`"
 
 ### Type Considerations
-> "Field 'character_module_mounts' is defined as an array of objects with specific structure. Does this match how the data is actually used? Data examples: `WRFrontiersDB-Data/current/Objects/Module.json` [lines 40-44]"
+> "Field 'character_module_mounts' in Module interface is defined as an array of objects with specific structure. Does this match how the data is actually used? Data examples: `WRFrontiersDB-Data/current/Objects/Module.json` [lines 7-12]"
 
 ## Analysis Summary Format
 
