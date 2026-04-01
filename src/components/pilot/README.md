@@ -41,12 +41,60 @@ This directory contains Astro components for rendering pilot data tables and tal
 
 ## Component Interactions
 
+### Table Structure Representation
+
+```
+┌────────────────────────────────────────────────────────────────┐
+│                 PILOT TALENT TABLE STRUCTURE                   │
+├─────────────┬──────────┬──────────┬──────────┬──────────┬──────┤
+│ Pilot Name  │ Level 1  │ Level 2  │ Level 3  │ Level 4  │ Lvl 5│
+├─────────────┼──────────┼──────────┼──────────┼──────────┼──────┤
+│ {ObjRef}    │LevelPilot│LevelPilot│LevelPilot│LevelPilot│Level │
+│ (rowspan)   │Talenttd  │Talenttd  │Talenttd  │Talenttd  │Pilot │
+│             │          │          │          │          │Talent│
+│             │          │          │          │          │td    │
+├─────────────┼──────────┼──────────┼──────────┼──────────┼──────┤
+│             │LevelPilot│LevelPilot│LevelPilot│LevelPilot│      │
+│             │Talenttd  │Talenttd  │Talenttd  │Talenttd  │      │
+│             │          │          │          │          │      │
+├─────────────┼──────────┼──────────┼──────────┼──────────┼──────┤
+│             │LevelPilot│LevelPilot│LevelPilot│LevelPilot│Level │
+│             │Talenttd  │Talenttd  │Talenttd  │Talenttd  │Pilot │
+│             │          │          │          │          │Talent│
+│             │          │          │          │          │td    │
+│             │          │          │          │          │(row- │
+│             │          │          │          │          │span) │
+└─────────────┴──────────┴──────────┴──────────┴──────────┴──────┘
+
+Each LevelPilotTalenttd contains:
+┌─────────────────┐
+│  TalentCell     │
+│  TalentCell     │  ← Multiple talents for Legendary pilots
+│  TalentCell     │
+└─────────────────┘
+
+OR for Level 5 (single talent):
+┌─────────────────┐
+│  TalentCell     │  ← Single talent with rowspan
+│ (rowspan=3)     │
+└─────────────────┘
+```
+
+### Component Flow
+
 ```
 Tables.astro
 ├── Table.astro (x3 per pilot type)
-    ├── LevelPilotTalenttd.astro (for talent tables)
-    │   └── TalentCell.astro
-    └── LevelPilotTalentTypetd.astro (for talent type tables)
+│   ├── Pilot Name Column: {ObjRef} with rowspan
+│   └── Level Columns (1-5):
+│       ├── Levels 1-4: LevelPilotTalenttd
+│       │   └── TalentCell (multiple per level)
+│       └── Level 5: LevelPilotTalenttd 
+│           └── TalentCell (single, rowspan)
+│
+└── Alternative Flow (Talent Type Table):
+    └── LevelPilotTalentTypetd
+        └── {ObjRef} for talent type
 ```
 
 ## Data Flow
