@@ -5,15 +5,11 @@ import type { Pilot, PilotTalentType } from '../../types/pilot';
 
 interface Props {
   pilot: Pilot;
+  maxTalents: number;
   pilotTalentTypes: Record<string, PilotTalentType>;
 }
 
-const { pilot, pilotTalentTypes } = Astro.props;
-
-// Calculate max talents across all levels for this pilot
-const maxTalents = Math.max(
-  ...pilot.levels.map((level) => level?.talents_refs?.length || 0)
-);
+const { pilot, maxTalents, pilotTalentTypes } = Astro.props;
 ---
 
 {

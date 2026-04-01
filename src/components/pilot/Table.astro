@@ -27,6 +27,14 @@ if (pilotTalents && pilotTalentTypes) {
     'Only one of pilotTalents or pilotTalentTypes can be provided'
   );
 }
+
+// Pre-calculate maxTalents for each pilot to avoid redundant calculations
+const pilotsWithMaxTalents = pilots.map(([id, pilot]) => {
+  const maxTalents = Math.max(
+    ...pilot.levels.map((level) => level?.talents_refs?.length || 0)
+  );
+  return [id, pilot, maxTalents] as const;
+});
 ---
 
 <table class={tableClass}>
@@ -42,17 +50,19 @@ if (pilotTalents && pilotTalentTypes) {
   </thead>
   <tbody>
     {
-      pilots.map(([_id, pilot]) => (
+      pilotsWithMaxTalents.map(([_id, pilot, maxTalents]) => (
         <>
           {pilotTalents ? (
             <TalentRow
               pilot={pilot}
+              maxTalents={maxTalents}
               pilotTalents={pilotTalents}
               fullOrOnHover={fullOrOnHover}
             />
           ) : (
             <TalentTypeRow
               pilot={pilot}
+              maxTalents={maxTalents}
               pilotTalentTypes={pilotTalentTypes!}
             />
           )}

@@ -5,16 +5,12 @@ import type { Pilot, PilotTalent } from '../../types/pilot';
 
 interface Props {
   pilot: Pilot;
+  maxTalents: number;
   pilotTalents: Record<string, PilotTalent>;
   fullOrOnHover?: 'full' | 'onHover';
 }
 
-const { pilot, pilotTalents, fullOrOnHover } = Astro.props;
-
-// Calculate max talents across all levels for this pilot
-const maxTalents = Math.max(
-  ...pilot.levels.map((level) => level?.talents_refs?.length || 0)
-);
+const { pilot, maxTalents, pilotTalents, fullOrOnHover } = Astro.props;
 ---
 
 {
