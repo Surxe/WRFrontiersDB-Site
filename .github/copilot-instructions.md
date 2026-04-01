@@ -4,7 +4,7 @@ Before answering any question, always say 'I have read the copilot instructions 
 
 ## Project Overview
 
-Static Astro site displaying War Robots Frontiers game data from versioned JSON archives. The site builds static pages for game objects (modules, pilots, talents) across multiple game versions with client-side localization.
+Static Astro site displaying War Robots Frontiers game data from WRFrontiersDB-Data/current. The site builds static pages for game objects (modules, pilots, talents) across multiple game versions with client-side localization.
 
 ## Quick Reference
 
@@ -46,7 +46,7 @@ tests/            # Test files organized by type
   pages/          # Tests for page logic
   js/             # Tests for public/js/*.js
 WRFrontiersDB-Data/  # External data repository (read-only)
-  archive/        # Versioned game data
+  current/        # Current game data
   versions.json   # Version registry
 ```
 

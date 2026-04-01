@@ -30,7 +30,6 @@ export interface ModuleRarity extends ParseObject {
   sort_order: number;
 }
 
-// TODO verify which are optional
 export interface Module extends ParseObject {
   parseObjectClass: 'Module';
   parseObjectUrl: typeof MODULE_URL;

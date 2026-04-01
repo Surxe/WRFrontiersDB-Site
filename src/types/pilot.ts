@@ -17,9 +17,9 @@ export interface PilotTalentType extends ParseObject {
 
 export interface PilotType extends ParseObject {
   parseObjectClass: 'PilotType';
-  rarity_ref: string; // TODO
+  rarity_ref: string;
   name: LocalizationKey;
-  group_reward_ref: string; // TODO
+  group_reward_ref: string;
   has_extended_bio?: boolean;
   can_change_talents?: boolean;
   sort_order?: number;
@@ -51,7 +51,7 @@ export interface PilotTalent extends ParseObject {
   short_ui_description?: LocalizationKey;
   image_path: string;
   stats: {
-    stat_ref: string; // TODO
+    stat_ref: string;
     value: number;
   }[];
   buffs?: {
@@ -70,7 +70,7 @@ export interface PilotTalent extends ParseObject {
     module_tag_selector?: {
       list_operator: string;
       module_tags: {
-        module_tag_ref: string; // TODO
+        module_tag_ref: string;
       }[];
     };
     [key: string]: unknown;
@@ -105,9 +105,9 @@ export interface Pilot extends ParseObject {
   pilot_type_ref: string;
   pilot_class_ref: string;
   personality_ref: string;
-  faction_ref: string; // TODO
+  faction_ref: string; // TODO Site-implementation
   sell_price: {
-    currency_ref: string; // TODO
+    currency_ref: string; // TODO Site-implementation
     amount: number;
   };
   levels: {
@@ -115,7 +115,7 @@ export interface Pilot extends ParseObject {
     talents_refs: string[];
     reputation_cost?: number;
     upgrade_cost?: {
-      currency_ref: string; // TODO
+      currency_ref: string; // TODO Site-implementation
       amount: number;
     }; // Not used in game
   }[];

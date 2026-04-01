@@ -1,0 +1,19 @@
+{
+  "name": "interface-data-validator",
+  "version": "1.0.0",
+  "description": "Validates TypeScript interfaces against WRFrontiersDB-Data structure",
+  "type": "module",
+  "main": "validate.ts",
+  "scripts": {
+    "validate": "node validate.ts",
+    "build": "tsc",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@types/node": "^20.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0"
+  }
+}
