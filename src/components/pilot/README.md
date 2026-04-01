@@ -19,6 +19,20 @@ This directory contains Astro components for rendering pilot data tables and tal
 - Dynamically chooses between talent or talent type rendering
 - Validates exclusive prop usage (pilotTalents XOR pilotTalentTypes)
 
+### TalentRow.astro
+**Row component** for pilot talent data.
+- Renders multiple table rows for pilots with multiple talents per level
+- Receives pre-calculated maxTalents for performance optimization
+- Delegates cell rendering to LevelPilotTalenttd components
+- Handles pilot name column with rowspan
+
+### TalentTypeRow.astro
+**Row component** for pilot talent type data.
+- Renders multiple table rows for pilots with multiple talents per level
+- Receives pre-calculated maxTalents for performance optimization
+- Delegates cell rendering to LevelPilotTalentTypetd components
+- Handles pilot name column with rowspan
+
 ### LevelPilotTalenttd.astro
 **Table cell component** for individual pilot talents.
 - Renders talent data for levels 1-4 (multiple talents per level)
@@ -85,16 +99,16 @@ OR for Level 5 (single talent):
 ```
 Tables.astro
 ├── Table.astro (x3 per pilot type)
-│   ├── Pilot Name Column: {ObjRef} with rowspan
-│   └── Level Columns (1-5):
-│       ├── Levels 1-4: LevelPilotTalenttd
-│       │   └── TalentCell (multiple per level)
-│       └── Level 5: LevelPilotTalenttd 
-│           └── TalentCell (single, rowspan)
-│
-└── Alternative Flow (Talent Type Table):
-    └── LevelPilotTalentTypetd
-        └── {ObjRef} for talent type
+│   ├── Pre-calculates: maxTalents for each pilot
+│   └── Delegates rows to:
+│       ├── TalentRow (for talent tables)
+│       │   ├── Pilot Name Column: {ObjRef} with rowspan
+│       │   └── Level Columns (1-5): LevelPilotTalenttd
+│       │       └── TalentCell (multiple per level)
+│       └── TalentTypeRow (for talent type tables)
+│           ├── Pilot Name Column: {ObjRef} with rowspan
+│           └── Level Columns (1-5): LevelPilotTalentTypetd
+│               └── {ObjRef} for talent type
 ```
 
 ## Data Flow
@@ -102,6 +116,7 @@ Tables.astro
 1. **Tables.astro** loads and processes pilot data
 2. Converts talent references and groups by pilot type
 3. Passes processed data to **Table.astro** instances
-4. **Table.astro** creates table structure and delegates cell rendering
-5. Cell components (**LevelPilotTalenttd** or **LevelPilotTalentTypetd**) handle specific data
-6. **TalentCell.astro** provides final talent display with stat integration
+4. **Table.astro** pre-calculates maxTalents and creates table structure
+5. **Table.astro** delegates row rendering to TalentRow or TalentTypeRow
+6. Row components handle cell rendering through LevelPilotTalenttd/LevelPilotTalentTypetd
+7. **TalentCell.astro** provides final talent display with stat integration
