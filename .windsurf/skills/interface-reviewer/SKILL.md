@@ -59,7 +59,16 @@ For precise, data-driven validation of missing attributes, use the **interface-d
 - Never analyzed or questioned
 - Respected as work-in-progress
 - Only fully implemented fields are reviewed
-- Clear note of which fields were excluded
+- **Not mentioned in output** to reduce noise
+
+## Correct Field Handling
+
+**Fields that are correctly implemented are not mentioned in output:**
+- Optional fields that are truly optional in data
+- Required fields that are present in all data objects
+- Fields with correct type definitions
+- Well-aligned interface patterns
+- **Focus only on problematic or suspicious fields**
 
 ## Review Focus Areas
 
@@ -98,27 +107,17 @@ The skill will ask questions like:
 
 ## Analysis Summary Format
 
-### Fields in Interface Only
-- **List**: Fields present in interface but not seen in data samples
-- **Context**: Are these planned features or legacy fields?
-- **Questions**: Should these be kept, modified, or removed?
+### Focus on Problematic Fields Only
+**Only report fields that are incorrect or suspicious:**
+- **Missing from interface**: Fields present in data but completely absent from interface
+- **Incorrect optional/required**: Fields marked optional but appear in 100% of data, or vice versa
+- **Interface-only unused fields**: Fields in interface but never found in data samples
+- **Type mismatches**: Fields with incorrect type definitions
 
-### Fields in Data Only
-- **List**: Fields present in data but not in interface
-- **Frequency**: How often do these fields appear?
-- **Questions**: Should these be added to interface, or are they internal data?
-- **File references**: Include direct links to `WRFrontiersDB-Data/current/Objects/{Type}.json` with line numbers
-
-### Optional vs Required Analysis
-- **Clear rule**: Field should be **optional** if **at least 1 object** in the data does not have it
-- **Clear rule**: Field should be **required** only if **every object** in the data has it
-- **Current state analysis**: Compare interface optional/required marking against actual data presence
-- **Recommendations**: Suggest changes based on 100% presence rule for required fields
-
-### TODO Fields Excluded
-- **Clear list**: All fields skipped due to TODO markers
-- **Respect**: No analysis attempted on work-in-progress fields
-- **Focus**: Review concentrates on implemented fields only
+### Suspicious Patterns
+- **High-frequency optional fields**: Fields marked optional but appear in >95% of data objects
+- **Never-used interface fields**: Fields defined but never found in any data samples
+- **Inconsistent patterns**: Fields that behave differently than expected across data objects
 
 ## Expected Outcomes
 
@@ -138,11 +137,11 @@ The skill will ask questions like:
 - **Complete coverage**: All relevant data fields considered
 
 ## Success Criteria
-- ✅ Useful guidance for interface maintenance
-- ✅ Thoughtful questions about design decisions
-- ✅ Clear analysis without automated assertions
-- ✅ Respect for TODO fields and incremental development
-- ✅ Actionable insights for interface improvements
+- ✅ **Focused output**: Only incorrect or suspicious fields reported
+- ✅ **No TODO noise**: Work-in-progress fields completely ignored
+- ✅ **No correct field noise**: Well-implemented fields not mentioned
+- ✅ **Actionable insights**: Clear guidance for problematic areas
+- ✅ **Efficient review**: Minimal output for maximum impact
 
 ## Usage Notes
 
@@ -174,13 +173,13 @@ node .windsurf/skills/interface-data-validator/validate.cjs Module "module_scala
 - Use interface-reviewer for final design validation
 
 ### How to Interpret
-- **Questions are prompts**: Not requirements, but discussion points
-- **Context matters**: Consider the domain and usage patterns
-- **TODO fields are sacred**: Never modify TODO-marked fields
-- **Human judgment**: AI provides analysis, you make decisions
+- **Questions focus on problems**: Only incorrect or suspicious patterns are highlighted
+- **TODO fields are invisible**: Never mentioned or analyzed
+- **Correct fields are invisible**: Well-implemented patterns not mentioned
+- **Human judgment**: AI provides targeted analysis, you make decisions
 
 ### Follow-up Actions
-- **Review questions**: Consider each question carefully
-- **Update interfaces**: Make informed decisions about changes
-- **Document decisions**: Note why certain fields are included/excluded
-- **Iterate**: Re-run review after making changes
+- **Address reported issues**: Focus only on the problematic fields identified
+- **Update interfaces**: Make informed decisions about incorrect fields
+- **Document decisions**: Note why certain changes were made
+- **Iterate**: Re-run review to verify fixes
