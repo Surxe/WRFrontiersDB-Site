@@ -12,6 +12,27 @@ This skill provides a guided review process for comparing TypeScript interfaces 
 - WRFrontiersDB-Data repository available
 - TypeScript interfaces defined in src/types/
 
+## Related Skills
+
+### interface-data-validator
+For precise, data-driven validation of missing attributes, use the **interface-data-validator** skill. It provides:
+- Exact missing attribute counts and percentages
+- Support for nested attribute paths (e.g., `"module_scalars.primary_stat_ref"`)
+- File line number references for missing objects
+- Command-line tool for quick validation
+
+**When to use interface-data-validator:**
+- Need exact counts of missing attributes
+- Checking specific nested attribute paths
+- Want file references with line numbers
+- Quick validation of specific fields
+
+**When to use interface-reviewer:**
+- Comprehensive design discussion
+- Understanding field purpose and relationships
+- Reviewing overall interface architecture
+- Deciding on optional vs required patterns
+
 ## Review Process
 
 ### 1. Load Interface and Data
@@ -130,6 +151,27 @@ The skill will ask questions like:
 - When data structure changes are detected
 - During interface refactoring
 - Before major releases to ensure completeness
+
+### Combined Workflow Example
+
+**Step 1: Quick Validation with interface-data-validator**
+```bash
+# Check for missing required fields
+node .windsurf/skills/interface-data-validator/validate.cjs Module faction_ref
+
+# Check nested attribute presence
+node .windsurf/skills/interface-data-validator/validate.cjs Module "module_scalars.primary_stat_ref"
+```
+
+**Step 2: Comprehensive Review with interface-reviewer**
+- Use the quantitative data from interface-data-validator to inform the qualitative review
+- Discuss design implications of missing/present field patterns
+- Make decisions about optional vs required field status
+
+**Step 3: Iterative Improvement**
+- Update interfaces based on findings
+- Re-run interface-data-validator to verify changes
+- Use interface-reviewer for final design validation
 
 ### How to Interpret
 - **Questions are prompts**: Not requirements, but discussion points
