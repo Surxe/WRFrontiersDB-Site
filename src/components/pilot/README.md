@@ -58,10 +58,16 @@ This directory contains Astro components for rendering pilot data tables and tal
 ### Table Structure Representation
 
 ```
+PilotsPageTable or PilotTalentPageTable represents:
 ┌─────────────┬──────────┬──────────┬──────────┬──────────┬──────────┐
 │ Pilot Name  │ Level 1  │ Level 2  │ Level 3  │ Level 4  │ Level 5  │
 ├─────────────┴──────────┴──────────┴──────────┴──────────┴──────────┤
+│                                                                    │
+│                                                                    │
+│                                                                    │
 │                   TalentPilotRow or TalentPilotTypeRow             │
+│                                                                    │
+│                                                                    │
 │                                                                    │
 └────────────────────────────────────────────────────────────────────┘
 

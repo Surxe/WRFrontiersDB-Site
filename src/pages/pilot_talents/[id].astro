@@ -6,7 +6,7 @@ import LocalizedText from '../../components/LocalizedText.astro';
 import StatEmbedLocalizedText from '../../components/StatEmbedLocalizedText.astro';
 import ObjectPageScripts from '../../components/ObjectPageScripts.astro';
 import ParseObjectPage from '../../components/ParseObjectPage.astro';
-import PilotTalentTable from '../../components/pilot/PilotTalentTable.astro';
+import PilotTalentPageTable from '../../components/pilot/PilotTalentPageTable.astro';
 import {
   getParseObjects,
   generateObjectListStaticPaths,
@@ -104,7 +104,7 @@ const defaultName = getDefaultString(pilotTalent.name) || pilotTalent.id;
   {pilotsWithThisTalent.length > 0 && (
     <section>
       <h2>Pilots with this Talent</h2>
-      <PilotTalentTable
+      <PilotTalentPageTable
         pilotsWithThisTalent={pilotsWithThisTalent}
         allPilotTalents={pilotTalents}
         currentTalentId={id}
