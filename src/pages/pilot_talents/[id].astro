@@ -104,11 +104,22 @@ const defaultName = getDefaultString(pilotTalent.name) || pilotTalent.id;
   {pilotsWithThisTalent.length > 0 && (
     <section>
       <h2>Pilots with this Talent</h2>
-      <PilotTalentPageTable
-        pilotsWithThisTalent={pilotsWithThisTalent}
-        allPilotTalents={pilotTalents}
-        currentTalentId={id}
-      />
+      <div class="pilots-with-talent-table-container">
+        <PilotTalentPageTable
+          tableClass="pilots-table-pilot-talent-hover"
+          pilotsWithThisTalent={pilotsWithThisTalent}
+          allPilotTalents={pilotTalents}
+          currentTalentId={id}
+          fullOrOnHover="onHover"
+        />
+        <PilotTalentPageTable
+          tableClass="pilots-table-pilot-talent-full"
+          pilotsWithThisTalent={pilotsWithThisTalent}
+          allPilotTalents={pilotTalents}
+          currentTalentId={id}
+          fullOrOnHover="full"
+        />
+      </div>
     </section>
   )}
 
@@ -121,4 +132,14 @@ const defaultName = getDefaultString(pilotTalent.name) || pilotTalent.id;
   <p>Language: <span id="current-lang">en</span></p>
 
   <ObjectPageScripts objectData={pilotTalent} />
+  
+  <!-- Initialize localization -->
+  <script type="module">
+    const localizationModule = await import('/js/localization.js');
+    const { initializeLocalization } = localizationModule;
+    initializeLocalization('current');
+  </script>
+  
+  <!-- Load pilot talent page table switching functionality -->
+  <script type="module" src="/js/pilot-talent-page.js"></script>
 </ParseObjectPage>

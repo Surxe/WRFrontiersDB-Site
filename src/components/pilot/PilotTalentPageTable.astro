@@ -11,13 +11,15 @@ interface Props {
   allPilotTalents: Record<string, PilotTalent>;
   currentTalentId: string;
   tableClass?: string;
+  fullOrOnHover?: 'full' | 'onHover';
 }
 
 const { 
   pilotsWithThisTalent, 
   allPilotTalents, 
   currentTalentId, 
-  tableClass = "pilots-with-talent-table" 
+  tableClass = "pilots-with-talent-table",
+  fullOrOnHover = "full"
 } = Astro.props;
 
 // Handle empty state
@@ -52,7 +54,7 @@ const pilotsWithMaxTalents = pilotsWithThisTalent.map(({ pilot, level, talentInd
           pilot={pilot}
           maxTalents={maxTalents}
           pilotTalents={allPilotTalents}
-          fullOrOnHover="full"
+          fullOrOnHover={fullOrOnHover}
           highlightTalent={currentTalentId}
           highlightLevel={level}
           highlightTalentIndex={talentIndex}
