@@ -58,27 +58,28 @@ This directory contains Astro components for rendering pilot data tables and tal
 ### Table Structure Representation
 
 ```
-┌────────────────────────────────────────────────────────────────┐
-│                 PILOT TALENT TABLE STRUCTURE                   │
-├─────────────┬──────────┬──────────┬──────────┬──────────┬──────┤
-│ Pilot Name  │ Level 1  │ Level 2  │ Level 3  │ Level 4  │ Lvl 5│
-├─────────────┼──────────┼──────────┼──────────┼──────────┼──────┤
-│ {ObjRef}    │LevelPilot│LevelPilot│LevelPilot│LevelPilot│Level │
-│ (rowspan)   │Talenttd  │Talenttd  │Talenttd  │Talenttd  │Pilot │
-│             │          │          │          │          │Talent│
-│             │          │          │          │          │td    │
-├─────────────┼──────────┼──────────┼──────────┼──────────┼──────┤
-│             │LevelPilot│LevelPilot│LevelPilot│LevelPilot│      │
-│             │Talenttd  │Talenttd  │Talenttd  │Talenttd  │      │
-│             │          │          │          │          │      │
-├─────────────┼──────────┼──────────┼──────────┼──────────┼──────┤
-│             │LevelPilot│LevelPilot│LevelPilot│LevelPilot│Level │
-│             │Talenttd  │Talenttd  │Talenttd  │Talenttd  │Pilot │
-│             │          │          │          │          │Talent│
-│             │          │          │          │          │td    │
-│             │          │          │          │          │(row- │
-│             │          │          │          │          │span) │
-└─────────────┴──────────┴──────────┴──────────┴──────────┴──────┘
+┌─────────────┬──────────┬──────────┬──────────┬──────────┬──────────┐
+│ Pilot Name  │ Level 1  │ Level 2  │ Level 3  │ Level 4  │ Level 5  │
+├─────────────┴──────────┴──────────┴──────────┴──────────┴──────────┤
+│                   TalentPilotRow or TalentPilotTypeRow             │
+│                                                                    │
+└────────────────────────────────────────────────────────────────────┘
+
+
+┌─────────────┬──────────┬──────────┬──────────┬──────────┬──────────┐
+│ Pilot Name  │ Level 1  │ Level 2  │ Level 3  │ Level 4  │ Level 5  │
+└─────────────┴──────────┴──────────┴──────────┴──────────┴──────────┘
+TalentPilotRow or TalentPilotTypeRow represents:
+┌─────────────┬──────────┬──────────┬──────────┬──────────┬──────────┐
+│ {ObjRef}    │LevelPilot│LevelPilot│LevelPilot│LevelPilot│LevelPilot│
+│ (rowspan)   │Talenttd  │Talenttd  │Talenttd  │Talenttd  │Talenttd  │
+├─────────────┼──────────┼──────────┼──────────┼──────────┼──────────┤
+│             │LevelPilot│LevelPilot│LevelPilot│LevelPilot│LevelPilot│
+│             │Talenttd  │Talenttd  │Talenttd  │Talenttd  │Talenttd  │
+├─────────────┼──────────┼──────────┼──────────┼──────────┼──────────┤
+│             │LevelPilot│LevelPilot│LevelPilot│LevelPilot│LevelPilot│
+│             │Talenttd  │Talenttd  │Talenttd  │Talenttd  │Talenttd  │
+└─────────────┴──────────┴──────────┴──────────┴──────────┴──────────┘
 
 Each LevelPilotTalenttd contains:
 ┌─────────────────┐
