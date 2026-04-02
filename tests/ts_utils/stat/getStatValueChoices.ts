@@ -80,6 +80,11 @@ describe('getStatValueChoices', () => {
 
     expect(result).toHaveProperty('STAT_ARMOR.0');
     expect(result).toHaveProperty('STAT_SPEED.0');
+    
+    // Verify the structure contains choices array
+    expect(result['STAT_ARMOR.0']).toHaveProperty('choices');
+    expect(Array.isArray(result['STAT_ARMOR.0'].choices)).toBe(true);
+    expect(result['STAT_ARMOR.0'].choices[0]).toBe(6); // 0.06 * 100
 
     // Check STAT_ARMOR (0.06 * 100 = 6)
     expect(result['STAT_ARMOR.0'].pattern).toBe('{Amount}{Unit}');
@@ -120,6 +125,10 @@ describe('getStatValueChoices', () => {
     expect(result['STAT_NO_SCALER.0'].unitExponent).toBeUndefined();
     // decimalPlaces should be undefined
     expect(result['STAT_NO_SCALER.0'].decimalPlaces).toBeUndefined();
+    
+    // Verify structure contains choices array
+    expect(result['STAT_NO_SCALER.0']).toHaveProperty('choices');
+    expect(Array.isArray(result['STAT_NO_SCALER.0'].choices)).toBe(true);
   });
 
   it('should skip stats with missing ModuleStat objects', () => {
@@ -132,6 +141,10 @@ describe('getStatValueChoices', () => {
 
     expect(result).toHaveProperty('STAT_ARMOR.0');
     expect(result).not.toHaveProperty('STAT_MISSING.0');
+    
+    // Verify only valid stats are included
+    expect(Object.keys(result)).toHaveLength(1);
+    expect(Object.keys(result)).toContain('STAT_ARMOR.0');
   });
 
   it('should handle multiple stats correctly', () => {
@@ -147,6 +160,16 @@ describe('getStatValueChoices', () => {
     expect(result['STAT_ARMOR.0'].choices[0]).toBe(50); // 0.5 * 100
     expect(result['STAT_SPEED.0'].choices[0]).toBe(10); // 10 * 1
     expect(result['STAT_NO_SCALER.0'].choices[0]).toBe(7); // 7 * 1
+    
+    // Verify all stats have proper structure
+    Object.values(result).forEach(statChoice => {
+      expect(statChoice).toHaveProperty('pattern');
+      expect(statChoice).toHaveProperty('unitName');
+      expect(statChoice).toHaveProperty('unitExponent');
+      expect(statChoice).toHaveProperty('decimalPlaces');
+      expect(statChoice).toHaveProperty('shortKey');
+      expect(statChoice).toHaveProperty('choices');
+    });
   });
 
   it('should preserve all ModuleStat properties in StatValueChoices', () => {
