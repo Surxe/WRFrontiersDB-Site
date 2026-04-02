@@ -11,6 +11,7 @@ interface Props {
   statValueChoices: any;
   fullOrOnHover?: 'full' | 'onHover';
   rowspan?: number;
+  isHighlighted?: boolean;
 }
 
 const {
@@ -18,13 +19,14 @@ const {
   statValueChoices,
   fullOrOnHover = 'full',
   rowspan,
+  isHighlighted = false,
 } = Astro.props;
 
 // Load ModuleStats for stat replacements
 const moduleStats = getParseObjects<ModuleStat>('Objects/ModuleStat.json');
 ---
 
-<td rowspan={rowspan}>
+<td rowspan={rowspan} class={isHighlighted ? 'highlighted-talent' : ''}>
   {
     talent && (
       <>

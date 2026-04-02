@@ -220,13 +220,20 @@ describe('enrichPilotTalents', () => {
 
       const result = enrichPilotTalents(pilotTalents, pilots);
 
-      expect(result['ORPHAN_TALENT'].talent_type_id).toBe('');
+      expect(result['ORPHAN_TALENT'].talent_type_id).toBeUndefined();
       expect(result['ORPHAN_TALENT'].level).toBe(-1);
     });
 
     it('should handle empty inputs', () => {
       const result = enrichPilotTalents({}, {});
       expect(result).toEqual({});
+      
+      // Verify all properties are undefined for empty input
+      Object.values(result).forEach(enrichedTalent => {
+        expect(enrichedTalent.talent_type_id).toBeUndefined();
+        expect(enrichedTalent.level).toBeUndefined();
+        expect(enrichedTalent.pilots_with_this_talent).toEqual([]);
+      });
     });
 
     it('should handle empty pilots', () => {
@@ -247,8 +254,14 @@ describe('enrichPilotTalents', () => {
 
       const result = enrichPilotTalents(pilotTalents, {});
 
-      expect(result['TALENT_1'].talent_type_id).toBe('');
-      expect(result['TALENT_1'].level).toBe(-1);
+      expect(result).toEqual({});
+      
+      // Verify all properties are undefined for empty input
+      Object.values(result).forEach(enrichedTalent => {
+        expect(enrichedTalent.talent_type_id).toBeUndefined();
+        expect(enrichedTalent.level).toBeUndefined();
+        expect(enrichedTalent.pilots_with_this_talent).toEqual([]);
+      });
     });
 
     it('should handle pilot with no levels', () => {
@@ -280,7 +293,7 @@ describe('enrichPilotTalents', () => {
           personality_ref: 'personality_id',
           faction_ref: 'faction_id',
           sell_price: { currency_ref: 'currency', amount: 100 },
-          levels: [],
+          levels: [], // Explicitly empty for this test
         },
       };
 

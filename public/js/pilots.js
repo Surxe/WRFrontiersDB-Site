@@ -1,4 +1,8 @@
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', async function () {
+  // Import table switching utility
+  const { setupTableSwitching } = await import('./table-switcher.js');
+  
+  // Find all relevant tables
   const pilotTalentHoverTables = document.querySelectorAll(
     '.pilots-table-pilot-talent-hover'
   );
@@ -18,64 +22,41 @@ document.addEventListener('DOMContentLoaded', function () {
     return;
   }
 
-  // Create switcher container
-  const switcherContainer = document.createElement('div');
-  switcherContainer.className = 'table-switcher';
-  switcherContainer.innerHTML = `
-    <div class="switcher-buttons">
-      <button class="switcher-btn active" data-table="pilot-talent-hover">
-        Pilot Talents (Hover)
-      </button>
-      <button class="switcher-btn" data-table="pilot-talent-type">
-        Pilot Talent Types
-      </button>
-      <button class="switcher-btn" data-table="pilot-talent-full">
-        Pilot Talents (Full)
-      </button>
-    </div>
-  `;
+  // Set up table configuration
+  const tableTypes = ['pilot-talent-hover', 'pilot-talent-type', 'pilot-talent-full'];
+  const buttonLabels = ['Pilot Talents (Hover)', 'Pilot Talent Types', 'Pilot Talents (Full)'];
+  const activeTable = 'pilot-talent-hover';
 
-  // Insert switcher before the first hover table
-  pilotTalentHoverTables[0].parentNode.insertBefore(
-    switcherContainer,
-    pilotTalentHoverTables[0]
-  );
+  const tables = {
+    'pilot-talent-hover': pilotTalentHoverTables,
+    'pilot-talent-type': pilotTalentTypeTables,
+    'pilot-talent-full': pilotTalentFullTables
+  };
 
-  // Add click handlers
-  const buttons = switcherContainer.querySelectorAll('.switcher-btn');
-  buttons.forEach((button) => {
-    button.addEventListener('click', function () {
-      // Remove active class from all buttons
-      buttons.forEach((btn) => btn.classList.remove('active'));
+  // Find first table to insert switcher before it
+  const firstTable = pilotTalentHoverTables.length > 0 
+    ? pilotTalentHoverTables[0] 
+    : pilotTalentTypeTables.length > 0
+    ? pilotTalentTypeTables[0]
+    : pilotTalentFullTables.length > 0
+    ? pilotTalentFullTables[0]
+    : null;
 
-      // Add active class to clicked button
-      this.classList.add('active');
+  if (!firstTable) {
+    console.warn('No table found to insert switcher before');
+    return;
+  }
 
-      // Hide all tables
-      pilotTalentHoverTables.forEach((table) => (table.style.display = 'none'));
-      pilotTalentTypeTables.forEach((table) => (table.style.display = 'none'));
-      pilotTalentFullTables.forEach((table) => (table.style.display = 'none'));
-
-      // Show selected tables
-      const tableType = this.getAttribute('data-table');
-      if (tableType === 'pilot-talent-hover') {
-        pilotTalentHoverTables.forEach(
-          (table) => (table.style.display = 'table')
-        );
-      } else if (tableType === 'pilot-talent-type') {
-        pilotTalentTypeTables.forEach(
-          (table) => (table.style.display = 'table')
-        );
-      } else if (tableType === 'pilot-talent-full') {
-        pilotTalentFullTables.forEach(
-          (table) => (table.style.display = 'table')
-        );
-      }
-    });
+  // Set up table switching with the utility
+  setupTableSwitching({
+    tableTypes,
+    buttonLabels,
+    tables,
+    activeTable,
+    insertBefore: firstTable,
+    cssClasses: {
+      container: 'table-switcher',
+      button: 'switcher-btn'
+    }
   });
-
-  // Initially hide all but the hover tables
-  pilotTalentTypeTables.forEach((table) => (table.style.display = 'none'));
-  pilotTalentFullTables.forEach((table) => (table.style.display = 'none'));
-  pilotTalentHoverTables.forEach((table) => (table.style.display = 'table'));
 });

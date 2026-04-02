@@ -65,20 +65,6 @@ export function extractClassFromRef(ref: string): string {
 }
 
 /**
- * Check if a string is an object reference in the format OBJID_Class::id
- * @param ref - The string to check
- * @returns True if it's a valid object reference format
- */
-export function isObjectRef(ref: string): boolean {
-  try {
-    parseObjectRef(ref);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-/**
  * Convert legacy ID to object reference format
  * @param id - The legacy ID (e.g., "DA_Module_AmmoFabricator.0")
  * @param objectClass - The object class (e.g., "Module")

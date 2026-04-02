@@ -6,6 +6,7 @@ import LocalizedText from '../../components/LocalizedText.astro';
 import StatEmbedLocalizedText from '../../components/StatEmbedLocalizedText.astro';
 import ObjectPageScripts from '../../components/ObjectPageScripts.astro';
 import ParseObjectPage from '../../components/ParseObjectPage.astro';
+import PilotTalentPageTable from '../../components/pilot/PilotTalentPageTable.astro';
 import {
   getParseObjects,
   generateObjectListStaticPaths,
@@ -14,6 +15,7 @@ import { enrichPilotTalents } from '../../utils/pilot';
 import { getDefaultString } from '../../utils/localization';
 import { getStatValueChoices } from '../../utils/stat';
 import ObjRef from '../../components/obj_ref/ObjRef.astro';
+import '../../styles/pilots.css';
 
 export async function getStaticPaths() {
   return generateObjectListStaticPaths('PilotTalent');
@@ -30,6 +32,7 @@ const pilotTalentTypes = getParseObjects<PilotTalentType>(
 );
 
 const pilotTalent = enrichedTalents[id];
+const pilotsWithThisTalent = pilotTalent.pilots_with_this_talent;
 
 // Load ModuleStats for stat replacements
 const moduleStats = getParseObjects<ModuleStat>('Objects/ModuleStat.json');
@@ -99,6 +102,28 @@ const defaultName = getDefaultString(pilotTalent.name) || pilotTalent.id;
     }
   </p>
 
+  {pilotsWithThisTalent.length > 0 && (
+    <section>
+      <h2>Pilots with this Talent</h2>
+      <div class="pilots-with-talent-table-container">
+        <PilotTalentPageTable
+          tableClass="pilots-table-pilot-talent-hover"
+          pilotsWithThisTalent={pilotsWithThisTalent}
+          allPilotTalents={pilotTalents}
+          currentTalentId={id}
+          fullOrOnHover="onHover"
+        />
+        <PilotTalentPageTable
+          tableClass="pilots-table-pilot-talent-full"
+          pilotsWithThisTalent={pilotsWithThisTalent}
+          allPilotTalents={pilotTalents}
+          currentTalentId={id}
+          fullOrOnHover="full"
+        />
+      </div>
+    </section>
+  )}
+
   <p>stats placeholder</p>
   <!-- TODO -->
 
@@ -108,4 +133,14 @@ const defaultName = getDefaultString(pilotTalent.name) || pilotTalent.id;
   <p>Language: <span id="current-lang">en</span></p>
 
   <ObjectPageScripts objectData={pilotTalent} />
+  
+  <!-- Initialize localization -->
+  <script type="module">
+    const localizationModule = await import('/js/localization.js');
+    const { initializeLocalization } = localizationModule;
+    initializeLocalization('current');
+  </script>
+  
+  <!-- Load pilot talent page table switching functionality -->
+  <script type="module" src="/js/pilot-talent-page.js"></script>
 </ParseObjectPage>
