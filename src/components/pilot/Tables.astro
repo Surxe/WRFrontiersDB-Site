@@ -26,33 +26,8 @@ const pilotTalentTypes = getParseObjects<PilotTalentType>(
 );
 const rarities = getParseObjects('Objects/Rarity.json');
 
-// Convert talent refs to raw IDs for component lookup
-const convertTalentRefsToRawIds = (pilots: Record<string, Pilot>) => {
-  const converted: Record<string, Pilot> = {};
-
-  for (const [pilotId, pilot] of Object.entries(pilots)) {
-    // Convert each talent ref to raw ID
-    const convertedPilot = {
-      ...pilot,
-      levels: pilot.levels?.map((level) => ({
-        ...level,
-        talents_refs: level.talents_refs?.map((ref) => {
-          // Extract raw ID from full reference
-          const rawId = ref.includes('::') ? ref.split('::')[1] : ref;
-          return rawId;
-        }),
-      })),
-    };
-
-    converted[pilotId] = convertedPilot;
-  }
-
-  return converted;
-};
-
 // Prepare and filter pilots
-const convertedPilots = convertTalentRefsToRawIds(pilots);
-const entries = prepareObjectList(convertedPilots, { prodReadyOnly: false });
+const entries = prepareObjectList(pilots, { prodReadyOnly: false });
 
 // Group by pilot type
 const grouped = groupBy(entries, ([_, pilot]) => refToId(pilot.pilot_type_ref));
