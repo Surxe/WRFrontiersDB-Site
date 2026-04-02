@@ -2,7 +2,7 @@ import type { ModuleStat } from '../types/module';
 import type { StatValueChoices } from '../types/stat';
 import { getDefaultString } from './localization';
 import { resolveObjectRef } from './object_resolver';
-import { refToId, isObjectRef } from './object_reference';
+import { refToId } from './object_reference';
 
 /**
  * Builds StatValueChoices from a stats array and ModuleStat objects.
@@ -34,7 +34,7 @@ export function getStatValueChoices(
       const scaler = statObject.unit_scaler ?? 1;
       const scaledValue = value * scaler;
 
-      const statId = isObjectRef(stat_ref) ? refToId(stat_ref) : stat_ref;
+      const statId = refToId(stat_ref);
       statValueChoices[statId] = {
         pattern: unitPattern,
         unitName: statObject.unit_name,

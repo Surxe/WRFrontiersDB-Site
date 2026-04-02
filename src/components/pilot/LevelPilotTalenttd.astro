@@ -55,8 +55,8 @@ const getTalentData = (levelIdx: number, talentIdx: number) => {
   const rawTalentRef =
     levelIdx === 4 ? level.talents_refs[0] : level.talents_refs[talentIdx];
   
-  // Convert full reference format to raw ID, or use as-is if already raw ID
-  const rawTalentId = isObjectRef(rawTalentRef) ? refToId(rawTalentRef) : rawTalentRef;
+  // Convert full reference format to raw ID
+  const rawTalentId = refToId(rawTalentRef);
 
   const talent = pilotTalents[rawTalentId];
   if (!talent) {
