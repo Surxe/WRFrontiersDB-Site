@@ -1,6 +1,6 @@
 ---
-import TalentRow from './TalentRow.astro';
-import TalentTypeRow from './TalentTypeRow.astro';
+import TalentPilotRow from './TalentPilotRow.astro';
+import TalentTypePilotRow from './TalentTypePilotRow.astro';
 import type { Pilot, PilotTalent, PilotTalentType } from '../../types/pilot';
 
 interface Props {
@@ -53,14 +53,14 @@ const pilotsWithMaxTalents = pilots.map(([id, pilot]) => {
       pilotsWithMaxTalents.map(([_id, pilot, maxTalents]) => (
         <>
           {pilotTalents ? (
-            <TalentRow
+            <TalentPilotRow
               pilot={pilot}
               maxTalents={maxTalents}
               pilotTalents={pilotTalents}
               fullOrOnHover={fullOrOnHover}
             />
           ) : (
-            <TalentTypeRow
+            <TalentTypePilotRow
               pilot={pilot}
               maxTalents={maxTalents}
               pilotTalentTypes={pilotTalentTypes!}
