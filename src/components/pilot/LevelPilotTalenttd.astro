@@ -4,6 +4,7 @@ import type { PilotTalent } from '../../types/pilot';
 import type { ModuleStat } from '../../types/module';
 import { getParseObjects } from '../../utils/parse_object';
 import { getStatValueChoices } from '../../utils/stat';
+import { refToId } from '../../utils/object_reference';
 
 interface Props {
   levelIndex: number; // 0 for level 1, 1 for level 2, 2 for level 3, 3 for level 4, 4 for level 5
@@ -15,6 +16,7 @@ interface Props {
   maxTalents: number;
   pilotTalents: Record<string, PilotTalent>;
   fullOrOnHover?: 'full' | 'onHover';
+  isHighlighted?: boolean;
 }
 
 /*
@@ -37,6 +39,7 @@ const {
   maxTalents,
   pilotTalents,
   fullOrOnHover = 'full',
+  isHighlighted = false,
 } = Astro.props;
 
 if (fullOrOnHover !== 'full' && fullOrOnHover !== 'onHover') {
@@ -49,13 +52,16 @@ const moduleStats = getParseObjects<ModuleStat>('Objects/ModuleStat.json');
 // For level 5, always use the first talent; for others, use the current talentIndex
 // because level 5 only has one talent slot
 const getTalentData = (levelIdx: number, talentIdx: number) => {
-  const rawTalentId =
+  const rawTalentRef =
     levelIdx === 4 ? level.talents_refs[0] : level.talents_refs[talentIdx];
+  
+  // Convert full reference format to raw ID, or use as-is if already raw ID
+  const rawTalentId = isObjectRef(rawTalentRef) ? refToId(rawTalentRef) : rawTalentRef;
 
   const talent = pilotTalents[rawTalentId];
   if (!talent) {
     throw new Error(
-      `Talent "${rawTalentId}" not found in pilotTalents. Available: ${Object.keys(pilotTalents).slice(0, 10).join(', ')}`
+      `Talent "${rawTalentId}" (from ref "${rawTalentRef}") not found in pilotTalents. Available: ${Object.keys(pilotTalents).slice(0, 10).join(', ')}`
     );
   }
 
@@ -79,6 +85,7 @@ const talentData = shouldRender ? getTalentData(levelIndex, talentIndex) : null;
       statValueChoices={talentData.statValueChoices}
       fullOrOnHover={fullOrOnHover}
       rowspan={rowspan}
+      isHighlighted={isHighlighted}
     />
   )
 }

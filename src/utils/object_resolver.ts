@@ -1,9 +1,9 @@
 import type { ParseObject } from '../types/parse_object';
-import { refToId } from './object_reference';
+import { refToId, isObjectRef } from './object_reference';
 
 /**
  * Resolve an object reference to an actual object
- * @param ref - The object reference (e.g., "OBJID_Module::DA_Module_AmmoFabricator.0")
+ * @param ref - The object reference (e.g., "OBJID_Module::DA_Module_AmmoFabricator.0" or "DA_Module_AmmoFabricator.0")
  * @param objects - Record of objects indexed by their ID
  * @returns The resolved object or undefined if not found
  */
@@ -11,7 +11,7 @@ export function resolveObjectRef<T extends ParseObject>(
   ref: string,
   objects: Record<string, T>
 ): T | undefined {
-  const id = refToId(ref);
+  const id = isObjectRef(ref) ? refToId(ref) : ref;
   return objects[id];
 }
 

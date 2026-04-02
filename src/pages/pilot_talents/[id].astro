@@ -6,6 +6,7 @@ import LocalizedText from '../../components/LocalizedText.astro';
 import StatEmbedLocalizedText from '../../components/StatEmbedLocalizedText.astro';
 import ObjectPageScripts from '../../components/ObjectPageScripts.astro';
 import ParseObjectPage from '../../components/ParseObjectPage.astro';
+import PilotTalentTable from '../../components/pilot/PilotTalentTable.astro';
 import {
   getParseObjects,
   generateObjectListStaticPaths,
@@ -30,6 +31,7 @@ const pilotTalentTypes = getParseObjects<PilotTalentType>(
 );
 
 const pilotTalent = enrichedTalents[id];
+const pilotsWithThisTalent = pilotTalent.pilots_with_this_talent;
 
 // Load ModuleStats for stat replacements
 const moduleStats = getParseObjects<ModuleStat>('Objects/ModuleStat.json');
@@ -98,6 +100,17 @@ const defaultName = getDefaultString(pilotTalent.name) || pilotTalent.id;
         })()
     }
   </p>
+
+  {pilotsWithThisTalent.length > 0 && (
+    <section>
+      <h2>Pilots with this Talent</h2>
+      <PilotTalentTable
+        pilotsWithThisTalent={pilotsWithThisTalent}
+        allPilotTalents={pilotTalents}
+        currentTalentId={id}
+      />
+    </section>
+  )}
 
   <p>stats placeholder</p>
   <!-- TODO -->

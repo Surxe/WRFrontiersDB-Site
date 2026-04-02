@@ -38,3 +38,26 @@
 .switcher-btn.active:hover {
     background: #0056b3;
 }
+
+/* Highlighted talent cell styling */
+.highlighted-talent {
+    background-color: #fff3cd;
+    border: 2px solid #ffc107;
+    position: relative;
+}
+
+.highlighted-talent::before {
+    content: "★";
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #ffc107;
+    color: #fff;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

@@ -1,0 +1,63 @@
+---
+import TalentPilotRow from './TalentPilotRow.astro';
+import type { Pilot, PilotTalent } from '../../types/pilot';
+
+interface Props {
+  pilotsWithThisTalent: {
+    pilot: Pilot;
+    level: number;
+    talentIndex: number;
+  }[];
+  allPilotTalents: Record<string, PilotTalent>;
+  currentTalentId: string;
+  tableClass?: string;
+}
+
+const { 
+  pilotsWithThisTalent, 
+  allPilotTalents, 
+  currentTalentId, 
+  tableClass = "pilots-with-talent-table" 
+} = Astro.props;
+
+// Handle empty state
+if (pilotsWithThisTalent.length === 0) {
+  return null;
+}
+
+// Pre-calculate maxTalents for each pilot
+const pilotsWithMaxTalents = pilotsWithThisTalent.map(({ pilot, level, talentIndex }) => {
+  const maxTalents = Math.max(
+    ...pilot.levels.map((level) => level?.talents_refs?.length || 0)
+  );
+  return { pilot, level, talentIndex, maxTalents };
+});
+---
+
+<table class={tableClass}>
+  <thead>
+    <tr>
+      <th>Pilot Name</th>
+      <th>Level 1</th>
+      <th>Level 2</th>
+      <th>Level 3</th>
+      <th>Level 4</th>
+      <th>Level 5</th>
+    </tr>
+  </thead>
+  <tbody>
+    {
+      pilotsWithMaxTalents.map(({ pilot, level, talentIndex, maxTalents }) => (
+        <TalentPilotRow
+          pilot={pilot}
+          maxTalents={maxTalents}
+          pilotTalents={allPilotTalents}
+          fullOrOnHover="full"
+          highlightTalent={currentTalentId}
+          highlightLevel={level}
+          highlightTalentIndex={talentIndex}
+        />
+      ))
+    }
+  </tbody>
+</table>

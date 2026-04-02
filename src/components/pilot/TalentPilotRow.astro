@@ -8,9 +8,12 @@ interface Props {
   maxTalents: number;
   pilotTalents: Record<string, PilotTalent>;
   fullOrOnHover?: 'full' | 'onHover';
+  highlightTalent?: string;
+  highlightLevel?: number;
+  highlightTalentIndex?: number;
 }
 
-const { pilot, maxTalents, pilotTalents, fullOrOnHover } = Astro.props;
+const { pilot, maxTalents, pilotTalents, fullOrOnHover, highlightTalent, highlightLevel, highlightTalentIndex } = Astro.props;
 ---
 
 {
@@ -34,6 +37,12 @@ const { pilot, maxTalents, pilotTalents, fullOrOnHover } = Astro.props;
             maxTalents={maxTalents}
             pilotTalents={pilotTalents}
             fullOrOnHover={fullOrOnHover}
+            isHighlighted={
+              highlightTalent ? 
+              highlightLevel === levelIndex + 1 && 
+              highlightTalentIndex === talentIndex : 
+              false
+            }
           />
         ))}
       </tr>

@@ -70,12 +70,7 @@ export function extractClassFromRef(ref: string): string {
  * @returns True if it's a valid object reference format
  */
 export function isObjectRef(ref: string): boolean {
-  try {
-    parseObjectRef(ref);
-    return true;
-  } catch {
-    return false;
-  }
+  return ref.includes('::') && ref.startsWith('OBJID_');
 }
 
 /**
