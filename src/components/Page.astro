@@ -1,11 +1,63 @@
 ---
 import langs from '../../public/langs.json';
+import { URL } from 'node:url';
+import '../styles/page-header.css';
 
 export interface Props {
   title?: string;
+  description?: string;
+  metaImage?: string;
+  url?: string;
+  type?: string;
+  headerImage?: string;
 }
 
-const { title } = Astro.props;
+const { title, description, metaImage, url, type = "website", headerImage } = Astro.props;
+
+// Generate absolute URLs
+const siteUrl = Astro.site?.href || new URL(Astro.url.pathname, Astro.request.url).href;
+
+// Use headerImage as default for metaImage if metaImage is not provided
+const finalMetaImage = metaImage || headerImage;
+
+// Handle image for meta tags - check if it's from data repository or public folder
+let imageSrc = null;
+if (finalMetaImage) {
+  if (finalMetaImage.startsWith('/WRFrontiers/')) {
+    // Data repository image with full path (with leading slash)
+    imageSrc = `/WRFrontiersDB-Data/textures${finalMetaImage}.png`;
+  } else if (finalMetaImage.startsWith('WRFrontiers/')) {
+    // Data repository image with full path
+    imageSrc = `/WRFrontiersDB-Data/textures/${finalMetaImage}.png`;
+  } else if (finalMetaImage.startsWith('/')) {
+    // Public folder image
+    imageSrc = finalMetaImage;
+  } else {
+    // Data repository image with texture name only
+    imageSrc = `/WRFrontiersDB-Data/textures${finalMetaImage}.png`;
+  }
+}
+
+const imageUrl = imageSrc ? new URL(imageSrc, siteUrl).href : null;
+const pageUrl = url || siteUrl;
+
+// Handle headerImage - check if it's from data repository or public folder
+let headerImageSrc = null;
+if (headerImage) {
+  if (headerImage.startsWith('/WRFrontiers/')) {
+    // Data repository image with full path (with leading slash)
+    headerImageSrc = `/WRFrontiersDB-Data/textures${headerImage}.png`;
+  } else if (headerImage.startsWith('WRFrontiers/')) {
+    // Data repository image with full path
+    headerImageSrc = `/WRFrontiersDB-Data/textures/${headerImage}.png`;
+  } else if (headerImage.startsWith('/')) {
+    // Public folder image
+    headerImageSrc = headerImage;
+  } else {
+    // Data repository image with texture name only
+    headerImageSrc = `/WRFrontiersDB-Data/textures${headerImage}.png`;
+  }
+}
 
 // Basic page layout
 ---
@@ -16,13 +68,33 @@ const { title } = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="WRFrontiersDB - War Robots Frontiers Database"
+      content={description || "WRFrontiersDB - War Robots Frontiers Database"}
     />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     {title && <title>{title}</title>}
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content={title || "War Robots Frontiers Database"} />
+    {description && <meta property="og:description" content={description} />}
+    {imageUrl && <meta property="og:image" content={imageUrl} />}
+    <meta property="og:url" content={pageUrl} />
+    <meta property="og:type" content={type} />
+    <meta property="og:site_name" content="War Robots Frontiers Database" />
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title || "War Robots Frontiers Database"} />
+    {description && <meta name="twitter:description" content={description} />}
+    {imageUrl && <meta name="twitter:image" content={imageUrl} />}
+    
     <slot name="head" />
   </head>
   <body>
+    {headerImageSrc && (
+      <div class="page-header-image">
+        <img src={headerImageSrc} alt="Page header image" />
+      </div>
+    )}
     <select id="lang-selector">
       {
         Object.entries(langs).map(([code, names]) => (

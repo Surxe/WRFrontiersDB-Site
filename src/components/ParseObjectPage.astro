@@ -3,14 +3,19 @@ import Page from './Page.astro';
 
 export interface Props {
   title?: string;
+  description?: string;
+  metaImage?: string;
+  url?: string;
+  type?: string;
+  headerImage?: string;
 }
 
-const { title } = Astro.props;
+const { title, description, metaImage, url, type, headerImage } = Astro.props;
 
 // Basic parse object page layout, e.g. pages/modules/[id]/[version].astro. Not pages/modules.astro.
 ---
 
-<Page title={title}>
+<Page title={title} description={description} metaImage={metaImage} url={url} type={type} headerImage={headerImage}>
   <slot name="head" slot="head" />
   <slot />
 </Page>

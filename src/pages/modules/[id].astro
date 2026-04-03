@@ -42,7 +42,11 @@ if (!module.name) {
 const defaultName = getDefaultString(module.name) || module.id;
 ---
 
-<ParseObjectPage>
+<ParseObjectPage 
+  description={`View detailed information about ${defaultName}, a module in War Robots Frontiers. Includes stats, effects, and usage information.`}
+  headerImage={module.image_path as string}
+  type="article"
+>
   <LocalizedText
     id="module-name-title"
     tag="title"

@@ -44,7 +44,11 @@ const statValueChoices = getStatValueChoices(pilotTalent.stats, moduleStats);
 const defaultName = getDefaultString(pilotTalent.name) || pilotTalent.id;
 ---
 
-<ParseObjectPage>
+<ParseObjectPage 
+  description={`View detailed information about ${defaultName}, a pilot talent in War Robots Frontiers. Includes stats, effects, and pilot information.`}
+  headerImage={pilotTalent.image_path}
+  type="article"
+>
   <LocalizedText
     id="pilot-talent-name-title"
     tag="title"
