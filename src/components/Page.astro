@@ -6,6 +6,7 @@ import '../styles/page-header.css';
 export interface Props {
   title?: string;
   description?: string;
+  localizedDescriptions?: { lang: string; description: string }[];
   metaImage?: string;
   url?: string;
   type?: string;
@@ -15,6 +16,7 @@ export interface Props {
 const {
   title,
   description,
+  localizedDescriptions,
   metaImage,
   url,
   type = 'website',
@@ -78,6 +80,9 @@ if (headerImage) {
       name="description"
       content={description || 'WRFrontiersDB - War Robots Frontiers Database'}
     />
+    {localizedDescriptions?.map(({ lang, description }) => (
+      <meta name="description" lang={lang} content={description} />
+    ))}
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     {title && <title>{title}</title>}
 
