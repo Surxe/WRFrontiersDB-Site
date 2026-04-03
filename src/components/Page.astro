@@ -6,53 +6,56 @@ import '../styles/page-header.css';
 export interface Props {
   title?: string;
   description?: string;
-  image?: string;
+  metaImage?: string;
   url?: string;
   type?: string;
-  displayImage?: string;
+  headerImage?: string;
 }
 
-const { title, description, image, url, type = "website", displayImage } = Astro.props;
+const { title, description, metaImage, url, type = "website", headerImage } = Astro.props;
 
 // Generate absolute URLs
 const siteUrl = Astro.site?.href || new URL(Astro.url.pathname, Astro.request.url).href;
 
+// Use headerImage as default for metaImage if metaImage is not provided
+const finalMetaImage = metaImage || headerImage;
+
 // Handle image for meta tags - check if it's from data repository or public folder
 let imageSrc = null;
-if (image) {
-  if (image.startsWith('/WRFrontiers/')) {
+if (finalMetaImage) {
+  if (finalMetaImage.startsWith('/WRFrontiers/')) {
     // Data repository image with full path (with leading slash)
-    imageSrc = `/WRFrontiersDB-Data/textures${image}.png`;
-  } else if (image.startsWith('WRFrontiers/')) {
+    imageSrc = `/WRFrontiersDB-Data/textures${finalMetaImage}.png`;
+  } else if (finalMetaImage.startsWith('WRFrontiers/')) {
     // Data repository image with full path
-    imageSrc = `/WRFrontiersDB-Data/textures/${image}.png`;
-  } else if (image.startsWith('/')) {
+    imageSrc = `/WRFrontiersDB-Data/textures/${finalMetaImage}.png`;
+  } else if (finalMetaImage.startsWith('/')) {
     // Public folder image
-    imageSrc = image;
+    imageSrc = finalMetaImage;
   } else {
     // Data repository image with texture name only
-    imageSrc = `/WRFrontiersDB-Data/textures${image}.png`;
+    imageSrc = `/WRFrontiersDB-Data/textures${finalMetaImage}.png`;
   }
 }
 
 const imageUrl = imageSrc ? new URL(imageSrc, siteUrl).href : null;
 const pageUrl = url || siteUrl;
 
-// Handle displayImage - check if it's from data repository or public folder
-let displayImageSrc = null;
-if (displayImage) {
-  if (displayImage.startsWith('/WRFrontiers/')) {
+// Handle headerImage - check if it's from data repository or public folder
+let headerImageSrc = null;
+if (headerImage) {
+  if (headerImage.startsWith('/WRFrontiers/')) {
     // Data repository image with full path (with leading slash)
-    displayImageSrc = `/WRFrontiersDB-Data/textures${displayImage}.png`;
-  } else if (displayImage.startsWith('WRFrontiers/')) {
+    headerImageSrc = `/WRFrontiersDB-Data/textures${headerImage}.png`;
+  } else if (headerImage.startsWith('WRFrontiers/')) {
     // Data repository image with full path
-    displayImageSrc = `/WRFrontiersDB-Data/textures/${displayImage}.png`;
-  } else if (displayImage.startsWith('/')) {
+    headerImageSrc = `/WRFrontiersDB-Data/textures/${headerImage}.png`;
+  } else if (headerImage.startsWith('/')) {
     // Public folder image
-    displayImageSrc = displayImage;
+    headerImageSrc = headerImage;
   } else {
     // Data repository image with texture name only
-    displayImageSrc = `/WRFrontiersDB-Data/textures${displayImage}.png`;
+    headerImageSrc = `/WRFrontiersDB-Data/textures${headerImage}.png`;
   }
 }
 
@@ -87,9 +90,9 @@ if (displayImage) {
     <slot name="head" />
   </head>
   <body>
-    {displayImageSrc && (
+    {headerImageSrc && (
       <div class="page-header-image">
-        <img src={displayImageSrc} alt="Page header image" />
+        <img src={headerImageSrc} alt="Page header image" />
       </div>
     )}
     <select id="lang-selector">
