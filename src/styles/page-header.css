@@ -5,8 +5,8 @@
 }
 
 .page-header-image img {
-  max-width: 200px;
-  max-height: 200px;
+  max-width: 100px;
+  max-height: 100px;
   object-fit: contain;
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -15,14 +15,14 @@
 /* Responsive design */
 @media (max-width: 768px) {
   .page-header-image img {
-    max-width: 150px;
-    max-height: 150px;
+    max-width: 80px;
+    max-height: 80px;
   }
 }
 
 @media (max-width: 480px) {
   .page-header-image img {
-    max-width: 120px;
-    max-height: 120px;
+    max-width: 60px;
+    max-height: 60px;
   }
 }
