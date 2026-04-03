@@ -7,7 +7,7 @@
 
 ## Usage
 
-Use id wherever possible. The data is stored as a reference, so when its accessed, it should be converted to an id using utility functions. You should never check if a value is a ref or an id, you should instead look in the Data and see, for a given data structure, if its a ref or an id, then handle it appropriately. 
+Use id wherever possible. The data is stored as a reference, so when its accessed, it should be converted to an id using utility functions. You should never check if a value is a ref or an id, you should instead look in the Data and see, for a given data structure, if its a ref or an id, then handle it appropriately.
 
 ### Routes
 

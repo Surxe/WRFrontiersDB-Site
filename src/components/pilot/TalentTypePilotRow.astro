@@ -13,27 +13,25 @@ const { pilot, maxTalents, pilotTalentTypes } = Astro.props;
 ---
 
 {
-  Array.from({ length: Math.max(1, maxTalents) }).map(
-    (_, talentIndex) => (
-      <tr>
-        {/* Pilot Name */}
-        {talentIndex === 0 && (
-          <>
-            <td rowspan={maxTalents}>
-              <ObjRef obj={pilot} iconSize={48} />
-            </td>
-          </>
-        )}
-        {/* Levels 1-5 */}
-        {[0, 1, 2, 3, 4].map((levelIndex) => (
-          <LevelPilotTalentTypetd
-            level={pilot.levels[levelIndex]}
-            talentIndex={talentIndex}
-            maxTalents={maxTalents}
-            pilotTalentTypes={pilotTalentTypes}
-          />
-        ))}
-      </tr>
-    )
-  )
+  Array.from({ length: Math.max(1, maxTalents) }).map((_, talentIndex) => (
+    <tr>
+      {/* Pilot Name */}
+      {talentIndex === 0 && (
+        <>
+          <td rowspan={maxTalents}>
+            <ObjRef obj={pilot} iconSize={48} />
+          </td>
+        </>
+      )}
+      {/* Levels 1-5 */}
+      {[0, 1, 2, 3, 4].map((levelIndex) => (
+        <LevelPilotTalentTypetd
+          level={pilot.levels[levelIndex]}
+          talentIndex={talentIndex}
+          maxTalents={maxTalents}
+          pilotTalentTypes={pilotTalentTypes}
+        />
+      ))}
+    </tr>
+  ))
 }

@@ -221,15 +221,15 @@ describe('enrichPilotTalents', () => {
       const result = enrichPilotTalents(pilotTalents, pilots);
 
       expect(result['ORPHAN_TALENT'].talent_type_id).toBeUndefined();
-      expect(result['ORPHAN_TALENT'].level).toBe(-1);
+      expect(result['ORPHAN_TALENT'].level).toBeUndefined();
     });
 
     it('should handle empty inputs', () => {
       const result = enrichPilotTalents({}, {});
       expect(result).toEqual({});
-      
+
       // Verify all properties are undefined for empty input
-      Object.values(result).forEach(enrichedTalent => {
+      Object.values(result).forEach((enrichedTalent) => {
         expect(enrichedTalent.talent_type_id).toBeUndefined();
         expect(enrichedTalent.level).toBeUndefined();
         expect(enrichedTalent.pilots_with_this_talent).toEqual([]);
@@ -254,10 +254,12 @@ describe('enrichPilotTalents', () => {
 
       const result = enrichPilotTalents(pilotTalents, {});
 
-      expect(result).toEqual({});
-      
+      expect(Object.keys(result)).toEqual(['TALENT_1']);
+      expect(result['TALENT_1'].talent_type_id).toBeUndefined();
+      expect(result['TALENT_1'].level).toBeUndefined();
+
       // Verify all properties are undefined for empty input
-      Object.values(result).forEach(enrichedTalent => {
+      Object.values(result).forEach((enrichedTalent) => {
         expect(enrichedTalent.talent_type_id).toBeUndefined();
         expect(enrichedTalent.level).toBeUndefined();
         expect(enrichedTalent.pilots_with_this_talent).toEqual([]);
@@ -299,8 +301,8 @@ describe('enrichPilotTalents', () => {
 
       const result = enrichPilotTalents(pilotTalents, pilots);
 
-      expect(result['TALENT_1'].talent_type_id).toBe('');
-      expect(result['TALENT_1'].level).toBe(-1);
+      expect(result['TALENT_1'].talent_type_id).toBeUndefined();
+      expect(result['TALENT_1'].level).toBeUndefined();
     });
 
     it('should handle level with empty talents array', () => {
@@ -343,8 +345,8 @@ describe('enrichPilotTalents', () => {
 
       const result = enrichPilotTalents(pilotTalents, pilots);
 
-      expect(result['TALENT_1'].talent_type_id).toBe('');
-      expect(result['TALENT_1'].level).toBe(-1);
+      expect(result['TALENT_1'].talent_type_id).toBeUndefined();
+      expect(result['TALENT_1'].level).toBeUndefined();
     });
   });
 

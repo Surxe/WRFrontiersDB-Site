@@ -21,6 +21,7 @@ node validate.ts Module report
 ## Available Commands
 
 ### 1. Missing Attribute Check
+
 Check if any objects are missing a specific attribute:
 
 ```bash
@@ -28,6 +29,7 @@ node validate.ts <objectType> <attributePath>
 ```
 
 **Examples:**
+
 ```bash
 # Simple attribute
 node validate.ts Module faction_ref
@@ -43,6 +45,7 @@ node validate.ts Module "module_scalars.levels.variables.0.upgrade_cost_ref"
 ```
 
 ### 2. Interface Completeness Report
+
 Generate a comprehensive report comparing interface fields to actual data:
 
 ```bash
@@ -50,6 +53,7 @@ node validate.ts <objectType> report
 ```
 
 **Example:**
+
 ```bash
 node validate.ts Module report
 ```
@@ -57,6 +61,7 @@ node validate.ts Module report
 ## Output Examples
 
 ### Missing Attribute Report
+
 ```
 🔍 ATTRIBUTE ANALYSIS: module_scalars.primary_stat_ref
 
@@ -77,6 +82,7 @@ Lines: 45, 67, 89, 123, 156
 ```
 
 ### Interface Completeness Report
+
 ```
 📋 INTERFACE COMPLETENESS REPORT: Module
 
@@ -95,7 +101,7 @@ Lines: 45, 67, 89, 123, 156
 ## Supported Object Types
 
 - `Module` - Module objects and their properties
-- `Pilot` - Pilot objects and their properties  
+- `Pilot` - Pilot objects and their properties
 - `PilotClass` - Pilot class definitions
 - `PilotPersonality` - Pilot personality traits
 - And more from `src/types/`
@@ -103,6 +109,7 @@ Lines: 45, 67, 89, 123, 156
 ## Attribute Path Syntax
 
 ### Simple Attributes
+
 ```
 faction_ref
 name
@@ -110,12 +117,14 @@ description
 ```
 
 ### Nested Object Attributes
+
 ```
 module_scalars.primary_stat_ref
 module_scalars.levels.constants
 ```
 
 ### Array Element Attributes
+
 ```
 character_module_mounts.0.mount
 character_module_mounts.0.character_module_ref
@@ -123,6 +132,7 @@ module_scalars.levels.variables.0.upgrade_cost_ref
 ```
 
 ### Complex Nested Paths
+
 ```
 module_scalars.levels.variables.0.scrap_rewards_refs.0
 ```
@@ -130,24 +140,28 @@ module_scalars.levels.variables.0.scrap_rewards_refs.0
 ## Use Cases
 
 ### Before Interface Changes
+
 ```bash
 # Check if new field exists in data before adding to interface
 node validate.ts Module new_field_name
 ```
 
 ### After Data Updates
+
 ```bash
 # Verify data completeness after adding new objects
 node validate.ts Module report
 ```
 
 ### Debugging Missing Data
+
 ```bash
 # Find objects missing required fields
 node validate.ts Module required_field_name
 ```
 
 ### Interface Maintenance
+
 ```bash
 # Review optional vs required field usage
 node validate.ts Module report
@@ -156,6 +170,7 @@ node validate.ts Module report
 ## File Locations
 
 The tool expects:
+
 - **TypeScript interfaces**: `src/types/<ObjectType>.ts`
 - **Data files**: `WRFrontiersDB-Data/current/Objects/<ObjectType>.json`
 
@@ -176,6 +191,7 @@ The tool expects:
 ## Integration with Tests
 
 This tool complements the existing test suite in `tests/ts_types/` by providing:
+
 - Interactive validation capabilities
 - Detailed missing object identification
 - File line number references
