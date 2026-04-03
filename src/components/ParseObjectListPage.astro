@@ -5,14 +5,18 @@ import ParseObjectListPageScripts from './ParseObjectListPageScripts.astro';
 export interface Props {
   title?: string;
   jsFileName?: string;
+  description?: string;
+  image?: string;
+  url?: string;
+  type?: string;
 }
 
-const { title, jsFileName } = Astro.props;
+const { title, jsFileName, description, image, url, type } = Astro.props;
 
 // Basic page layout for ParseObjectList pages, e.g. pages/modules.astro
 ---
 
-<Page title={title}>
+<Page title={title} description={description} image={image} url={url} type={type}>
   <slot name="head" slot="head" />
   <slot />
 

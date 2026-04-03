@@ -12,7 +12,11 @@ const pilotClasses = getParseObjects<PilotClass>('Objects/PilotClass.json');
 const entries = prepareObjectList(pilotClasses, { prodReadyOnly: false });
 ---
 
-<ParseObjectListPage title="Pilot Classes">
+<ParseObjectListPage 
+  title="Pilot Classes" 
+  description="Browse all pilot classes with their characteristics and abilities from War Robots Frontiers"
+  image="/images/T_RobotClassesDefenderBig.png"
+>
   <BackToHome />
   <h1>Pilot Classes</h1>
 

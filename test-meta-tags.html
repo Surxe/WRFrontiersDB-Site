@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Meta Tags Tester</title>
+</head>
+<body>
+    <h1>Meta Tags Testing Tool</h1>
+    <p>Enter a URL to check its meta tags:</p>
+    <input type="text" id="urlInput" placeholder="http://localhost:4322/pilots" style="width: 300px;">
+    <button onclick="checkMetaTags()">Check Meta Tags</button>
+    
+    <div id="results" style="margin-top: 20px; font-family: monospace;"></div>
+    
+    <script>
+        async function checkMetaTags() {
+            const url = document.getElementById('urlInput').value;
+            const results = document.getElementById('results');
+            
+            try {
+                // Fetch the page
+                const response = await fetch(url);
+                const html = await response.text();
+                
+                // Parse HTML
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                // Extract meta tags
+                const metaTags = {};
+                
+                // Open Graph tags
+                doc.querySelectorAll('meta[property^="og:"]').forEach(tag => {
+                    metaTags[tag.property] = tag.content;
+                });
+                
+                // Twitter tags
+                doc.querySelectorAll('meta[name^="twitter:"]').forEach(tag => {
+                    metaTags[tag.name] = tag.content;
+                });
+                
+                // Standard meta tags
+                doc.querySelectorAll('meta[name="description"], meta[name="title"]').forEach(tag => {
+                    metaTags[tag.name] = tag.content;
+                });
+                
+                // Display results
+                let output = '<h3>Meta Tags Found:</h3><ul>';
+                Object.entries(metaTags).forEach(([key, value]) => {
+                    output += `<li><strong>${key}:</strong> ${value}</li>`;
+                });
+                output += '</ul>';
+                
+                // Check image URL
+                if (metaTags['og:image']) {
+                    output += `<h3>Image Preview:</h3>`;
+                    output += `<img src="${metaTags['og:image']}" style="max-width: 300px; border: 1px solid #ccc;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">`;
+                    output += `<p style="display: none; color: red;">Image failed to load - check URL</p>`;
+                }
+                
+                results.innerHTML = output;
+                
+            } catch (error) {
+                results.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

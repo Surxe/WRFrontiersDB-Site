@@ -12,7 +12,12 @@ const pilots = getParseObjects<Pilot>('Objects/Pilot.json');
 const pilot = pilots['DA_Pilot_Common1.0']; // Pick an arbitary pilot. All are validated to have the same reputation costs by Parser
 ---
 
-<ParseObjectListPage title="Pilots" jsFileName="pilots.js">
+<ParseObjectListPage 
+  title="Pilots" 
+  jsFileName="pilots.js"
+  description="Browse all pilots with their talents, stats, and abilities from War Robots Frontiers"
+  image="/images/T_UnLockPilots.png"
+>
   <BackToHome />
 
   <p>Showing pilots from current version</p>
