@@ -3,6 +3,7 @@ import BackToHome from '../components/BackToHome.astro';
 import ParseObjectListPage from '../components/ParseObjectListPage.astro';
 import { getParseObjects } from '../utils/parse_object';
 import { prepareObjectList, groupBy, sortGroups } from '../utils/list';
+import { refToId } from '../utils/object_reference';
 import type { PilotTalentType, Pilot } from '../types/pilot';
 import LocalizedText from '../components/LocalizedText.astro';
 import ObjRef from '../components/obj_ref/ObjRef.astro';
@@ -20,9 +21,10 @@ for (const [talentTypeId, talentType] of Object.entries(pilotTalentTypes)) {
 
   // Search through all pilots
   for (const [_, pilot] of Object.entries(pilots)) {
-    // Check each level in the pilot
+    // Check each level in pilot
     for (const [levelIndex, levelEntry] of pilot.levels.entries()) {
-      if (levelEntry.talent_type_id === talentTypeId) {
+      // Use refToId utility to extract just the ID part from talent_type_ref
+      if (refToId(levelEntry.talent_type_ref) === talentTypeId) {
         levelFound = levelIndex + 1; // Levels are 1-based
         break;
       }
