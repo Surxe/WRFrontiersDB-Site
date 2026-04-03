@@ -16,8 +16,45 @@ const { title, description, image, url, type = "website", displayImage } = Astro
 
 // Generate absolute URLs
 const siteUrl = Astro.site?.href || new URL(Astro.url.pathname, Astro.request.url).href;
-const imageUrl = image ? new URL(image, siteUrl).href : null;
+
+// Handle image for meta tags - check if it's from data repository or public folder
+let imageSrc = null;
+if (image) {
+  if (image.startsWith('/WRFrontiers/')) {
+    // Data repository image with full path (with leading slash)
+    imageSrc = `/WRFrontiersDB-Data/textures${image}.png`;
+  } else if (image.startsWith('WRFrontiers/')) {
+    // Data repository image with full path
+    imageSrc = `/WRFrontiersDB-Data/textures/${image}.png`;
+  } else if (image.startsWith('/')) {
+    // Public folder image
+    imageSrc = image;
+  } else {
+    // Data repository image with texture name only
+    imageSrc = `/WRFrontiersDB-Data/textures${image}.png`;
+  }
+}
+
+const imageUrl = imageSrc ? new URL(imageSrc, siteUrl).href : null;
 const pageUrl = url || siteUrl;
+
+// Handle displayImage - check if it's from data repository or public folder
+let displayImageSrc = null;
+if (displayImage) {
+  if (displayImage.startsWith('/WRFrontiers/')) {
+    // Data repository image with full path (with leading slash)
+    displayImageSrc = `/WRFrontiersDB-Data/textures${displayImage}.png`;
+  } else if (displayImage.startsWith('WRFrontiers/')) {
+    // Data repository image with full path
+    displayImageSrc = `/WRFrontiersDB-Data/textures/${displayImage}.png`;
+  } else if (displayImage.startsWith('/')) {
+    // Public folder image
+    displayImageSrc = displayImage;
+  } else {
+    // Data repository image with texture name only
+    displayImageSrc = `/WRFrontiersDB-Data/textures${displayImage}.png`;
+  }
+}
 
 // Basic page layout
 ---
@@ -50,9 +87,9 @@ const pageUrl = url || siteUrl;
     <slot name="head" />
   </head>
   <body>
-    {displayImage && (
+    {displayImageSrc && (
       <div class="page-header-image">
-        <img src={displayImage} alt="Page header image" />
+        <img src={displayImageSrc} alt="Page header image" />
       </div>
     )}
     <select id="lang-selector">
