@@ -7,14 +7,15 @@ export interface Props {
   image?: string;
   url?: string;
   type?: string;
+  displayImage?: string;
 }
 
-const { title, description, image, url, type } = Astro.props;
+const { title, description, image, url, type, displayImage } = Astro.props;
 
 // Basic parse object page layout, e.g. pages/modules/[id]/[version].astro. Not pages/modules.astro.
 ---
 
-<Page title={title} description={description} image={image} url={url} type={type}>
+<Page title={title} description={description} image={image} url={url} type={type} displayImage={displayImage}>
   <slot name="head" slot="head" />
   <slot />
 </Page>

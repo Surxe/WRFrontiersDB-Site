@@ -9,14 +9,15 @@ export interface Props {
   image?: string;
   url?: string;
   type?: string;
+  displayImage?: string;
 }
 
-const { title, jsFileName, description, image, url, type } = Astro.props;
+const { title, jsFileName, description, image, url, type, displayImage } = Astro.props;
 
 // Basic page layout for ParseObjectList pages, e.g. pages/modules.astro
 ---
 
-<Page title={title} description={description} image={image} url={url} type={type}>
+<Page title={title} description={description} image={image} url={url} type={type} displayImage={displayImage}>
   <slot name="head" slot="head" />
   <slot />
 

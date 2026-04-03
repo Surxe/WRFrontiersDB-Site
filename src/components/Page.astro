@@ -1,6 +1,7 @@
 ---
 import langs from '../../public/langs.json';
 import { URL } from 'node:url';
+import '../styles/page-header.css';
 
 export interface Props {
   title?: string;
@@ -8,9 +9,10 @@ export interface Props {
   image?: string;
   url?: string;
   type?: string;
+  displayImage?: string;
 }
 
-const { title, description, image, url, type = "website" } = Astro.props;
+const { title, description, image, url, type = "website", displayImage } = Astro.props;
 
 // Generate absolute URLs
 const siteUrl = Astro.site?.href || new URL(Astro.url.pathname, Astro.request.url).href;
@@ -48,6 +50,11 @@ const pageUrl = url || siteUrl;
     <slot name="head" />
   </head>
   <body>
+    {displayImage && (
+      <div class="page-header-image">
+        <img src={displayImage} alt="Page header image" />
+      </div>
+    )}
     <select id="lang-selector">
       {
         Object.entries(langs).map(([code, names]) => (
