@@ -79,7 +79,6 @@ export function replaceStatPlaceholders(
 
 /**
  * Builds choice map from StatValueChoices format
- * Extracted from src/components/StatEmbedLocalizedText.astro lines 40-48
  */
 export function buildChoiceMap(statValueChoices: StatValueChoices): Record<
   string,
@@ -113,6 +112,51 @@ export function buildChoiceMap(statValueChoices: StatValueChoices): Record<
   }
   
   return choiceMap;
+}
+
+/**
+ * Replaces stat placeholders in text with values from choice map
+ * Works with the choice map format from StatEmbedLocalizedText (shortKey as key)
+ */
+export function replaceStatPlaceholdersFromChoiceMap(
+  text: string,
+  choiceMap: Record<string, {
+    pattern: string;
+    unitName?: LocalizationKey;
+    unitExponent?: number;
+    decimalPlaces?: number;
+    choices: Record<number, number>;
+  }>,
+  currentChoice: number,
+  locData: LocalizationData,
+  wrapInHtml: boolean = false
+): string {
+  if (!choiceMap || typeof choiceMap !== 'object') {
+    return text;
+  }
+
+  let result = text;
+  for (const [shortKey, data] of Object.entries(choiceMap)) {
+    const amount = data.choices[currentChoice];
+    if (amount !== undefined) {
+      // Format the stat value
+      const formattedValue = formatStatValue(
+        amount,
+        data.pattern,
+        data.unitName,
+        data.unitExponent,
+        data.decimalPlaces,
+        locData
+      );
+
+      // Replace all occurrences of {shortKey} with the formatted value
+      const regex = new RegExp(`\\{${shortKey}\\}`, 'g');
+      const replacement = wrapInHtml ? `<strong>${formattedValue}</strong>` : formattedValue;
+      result = result.replace(regex, replacement);
+    }
+    // If value not found, leave placeholder intact
+  }
+  return result;
 }
 
 /**
