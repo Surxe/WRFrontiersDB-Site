@@ -26,7 +26,10 @@ pnpm-debug.log*
 # Personal
 notes.md
 
+# IDE
+.windsurf/
+.claude/
+
 # Application
 WRFrontiersDB-Data
 public/WRFrontiersDB-Data
-.vercel/
