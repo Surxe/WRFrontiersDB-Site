@@ -4,7 +4,7 @@
  */
 
 // Import shared stat formatting functions from TypeScript file
-import { formatStatValue, replaceStatPlaceholdersFromChoiceMap } from '../../src/utils/stat_formatting.js';
+import { replaceStatPlaceholdersFromChoiceMap } from '../../src/utils/stat_formatting.js';
 
 // Localization cache shared across all pages
 const localizationCache = {};
@@ -96,7 +96,7 @@ export function updateLocalizedElements(locData, selectors) {
               element.dataset.currentChoice || '0',
               10
             );
-            
+
             // The choiceMap from StatEmbedLocalizedText already has the correct format
             // with shortKey as the key, so we can use it directly
             localizedText = replaceStatPlaceholdersFromChoiceMap(

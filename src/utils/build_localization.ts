@@ -16,11 +16,11 @@ function loadLocalizationData(lang: string) {
       'WRFrontiersDB-Data/current/Localization',
       `${lang}.json`
     );
-    
+
     if (!fs.existsSync(localizationPath)) {
       return null;
     }
-    
+
     const data = fs.readFileSync(localizationPath, 'utf8');
     return JSON.parse(data);
   } catch (error) {
@@ -43,7 +43,7 @@ export function generateLocalizedMetaDescriptions(
 
   for (const lang of supportedLangs) {
     const locData = loadLocalizationData(lang);
-    
+
     // Use shared logic for consistent formatting
     const localizedText = processLocalizedTextWithStats(
       localizationKey,
@@ -63,7 +63,7 @@ export function generateLocalizedMetaDescriptions(
     const metaDescription = `${fallbackName} - ${cleanText}`;
     results.push({
       lang,
-      description: metaDescription.substring(0, 160) // SEO best practice
+      description: metaDescription.substring(0, 160), // SEO best practice
     });
   }
 

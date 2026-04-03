@@ -80,9 +80,11 @@ if (headerImage) {
       name="description"
       content={description || 'WRFrontiersDB - War Robots Frontiers Database'}
     />
-    {localizedDescriptions?.map(({ lang, description }) => (
-      <meta name="description" lang={lang} content={description} />
-    ))}
+    {
+      localizedDescriptions?.map(({ lang, description }) => (
+        <meta name="description" lang={lang} content={description} />
+      ))
+    }
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     {title && <title>{title}</title>}
 

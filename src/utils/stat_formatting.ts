@@ -29,7 +29,8 @@ export function formatStatValue(
   // Get localized unit name (or empty string if not provided)
   let localizedUnit = '';
   if (unitName) {
-    localizedUnit = locData[unitName.TableNamespace!]?.[unitName.Key!] || unitName.en || '';
+    localizedUnit =
+      locData[unitName.TableNamespace!]?.[unitName.Key!] || unitName.en || '';
   }
 
   // Apply pattern
@@ -69,7 +70,9 @@ export function replaceStatPlaceholders(
 
       // Replace all occurrences of {shortKey} with the formatted value
       const regex = new RegExp(`\\{${data.shortKey}\\}`, 'g');
-      const replacement = wrapInHtml ? `<strong>${formattedValue}</strong>` : formattedValue;
+      const replacement = wrapInHtml
+        ? `<strong>${formattedValue}</strong>`
+        : formattedValue;
       result = result.replace(regex, replacement);
     }
     // If value not found, leave placeholder intact
@@ -100,7 +103,7 @@ export function buildChoiceMap(statValueChoices: StatValueChoices): Record<
       choices: Record<number, number>;
     }
   > = {};
-  
+
   for (const [_, data] of Object.entries(statValueChoices)) {
     choiceMap[data.shortKey] = {
       pattern: data.pattern,
@@ -110,7 +113,7 @@ export function buildChoiceMap(statValueChoices: StatValueChoices): Record<
       choices: data.choices,
     };
   }
-  
+
   return choiceMap;
 }
 
@@ -120,13 +123,16 @@ export function buildChoiceMap(statValueChoices: StatValueChoices): Record<
  */
 export function replaceStatPlaceholdersFromChoiceMap(
   text: string,
-  choiceMap: Record<string, {
-    pattern: string;
-    unitName?: LocalizationKey;
-    unitExponent?: number;
-    decimalPlaces?: number;
-    choices: Record<number, number>;
-  }>,
+  choiceMap: Record<
+    string,
+    {
+      pattern: string;
+      unitName?: LocalizationKey;
+      unitExponent?: number;
+      decimalPlaces?: number;
+      choices: Record<number, number>;
+    }
+  >,
   currentChoice: number,
   locData: LocalizationData,
   wrapInHtml: boolean = false
@@ -151,7 +157,9 @@ export function replaceStatPlaceholdersFromChoiceMap(
 
       // Replace all occurrences of {shortKey} with the formatted value
       const regex = new RegExp(`\\{${shortKey}\\}`, 'g');
-      const replacement = wrapInHtml ? `<strong>${formattedValue}</strong>` : formattedValue;
+      const replacement = wrapInHtml
+        ? `<strong>${formattedValue}</strong>`
+        : formattedValue;
       result = result.replace(regex, replacement);
     }
     // If value not found, leave placeholder intact
@@ -171,12 +179,14 @@ export function processLocalizedTextWithStats(
   wrapInHtml: boolean = false
 ): string {
   let localizedText = '';
-  
+
   if (localizationKey?.InvariantString) {
     localizedText = localizationKey.InvariantString;
   } else if (localizationKey && locData) {
-    localizedText = locData[localizationKey.TableNamespace!]?.[localizationKey.Key!] || 
-                   (localizationKey.en || '');
+    localizedText =
+      locData[localizationKey.TableNamespace!]?.[localizationKey.Key!] ||
+      localizationKey.en ||
+      '';
   } else {
     localizedText = localizationKey?.en || '';
   }

@@ -11,7 +11,15 @@ export interface Props {
   headerImage?: string;
 }
 
-const { title, description, localizedDescriptions, metaImage, url, type, headerImage } = Astro.props;
+const {
+  title,
+  description,
+  localizedDescriptions,
+  metaImage,
+  url,
+  type,
+  headerImage,
+} = Astro.props;
 
 // Basic parse object page layout, e.g. pages/modules/[id]/[version].astro. Not pages/modules.astro.
 ---
