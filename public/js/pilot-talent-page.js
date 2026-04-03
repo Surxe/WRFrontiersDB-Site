@@ -3,11 +3,11 @@
  * Implements table switching functionality specifically for pilot talent pages
  */
 
-import { 
+import {
   setupTableSwitching,
   createTableSwitcher,
   initializeTableSwitching,
-  showTable
+  showTable,
 } from './table-switcher.js';
 
 /**
@@ -24,7 +24,10 @@ document.addEventListener('DOMContentLoaded', function () {
   );
 
   // Check if tables exist
-  if (pilotTalentHoverTables.length === 0 && pilotTalentFullTables.length === 0) {
+  if (
+    pilotTalentHoverTables.length === 0 &&
+    pilotTalentFullTables.length === 0
+  ) {
     console.warn('Pilot talent tables not found');
     return;
   }
@@ -36,13 +39,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
   const tables = {
     'pilot-talent-hover': pilotTalentHoverTables,
-    'pilot-talent-full': pilotTalentFullTables
+    'pilot-talent-full': pilotTalentFullTables,
   };
 
   // Find the first table to insert switcher before it
-  const firstTable = pilotTalentHoverTables.length > 0 
-    ? pilotTalentHoverTables[0] 
-    : pilotTalentFullTables[0];
+  const firstTable =
+    pilotTalentHoverTables.length > 0
+      ? pilotTalentHoverTables[0]
+      : pilotTalentFullTables[0];
 
   if (!firstTable) {
     console.warn('No table found to insert switcher before');
@@ -58,8 +62,8 @@ document.addEventListener('DOMContentLoaded', function () {
     insertBefore: firstTable,
     cssClasses: {
       container: 'table-switcher pilot-talent-switcher',
-      button: 'switcher-btn'
-    }
+      button: 'switcher-btn',
+    },
   });
 });
 
@@ -70,5 +74,5 @@ export {
   setupTableSwitching,
   createTableSwitcher,
   initializeTableSwitching,
-  showTable
+  showTable,
 };

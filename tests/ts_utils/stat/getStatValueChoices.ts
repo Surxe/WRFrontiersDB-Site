@@ -78,33 +78,38 @@ describe('getStatValueChoices', () => {
 
     const result = getStatValueChoices(stats, mockModuleStats);
 
-    expect(result).toHaveProperty('STAT_ARMOR.0');
-    expect(result).toHaveProperty('STAT_SPEED.0');
-    
-    // Verify the structure contains choices array
-    expect(result['STAT_ARMOR.0']).toHaveProperty('choices');
-    expect(Array.isArray(result['STAT_ARMOR.0'].choices)).toBe(true);
-    expect(result['STAT_ARMOR.0'].choices[0]).toBe(6); // 0.06 * 100
+    expect(result).toHaveProperty('ArmorBoost');
+    expect(result).toHaveProperty('SpeedBoost');
 
-    // Check STAT_ARMOR (0.06 * 100 = 6)
-    expect(result['STAT_ARMOR.0'].pattern).toBe('{Amount}{Unit}');
-    expect(result['STAT_ARMOR.0'].shortKey).toBe('ArmorBoost');
-    expect(result['STAT_ARMOR.0'].unitName).toEqual({
+    // Verify the structure contains choices object
+    expect(result['ArmorBoost']).toHaveProperty('choices');
+    expect(typeof result['ArmorBoost'].choices).toBe('object');
+    expect(result['ArmorBoost'].choices[0]).toBe(6); // 0.06 * 100
+
+    // Check ArmorBoost (0.06 * 100 = 6)
+    expect(result['ArmorBoost'].pattern).toBe('{Amount}{Unit}');
+    expect(result['ArmorBoost'].shortKey).toBe('ArmorBoost');
+    expect(result['ArmorBoost'].unitName).toEqual({
       Key: 'unit_percent',
       TableNamespace: 'Units',
       en: '%',
     });
-    expect(result['STAT_ARMOR.0'].unitExponent).toBe(1.0);
-    expect(result['STAT_ARMOR.0'].decimalPlaces).toBe(0);
-    expect(result['STAT_ARMOR.0'].choices[0]).toBe(6);
+    expect(result['ArmorBoost'].unitExponent).toBe(1.0);
+    expect(result['ArmorBoost'].decimalPlaces).toBe(0);
+    expect(result['ArmorBoost'].choices[0]).toBe(6);
 
-    // Check STAT_SPEED (5.5 * 1 = 5.5)
-    expect(result['STAT_SPEED.0'].pattern).toBe('{Amount} {Unit}');
-    expect(result['STAT_SPEED.0'].shortKey).toBe('SpeedBoost');
-    expect(result['STAT_SPEED.0'].unitName?.Key).toBe('unit_mps');
-    expect(result['STAT_SPEED.0'].unitExponent).toBe(1.0);
-    expect(result['STAT_SPEED.0'].decimalPlaces).toBe(2);
-    expect(result['STAT_SPEED.0'].choices[0]).toBe(5.5);
+    // Check SpeedBoost (5.5 * 1 = 5.5)
+    expect(result['SpeedBoost']).toHaveProperty('choices');
+    expect(result['SpeedBoost'].choices[0]).toBe(5.5); // 5.5 * 1
+    expect(result['SpeedBoost'].pattern).toBe('{Amount} {Unit}');
+    expect(result['SpeedBoost'].shortKey).toBe('SpeedBoost');
+    expect(result['SpeedBoost'].unitName).toEqual({
+      Key: 'unit_mps',
+      TableNamespace: 'Units',
+      en: 'm/s',
+    });
+    expect(result['SpeedBoost'].unitExponent).toBe(1.0);
+    expect(result['SpeedBoost'].decimalPlaces).toBe(2);
   });
 
   it('should use default values when properties are undefined', () => {
@@ -114,21 +119,21 @@ describe('getStatValueChoices', () => {
 
     const result = getStatValueChoices(stats, mockModuleStats);
 
-    expect(result).toHaveProperty('STAT_NO_SCALER.0');
+    expect(result).toHaveProperty('NoScaler');
     // Default pattern should be '{Amount}{Unit}'
-    expect(result['STAT_NO_SCALER.0'].pattern).toBe('{Amount}{Unit}');
+    expect(result['NoScaler'].pattern).toBe('{Amount}{Unit}');
     // Default scaler should be 1 (10 * 1 = 10)
-    expect(result['STAT_NO_SCALER.0'].choices[0]).toBe(10);
+    expect(result['NoScaler'].choices[0]).toBe(10);
     // unitName should be undefined
-    expect(result['STAT_NO_SCALER.0'].unitName).toBeUndefined();
+    expect(result['NoScaler'].unitName).toBeUndefined();
     // unitExponent should be undefined
-    expect(result['STAT_NO_SCALER.0'].unitExponent).toBeUndefined();
+    expect(result['NoScaler'].unitExponent).toBeUndefined();
     // decimalPlaces should be undefined
-    expect(result['STAT_NO_SCALER.0'].decimalPlaces).toBeUndefined();
-    
-    // Verify structure contains choices array
-    expect(result['STAT_NO_SCALER.0']).toHaveProperty('choices');
-    expect(Array.isArray(result['STAT_NO_SCALER.0'].choices)).toBe(true);
+    expect(result['NoScaler'].decimalPlaces).toBeUndefined();
+
+    // Verify structure contains choices object
+    expect(result['NoScaler']).toHaveProperty('choices');
+    expect(typeof result['NoScaler'].choices).toBe('object');
   });
 
   it('should skip stats with missing ModuleStat objects', () => {
@@ -139,12 +144,12 @@ describe('getStatValueChoices', () => {
 
     const result = getStatValueChoices(stats, mockModuleStats);
 
-    expect(result).toHaveProperty('STAT_ARMOR.0');
-    expect(result).not.toHaveProperty('STAT_MISSING.0');
-    
+    expect(result).toHaveProperty('ArmorBoost');
+    expect(result).not.toHaveProperty('MissingStat');
+
     // Verify only valid stats are included
     expect(Object.keys(result)).toHaveLength(1);
-    expect(Object.keys(result)).toContain('STAT_ARMOR.0');
+    expect(Object.keys(result)).toContain('ArmorBoost');
   });
 
   it('should handle multiple stats correctly', () => {
@@ -157,12 +162,12 @@ describe('getStatValueChoices', () => {
     const result = getStatValueChoices(stats, mockModuleStats);
 
     expect(Object.keys(result)).toHaveLength(3);
-    expect(result['STAT_ARMOR.0'].choices[0]).toBe(50); // 0.5 * 100
-    expect(result['STAT_SPEED.0'].choices[0]).toBe(10); // 10 * 1
-    expect(result['STAT_NO_SCALER.0'].choices[0]).toBe(7); // 7 * 1
-    
+    expect(result['ArmorBoost'].choices[0]).toBe(50); // 0.5 * 100
+    expect(result['SpeedBoost'].choices[0]).toBe(10); // 10 * 1
+    expect(result['NoScaler'].choices[0]).toBe(7); // 7 * 1
+
     // Verify all stats have proper structure
-    Object.values(result).forEach(statChoice => {
+    Object.values(result).forEach((statChoice) => {
       expect(statChoice).toHaveProperty('pattern');
       expect(statChoice).toHaveProperty('unitName');
       expect(statChoice).toHaveProperty('unitExponent');
@@ -177,7 +182,7 @@ describe('getStatValueChoices', () => {
 
     const result = getStatValueChoices(stats, mockModuleStats);
 
-    const statChoice = result['STAT_ARMOR.0'];
+    const statChoice = result['ArmorBoost'];
     expect(statChoice).toHaveProperty('pattern');
     expect(statChoice).toHaveProperty('unitName');
     expect(statChoice).toHaveProperty('unitExponent');

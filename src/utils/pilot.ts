@@ -28,7 +28,10 @@ export function enrichPilotTalents(
   pilotTalents: Record<string, PilotTalent>,
   pilots: Record<string, Pilot>
 ): Record<string, EnrichedPilotTalent> {
-  const enriched: Record<string, EnrichedPilotTalent> = {} as Record<string, EnrichedPilotTalent>;
+  const enriched: Record<string, EnrichedPilotTalent> = {} as Record<
+    string,
+    EnrichedPilotTalent
+  >;
 
   // Initialize talent entries with empty pilots arrays
   for (const [talentId, talent] of Object.entries(pilotTalents)) {
@@ -43,7 +46,11 @@ export function enrichPilotTalents(
     for (let levelIndex = 0; levelIndex < pilot.levels.length; levelIndex++) {
       const levelEntry = pilot.levels[levelIndex];
 
-      for (let talentIndex = 0; talentIndex < (levelEntry.talents_refs?.length || 0); talentIndex++) {
+      for (
+        let talentIndex = 0;
+        talentIndex < (levelEntry.talents_refs?.length || 0);
+        talentIndex++
+      ) {
         const talentRef = levelEntry.talents_refs[talentIndex];
         const talentId = refToId(talentRef);
 
@@ -56,7 +63,9 @@ export function enrichPilotTalents(
 
           // Set talent_type_id and level if not already set
           if (!enriched[talentId].talent_type_id) {
-            enriched[talentId].talent_type_id = refToId(levelEntry.talent_type_ref);
+            enriched[talentId].talent_type_id = refToId(
+              levelEntry.talent_type_ref
+            );
           }
           if (!enriched[talentId].level) {
             enriched[talentId].level = levelIndex + 1;

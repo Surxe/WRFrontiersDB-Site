@@ -5,49 +5,63 @@ This directory contains Astro components for rendering pilot data tables and tal
 ## Components Overview
 
 ### Tables.astro
+
 **Main container component** that orchestrates all pilot table rendering.
+
 - Groups pilots by type (Legendary, Common)
 - Renders three table variants per pilot type:
   - Talent hover table (onHover)
-  - Full talent table (full) 
+  - Full talent table (full)
   - Talent type table
 
 ### Table.astro
+
 **Generic table renderer** that creates the HTML table structure.
+
 - Renders pilots with levels 1-5 in columns
 - Handles rowspan calculations for multi-talent levels
 - Dynamically chooses between talent or talent type rendering
 - Validates exclusive prop usage (pilotTalents XOR pilotTalentTypes)
 
 ### TalentPilotRow.astro
+
 **Row component** for pilot talent data.
+
 - Renders multiple table rows that a single Pilot will have for PilotTalent data
 - Receives pre-calculated maxTalents for performance optimization
 - Delegates cell rendering to LevelPilotTalenttd components
 - Handles pilot name column with rowspan
 
 ### TalentTypePilotRow.astro
+
 **Row component** for pilot talent type data.
+
 - Renders multiple table rows that a single Pilot will have for PilotTalentType data
 - Receives pre-calculated maxTalents for performance optimization
 - Delegates cell rendering to LevelPilotTalentTypetd components
 - Handles pilot name column with rowspan
 
 ### LevelPilotTalenttd.astro
+
 **Table cell component** for individual pilot talents.
+
 - Renders talent data for levels 1-4 (multiple talents per level)
 - Special handling for level 5 (single talent with rowspan)
 - Integrates with TalentCell for display logic
 - Performs stat value calculations and replacements
 
 ### LevelPilotTalentTypetd.astro
+
 **Table cell component** for pilot talent types.
+
 - Renders talent type information with rowspan
 - Used for the talent type table variant
 - Simpler structure since talent types are singular per level
 
 ### TalentCell.astro
+
 **Core display component** for individual talent information.
+
 - Handles both hover and full display modes
 - Renders talent object reference and description
 - Integrates with StatEmbedLocalizedText for stat replacements

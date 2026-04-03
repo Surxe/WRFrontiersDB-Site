@@ -85,6 +85,20 @@ export function idToRef(id: string, objectType: string): string {
 }
 
 /**
+ * Check if a string is a valid object reference
+ * @param ref - The string to check
+ * @returns True if the string is a valid object reference
+ */
+export function isObjectRef(ref: string): boolean {
+  try {
+    parseObjectRef(ref);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Convert object reference to legacy ID format
  * @param ref - The object reference string
  * @returns Legacy ID

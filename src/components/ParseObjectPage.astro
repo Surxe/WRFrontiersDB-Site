@@ -15,7 +15,14 @@ const { title, description, metaImage, url, type, headerImage } = Astro.props;
 // Basic parse object page layout, e.g. pages/modules/[id]/[version].astro. Not pages/modules.astro.
 ---
 
-<Page title={title} description={description} metaImage={metaImage} url={url} type={type} headerImage={headerImage}>
+<Page
+  title={title}
+  description={description}
+  metaImage={metaImage}
+  url={url}
+  type={type}
+  headerImage={headerImage}
+>
   <slot name="head" slot="head" />
   <slot />
 </Page>

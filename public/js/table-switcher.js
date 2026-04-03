@@ -19,7 +19,7 @@ export function createTableSwitcher(config) {
     buttonLabels,
     activeTable,
     containerClass = 'table-switcher',
-    buttonClass = 'switcher-btn'
+    buttonClass = 'switcher-btn',
   } = config;
 
   // Validate configuration
@@ -33,26 +33,26 @@ export function createTableSwitcher(config) {
   // Create switcher container
   const switcherContainer = document.createElement('div');
   switcherContainer.className = containerClass;
-  
+
   // Create buttons container
   const buttonsContainer = document.createElement('div');
   buttonsContainer.className = 'switcher-buttons';
-  
+
   // Create buttons for each table type
   tableTypes.forEach((tableType, index) => {
     const button = document.createElement('button');
     button.className = buttonClass;
     button.setAttribute('data-table', tableType);
     button.textContent = buttonLabels[index];
-    
+
     // Set active state for the initially active table
     if (tableType === activeTable) {
       button.classList.add('active');
     }
-    
+
     buttonsContainer.appendChild(button);
   });
-  
+
   switcherContainer.appendChild(buttonsContainer);
   return switcherContainer;
 }
@@ -66,32 +66,27 @@ export function createTableSwitcher(config) {
  * @param {string} config.activeTable - Initially active table type
  */
 export function initializeTableSwitching(config) {
-  const {
-    tableTypes,
-    tables,
-    switcherContainer,
-    activeTable
-  } = config;
+  const { tableTypes, tables, switcherContainer, activeTable } = config;
 
   // Get all switcher buttons
   const buttons = switcherContainer.querySelectorAll('.switcher-btn');
-  
+
   // Add click handlers to buttons
   buttons.forEach((button) => {
     button.addEventListener('click', function () {
       const tableType = this.getAttribute('data-table');
-      
+
       // Remove active class from all buttons
       buttons.forEach((btn) => btn.classList.remove('active'));
-      
+
       // Add active class to clicked button
       this.classList.add('active');
-      
+
       // Show the selected table type
       showTable(tableType, tables);
     });
   });
-  
+
   // Initially show only the active table
   showTable(activeTable, tables);
 }
@@ -110,7 +105,7 @@ export function showTable(tableType, tables) {
       });
     }
   });
-  
+
   // Show selected tables
   const selectedTables = tables[tableType];
   if (selectedTables && selectedTables.forEach) {
@@ -137,7 +132,7 @@ export function setupTableSwitching(config) {
     tables,
     activeTable,
     insertBefore,
-    cssClasses = {}
+    cssClasses = {},
   } = config;
 
   // Validate that all table types exist in the tables object
@@ -153,7 +148,7 @@ export function setupTableSwitching(config) {
     buttonLabels,
     activeTable,
     containerClass: cssClasses.container || 'table-switcher',
-    buttonClass: cssClasses.button || 'switcher-btn'
+    buttonClass: cssClasses.button || 'switcher-btn',
   });
 
   // Insert switcher into DOM
@@ -169,7 +164,7 @@ export function setupTableSwitching(config) {
     tableTypes,
     tables,
     switcherContainer,
-    activeTable
+    activeTable,
   });
 
   return switcherContainer;

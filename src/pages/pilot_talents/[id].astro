@@ -44,7 +44,7 @@ const statValueChoices = getStatValueChoices(pilotTalent.stats, moduleStats);
 const defaultName = getDefaultString(pilotTalent.name) || pilotTalent.id;
 ---
 
-<ParseObjectPage 
+<ParseObjectPage
   description={`View detailed information about ${defaultName}, a pilot talent in War Robots Frontiers. Includes stats, effects, and pilot information.`}
   headerImage={pilotTalent.image_path}
   type="article"
@@ -106,27 +106,29 @@ const defaultName = getDefaultString(pilotTalent.name) || pilotTalent.id;
     }
   </p>
 
-  {pilotsWithThisTalent.length > 0 && (
-    <section>
-      <h2>Pilots with this Talent</h2>
-      <div class="pilots-with-talent-table-container">
-        <PilotTalentPageTable
-          tableClass="pilots-table-pilot-talent-hover"
-          pilotsWithThisTalent={pilotsWithThisTalent}
-          allPilotTalents={pilotTalents}
-          currentTalentId={id}
-          fullOrOnHover="onHover"
-        />
-        <PilotTalentPageTable
-          tableClass="pilots-table-pilot-talent-full"
-          pilotsWithThisTalent={pilotsWithThisTalent}
-          allPilotTalents={pilotTalents}
-          currentTalentId={id}
-          fullOrOnHover="full"
-        />
-      </div>
-    </section>
-  )}
+  {
+    pilotsWithThisTalent.length > 0 && (
+      <section>
+        <h2>Pilots with this Talent</h2>
+        <div class="pilots-with-talent-table-container">
+          <PilotTalentPageTable
+            tableClass="pilots-table-pilot-talent-hover"
+            pilotsWithThisTalent={pilotsWithThisTalent}
+            allPilotTalents={pilotTalents}
+            currentTalentId={id}
+            fullOrOnHover="onHover"
+          />
+          <PilotTalentPageTable
+            tableClass="pilots-table-pilot-talent-full"
+            pilotsWithThisTalent={pilotsWithThisTalent}
+            allPilotTalents={pilotTalents}
+            currentTalentId={id}
+            fullOrOnHover="full"
+          />
+        </div>
+      </section>
+    )
+  }
 
   <p>stats placeholder</p>
   <!-- TODO -->
@@ -137,14 +139,14 @@ const defaultName = getDefaultString(pilotTalent.name) || pilotTalent.id;
   <p>Language: <span id="current-lang">en</span></p>
 
   <ObjectPageScripts objectData={pilotTalent} />
-  
+
   <!-- Initialize localization -->
   <script type="module">
     const localizationModule = await import('/js/localization.js');
     const { initializeLocalization } = localizationModule;
     initializeLocalization('current');
   </script>
-  
+
   <!-- Load pilot talent page table switching functionality -->
   <script type="module" src="/js/pilot-talent-page.js"></script>
 </ParseObjectPage>

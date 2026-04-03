@@ -54,7 +54,7 @@ const moduleStats = getParseObjects<ModuleStat>('Objects/ModuleStat.json');
 const getTalentData = (levelIdx: number, talentIdx: number) => {
   const rawTalentRef =
     levelIdx === 4 ? level.talents_refs[0] : level.talents_refs[talentIdx];
-  
+
   // Convert full reference format to raw ID
   const rawTalentId = refToId(rawTalentRef);
 

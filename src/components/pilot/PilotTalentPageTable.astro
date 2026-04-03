@@ -14,12 +14,12 @@ interface Props {
   fullOrOnHover?: 'full' | 'onHover';
 }
 
-const { 
-  pilotsWithThisTalent, 
-  allPilotTalents, 
-  currentTalentId, 
-  tableClass = "pilots-with-talent-table",
-  fullOrOnHover = "full"
+const {
+  pilotsWithThisTalent,
+  allPilotTalents,
+  currentTalentId,
+  tableClass = 'pilots-with-talent-table',
+  fullOrOnHover = 'full',
 } = Astro.props;
 
 // Handle empty state
@@ -28,12 +28,14 @@ if (pilotsWithThisTalent.length === 0) {
 }
 
 // Pre-calculate maxTalents for each pilot
-const pilotsWithMaxTalents = pilotsWithThisTalent.map(({ pilot, level, talentIndex }) => {
-  const maxTalents = Math.max(
-    ...pilot.levels.map((level) => level?.talents_refs?.length || 0)
-  );
-  return { pilot, level, talentIndex, maxTalents };
-});
+const pilotsWithMaxTalents = pilotsWithThisTalent.map(
+  ({ pilot, level, talentIndex }) => {
+    const maxTalents = Math.max(
+      ...pilot.levels.map((level) => level?.talents_refs?.length || 0)
+    );
+    return { pilot, level, talentIndex, maxTalents };
+  }
+);
 ---
 
 <table class={tableClass}>
