@@ -1,5 +1,5 @@
 import type { LocalizationKey } from '../types/localization';
-import enData from '../../WRFrontiersDB-Data/current/Localization/en.json';
+import { loadLocalizationData } from './build_localization';
 
 export function getDefaultString(
   localizationKey: LocalizationKey | undefined
@@ -23,7 +23,7 @@ export function getDefaultString(
  * If omitted, it searches all namespaces but throws an error if the key exists in multiple namespaces.
  */
 export function resolveLocalizationKey(key: string, namespace?: string): LocalizationKey {
-  const dictionary: Record<string, Record<string, string>> = enData as Record<string, Record<string, string>>;
+  const dictionary = (loadLocalizationData('en') || {}) as Record<string, Record<string, string>>;
 
   if (namespace) {
     if (dictionary[namespace] && Object.prototype.hasOwnProperty.call(dictionary[namespace], key)) {

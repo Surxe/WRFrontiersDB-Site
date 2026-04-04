@@ -95,10 +95,14 @@ const defaultName = getDefaultString(pilot.first_name) || pilot.id;
 
   <LocalizedText id="pilot-bio" tag="p" localizationKey={pilot.bio} />
 
-  <p>
-    Extra Localization Test: 
-    <LocalizedText id="ace-test" tag="span" localizationKey={resolveLocalizationKey("Pilot_TalentType_Ult")} />
-  </p>
+  {
+    pilot.id.includes('SoraSing') && (
+      <p>
+        Sora Local Override: 
+        <LocalizedText id="sora-override" tag="span" localizationKey={resolveLocalizationKey("Sora_Custom_Label", "Web_UI")} />
+      </p>
+    )
+  }
   <Icon iconPath={pilot.image_path} altText={`${defaultName} portrait`} />
 
   <p id="pilot-sell-price-currency">
