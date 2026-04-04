@@ -7,6 +7,7 @@ trigger: always_on
 This document provides context for features and areas of the WRFrontiersDB-Site that are currently under development or have not yet been implemented. The agent should not expect functional components, tests to pass, or complete data in these specified areas.
 
 ## Known Gaps
+
 The following areas are currently missing, not yet implemented, or in need of work.
 
 - [ ] **Modules page headers**: [On the modules page, the headers are currently id's / refs instead of localized texts.]
@@ -17,5 +18,6 @@ The following areas are currently missing, not yet implemented, or in need of wo
 - [ ] **Currency object type**: [Currency object type is not yet supported on the site, so other objects that reference it will display placeholders, id's, or refs]
 
 ---
+
 > [!IMPORTANT]
 > When running the `playwright-test-site` skill or any verification suite, failures in the above-mentioned areas should be noted briefly but NOT considered a regression or a blocker unless otherwise specified.
