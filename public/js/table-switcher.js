@@ -66,7 +66,7 @@ export function createTableSwitcher(config) {
  * @param {string} config.activeTable - Initially active table type
  */
 export function initializeTableSwitching(config) {
-  const { tableTypes, tables, switcherContainer, activeTable } = config;
+  const { tables, switcherContainer, activeTable } = config;
 
   // Get all switcher buttons
   const buttons = switcherContainer.querySelectorAll('.switcher-btn');

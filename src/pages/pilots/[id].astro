@@ -146,7 +146,7 @@ const defaultName = getDefaultString(pilot.first_name) || pilot.id;
   <!-- Hyperlinks to the referenced ids pilot_type_id, pilot_class_id, personality_id -->
   <p>
     Rarity:
-    {rarity ? <ObjRef obj={rarity} /> : 'Unknown'}
+    {rarity ? <ObjRef obj={rarity} useHref={false} /> : 'Unknown'}
   </p>
 
   <p>

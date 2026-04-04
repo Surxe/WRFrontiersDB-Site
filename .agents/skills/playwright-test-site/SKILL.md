@@ -39,6 +39,7 @@ For each list page:
 
 - Verify page loads without errors
 - Check that content is displayed (not blank)
+- Ensure there are not images that fail to render
 - Verify navigation elements work
 - Ensure data is populated correctly
 - Get 2 IDs of items for the next step

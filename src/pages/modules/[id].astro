@@ -70,7 +70,7 @@ const defaultName = getDefaultString(module.name) || module.id;
   <p>Language: <span id="current-lang">en</span></p>
   <p>
     Rarity:
-    {rarity ? <ObjRef obj={rarity} /> : 'Unknown'}
+    {rarity ? <ObjRef obj={rarity} useHref={false} /> : 'Unknown'}
   </p>
 
   <div id="stats">stats</div>
