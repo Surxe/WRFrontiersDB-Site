@@ -29,10 +29,12 @@ describe('Page Component', () => {
     // Test assumes BASE_URL is available in the build environment
     // In production this would be either '/' or '/WRFrontiersDB-Site/'
     const mockBaseUrl = '/WRFrontiersDB-Site/';
-    const faviconPath = `${mockBaseUrl}favicon.svg`;
+    const faviconSvgPath = `${mockBaseUrl}favicon.svg`;
+    const faviconIcoPath = `${mockBaseUrl}favicon.ico`;
     const jsPath = `${mockBaseUrl}js/language_selector.js`;
 
-    expect(faviconPath).toBe('/WRFrontiersDB-Site/favicon.svg');
+    expect(faviconSvgPath).toBe('/WRFrontiersDB-Site/favicon.svg');
+    expect(faviconIcoPath).toBe('/WRFrontiersDB-Site/favicon.ico');
     expect(jsPath).toBe('/WRFrontiersDB-Site/js/language_selector.js');
   });
 

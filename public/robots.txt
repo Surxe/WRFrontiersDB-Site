@@ -24,6 +24,7 @@ Allow: /pilot_talents/
 
 # Static assets
 Allow: /favicon.svg
+Allow: /favicon.ico
 Allow: /js/
 Allow: /langs.json
 
