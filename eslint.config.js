@@ -13,6 +13,7 @@ export default [
       '.astro/',
       'public/WRFrontiersDB-Data/',
       '.vercel/output/',
+      '.agents/',
     ],
   },
 
