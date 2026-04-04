@@ -17,7 +17,7 @@ import {
   getParseObject,
   generateObjectListStaticPaths,
 } from '../../utils/parse_object';
-import { getDefaultString, resolveLocalizationKey } from '../../utils/localization';
+import { getDefaultString } from '../../utils/localization';
 import { getStatValueChoices } from '../../utils/stat';
 import { resolveObjectRef } from '../../utils/object_resolver';
 import { refToId } from '../../utils/object_reference';
@@ -95,14 +95,7 @@ const defaultName = getDefaultString(pilot.first_name) || pilot.id;
 
   <LocalizedText id="pilot-bio" tag="p" localizationKey={pilot.bio} />
 
-  {
-    pilot.id.includes('SoraSing') && (
-      <p>
-        Sora Local Override: 
-        <LocalizedText id="sora-override" tag="span" localizationKey={resolveLocalizationKey("Sora_Custom_Label", "Web_UI")} />
-      </p>
-    )
-  }
+
   <Icon iconPath={pilot.image_path} altText={`${defaultName} portrait`} />
 
   <p id="pilot-sell-price-currency">

@@ -5,6 +5,8 @@ import { getParseObjects } from '../utils/parse_object';
 import PilotTables from '../components/pilot/Tables.astro';
 import type { Pilot } from '../types/pilot';
 import '../styles/pilots.css';
+import { resolveLocalizationKey } from '../utils/localization';
+import LocalizedText from '../components/LocalizedText.astro';
 
 // Load pilots
 const pilots = getParseObjects<Pilot>('Objects/Pilot.json');
@@ -20,6 +22,11 @@ const pilot = pilots['DA_Pilot_Common1.0']; // Pick an arbitary pilot. All are v
   <BackToHome />
 
   <p>Showing pilots from current version</p>
+
+  <p>
+    Generic Local Override Test: 
+    <LocalizedText id="manual-override-test" tag="span" localizationKey={resolveLocalizationKey("Sora_Custom_Label", "Web_UI")} />
+  </p>
 
   <h1>Pilots</h1>
   <PilotTables pilots={pilots} />
