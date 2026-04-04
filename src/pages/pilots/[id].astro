@@ -17,7 +17,7 @@ import {
   getParseObject,
   generateObjectListStaticPaths,
 } from '../../utils/parse_object';
-import { getDefaultString } from '../../utils/localization';
+import { getDefaultString, resolveLocalizationKey } from '../../utils/localization';
 import { getStatValueChoices } from '../../utils/stat';
 import { resolveObjectRef } from '../../utils/object_resolver';
 import { refToId } from '../../utils/object_reference';
@@ -95,6 +95,10 @@ const defaultName = getDefaultString(pilot.first_name) || pilot.id;
 
   <LocalizedText id="pilot-bio" tag="p" localizationKey={pilot.bio} />
 
+  <p>
+    Extra Localization Test: 
+    <LocalizedText id="ace-test" tag="span" localizationKey={resolveLocalizationKey("Pilots_Info", "Pilot_TalentType_Ult")} />
+  </p>
   <Icon iconPath={pilot.image_path} altText={`${defaultName} portrait`} />
 
   <p id="pilot-sell-price-currency">
