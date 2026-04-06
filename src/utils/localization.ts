@@ -62,3 +62,42 @@ export function resolveLocalizationKey(key: string, namespace?: string): Localiz
     throw new Error(`[Localization] Key '${key}' was not found in any namespace! A namespace must be resolvable.`);
   }
 }
+
+/**
+ * Resolves a template string by replacing placeholders with localized values.
+ * Placeholders are in the format {placeholderName}.
+ */
+export function resolveLocalizedEmbeds(
+  templateKey: LocalizationKey,
+  embeds: Record<string, string | LocalizationKey>,
+  locData: Record<string, Record<string, string>>
+): string {
+  let template = '';
+  if (templateKey.InvariantString) {
+    template = templateKey.InvariantString;
+  } else if (templateKey.Key && templateKey.TableNamespace && locData[templateKey.TableNamespace]) {
+    template = locData[templateKey.TableNamespace][templateKey.Key] || templateKey.en || '';
+  } else {
+    template = templateKey.en || '';
+  }
+
+  let resolved = template;
+  for (const [key, value] of Object.entries(embeds)) {
+    let replacement = '';
+    if (typeof value === 'string') {
+      replacement = value;
+    } else {
+      if (value.InvariantString) {
+        replacement = value.InvariantString;
+      } else if (value.Key && value.TableNamespace && locData[value.TableNamespace]) {
+        replacement = locData[value.TableNamespace][value.Key] || value.en || '';
+      } else {
+        replacement = value.en || '';
+      }
+    }
+    const regex = new RegExp(`\\{${key}\\}`, 'g');
+    resolved = resolved.replace(regex, replacement);
+  }
+
+  return resolved;
+}
