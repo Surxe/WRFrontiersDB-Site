@@ -1,5 +1,7 @@
 {
   "Web_UI": {
-    "Sora_Custom_Label": "¡Esta es una cadena de prueba en español en la página general de pilotos!"
+    "Sora_Custom_Label": "¡Esta es una cadena de prueba en español en la página de pilotos genéricos!",
+    "Pilot_Meta_Description_Standard": "{pilot_name} tiene los talentos de piloto {talent1}, {talent2}, {talent3}, {talent4}, y {talent5}.",
+    "Pilot_Meta_Description_Hero": "{pilot_name}, un piloto héroe, tiene el talento de piloto {talent5_type} {talent5}."
   }
 }

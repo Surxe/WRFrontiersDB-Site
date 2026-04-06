@@ -23,6 +23,7 @@ import { resolveObjectRef } from '../../utils/object_resolver';
 import { refToId } from '../../utils/object_reference';
 import type { ModuleStat } from '../../types/module';
 import ObjRef from '../../components/obj_ref/ObjRef.astro';
+import { generatePilotLocalizedMetaDescriptions } from '../../utils/build_localization';
 
 export async function getStaticPaths() {
   return generateObjectListStaticPaths('Pilot');
@@ -61,10 +62,16 @@ const pilotPersonality = pilot.personality_ref
 
 // Extract English text as fallback
 const defaultName = getDefaultString(pilot.first_name) || pilot.id;
+
+const localizedDescriptions = generatePilotLocalizedMetaDescriptions(
+  pilot,
+  pilotTalents,
+  pilotTalentTypes
+);
 ---
 
 <ParseObjectPage
-  description={`View detailed information about ${defaultName}, a pilot in War Robots Frontiers. Includes stats, abilities, talents, and usage tips.`}
+  localizedDescriptions={localizedDescriptions}
   headerImage={pilot.image_path}
   type="article"
 >
