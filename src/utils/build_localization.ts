@@ -8,7 +8,8 @@ import type { Pilot, PilotTalent, PilotTalentType } from '../types/pilot';
 import { refToId } from './object_reference';
 import langs from '../../public/langs.json';
 
-const serverLocalizationCache: Record<string, any> = {};
+const serverLocalizationCache: Record<string, Record<string, Record<string, string>>> =
+  {};
 
 /**
  * Load localization data from local file system
@@ -47,7 +48,7 @@ export function loadLocalizationData(lang: string) {
     const mergedData: Record<string, Record<string, string>> = { ...gameData };
     for (const [namespace, keys] of Object.entries(localData)) {
       if (!mergedData[namespace]) mergedData[namespace] = {};
-      Object.assign(mergedData[namespace], (keys as Record<string, string>));
+      Object.assign(mergedData[namespace], keys as Record<string, string>);
     }
 
     serverLocalizationCache[lang] = mergedData;
@@ -110,7 +111,8 @@ export function generatePilotLocalizedMetaDescriptions(
   const supportedLangs = Object.keys(langs);
   const results: { lang: string; description: string }[] = [];
 
-  const isHero = pilot.pilot_type_ref === 'OBJID_PilotType::DA_PilotType_Legendary.0';
+  const isHero =
+    pilot.pilot_type_ref === 'OBJID_PilotType::DA_PilotType_Legendary.0';
   const templateKey = resolveLocalizationKey(
     isHero ? 'Pilot_Meta_Description_Hero' : 'Pilot_Meta_Description_Standard',
     'Web_UI'
