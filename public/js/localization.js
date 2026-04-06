@@ -24,14 +24,14 @@ export async function loadLanguage(lang, version) {
   try {
     const [gameResponse, localResponse] = await Promise.all([
       fetch(`/WRFrontiersDB-Data/current/Localization/${lang}.json`),
-      fetch(`/locales/${lang}.json`).catch(() => null)
+      fetch(`/locales/${lang}.json`).catch(() => null),
     ]);
 
     if (!gameResponse.ok) throw new Error(`HTTP ${gameResponse.status}`);
-    
+
     const gameData = await gameResponse.json();
     let localData = {};
-    
+
     if (localResponse && localResponse.ok) {
       try {
         localData = await localResponse.json();
@@ -43,10 +43,11 @@ export async function loadLanguage(lang, version) {
     // Merge namespaces
     const mergedData = { ...gameData };
     for (const [namespace, keys] of Object.entries(localData)) {
-      if (!mergedData[namespace]) Object.assign(mergedData, { [namespace]: {} });
+      if (!mergedData[namespace])
+        Object.assign(mergedData, { [namespace]: {} });
       Object.assign(mergedData[namespace], keys);
     }
-    
+
     localizationCache[cacheKey] = mergedData;
     return localizationCache[cacheKey];
   } catch (error) {
