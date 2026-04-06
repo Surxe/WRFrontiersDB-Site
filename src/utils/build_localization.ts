@@ -3,6 +3,9 @@ import * as path from 'path';
 import type { LocalizationKey } from '../types/localization';
 import type { StatValueChoices } from '../types/stat';
 import { processLocalizedTextWithStats } from './stat_formatting';
+import { resolveLocalizedEmbeds, resolveLocalizationKey } from './localization';
+import type { Pilot, PilotTalent, PilotTalentType } from '../types/pilot';
+import { refToId } from './object_reference';
 import langs from '../../public/langs.json';
 
 const serverLocalizationCache: Record<string, any> = {};
@@ -91,6 +94,62 @@ export function generateLocalizedMetaDescriptions(
       lang,
       description: metaDescription.substring(0, 160), // SEO best practice
     });
+  }
+
+  return results;
+}
+
+/**
+ * Generate localized pilot descriptions using the embedment system
+ */
+export function generatePilotLocalizedMetaDescriptions(
+  pilot: Pilot,
+  pilotTalents: Record<string, PilotTalent>,
+  pilotTalentTypes: Record<string, PilotTalentType>
+): { lang: string; description: string }[] {
+  const supportedLangs = Object.keys(langs);
+  const results: { lang: string; description: string }[] = [];
+
+  const isHero = pilot.pilot_type_ref === 'OBJID_PilotType::DA_PilotType_Legendary.0';
+  const templateKey = resolveLocalizationKey(
+    isHero ? 'Pilot_Meta_Description_Hero' : 'Pilot_Meta_Description_Standard',
+    'Web_UI'
+  );
+
+  const embeds: Record<string, LocalizationKey> = {
+    pilot_name: pilot.first_name,
+  };
+
+  // Extract talents for levels 1-5
+  for (let i = 0; i < 5; i++) {
+    const level = pilot.levels[i];
+    if (level && level.talents_refs && level.talents_refs.length > 0) {
+      const talentId = refToId(level.talents_refs[0]);
+      const talent = pilotTalents[talentId];
+      if (talent) {
+        embeds[`talent${i + 1}`] = talent.name;
+      }
+    }
+  }
+
+  // Add talent5_type for hero pilots
+  if (isHero) {
+    const level5 = pilot.levels[4];
+    if (level5) {
+      const typeId = refToId(level5.talent_type_ref);
+      const type = pilotTalentTypes[typeId];
+      if (type) {
+        embeds['talent5_type'] = type.name;
+      }
+    }
+  }
+
+  for (const lang of supportedLangs) {
+    const locData = loadLocalizationData(lang);
+    if (!locData) continue;
+
+    const description = resolveLocalizedEmbeds(templateKey, embeds, locData);
+    results.push({ lang, description });
   }
 
   return results;

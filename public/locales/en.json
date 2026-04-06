@@ -1,5 +1,7 @@
 {
   "Web_UI": {
-    "Sora_Custom_Label": "This is an English test string on the generic pilots page!"
+    "Sora_Custom_Label": "This is an English test string on the generic pilots page!",
+    "Pilot_Meta_Description_Standard": "{pilot_name} has pilot talents {talent1}, {talent2}, {talent3}, {talent4}, and {talent5}.",
+    "Pilot_Meta_Description_Hero": "{pilot_name}, a hero pilot, has the {talent5_type} pilot talent {talent5}."
   }
 }
