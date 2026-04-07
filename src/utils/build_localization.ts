@@ -190,7 +190,8 @@ export function generatePilotTalentLocalizedMetaDescriptions(
 export function generatePilotLocalizedMetaDescriptions(
   pilot: Pilot,
   pilotTalents: Record<string, PilotTalent>,
-  pilotTalentTypes: Record<string, PilotTalentType>
+  pilotTalentTypes: Record<string, PilotTalentType>,
+  _defaultName: string
 ): { lang: string; description: string }[] {
   const supportedLangs = Object.keys(langs);
   const results: { lang: string; description: string }[] = [];

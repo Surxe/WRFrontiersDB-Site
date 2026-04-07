@@ -81,17 +81,17 @@ export function enrichPilotTalents(
   for (const [talentId, talent] of Object.entries(enriched)) {
     enriched[talentId].pilots_with_this_talent.sort((a, b) => {
       // Hero pilots first
-      const isHeroA = a.pilot.pilot_type_ref === PILOT_TYPE_LEGENDARY;
-      const isHeroB = b.pilot.pilot_type_ref === PILOT_TYPE_LEGENDARY;
+      const _isHeroA = a.pilot.pilot_type_ref === PILOT_TYPE_LEGENDARY;
+      const _isHeroB = b.pilot.pilot_type_ref === PILOT_TYPE_LEGENDARY;
       
-      if (isHeroA && !isHeroB) return -1;
-      if (!isHeroA && isHeroB) return 1;
+      if (_isHeroA && !_isHeroB) return -1;
+      if (!_isHeroA && _isHeroB) return 1;
       
       // Then sort by pilot name alphabetically
-      const nameA = a.pilot.first_name.en || a.pilot.first_name.InvariantString || '';
-      const nameB = b.pilot.first_name.en || b.pilot.first_name.InvariantString || '';
+      const _nameA = a.pilot.first_name.en || a.pilot.first_name.InvariantString || '';
+      const _nameB = b.pilot.first_name.en || b.pilot.first_name.InvariantString || '';
       
-      return nameA.localeCompare(nameB);
+      return _nameA.localeCompare(_nameB);
     });
   }
 
