@@ -6,6 +6,7 @@ import { processLocalizedTextWithStats } from './stat_formatting';
 import { resolveLocalizedEmbeds, resolveLocalizationKey } from './localization';
 import type { Pilot, PilotTalent, PilotTalentType } from '../types/pilot';
 import { refToId } from './object_reference';
+import { PILOT_TYPE_LEGENDARY } from './constants';
 import langs from '../../public/langs.json';
 
 const serverLocalizationCache: Record<string, Record<string, Record<string, string>>> =
@@ -195,7 +196,7 @@ export function generatePilotLocalizedMetaDescriptions(
   const results: { lang: string; description: string }[] = [];
 
   const isHero =
-    pilot.pilot_type_ref === 'OBJID_PilotType::DA_PilotType_Legendary.0';
+    pilot.pilot_type_ref === PILOT_TYPE_LEGENDARY;
   const templateKey = resolveLocalizationKey(
     isHero ? 'Pilot_Meta_Description_Hero' : 'Pilot_Meta_Description_Standard',
     'Web_UI'
