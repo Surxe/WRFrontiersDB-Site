@@ -14,7 +14,7 @@ import {
 import { enrichPilotTalents } from '../../utils/pilot';
 import { getDefaultString } from '../../utils/localization';
 import { getStatValueChoices } from '../../utils/stat';
-import { generateLocalizedMetaDescriptions } from '../../utils/build_localization';
+import { generatePilotTalentLocalizedMetaDescriptions } from '../../utils/build_localization';
 import ObjRef from '../../components/obj_ref/ObjRef.astro';
 import '../../styles/pilots.css';
 
@@ -45,15 +45,14 @@ const statValueChoices = getStatValueChoices(pilotTalent.stats, moduleStats);
 const defaultName = getDefaultString(pilotTalent.name) || pilotTalent.id;
 
 // Generate localized meta descriptions for all supported languages
-const localizedMetaDescriptions = generateLocalizedMetaDescriptions(
-  pilotTalent.description,
+const localizedMetaDescriptions = generatePilotTalentLocalizedMetaDescriptions(
+  pilotTalent,
   statValueChoices,
   defaultName
 );
 ---
 
 <ParseObjectPage
-  description={`View detailed information about ${defaultName}, a pilot talent in War Robots Frontiers. Includes stats, effects, and pilot information.`}
   localizedDescriptions={localizedMetaDescriptions}
   headerImage={pilotTalent.image_path}
   type="article"

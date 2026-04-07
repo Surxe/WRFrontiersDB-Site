@@ -2,6 +2,11 @@
   "Web_UI": {
     "Sora_Custom_Label": "¡Esta es una cadena de prueba en español en la página de pilotos genéricos!",
     "Pilot_Meta_Description_Standard": "{pilot_name} tiene los talentos de piloto {talent1}, {talent2}, {talent3}, {talent4}, y {talent5}.",
-    "Pilot_Meta_Description_Hero": "{pilot_name}, un piloto héroe, tiene el talento de piloto {talent5_type} {talent5}."
+    "Pilot_Meta_Description_Hero": "{pilot_name}, un piloto héroe, tiene el talento de piloto {talent5_type} {talent5}.",
+    "PilotTalent_Meta_Description_1": "{TalentName}: {TalentDescriptionWithStats}. Aprendido por {pilot1}.",
+    "PilotTalent_Meta_Description_2": "{TalentName}: {TalentDescriptionWithStats}. Aprendido por {pilot1} y {pilot2}.",
+    "PilotTalent_Meta_Description_3": "{TalentName}: {TalentDescriptionWithStats}. Aprendido por {pilot1}, {pilot2}, y {pilot3}.",
+    "PilotTalent_Meta_Description_4": "{TalentName}: {TalentDescriptionWithStats}. Aprendido por {pilot1}, {pilot2}, {pilot3}, y {pilot4}.",
+    "PilotTalent_Meta_Description_More": "{TalentName}: {TalentDescriptionWithStats}. Aprendido por {pilot1}, {pilot2}, {pilot3}, {pilot4}, y más."
   }
 }

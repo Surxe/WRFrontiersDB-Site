@@ -101,6 +101,82 @@ export function generateLocalizedMetaDescriptions(
 }
 
 /**
+ * Generate localized pilot talent meta descriptions using the embedment system
+ */
+export function generatePilotTalentLocalizedMetaDescriptions(
+  enrichedTalent: any, // EnrichedPilotTalent type
+  statValueChoices: StatValueChoices,
+  defaultName: string
+): { lang: string; description: string }[] {
+  const supportedLangs = Object.keys(langs);
+  const results: { lang: string; description: string }[] = [];
+
+  // Get the number of pilots with this talent
+  const pilotCount = enrichedTalent.pilots_with_this_talent?.length || 0;
+
+  // Determine which template to use
+  let templateKey: string;
+  if (pilotCount === 0) {
+    // Fallback to basic description if no pilots
+    templateKey = 'PilotTalent_Meta_Description_1';
+  } else if (pilotCount === 1) {
+    templateKey = 'PilotTalent_Meta_Description_1';
+  } else if (pilotCount === 2) {
+    templateKey = 'PilotTalent_Meta_Description_2';
+  } else if (pilotCount === 3) {
+    templateKey = 'PilotTalent_Meta_Description_3';
+  } else if (pilotCount === 4) {
+    templateKey = 'PilotTalent_Meta_Description_4';
+  } else {
+    templateKey = 'PilotTalent_Meta_Description_More';
+  }
+
+  for (const lang of supportedLangs) {
+    const locData = loadLocalizationData(lang);
+    if (!locData) continue;
+
+    // Get talent description with embedded stats
+    const talentDescriptionWithStats = processLocalizedTextWithStats(
+      enrichedTalent.description,
+      statValueChoices,
+      0, // Use choice 0 for meta descriptions (default stat values)
+      locData,
+      false // Don't wrap in HTML tags for meta descriptions
+    );
+
+    // Clean up any remaining HTML tags and normalize whitespace
+    const cleanDescription = talentDescriptionWithStats
+      .replace(/<[^>]*>/g, '') // Remove HTML tags
+      .replace(/\s+/g, ' ') // Normalize whitespace
+      .trim();
+
+    // Build embeds object
+    const embeds: Record<string, LocalizationKey | string> = {
+      TalentName: enrichedTalent.name,
+      TalentDescriptionWithStats: cleanDescription,
+    };
+
+    // Add pilot names to embeds
+    const maxPilots = Math.min(pilotCount, 4);
+    for (let i = 0; i < maxPilots; i++) {
+      const pilot = enrichedTalent.pilots_with_this_talent[i].pilot;
+      embeds[`pilot${i + 1}`] = pilot.first_name;
+    }
+
+    // Resolve the final template with all embeds
+    const description = resolveLocalizedEmbeds(templateKey, embeds, locData);
+
+    // Apply length limit for SEO
+    results.push({
+      lang,
+      description: description.substring(0, 160),
+    });
+  }
+
+  return results;
+}
+
+/**
  * Generate localized pilot descriptions using the embedment system
  */
 export function generatePilotLocalizedMetaDescriptions(
