@@ -105,8 +105,7 @@ export function generateLocalizedMetaDescriptions(
  */
 export function generatePilotTalentLocalizedMetaDescriptions(
   enrichedTalent: any, // EnrichedPilotTalent type
-  statValueChoices: StatValueChoices,
-  defaultName: string
+  statValueChoices: StatValueChoices
 ): { lang: string; description: string }[] {
   const supportedLangs = Object.keys(langs);
   const results: { lang: string; description: string }[] = [];
@@ -127,9 +126,14 @@ export function generatePilotTalentLocalizedMetaDescriptions(
     templateKey = 'PilotTalent_Meta_Description_3';
   } else if (pilotCount === 4) {
     templateKey = 'PilotTalent_Meta_Description_4';
+  } else if (pilotCount === 5) {
+    templateKey = 'PilotTalent_Meta_Description_5';
   } else {
     templateKey = 'PilotTalent_Meta_Description_More';
   }
+
+  // Resolve template key using the same pattern as pilot function
+  const resolvedTemplateKey = resolveLocalizationKey(templateKey, 'Web_UI');
 
   for (const lang of supportedLangs) {
     const locData = loadLocalizationData(lang);
@@ -164,7 +168,7 @@ export function generatePilotTalentLocalizedMetaDescriptions(
     }
 
     // Resolve the final template with all embeds
-    const description = resolveLocalizedEmbeds(templateKey, embeds, locData);
+    const description = resolveLocalizedEmbeds(resolvedTemplateKey, embeds, locData);
 
     // Apply length limit for SEO
     results.push({
