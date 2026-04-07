@@ -11,6 +11,9 @@ import langs from '../../public/langs.json';
 const serverLocalizationCache: Record<string, Record<string, Record<string, string>>> =
   {};
 
+// Constants for pilot talent meta description templates
+const PILOT_TALENT_TEMPLATE_LIMIT = 5;
+
 /**
  * Load localization data from local file system
  * Uses same pattern as getParseObjects() for consistency
@@ -126,7 +129,7 @@ export function generatePilotTalentLocalizedMetaDescriptions(
     templateKey = 'PilotTalent_Meta_Description_3';
   } else if (pilotCount === 4) {
     templateKey = 'PilotTalent_Meta_Description_4';
-  } else if (pilotCount === 5) {
+  } else if (pilotCount === PILOT_TALENT_TEMPLATE_LIMIT) {
     templateKey = 'PilotTalent_Meta_Description_5';
   } else {
     templateKey = 'PilotTalent_Meta_Description_More';
@@ -161,7 +164,7 @@ export function generatePilotTalentLocalizedMetaDescriptions(
     };
 
     // Add pilot names to embeds
-    const maxPilots = Math.min(pilotCount, 4);
+    const maxPilots = Math.min(pilotCount, PILOT_TALENT_TEMPLATE_LIMIT);
     for (let i = 0; i < maxPilots; i++) {
       const pilot = enrichedTalent.pilots_with_this_talent[i].pilot;
       embeds[`pilot${i + 1}`] = pilot.first_name;

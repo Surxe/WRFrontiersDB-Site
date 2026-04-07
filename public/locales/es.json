@@ -7,6 +7,7 @@
     "PilotTalent_Meta_Description_2": "{TalentName}: {TalentDescriptionWithStats}. Aprendido por {pilot1} y {pilot2}.",
     "PilotTalent_Meta_Description_3": "{TalentName}: {TalentDescriptionWithStats}. Aprendido por {pilot1}, {pilot2}, y {pilot3}.",
     "PilotTalent_Meta_Description_4": "{TalentName}: {TalentDescriptionWithStats}. Aprendido por {pilot1}, {pilot2}, {pilot3}, y {pilot4}.",
+    "PilotTalent_Meta_Description_5": "{TalentName}: {TalentDescriptionWithStats}. Aprendido por {pilot1}, {pilot2}, {pilot3}, {pilot4}, y {pilot5}.",
     "PilotTalent_Meta_Description_More": "{TalentName}: {TalentDescriptionWithStats}. Aprendido por {pilot1}, {pilot2}, {pilot3}, {pilot4}, y más."
   }
 }
