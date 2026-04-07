@@ -1,4 +1,5 @@
 import { refToId } from './object_reference';
+import { PILOT_TYPE_LEGENDARY } from './constants';
 import type { PilotTalent, Pilot } from '../types/pilot';
 
 interface PilotWithTalentInfo {
@@ -13,12 +14,13 @@ interface EnrichedPilotTalent extends PilotTalent {
 
 /**
  * Enriches pilot talents with their talent_type_id, level, and pilot information by scanning all pilots.
+ * Hero pilots are always placed first in the pilots_with_this_talent array.
  *
  * For each talent, this function:
  * - Finds which pilot level offers the talent
  * - Extracts the talent_type_id from that level
  * - Determines the pilot level (1-based) where the talent appears
- * - Builds a list of all pilots that have this talent
+ * - Builds a list of all pilots that have this talent, with hero pilots sorted first
  *
  * @param pilotTalents - Record of all pilot talents
  * @param pilots - Record of all pilots to scan through
@@ -73,6 +75,24 @@ export function enrichPilotTalents(
         }
       }
     }
+  }
+
+  // Sort pilots_with_this_talent arrays: hero pilots first, then by pilot name
+  for (const [talentId, talent] of Object.entries(enriched)) {
+    enriched[talentId].pilots_with_this_talent.sort((a, b) => {
+      // Hero pilots first
+      const _isHeroA = a.pilot.pilot_type_ref === PILOT_TYPE_LEGENDARY;
+      const _isHeroB = b.pilot.pilot_type_ref === PILOT_TYPE_LEGENDARY;
+      
+      if (_isHeroA && !_isHeroB) return -1;
+      if (!_isHeroA && _isHeroB) return 1;
+      
+      // Then sort by pilot name alphabetically
+      const _nameA = a.pilot.first_name.en || a.pilot.first_name.InvariantString || '';
+      const _nameB = b.pilot.first_name.en || b.pilot.first_name.InvariantString || '';
+      
+      return _nameA.localeCompare(_nameB);
+    });
   }
 
   return enriched;
