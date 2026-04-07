@@ -15,6 +15,7 @@ import {
 import { enrichPilotTalents } from '../../utils/pilot';
 import { getStatValueChoices } from '../../utils/stat';
 import { getDefaultString } from '../../utils/localization';
+import { generateLocalizedMetaDescriptions } from '../../utils/build_localization';
 
 export async function getStaticPaths() {
   return generateObjectListStaticPaths('PilotTalentType');
@@ -43,10 +44,21 @@ const talentsForType = Object.entries(enrichedTalents)
 // Extract English text as fallback
 const defaultName =
   getDefaultString(pilotTalentType.name) || pilotTalentType.id;
+
+const localizedDescriptions = generateLocalizedMetaDescriptions(
+  pilotTalentType.description,
+  {},
+  defaultName
+);
+
+const englishDescription =
+  localizedDescriptions.find((d) => d.lang === 'en')?.description ||
+  localizedDescriptions[0]?.description;
 ---
 
 <ParseObjectPage
-  description={`View detailed information about ${defaultName}, a pilot talent type in War Robots Frontiers. Includes categories and characteristics.`}
+  localizedDescriptions={localizedDescriptions}
+  description={englishDescription}
   headerImage="/images/T_Trait_UltimateAll.png"
   type="article"
 >
