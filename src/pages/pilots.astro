@@ -7,6 +7,7 @@ import type { Pilot } from '../types/pilot';
 import '../styles/pilots.css';
 import { resolveLocalizationKey } from '../utils/localization';
 import LocalizedText from '../components/LocalizedText.astro';
+import PilotsNavBox from '../components/nav/PilotsNavBox.astro';
 
 // Load pilots
 const pilots = getParseObjects<Pilot>('Objects/Pilot.json');
@@ -57,4 +58,9 @@ const pilot = pilots['DA_Pilot_Common1.0']; // Pick an arbitary pilot. All are v
       }
     </tbody>
   </table>
+
+  <div style="display: flex; gap: 20px; margin-top: 20px;">
+    <PilotsNavBox isHero={false} />
+    <PilotsNavBox isHero={true} />
+  </div>
 </ParseObjectListPage>

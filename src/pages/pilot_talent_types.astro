@@ -7,6 +7,7 @@ import { refToId } from '../utils/object_reference';
 import type { PilotTalentType, Pilot } from '../types/pilot';
 import LocalizedText from '../components/LocalizedText.astro';
 import ObjRef from '../components/obj_ref/ObjRef.astro';
+import PilotTalentTypesNavBox from '../components/nav/PilotTalentTypesNavBox.astro';
 
 // Load pilot talent types and pilots
 const pilotTalentTypes = getParseObjects<PilotTalentType>(
@@ -91,4 +92,6 @@ const sortedGroups = sortGroups(grouped, (a, b) => Number(a) - Number(b));
       </section>
     ))
   }
+
+  <PilotTalentTypesNavBox />
 </ParseObjectListPage>

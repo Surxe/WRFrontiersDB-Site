@@ -17,6 +17,7 @@ import { getStatValueChoices } from '../../utils/stat';
 import { generatePilotTalentLocalizedMetaDescriptions } from '../../utils/build_localization';
 import ObjRef from '../../components/obj_ref/ObjRef.astro';
 import '../../styles/pilots.css';
+import PilotTalentsNavBox from '../../components/nav/PilotTalentsNavBox.astro';
 
 export async function getStaticPaths() {
   return generateObjectListStaticPaths('PilotTalent');
@@ -148,6 +149,8 @@ const localizedMetaDescriptions = generatePilotTalentLocalizedMetaDescriptions(
   <p>Language: <span id="current-lang">en</span></p>
 
   <ObjectPageScripts objectData={pilotTalent} />
+
+  <PilotTalentsNavBox level={(pilotTalent.level || 1) as 1 | 2 | 3 | 4 | 5} />
 
   <!-- Initialize localization -->
   <script type="module">

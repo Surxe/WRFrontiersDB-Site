@@ -1,0 +1,47 @@
+---
+import BaseNavBox from './BaseNavBox.astro';
+import { getParseObjects } from '../../utils/parse_object';
+import { refToId } from '../../utils/object_reference';
+import { PILOT_TYPE_LEGENDARY } from '../../utils/constants';
+import type { Pilot, PilotType } from '../../types/pilot';
+
+interface Props {
+  isHero: boolean;
+}
+
+const { isHero } = Astro.props;
+
+// Load pilots and pilot types
+const pilots = getParseObjects<Pilot>('Objects/Pilot.json');
+const pilotTypes = getParseObjects<PilotType>('Objects/PilotType.json');
+
+// Filter pilots based on isHero parameter
+const filteredPilots = Object.entries(pilots)
+  .filter(([_, pilot]) => {
+    const pilotTypeId = refToId(pilot.pilot_type_ref);
+    const pilotType = pilotTypes[pilotTypeId];
+    if (!pilotType) return false;
+    
+    if (isHero) {
+      return pilot.pilot_type_ref === PILOT_TYPE_LEGENDARY;
+    } else {
+      return pilot.pilot_type_ref !== PILOT_TYPE_LEGENDARY;
+    }
+  })
+  .sort(([_a, a], [_b, b]) => {
+    // Sort by pilot name
+    const nameA = a.first_name?.Key || a.id;
+    const nameB = b.first_name?.Key || b.id;
+    return nameA.localeCompare(nameB);
+  });
+---
+
+<BaseNavBox title={isHero ? 'Hero Pilots' : 'Common Pilots'}>
+  {
+    filteredPilots.map(([pilotId, pilot]) => (
+      <a href={`/${import.meta.env.BASE_URL}pilots/${pilotId}`}>
+        {pilot.first_name?.Key || pilot.id}
+      </a>
+    ))
+  }
+</BaseNavBox>

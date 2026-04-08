@@ -9,6 +9,7 @@ import {
   generateObjectListStaticPaths,
 } from '../../utils/parse_object';
 import { getDefaultString } from '../../utils/localization';
+import PilotPersonalitiesNavBox from '../../components/nav/PilotPersonalitiesNavBox.astro';
 
 export async function getStaticPaths() {
   return generateObjectListStaticPaths('PilotPersonality');
@@ -49,6 +50,8 @@ const defaultName =
   <Icon iconPath={pilotPersonality.icon_path} altText={`${defaultName} icon`} />
 
   <p>Language: <span id="current-lang">en</span></p>
+
+  <PilotPersonalitiesNavBox />
 
   <ObjectPageScripts objectData={pilotPersonality} />
 </ParseObjectPage>

@@ -1,0 +1,50 @@
+---
+interface Props {
+  title: string;
+  children: any;
+}
+
+const { title, children } = Astro.props;
+---
+
+<nav class="nav-box">
+  <h3 class="nav-box-title">{title}</h3>
+  <div class="nav-box-content">
+    {children}
+  </div>
+</nav>
+
+<style>
+  .nav-box {
+    border: 1px solid #ddd;
+    padding: 8px;
+    margin: 12px 0;
+    background: #fff;
+  }
+
+  .nav-box-title {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .nav-box-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .nav-box-content a {
+    color: #007bff;
+    text-decoration: none;
+    padding: 2px 4px;
+    border-radius: 2px;
+    font-size: 13px;
+  }
+
+  .nav-box-content a:hover {
+    background: #f0f8ff;
+    text-decoration: underline;
+  }
+</style>
