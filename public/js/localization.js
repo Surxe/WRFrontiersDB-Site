@@ -3,87 +3,11 @@
  * @typedef {import('../../src/types/localization').LocalizationData} LocalizationData
  */
 
+// Import shared stat formatting functions
+import { formatStatValue, replaceStatPlaceholdersFromChoiceMap } from './stat-formatting.js';
+
 // Localization cache shared across all pages
 const localizationCache = {};
-
-/**
- * Formats a stat value using pattern, unit name, and decimal places
- * Copied from src/utils/stat_formatting.ts for client-side use
- * @param {number} value - The stat value
- * @param {string} pattern - Pattern string with {Amount} and {Unit} placeholders
- * @param {LocalizationKey} unitName - Localized unit name
- * @param {number} unitExponent - Power to apply to the value
- * @param {number} decimalPlaces - Number of decimal places to show
- * @param {LocalizationData} locData - Localization data for unit names
- * @returns {string} Formatted stat value
- */
-function formatStatValue(value, pattern, unitName, unitExponent, decimalPlaces, locData) {
-  // Apply exponent (default to 1.0)
-  const exponentValue = unitExponent ?? 1.0;
-  const exponentiatedValue = Math.pow(value, exponentValue);
-
-  // Round to avoid floating point precision errors (e.g., 7.000000001 -> 7)
-  const roundedValue = Math.round(exponentiatedValue * 1e10) / 1e10;
-
-  // Format amount with decimal places (only show as many as needed)
-  const formattedAmount =
-    decimalPlaces !== undefined
-      ? String(parseFloat(roundedValue.toFixed(decimalPlaces)))
-      : String(roundedValue);
-
-  // Get localized unit name (or empty string if not provided)
-  let localizedUnit = '';
-  if (unitName) {
-    localizedUnit =
-      locData[unitName.TableNamespace]?.[unitName.Key] || unitName.en || '';
-  }
-
-  // Apply pattern
-  return pattern
-    .replace('{Amount}', formattedAmount)
-    .replace('{Unit}', localizedUnit);
-}
-
-/**
- * Replaces stat placeholders in text with values from choice map
- * Copied from src/utils/stat_formatting.ts for client-side use
- * @param {string} text - Text with stat placeholders
- * @param {Object} choiceMap - Choice map with stat data
- * @param {number} currentChoice - Current choice index
- * @param {LocalizationData} locData - Localization data
- * @param {boolean} wrapInHtml - Whether to wrap values in HTML tags
- * @returns {string} Text with stat placeholders replaced
- */
-function replaceStatPlaceholdersFromChoiceMap(text, choiceMap, currentChoice, locData, wrapInHtml = false) {
-  if (!choiceMap || typeof choiceMap !== 'object') {
-    return text;
-  }
-
-  let result = text;
-  for (const [shortKey, data] of Object.entries(choiceMap)) {
-    const amount = data.choices[currentChoice];
-    if (amount !== undefined) {
-      // Format the stat value
-      const formattedValue = formatStatValue(
-        amount,
-        data.pattern,
-        data.unitName,
-        data.unitExponent,
-        data.decimalPlaces,
-        locData
-      );
-
-      // Replace all occurrences of {shortKey} with the formatted value
-      const regex = new RegExp(`\\{${shortKey}\\}`, 'g');
-      const replacement = wrapInHtml
-        ? `<strong>${formattedValue}</strong>`
-        : formattedValue;
-      result = result.replace(regex, replacement);
-    }
-    // If value not found, leave placeholder intact
-  }
-  return result;
-}
 
 /**
  * Loads localization data for a specific language and version
