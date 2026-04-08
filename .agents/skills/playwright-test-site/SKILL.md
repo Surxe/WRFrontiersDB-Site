@@ -12,21 +12,34 @@ This skill provides a comprehensive testing workflow for the WRFrontiersDB-Site 
 - Node.js and npm installed
 - Playwright dependencies available
 - Site builds successfully
+- Working directory resolved for npm commands
 
 ## Testing Workflow
 
-### 1. Start Development Server
+### 1. Production Build Verification
+
+```bash
+# Build the production site
+npm run build
+
+# Preview the production build to verify it matches dev
+npm run preview
+```
+
+### 2. Start Development Server
 
 ```bash
 # Start dev server with 60 second timeout
 timeout 60 npm run dev || true
 ```
 
-### 2. Launch Playwright Testing
+### 3. Launch Playwright Testing
 
-Use Playwright to open and navigate the dev site automatically.
+Use Playwright to open and navigate to both dev and preview sites to compare:
+- Development server: http://localhost:4321/
+- Production preview: http://localhost:4321/ (from npm run preview)
 
-### 3. Test All List Pages
+### 4. Test All List Pages
 
 Navigate to and verify each list page, such as:
 
@@ -44,7 +57,7 @@ For each list page:
 - Ensure data is populated correctly
 - Get 2 IDs of items for the next step
 
-### 4. Spot Check Detail Pages
+### 5. Spot Check Detail Pages
 
 For each object type, test 2 different detail pages, such as:
 
@@ -58,7 +71,7 @@ For each detail page:
 - Verify no blank cells or missing content
 - Test navigation back to list pages
 
-### 5. Error Checking
+### 6. Error Checking
 
 Throughout testing, monitor for:
 
@@ -70,7 +83,7 @@ Throughout testing, monitor for:
 - **Navigation issues**: Test links and routing
 - **Performance**: Note slow-loading pages or resources
 
-### 6. Reporting
+### 7. Reporting
 
 Document any issues found:
 

@@ -3,8 +3,8 @@
  * @typedef {import('../../src/types/localization').LocalizationData} LocalizationData
  */
 
-// Import shared stat formatting functions from TypeScript file
-import { replaceStatPlaceholdersFromChoiceMap } from '../../src/utils/stat_formatting.js';
+// Import shared stat formatting functions
+import { formatStatValue, replaceStatPlaceholdersFromChoiceMap } from './stat-formatting.js';
 
 // Localization cache shared across all pages
 const localizationCache = {};
