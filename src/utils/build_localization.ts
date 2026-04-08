@@ -241,3 +241,56 @@ export function generatePilotLocalizedMetaDescriptions(
 
   return results;
 }
+
+/**
+ * Generate localized pilot talent type meta descriptions using the embedment system
+ */
+export function generatePilotTalentTypeLocalizedMetaDescriptions(
+  talentType: PilotTalentType,
+  talentsForType: [string, PilotTalent][],
+  _defaultName: string
+): { lang: string; description: string }[] {
+  const supportedLangs = Object.keys(langs);
+  const results: { lang: string; description: string }[] = [];
+
+  const talentCount = talentsForType.length;
+
+  // Determine which template to use
+  let templateKey: string;
+  if (talentCount === 3) {
+    templateKey = 'PilotTalentType_Meta_Description_3';
+  } else {
+    templateKey = 'PilotTalentType_Meta_Description_More';
+  }
+
+  // Resolve template key using the same pattern as other functions
+  const resolvedTemplateKey = resolveLocalizationKey(templateKey, 'Web_UI');
+
+  for (const lang of supportedLangs) {
+    const locData = loadLocalizationData(lang);
+    if (!locData) continue;
+
+    // Build embeds object
+    const embeds: Record<string, LocalizationKey | string> = {
+      TalentTypeName: talentType.name,
+    };
+
+    // Add talent names to embeds (up to 3 for the template)
+    const maxTalents = Math.min(talentCount, 3);
+    for (let i = 0; i < maxTalents; i++) {
+      const talent = talentsForType[i][1];
+      embeds[`talent${i + 1}`] = talent.name;
+    }
+
+    // Resolve the final template with all embeds
+    const description = resolveLocalizedEmbeds(resolvedTemplateKey, embeds, locData);
+
+    // Apply length limit for SEO
+    results.push({
+      lang,
+      description: description.substring(0, 160),
+    });
+  }
+
+  return results;
+}
