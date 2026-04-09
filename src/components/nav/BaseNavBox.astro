@@ -1,0 +1,42 @@
+---
+import ObjRef from '../obj_ref/ObjRef.astro';
+
+interface Props {
+  title: string;
+  objects: Array<[string, any]>;
+}
+
+const { title, objects } = Astro.props;
+---
+
+<nav class="nav-box">
+  <h3 class="nav-box-title">{title}</h3>
+  <div class="nav-box-content">
+    {
+      objects.map(([_objectId, object]) => (
+        <ObjRef obj={object} showIcon={true} />
+      ))
+    }
+  </div>
+</nav>
+
+<style>
+  .nav-box {
+    border: 1px solid #ddd;
+    padding: 8px;
+    margin: 12px 0;
+    background: #fff;
+  }
+
+  .nav-box-title {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .nav-box-content {
+    display: block;
+    width: 100%;
+  }
+</style>

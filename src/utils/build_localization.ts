@@ -5,12 +5,15 @@ import type { StatValueChoices } from '../types/stat';
 import { processLocalizedTextWithStats } from './stat_formatting';
 import { resolveLocalizedEmbeds, resolveLocalizationKey } from './localization';
 import type { Pilot, PilotTalent, PilotTalentType } from '../types/pilot';
+import type { EnrichedPilotTalent } from './pilot';
 import { refToId } from './object_reference';
-import { PILOT_TYPE_LEGENDARY } from './constants';
+import { PILOT_TYPE_LEGENDARY_REF } from './constants';
 import langs from '../../public/langs.json';
 
-const serverLocalizationCache: Record<string, Record<string, Record<string, string>>> =
-  {};
+const serverLocalizationCache: Record<
+  string,
+  Record<string, Record<string, string>>
+> = {};
 
 // Constants for pilot talent meta description templates
 const PILOT_TALENT_TEMPLATE_LIMIT = 5;
@@ -108,7 +111,7 @@ export function generateLocalizedMetaDescriptions(
  * Generate localized pilot talent meta descriptions using the embedment system
  */
 export function generatePilotTalentLocalizedMetaDescriptions(
-  enrichedTalent: any, // EnrichedPilotTalent type
+  enrichedTalent: EnrichedPilotTalent,
   statValueChoices: StatValueChoices
 ): { lang: string; description: string }[] {
   const supportedLangs = Object.keys(langs);
@@ -172,7 +175,11 @@ export function generatePilotTalentLocalizedMetaDescriptions(
     }
 
     // Resolve the final template with all embeds
-    const description = resolveLocalizedEmbeds(resolvedTemplateKey, embeds, locData);
+    const description = resolveLocalizedEmbeds(
+      resolvedTemplateKey,
+      embeds,
+      locData
+    );
 
     // Apply length limit for SEO
     results.push({
@@ -196,8 +203,7 @@ export function generatePilotLocalizedMetaDescriptions(
   const supportedLangs = Object.keys(langs);
   const results: { lang: string; description: string }[] = [];
 
-  const isHero =
-    pilot.pilot_type_ref === PILOT_TYPE_LEGENDARY;
+  const isHero = pilot.pilot_type_ref === PILOT_TYPE_LEGENDARY_REF;
   const templateKey = resolveLocalizationKey(
     isHero ? 'Pilot_Meta_Description_Hero' : 'Pilot_Meta_Description_Standard',
     'Web_UI'
@@ -283,7 +289,11 @@ export function generatePilotTalentTypeLocalizedMetaDescriptions(
     }
 
     // Resolve the final template with all embeds
-    const description = resolveLocalizedEmbeds(resolvedTemplateKey, embeds, locData);
+    const description = resolveLocalizedEmbeds(
+      resolvedTemplateKey,
+      embeds,
+      locData
+    );
 
     // Apply length limit for SEO
     results.push({

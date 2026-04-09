@@ -1,0 +1,29 @@
+---
+import BaseNavBox from './BaseNavBox.astro';
+import { getParseObjects } from '../../utils/parse_object';
+import { enrichPilotTalents } from '../../utils/pilot';
+import type { PilotTalent, Pilot } from '../../types/pilot';
+
+interface Props {
+  level: 1 | 2 | 3 | 4 | 5;
+}
+
+const { level } = Astro.props;
+
+// Load and enrich pilot talents
+const pilots = getParseObjects<Pilot>('Objects/Pilot.json');
+const pilotTalents = getParseObjects<PilotTalent>('Objects/PilotTalent.json');
+const enrichedTalents = enrichPilotTalents(pilotTalents, pilots);
+
+// Filter talents by level
+const filteredTalents = Object.entries(enrichedTalents)
+  .filter(([_, talent]) => talent.level === level)
+  .sort(([_a, a], [_b, b]) => {
+    // Sort by talent name
+    const nameA = a.name?.Key || a.id;
+    const nameB = b.name?.Key || b.id;
+    return nameA.localeCompare(nameB);
+  });
+---
+
+<BaseNavBox title={`Level ${level} Talents`} objects={filteredTalents} />

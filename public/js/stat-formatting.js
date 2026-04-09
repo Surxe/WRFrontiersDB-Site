@@ -13,7 +13,14 @@
  * @param {Object} locData - Localization data for unit names
  * @returns {string} Formatted stat value
  */
-export function formatStatValue(value, pattern, unitName, unitExponent, decimalPlaces, locData) {
+export function formatStatValue(
+  value,
+  pattern,
+  unitName,
+  unitExponent,
+  decimalPlaces,
+  locData
+) {
   // Apply exponent (default to 1.0)
   const exponentValue = unitExponent ?? 1.0;
   const exponentiatedValue = Math.pow(value, exponentValue);
@@ -30,7 +37,11 @@ export function formatStatValue(value, pattern, unitName, unitExponent, decimalP
   // Get localized unit name (or empty string if not provided)
   let localizedUnit = '';
   if (unitName) {
-    if (typeof unitName === 'object' && unitName.TableNamespace && unitName.Key) {
+    if (
+      typeof unitName === 'object' &&
+      unitName.TableNamespace &&
+      unitName.Key
+    ) {
       // Handle LocalizationKey object
       localizedUnit =
         locData[unitName.TableNamespace]?.[unitName.Key] || unitName.en || '';
@@ -55,7 +66,13 @@ export function formatStatValue(value, pattern, unitName, unitExponent, decimalP
  * @param {boolean} wrapInHtml - Whether to wrap values in HTML tags
  * @returns {string} Text with stat placeholders replaced
  */
-export function replaceStatPlaceholdersFromChoiceMap(text, choiceMap, currentChoice, locData, wrapInHtml = false) {
+export function replaceStatPlaceholdersFromChoiceMap(
+  text,
+  choiceMap,
+  currentChoice,
+  locData,
+  wrapInHtml = false
+) {
   if (!choiceMap || typeof choiceMap !== 'object') {
     return text;
   }
