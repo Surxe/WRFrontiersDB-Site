@@ -10,8 +10,8 @@ import ObjRef from '../components/obj_ref/ObjRef.astro';
 
 const moduleCategories = getParseObjects<ModuleCategory>('Objects/ModuleCategory.json');
 
-// Prepare and filter categories
-const entries = prepareObjectList(moduleCategories, { prodReadyOnly: true });
+// Prepare categories (no production filtering since ModuleCategory doesn't have production_status)
+const entries = prepareObjectList(moduleCategories, { prodReadyOnly: false });
 
 // Group by name for sorting
 const grouped = groupBy(
