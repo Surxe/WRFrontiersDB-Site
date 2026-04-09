@@ -1,4 +1,18 @@
+/**
+ * Module Group Mapping Utility
+ *
+ * Why module groups instead of types/categories?
+ * Module types (27 total) are too granular - users don't think in terms of
+ * "TitanAlphaChassis" vs "TitanGrimChassis". Module categories (5 total)
+ * are too broad - grouping Titan and non-Titan chassis together loses
+ * important distinctions. Module groups combine both dimensions:
+ * category (what slot) + type variant (Titan vs standard) into logical
+ * user-facing groups like "Titan Chassis" vs "Chassis". This provides
+ * ~11 intuitive groups that match how players actually browse modules.
+ */
+
 import type { Module, ModuleType, ModuleCategory } from '../types/module';
+import type { LocalizationKey } from '../types/localization';
 import { refToId } from './object_reference';
 
 export interface EnrichedModule extends Module {
@@ -10,100 +24,122 @@ export const MODULE_GROUPS = {
   'titan-torsos': {
     id: 'titan-torsos',
     name: {
-      en: 'Titan Torsos'
+      Key: 'GRP_TitanTorsos_Name',
+      TableNamespace: 'ModuleGroups'
     },
     description: {
-      en: 'Torso modules for Titan mechs'
+      Key: 'GRP_TitanTorsos_Desc',
+      TableNamespace: 'ModuleGroups'
     }
   },
   'non-titan-torsos': {
     id: 'non-titan-torsos',
     name: {
-      en: 'Torsos'
+      Key: 'GRP_Torsos_Name',
+      TableNamespace: 'ModuleGroups'
     },
     description: {
-      en: 'Standard torso modules'
+      Key: 'GRP_Torsos_Desc',
+      TableNamespace: 'ModuleGroups'
     }
   },
   'titan-chassis': {
     id: 'titan-chassis',
     name: {
-      en: 'Titan Chassis'
+      Key: 'GRP_TitanChassis_Name',
+      TableNamespace: 'ModuleGroups'
     },
     description: {
-      en: 'Chassis modules for Titan mechs'
+      Key: 'GRP_TitanChassis_Desc',
+      TableNamespace: 'ModuleGroups'
     }
   },
   'non-titan-chassis': {
     id: 'non-titan-chassis',
     name: {
-      en: 'Chassis'
+      Key: 'GRP_Chassis_Name',
+      TableNamespace: 'ModuleGroups'
     },
     description: {
-      en: 'Standard chassis modules'
+      Key: 'GRP_Chassis_Desc',
+      TableNamespace: 'ModuleGroups'
     }
   },
   'titan-shoulder': {
     id: 'titan-shoulder',
     name: {
-      en: 'Titan Shoulders'
+      Key: 'GRP_TitanShoulders_Name',
+      TableNamespace: 'ModuleGroups'
     },
     description: {
-      en: 'Shoulder modules for Titan mechs'
+      Key: 'GRP_TitanShoulders_Desc',
+      TableNamespace: 'ModuleGroups'
     }
   },
   'non-titan-shoulder': {
     id: 'non-titan-shoulder',
     name: {
-      en: 'Shoulders'
+      Key: 'GRP_Shoulders_Name',
+      TableNamespace: 'ModuleGroups'
     },
     description: {
-      en: 'Standard shoulder modules'
+      Key: 'GRP_Shoulders_Desc',
+      TableNamespace: 'ModuleGroups'
     }
   },
   'light-weapon': {
     id: 'light-weapon',
     name: {
-      en: 'Light Weapons'
+      Key: 'GRP_LightWeapons_Name',
+      TableNamespace: 'ModuleGroups'
     },
     description: {
-      en: 'Light weapon modules'
+      Key: 'GRP_LightWeapons_Desc',
+      TableNamespace: 'ModuleGroups'
     }
   },
   'heavy-weapon': {
     id: 'heavy-weapon',
     name: {
-      en: 'Heavy Weapons'
+      Key: 'GRP_HeavyWeapons_Name',
+      TableNamespace: 'ModuleGroups'
     },
     description: {
-      en: 'Heavy weapon modules'
+      Key: 'GRP_HeavyWeapons_Desc',
+      TableNamespace: 'ModuleGroups'
     }
   },
   'titan-weapon': {
     id: 'titan-weapon',
     name: {
-      en: 'Titan Weapons'
+      Key: 'GRP_TitanWeapons_Name',
+      TableNamespace: 'ModuleGroups'
     },
     description: {
-      en: 'Weapon modules for Titan mechs'
+      Key: 'GRP_TitanWeapons_Desc',
+      TableNamespace: 'ModuleGroups'
     }
   },
   'supply-gear': {
     id: 'supply-gear',
     name: {
-      en: 'Supply Gear'
+      Key: 'GRP_SupplyGear_Name',
+      TableNamespace: 'ModuleGroups'
     },
     description: {
-      en: 'Supply gear modules'
+      Key: 'GRP_SupplyGear_Desc',
+      TableNamespace: 'ModuleGroups'
     }
   },
   'cycle-gear': {
     id: 'cycle-gear',
     name: {
-      en: 'Cycle Gear'
+      Key: 'GRP_CycleGear_Name',
+      TableNamespace: 'ModuleGroups'
     },
     description: {
-      en: 'Cycle gear modules'
+      Key: 'GRP_CycleGear_Desc',
+      TableNamespace: 'ModuleGroups'
     }
   }
 } as const;
@@ -180,13 +216,13 @@ export function getModuleGroupId(moduleTypeRef: string): ModuleGroupId | undefin
 }
 
 /**
- * Get the module group name for display
+ * Get module group name for display
  * @param groupId - The module group ID
- * @returns The localized name or the ID if not found
+ * @returns The localized name or ID if not found
  */
 export function getModuleGroupName(groupId: string): string {
   const group = MODULE_GROUPS[groupId as ModuleGroupId];
-  return group?.name?.en || groupId;
+  return group?.name?.Key || groupId;
 }
 
 /**
@@ -196,7 +232,7 @@ export function getModuleGroupName(groupId: string): string {
  */
 export function getModuleGroupDescription(groupId: string): string {
   const group = MODULE_GROUPS[groupId as ModuleGroupId];
-  return group?.description?.en || '';
+  return group?.description?.Key || '';
 }
 
 /**

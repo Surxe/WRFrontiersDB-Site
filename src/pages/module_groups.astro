@@ -2,13 +2,14 @@
 import BackToHome from '../components/BackToHome.astro';
 import ParseObjectListPage from '../components/ParseObjectListPage.astro';
 import { MODULE_GROUPS, getAllModuleGroupIds } from '../utils/module_group_mapping';
+import LocalizedText from '../components/LocalizedText.astro';
 
 const groupIds = getAllModuleGroupIds();
 
 // Sort groups alphabetically by name
 const sortedGroups = groupIds
   .map(id => ({ id, ...MODULE_GROUPS[id] }))
-  .sort((a, b) => (a.name.en || a.id).localeCompare(b.name.en || b.id));
+  .sort((a, b) => (a.name?.Key || a.id).localeCompare(b.name?.Key || b.id));
 
 ---
 
@@ -25,7 +26,9 @@ const sortedGroups = groupIds
   <ul>
     {sortedGroups.map(group => (
       <li>
-        <a href={`/module_groups/${group.id}`}>{group.name.en || group.id}</a>
+        <a href={`/module_groups/${group.id}`}>
+          <LocalizedText localizationKey={group.name} tag="span" />
+        </a>
       </li>
     ))}
   </ul>

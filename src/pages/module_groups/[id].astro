@@ -1,9 +1,11 @@
 ---
 import BackToHome from '../../components/BackToHome.astro';
 import ParseObjectPage from '../../components/ParseObjectPage.astro';
+import LocalizedText from '../../components/LocalizedText.astro';
 import {
   MODULE_GROUPS,
-  getAllModuleGroupIds
+  getAllModuleGroupIds,
+  getModuleGroupName
 } from '../../utils/module_group_mapping';
 
 export async function getStaticPaths() {
@@ -21,7 +23,7 @@ if (!group) {
   throw new Error(`Module group not found: ${id}`);
 }
 
-const groupName = group.name.en || id;
+const groupName = getModuleGroupName(id);
 ---
 
 <ParseObjectPage
@@ -32,11 +34,12 @@ const groupName = group.name.en || id;
   <BackToHome />
   <p><a href="/module_groups">← Back to Module Groups</a></p>
   
-  <h1>{groupName}</h1>
+  <LocalizedText id="category-name" tag="h1" localizationKey={group.name} />
   
-  {group.description?.en && (
-    <p>{group.description.en}</p>
-  )}
-
+  {
+    group.description && (
+      <LocalizedText id="category-desc" tag="p" localizationKey={group.description} />
+    )
+  }
   <p>Language: <span id="current-lang">en</span></p>
 </ParseObjectPage>
