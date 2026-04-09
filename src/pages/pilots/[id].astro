@@ -25,7 +25,7 @@ import type { ModuleStat } from '../../types/module';
 import ObjRef from '../../components/obj_ref/ObjRef.astro';
 import { generatePilotLocalizedMetaDescriptions } from '../../utils/build_localization';
 import PilotsNavBox from '../../components/nav/PilotsNavBox.astro';
-import { PILOT_TYPE_LEGENDARY } from '../../utils/constants';
+import { PILOT_TYPE_LEGENDARY_REF } from '../../utils/constants';
 
 export async function getStaticPaths() {
   return generateObjectListStaticPaths('Pilot');
@@ -171,7 +171,7 @@ const localizedDescriptions = generatePilotLocalizedMetaDescriptions(
 
   <p>Language: <span id="current-lang">en</span></p>
 
-  <PilotsNavBox isHero={refToId(pilot.pilot_type_ref) === PILOT_TYPE_LEGENDARY} />
+  <PilotsNavBox isHero={pilot.pilot_type_ref === PILOT_TYPE_LEGENDARY_REF} />
 
   <ObjectPageScripts objectData={pilot} />
 </ParseObjectPage>

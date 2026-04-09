@@ -1,5 +1,5 @@
 import { refToId } from './object_reference';
-import { PILOT_TYPE_LEGENDARY } from './constants';
+import { PILOT_TYPE_LEGENDARY_REF } from './constants';
 import type { PilotTalent, Pilot } from '../types/pilot';
 
 interface PilotWithTalentInfo {
@@ -81,8 +81,8 @@ export function enrichPilotTalents(
   for (const [talentId, talent] of Object.entries(enriched)) {
     enriched[talentId].pilots_with_this_talent.sort((a, b) => {
       // Hero pilots first
-      const _isHeroA = a.pilot.pilot_type_ref === PILOT_TYPE_LEGENDARY;
-      const _isHeroB = b.pilot.pilot_type_ref === PILOT_TYPE_LEGENDARY;
+      const _isHeroA = a.pilot.pilot_type_ref === PILOT_TYPE_LEGENDARY_REF;
+      const _isHeroB = b.pilot.pilot_type_ref === PILOT_TYPE_LEGENDARY_REF;
       
       if (_isHeroA && !_isHeroB) return -1;
       if (!_isHeroA && _isHeroB) return 1;

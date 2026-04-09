@@ -2,7 +2,7 @@
 import BaseNavBox from './BaseNavBox.astro';
 import { getParseObjects } from '../../utils/parse_object';
 import { refToId } from '../../utils/object_reference';
-import { PILOT_TYPE_LEGENDARY } from '../../utils/constants';
+import { PILOT_TYPE_LEGENDARY_REF } from '../../utils/constants';
 import type { Pilot, PilotType } from '../../types/pilot';
 
 interface Props {
@@ -23,9 +23,9 @@ const filteredPilots = Object.entries(pilots)
     if (!pilotType) return false;
     
     if (isHero) {
-      return pilotTypeId === PILOT_TYPE_LEGENDARY;
+      return pilot.pilot_type_ref === PILOT_TYPE_LEGENDARY_REF;
     } else {
-      return pilotTypeId !== PILOT_TYPE_LEGENDARY;
+      return pilot.pilot_type_ref !== PILOT_TYPE_LEGENDARY_REF;
     }
   })
   .sort(([_a, a], [_b, b]) => {
