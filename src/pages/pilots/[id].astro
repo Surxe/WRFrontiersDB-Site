@@ -68,7 +68,8 @@ const defaultName = getDefaultString(pilot.first_name) || pilot.id;
 const localizedDescriptions = generatePilotLocalizedMetaDescriptions(
   pilot,
   pilotTalents,
-  pilotTalentTypes
+  pilotTalentTypes,
+  defaultName
 );
 ---
 
