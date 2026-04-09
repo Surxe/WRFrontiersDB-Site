@@ -1,0 +1,1 @@
+Never support backwards compatibility. This application is not at the stage where backwards compatibility is needed.
