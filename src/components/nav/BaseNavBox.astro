@@ -1,21 +1,19 @@
 ---
+import ObjRef from '../obj_ref/ObjRef.astro';
+
 interface Props {
   title: string;
   objects: Array<[string, any]>;
-  baseUrl?: string;
-  objectType?: string;
 }
 
-const { title, objects, baseUrl = '', objectType = 'objects' } = Astro.props;
+const { title, objects } = Astro.props;
 ---
 
 <nav class="nav-box">
   <h3 class="nav-box-title">{title}</h3>
   <div class="nav-box-content">
-    {objects.map(([objectId, object]) => (
-      <a href={`${baseUrl}${objectType}/${objectId}`}>
-        {object.first_name?.Key || object.name?.Key || object.id}
-      </a>
+    {objects.map(([_objectId, object]) => (
+      <ObjRef obj={object} showIcon={false} />
     ))}
   </div>
 </nav>
@@ -40,22 +38,4 @@ const { title, objects, baseUrl = '', objectType = 'objects' } = Astro.props;
     width: 100%;
   }
   
-  .nav-box-content a {
-    display: block;
-    color: #007bff;
-    text-decoration: none;
-    font-size: 13px;
-    border-bottom: 1px solid #eee;
-    padding: 4px 8px;
-  }
-  
-  .nav-box-content a:hover {
-    background: #f0f8ff;
-    text-decoration: underline;
-  }
-  
-  .nav-box-content a::before {
-    content: "· ";
-    color: #666;
-  }
 </style>
