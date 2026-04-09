@@ -23,6 +23,7 @@ export interface EnrichedModule extends Module {
 export const MODULE_GROUPS = {
   'titan-torsos': {
     id: 'titan-torsos',
+    sort_order: 1,
     name: {
       Key: 'GRP_TitanTorsos_Name',
       TableNamespace: 'ModuleGroups'
@@ -34,6 +35,7 @@ export const MODULE_GROUPS = {
   },
   'non-titan-torsos': {
     id: 'non-titan-torsos',
+    sort_order: 2,
     name: {
       Key: 'GRP_Torsos_Name',
       TableNamespace: 'ModuleGroups'
@@ -45,6 +47,7 @@ export const MODULE_GROUPS = {
   },
   'titan-chassis': {
     id: 'titan-chassis',
+    sort_order: 3,
     name: {
       Key: 'GRP_TitanChassis_Name',
       TableNamespace: 'ModuleGroups'
@@ -56,6 +59,7 @@ export const MODULE_GROUPS = {
   },
   'non-titan-chassis': {
     id: 'non-titan-chassis',
+    sort_order: 4,
     name: {
       Key: 'GRP_Chassis_Name',
       TableNamespace: 'ModuleGroups'
@@ -67,6 +71,7 @@ export const MODULE_GROUPS = {
   },
   'titan-shoulder': {
     id: 'titan-shoulder',
+    sort_order: 5,
     name: {
       Key: 'GRP_TitanShoulders_Name',
       TableNamespace: 'ModuleGroups'
@@ -78,6 +83,7 @@ export const MODULE_GROUPS = {
   },
   'non-titan-shoulder': {
     id: 'non-titan-shoulder',
+    sort_order: 6,
     name: {
       Key: 'GRP_Shoulders_Name',
       TableNamespace: 'ModuleGroups'
@@ -89,6 +95,7 @@ export const MODULE_GROUPS = {
   },
   'light-weapon': {
     id: 'light-weapon',
+    sort_order: 7,
     name: {
       Key: 'GRP_LightWeapons_Name',
       TableNamespace: 'ModuleGroups'
@@ -100,6 +107,7 @@ export const MODULE_GROUPS = {
   },
   'heavy-weapon': {
     id: 'heavy-weapon',
+    sort_order: 8,
     name: {
       Key: 'GRP_HeavyWeapons_Name',
       TableNamespace: 'ModuleGroups'
@@ -111,6 +119,7 @@ export const MODULE_GROUPS = {
   },
   'titan-weapon': {
     id: 'titan-weapon',
+    sort_order: 9,
     name: {
       Key: 'GRP_TitanWeapons_Name',
       TableNamespace: 'ModuleGroups'
@@ -122,6 +131,7 @@ export const MODULE_GROUPS = {
   },
   'supply-gear': {
     id: 'supply-gear',
+    sort_order: 10,
     name: {
       Key: 'GRP_SupplyGear_Name',
       TableNamespace: 'ModuleGroups'
@@ -133,6 +143,7 @@ export const MODULE_GROUPS = {
   },
   'cycle-gear': {
     id: 'cycle-gear',
+    sort_order: 11,
     name: {
       Key: 'GRP_CycleGear_Name',
       TableNamespace: 'ModuleGroups'

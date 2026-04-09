@@ -6,10 +6,10 @@ import LocalizedText from '../components/LocalizedText.astro';
 
 const groupIds = getAllModuleGroupIds();
 
-// Sort groups alphabetically by name
+// Sort groups by sort_order
 const sortedGroups = groupIds
   .map(id => ({ id, ...MODULE_GROUPS[id] }))
-  .sort((a, b) => (a.name?.Key || a.id).localeCompare(b.name?.Key || b.id));
+  .sort((a, b) => (a.sort_order || 999) - (b.sort_order || 999));
 
 ---
 

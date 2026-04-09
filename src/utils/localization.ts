@@ -14,6 +14,11 @@ export function getDefaultString(
     return localizationKey.en;
   }
 
+  // For ModuleGroups namespace, return the key as fallback
+  if (localizationKey.TableNamespace === 'ModuleGroups') {
+    return localizationKey.Key;
+  }
+
   throw new Error('LocalizationKey has no InvariantString or en field');
 }
 
