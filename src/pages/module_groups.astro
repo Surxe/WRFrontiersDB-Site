@@ -1,0 +1,32 @@
+---
+import BackToHome from '../components/BackToHome.astro';
+import ParseObjectListPage from '../components/ParseObjectListPage.astro';
+import { MODULE_GROUPS, getAllModuleGroupIds } from '../utils/module_group_mapping';
+
+const groupIds = getAllModuleGroupIds();
+
+// Sort groups alphabetically by name
+const sortedGroups = groupIds
+  .map(id => ({ id, ...MODULE_GROUPS[id] }))
+  .sort((a, b) => (a.name.en || a.id).localeCompare(b.name.en || b.id));
+
+---
+
+<ParseObjectListPage
+  title="Module Groups"
+  description="Browse all module groups in War Robots Frontiers"
+  headerImage="/images/T_AlphaUnlock.png"
+>
+  <BackToHome />
+  <h1>Module Groups</h1>
+
+  <p>Showing module groups from current version</p>
+
+  <ul>
+    {sortedGroups.map(group => (
+      <li>
+        <a href={`/module_groups/${group.id}`}>{group.name.en || group.id}</a>
+      </li>
+    ))}
+  </ul>
+</ParseObjectListPage>

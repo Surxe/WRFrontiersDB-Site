@@ -3,7 +3,10 @@ import BackToHome from '../components/BackToHome.astro';
 import ParseObjectListPage from '../components/ParseObjectListPage.astro';
 import { getParseObjects } from '../utils/parse_object';
 import { prepareObjectList, groupBy, sortGroups } from '../utils/list';
-import { refToId } from '../utils/object_reference';
+import {
+  enrichModulesWithGroups,
+  getModuleGroupName
+} from '../utils/module_group_mapping';
 import type { Module, ModuleCategory, ModuleType } from '../types/module';
 import ObjRef from '../components/obj_ref/ObjRef.astro';
 
@@ -11,22 +14,19 @@ const modules = getParseObjects<Module>('Objects/Module.json');
 const moduleTypes = getParseObjects<ModuleType>('Objects/ModuleType.json');
 const moduleCategories = getParseObjects<ModuleCategory>('Objects/ModuleCategory.json');
 
-// Prepare and filter modules
-const entries = prepareObjectList(modules, { prodReadyOnly: true });
+// Enrich modules with their module group assignments
+const enrichedModules = enrichModulesWithGroups(modules, moduleTypes, moduleCategories);
 
-// Group by module_category_ref (resolved through ModuleType)
+// Prepare and filter modules
+const entries = prepareObjectList(enrichedModules, { prodReadyOnly: true });
+
+// Group by module_group
 const grouped = groupBy(
   entries,
   ([_, module]) => {
-    // Get ModuleType from module_type_ref using refToId
-    const moduleTypeRef = refToId(module.module_type_ref);
-    const moduleType = moduleTypes[moduleTypeRef];
-    if (!moduleType) throw new Error(`ModuleType not found for reference: ${module.module_type_ref}`);
-    
-    // Get ModuleCategory from module_type.module_category_ref using refToId
-    const categoryRef = refToId(moduleType.module_category_ref);
-    const category = moduleCategories[categoryRef];
-    return category?.name?.en || category?.name?.InvariantString || categoryRef || 'Unknown';
+    const groupId = module.module_group;
+    if (!groupId) throw new Error(`Module group not found for module: ${module.id}`);
+    return getModuleGroupName(groupId);
   }
 );
 

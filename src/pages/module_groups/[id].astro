@@ -1,0 +1,42 @@
+---
+import BackToHome from '../../components/BackToHome.astro';
+import ParseObjectPage from '../../components/ParseObjectPage.astro';
+import {
+  MODULE_GROUPS,
+  getAllModuleGroupIds
+} from '../../utils/module_group_mapping';
+
+export async function getStaticPaths() {
+  const groupIds = getAllModuleGroupIds();
+  return groupIds.map(id => ({
+    params: { id }
+  }));
+}
+
+const { id } = Astro.params;
+
+const group = MODULE_GROUPS[id as keyof typeof MODULE_GROUPS];
+
+if (!group) {
+  throw new Error(`Module group not found: ${id}`);
+}
+
+const groupName = group.name.en || id;
+---
+
+<ParseObjectPage
+  title={`${groupName} - Module Group`}
+  description={`View ${groupName} module group in War Robots Frontiers`}
+  type="article"
+>
+  <BackToHome />
+  <p><a href="/module_groups">← Back to Module Groups</a></p>
+  
+  <h1>{groupName}</h1>
+  
+  {group.description?.en && (
+    <p>{group.description.en}</p>
+  )}
+
+  <p>Language: <span id="current-lang">en</span></p>
+</ParseObjectPage>
