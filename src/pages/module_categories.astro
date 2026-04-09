@@ -42,7 +42,7 @@ const sortedGroups = sortGroups(grouped);
           {categoryEntries.map(([_id, category]) => (
             <li>
               <Icon iconPath={category.icon_path} altText={`${categoryName} icon`} />
-              <ObjRef obj={category} useHref={false} />
+              <a href={`/module_categories/${_id}`}>{category.name?.en || category.name?.InvariantString || _id}</a>
             </li>
           ))}
         </ul>

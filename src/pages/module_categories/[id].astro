@@ -4,15 +4,13 @@ import Icon from '../../components/Icon.astro';
 import LocalizedText from '../../components/LocalizedText.astro';
 import ObjectPageScripts from '../../components/ObjectPageScripts.astro';
 import ParseObjectPage from '../../components/ParseObjectPage.astro';
-import { getParseObject } from '../../utils/parse_object';
+import { getParseObject, generateObjectListStaticPaths, getParseObjects } from '../../utils/parse_object';
 import { getDefaultString } from '../../utils/localization';
 import type { Module } from '../../types/module';
 import ObjRef from '../../components/obj_ref/ObjRef.astro';
 
 export async function getStaticPaths() {
-  // For now, return empty paths to avoid build issues
-  // TODO: Implement proper static path generation
-  return [];
+  return generateObjectListStaticPaths('ModuleCategory');
 }
 
 const { id } = Astro.params;
@@ -27,7 +25,7 @@ if (!moduleCategory.name) {
 const defaultName = getDefaultString(moduleCategory.name) || moduleCategory.id;
 
 // Get modules that belong to this category
-const allModules = getParseObject<Module>('Objects/Module.json');
+const allModules = getParseObjects<Module>('Objects/Module.json');
 const categoryModules = Object.values(allModules).filter(
   (module: Module): boolean => module.module_category_ref === id
 );
@@ -65,8 +63,8 @@ const categoryModules = Object.values(allModules).filter(
       moduleCategory.module_type_ui_stats?.map((stat, index) => (
         <div key={index}>
           <h3>Stat Reference {index + 1}</h3>
-          <p><ObjRef obj={stat.module_stat_ref} useHref={false} /></p>
-          <p><strong>Type:</strong> {stat.module_type_ref || 'N/A'}</p>
+          <p><strong>Stat Ref:</strong> {stat.module_stat_ref}</p>
+          <p><strong>Type Ref:</strong> {stat.module_type_ref || 'N/A'}</p>
         </div>
       ))
     }
@@ -77,9 +75,9 @@ const categoryModules = Object.values(allModules).filter(
     {
       categoryModules.map(([_id, module]) => (
         <div key={_id}>
-          <h3><ObjRef obj={module} useHref={true} /></h3>
+          <h3><a href={`/modules/${_id}`}>{module.name?.en || module.name?.InvariantString || _id}</a></h3>
           <p>
-            Rarity: <ObjRef obj={module.module_rarity_ref} useHref={false} />
+            Rarity: {module.module_rarity_ref}
           </p>
         </div>
       ))
