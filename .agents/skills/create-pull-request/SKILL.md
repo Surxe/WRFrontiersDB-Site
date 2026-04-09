@@ -18,9 +18,9 @@ Before creating a pull request, ensure that:
 
 ## Creating summary of the changes made
 
-* For each commit that describes a change to the dev branch, create a bullet point describing the change.
-* If the commit describes a change to a previous commit on the feature branch, use it to elaborate on a previous bullet point. Do not create a new bullet point for it.
-* Create a one or two sentence overview to include at the top
+- For each commit that describes a change to the dev branch, create a bullet point describing the change.
+- If the commit describes a change to a previous commit on the feature branch, use it to elaborate on a previous bullet point. Do not create a new bullet point for it.
+- Create a one or two sentence overview to include at the top
 
 ## Creating the pull request
 

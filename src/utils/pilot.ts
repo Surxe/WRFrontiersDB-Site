@@ -1,5 +1,5 @@
 import { refToId } from './object_reference';
-import { PILOT_TYPE_LEGENDARY } from './constants';
+import { PILOT_TYPE_LEGENDARY_REF } from './constants';
 import type { PilotTalent, Pilot } from '../types/pilot';
 
 interface PilotWithTalentInfo {
@@ -8,7 +8,7 @@ interface PilotWithTalentInfo {
   talentIndex: number; // Index within that level's talents
 }
 
-interface EnrichedPilotTalent extends PilotTalent {
+export interface EnrichedPilotTalent extends PilotTalent {
   pilots_with_this_talent: PilotWithTalentInfo[];
 }
 
@@ -78,19 +78,21 @@ export function enrichPilotTalents(
   }
 
   // Sort pilots_with_this_talent arrays: hero pilots first, then by pilot name
-  for (const [talentId, talent] of Object.entries(enriched)) {
+  for (const [talentId, _talent] of Object.entries(enriched)) {
     enriched[talentId].pilots_with_this_talent.sort((a, b) => {
       // Hero pilots first
-      const _isHeroA = a.pilot.pilot_type_ref === PILOT_TYPE_LEGENDARY;
-      const _isHeroB = b.pilot.pilot_type_ref === PILOT_TYPE_LEGENDARY;
-      
+      const _isHeroA = a.pilot.pilot_type_ref === PILOT_TYPE_LEGENDARY_REF;
+      const _isHeroB = b.pilot.pilot_type_ref === PILOT_TYPE_LEGENDARY_REF;
+
       if (_isHeroA && !_isHeroB) return -1;
       if (!_isHeroA && _isHeroB) return 1;
-      
+
       // Then sort by pilot name alphabetically
-      const _nameA = a.pilot.first_name.en || a.pilot.first_name.InvariantString || '';
-      const _nameB = b.pilot.first_name.en || b.pilot.first_name.InvariantString || '';
-      
+      const _nameA =
+        a.pilot.first_name.en || a.pilot.first_name.InvariantString || '';
+      const _nameB =
+        b.pilot.first_name.en || b.pilot.first_name.InvariantString || '';
+
       return _nameA.localeCompare(_nameB);
     });
   }

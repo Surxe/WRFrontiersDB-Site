@@ -3,7 +3,10 @@ import type { StatValueChoices } from '../types/stat';
 
 // Import shared stat formatting functions from public JavaScript module
 // Note: This is a build-time import that will be resolved during the build process
-import { formatStatValue, replaceStatPlaceholdersFromChoiceMap } from '../../public/js/stat-formatting.js';
+import {
+  formatStatValue,
+  replaceStatPlaceholdersFromChoiceMap,
+} from '../../public/js/stat-formatting.js';
 
 // Re-export the imported functions for TypeScript compatibility
 export { formatStatValue, replaceStatPlaceholdersFromChoiceMap };

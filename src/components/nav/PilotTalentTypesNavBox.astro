@@ -1,0 +1,21 @@
+---
+import BaseNavBox from './BaseNavBox.astro';
+import { getParseObjects } from '../../utils/parse_object';
+import type { PilotTalentType } from '../../types/pilot';
+
+// Load pilot talent types
+const pilotTalentTypes = getParseObjects<PilotTalentType>(
+  'Objects/PilotTalentType.json'
+);
+
+// Sort talent types by name
+const sortedTypes = Object.entries(pilotTalentTypes).sort(
+  ([_a, a], [_b, b]) => {
+    const nameA = a.name?.Key || a.id;
+    const nameB = b.name?.Key || b.id;
+    return nameA.localeCompare(nameB);
+  }
+);
+---
+
+<BaseNavBox title="Pilot Talent Types" objects={sortedTypes} />

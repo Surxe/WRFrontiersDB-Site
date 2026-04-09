@@ -9,6 +9,7 @@ import type { PilotTalent, PilotTalentType, Pilot } from '../types/pilot';
 import type { ModuleStat } from '../types/module';
 import StatEmbedLocalizedText from '../components/StatEmbedLocalizedText.astro';
 import ObjRef from '../components/obj_ref/ObjRef.astro';
+import PilotTalentsNavBox from '../components/nav/PilotTalentsNavBox.astro';
 
 // Load all data
 const pilotTalents = getParseObjects<PilotTalent>('Objects/PilotTalent.json');
@@ -85,4 +86,12 @@ const sortedGroups = sortGroups(grouped, (a, b) => Number(a) - Number(b));
       </section>
     ))
   }
+
+  <div style="display: flex; gap: 20px; margin-top: 20px; flex-wrap: wrap;">
+    <PilotTalentsNavBox level={1} />
+    <PilotTalentsNavBox level={2} />
+    <PilotTalentsNavBox level={3} />
+    <PilotTalentsNavBox level={4} />
+    <PilotTalentsNavBox level={5} />
+  </div>
 </ParseObjectListPage>

@@ -1,5 +1,6 @@
 ---
 import ParseObjectList from '../components/ParseObjectList.astro';
+import PilotPersonalitiesNavBox from '../components/nav/PilotPersonalitiesNavBox.astro';
 import BackToHome from '../components/BackToHome.astro';
 import ParseObjectListPage from '../components/ParseObjectListPage.astro';
 ---
@@ -15,4 +16,6 @@ import ParseObjectListPage from '../components/ParseObjectListPage.astro';
   <p>Showing pilot personalities from latest version (current)</p>
 
   <ParseObjectList parseObjectFile="Objects/PilotPersonality.json" />
+
+  <PilotPersonalitiesNavBox />
 </ParseObjectListPage>
