@@ -207,9 +207,22 @@ describe('generatePilotTalentLocalizedMetaDescriptions', () => {
 
       // Should return descriptions for all 12 supported languages
       expect(result).toHaveLength(12);
-      
+
       // Check that first few results have correct language codes
-      const supportedLangs = ['de', 'en', 'es', 'fr', 'ja', 'ko', 'pl', 'pt-BR', 'ru', 'tr', 'zh-Hans', 'zh-Hant'];
+      const supportedLangs = [
+        'de',
+        'en',
+        'es',
+        'fr',
+        'ja',
+        'ko',
+        'pl',
+        'pt-BR',
+        'ru',
+        'tr',
+        'zh-Hans',
+        'zh-Hant',
+      ];
       result.forEach((desc, index) => {
         expect(desc.lang).toBe(supportedLangs[index]);
       });
