@@ -1,19 +1,20 @@
 ---
 interface Props {
   title: string;
-  pilots: Array<[string, any]>;
+  objects: Array<[string, any]>;
   baseUrl?: string;
+  objectType?: string;
 }
 
-const { title, pilots, baseUrl = '' } = Astro.props;
+const { title, objects, baseUrl = '', objectType = 'objects' } = Astro.props;
 ---
 
 <nav class="nav-box">
   <h3 class="nav-box-title">{title}</h3>
   <div class="nav-box-content">
-    {pilots.map(([pilotId, pilot]) => (
-      <a href={`${baseUrl}pilots/${pilotId}`}>
-        {pilot.first_name?.Key || pilot.id}
+    {objects.map(([objectId, object]) => (
+      <a href={`${baseUrl}${objectType}/${objectId}`}>
+        {object.first_name?.Key || object.name?.Key || object.id}
       </a>
     ))}
   </div>

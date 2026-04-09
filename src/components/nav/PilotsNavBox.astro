@@ -44,6 +44,7 @@ const commonTitle = `Common Pilots (${pilotCount})`;
 
 <BaseNavBox 
   title={isHero ? heroTitle : commonTitle}
-  pilots={filteredPilots}
+  objects={filteredPilots}
   baseUrl={import.meta.env.BASE_URL}
+  objectType="pilots"
 />
