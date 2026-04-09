@@ -23,9 +23,9 @@ const filteredPilots = Object.entries(pilots)
     if (!pilotType) return false;
     
     if (isHero) {
-      return pilot.pilot_type_ref === PILOT_TYPE_LEGENDARY;
+      return pilotTypeId === PILOT_TYPE_LEGENDARY;
     } else {
-      return pilot.pilot_type_ref !== PILOT_TYPE_LEGENDARY;
+      return pilotTypeId !== PILOT_TYPE_LEGENDARY;
     }
   })
   .sort(([_a, a], [_b, b]) => {
@@ -34,14 +34,16 @@ const filteredPilots = Object.entries(pilots)
     const nameB = b.first_name?.Key || b.id;
     return nameA.localeCompare(nameB);
   });
+
+
+// Generate descriptive title
+const pilotCount = filteredPilots.length;
+const heroTitle = `Hero Pilots (${pilotCount})`;
+const commonTitle = `Common Pilots (${pilotCount})`;
 ---
 
-<BaseNavBox title={isHero ? 'Hero Pilots' : 'Common Pilots'}>
-  {
-    filteredPilots.map(([pilotId, pilot]) => (
-      <a href={`/${import.meta.env.BASE_URL}pilots/${pilotId}`}>
-        {pilot.first_name?.Key || pilot.id}
-      </a>
-    ))
-  }
-</BaseNavBox>
+<BaseNavBox 
+  title={isHero ? heroTitle : commonTitle}
+  pilots={filteredPilots}
+  baseUrl={import.meta.env.BASE_URL}
+/>

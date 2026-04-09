@@ -171,7 +171,7 @@ const localizedDescriptions = generatePilotLocalizedMetaDescriptions(
 
   <p>Language: <span id="current-lang">en</span></p>
 
-  <PilotsNavBox isHero={pilot.pilot_type_ref === PILOT_TYPE_LEGENDARY} />
+  <PilotsNavBox isHero={refToId(pilot.pilot_type_ref) === PILOT_TYPE_LEGENDARY} />
 
   <ObjectPageScripts objectData={pilot} />
 </ParseObjectPage>

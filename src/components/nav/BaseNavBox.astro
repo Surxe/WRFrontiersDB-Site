@@ -1,16 +1,21 @@
 ---
 interface Props {
   title: string;
-  children: any;
+  pilots: Array<[string, any]>;
+  baseUrl?: string;
 }
 
-const { title, children } = Astro.props;
+const { title, pilots, baseUrl = '' } = Astro.props;
 ---
 
 <nav class="nav-box">
   <h3 class="nav-box-title">{title}</h3>
   <div class="nav-box-content">
-    {children}
+    {pilots.map(([pilotId, pilot]) => (
+      <a href={`${baseUrl}pilots/${pilotId}`}>
+        {pilot.first_name?.Key || pilot.id}
+      </a>
+    ))}
   </div>
 </nav>
 
@@ -30,21 +35,26 @@ const { title, children } = Astro.props;
   }
 
   .nav-box-content {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+    display: block;
+    width: 100%;
   }
-
+  
   .nav-box-content a {
+    display: block;
     color: #007bff;
     text-decoration: none;
-    padding: 2px 4px;
-    border-radius: 2px;
     font-size: 13px;
+    border-bottom: 1px solid #eee;
+    padding: 4px 8px;
   }
-
+  
   .nav-box-content a:hover {
     background: #f0f8ff;
     text-decoration: underline;
+  }
+  
+  .nav-box-content a::before {
+    content: "· ";
+    color: #666;
   }
 </style>
