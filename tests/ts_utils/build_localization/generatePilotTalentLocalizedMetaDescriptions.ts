@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import { generatePilotTalentLocalizedMetaDescriptions } from '../../../src/utils/build_localization';
-import type { PilotTalent, Pilot } from '../../../src/types/pilot';
 
 describe('generatePilotTalentLocalizedMetaDescriptions', () => {
   // Mock localization key for testing
@@ -20,7 +19,11 @@ describe('generatePilotTalentLocalizedMetaDescriptions', () => {
         name: mockLocalizationKey,
         description: mockLocalizationKey,
         pilots_with_this_talent: [
-          { pilot: { first_name: mockLocalizationKey }, level: 1, talentIndex: 0 }
+          {
+            pilot: { first_name: mockLocalizationKey },
+            level: 1,
+            talentIndex: 0,
+          },
         ],
       };
 
@@ -31,7 +34,9 @@ describe('generatePilotTalentLocalizedMetaDescriptions', () => {
       );
 
       expect(result).toHaveLength(2); // en and es
-      expect(result[0].description).toContain('Test Text. Learned by Test Text');
+      expect(result[0].description).toContain(
+        'Test Text: Test Text Learned by Test Text'
+      );
     });
 
     it('should use PilotTalent_Meta_Description_2 for talent with 2 pilots', () => {
@@ -40,8 +45,16 @@ describe('generatePilotTalentLocalizedMetaDescriptions', () => {
         name: mockLocalizationKey,
         description: mockLocalizationKey,
         pilots_with_this_talent: [
-          { pilot: { first_name: mockLocalizationKey }, level: 1, talentIndex: 0 },
-          { pilot: { first_name: mockLocalizationKey }, level: 1, talentIndex: 1 }
+          {
+            pilot: { first_name: mockLocalizationKey },
+            level: 1,
+            talentIndex: 0,
+          },
+          {
+            pilot: { first_name: mockLocalizationKey },
+            level: 1,
+            talentIndex: 1,
+          },
         ],
       };
 
@@ -51,7 +64,9 @@ describe('generatePilotTalentLocalizedMetaDescriptions', () => {
         'Test Talent'
       );
 
-      expect(result[0].description).toContain('Test Text. Learned by Test Text and Test Text');
+      expect(result[0].description).toContain(
+        'Test Text: Test Text Learned by Test Text and Test Text'
+      );
     });
 
     it('should use PilotTalent_Meta_Description_More for talent with 5 pilots', () => {
@@ -60,11 +75,31 @@ describe('generatePilotTalentLocalizedMetaDescriptions', () => {
         name: mockLocalizationKey,
         description: mockLocalizationKey,
         pilots_with_this_talent: [
-          { pilot: { first_name: mockLocalizationKey }, level: 1, talentIndex: 0 },
-          { pilot: { first_name: mockLocalizationKey }, level: 1, talentIndex: 1 },
-          { pilot: { first_name: mockLocalizationKey }, level: 1, talentIndex: 2 },
-          { pilot: { first_name: mockLocalizationKey }, level: 1, talentIndex: 3 },
-          { pilot: { first_name: mockLocalizationKey }, level: 1, talentIndex: 4 }
+          {
+            pilot: { first_name: mockLocalizationKey },
+            level: 1,
+            talentIndex: 0,
+          },
+          {
+            pilot: { first_name: mockLocalizationKey },
+            level: 1,
+            talentIndex: 1,
+          },
+          {
+            pilot: { first_name: mockLocalizationKey },
+            level: 1,
+            talentIndex: 2,
+          },
+          {
+            pilot: { first_name: mockLocalizationKey },
+            level: 1,
+            talentIndex: 3,
+          },
+          {
+            pilot: { first_name: mockLocalizationKey },
+            level: 1,
+            talentIndex: 4,
+          },
         ],
       };
 
@@ -74,7 +109,9 @@ describe('generatePilotTalentLocalizedMetaDescriptions', () => {
         'Test Talent'
       );
 
-      expect(result[0].description).toContain('Test Text. Learned by Test Text, Test Text, Test Text, Test Text, and more');
+      expect(result[0].description).toContain(
+        'Test Text: Test Text Learned by Test Text, Test Text, Test Text, Test Text, and more'
+      );
     });
 
     it('should use PilotTalent_Meta_Description_1 for talent with no pilots', () => {
@@ -91,7 +128,7 @@ describe('generatePilotTalentLocalizedMetaDescriptions', () => {
         'Test Talent'
       );
 
-      expect(result[0].description).toContain('Test Text. Learned by');
+      expect(result[0].description).toContain('Test Text: Learned by');
     });
   });
 
@@ -102,7 +139,11 @@ describe('generatePilotTalentLocalizedMetaDescriptions', () => {
         name: { ...mockLocalizationKey, en: 'Fearless' },
         description: mockLocalizationKey,
         pilots_with_this_talent: [
-          { pilot: { first_name: mockLocalizationKey }, level: 1, talentIndex: 0 }
+          {
+            pilot: { first_name: mockLocalizationKey },
+            level: 1,
+            talentIndex: 0,
+          },
         ],
       };
 
@@ -114,14 +155,20 @@ describe('generatePilotTalentLocalizedMetaDescriptions', () => {
 
       expect(result[0].description).toContain('Fearless: Test Text');
     });
+  });
 
+  describe('formatting', () => {
     it('should limit description to 160 characters', () => {
       const enrichedTalent = {
         id: 'TALENT_1',
         name: mockLocalizationKey,
         description: mockLocalizationKey,
         pilots_with_this_talent: [
-          { pilot: { first_name: mockLocalizationKey }, level: 1, talentIndex: 0 }
+          {
+            pilot: { first_name: mockLocalizationKey },
+            level: 1,
+            talentIndex: 0,
+          },
         ],
       };
 
@@ -131,18 +178,24 @@ describe('generatePilotTalentLocalizedMetaDescriptions', () => {
         'Test Talent'
       );
 
-      result.forEach(desc => {
+      result.forEach((desc) => {
         expect(desc.description.length).toBeLessThanOrEqual(160);
       });
     });
+  });
 
+  describe('language support', () => {
     it('should return descriptions for all supported languages', () => {
       const enrichedTalent = {
         id: 'TALENT_1',
         name: mockLocalizationKey,
         description: mockLocalizationKey,
         pilots_with_this_talent: [
-          { pilot: { first_name: mockLocalizationKey }, level: 1, talentIndex: 0 }
+          {
+            pilot: { first_name: mockLocalizationKey },
+            level: 1,
+            talentIndex: 0,
+          },
         ],
       };
 
@@ -152,9 +205,14 @@ describe('generatePilotTalentLocalizedMetaDescriptions', () => {
         'Test Talent'
       );
 
-      expect(result).toHaveLength(2); // en and es
-      expect(result[0].lang).toBe('en');
-      expect(result[1].lang).toBe('es');
+      // Should return descriptions for all 12 supported languages
+      expect(result).toHaveLength(12);
+      
+      // Check that first few results have correct language codes
+      const supportedLangs = ['de', 'en', 'es', 'fr', 'ja', 'ko', 'pl', 'pt-BR', 'ru', 'tr', 'zh-Hans', 'zh-Hant'];
+      result.forEach((desc, index) => {
+        expect(desc.lang).toBe(supportedLangs[index]);
+      });
     });
   });
 });

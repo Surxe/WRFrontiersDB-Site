@@ -12,9 +12,11 @@ const { title, objects } = Astro.props;
 <nav class="nav-box">
   <h3 class="nav-box-title">{title}</h3>
   <div class="nav-box-content">
-    {objects.map(([_objectId, object]) => (
-      <ObjRef obj={object} showIcon={false} />
-    ))}
+    {
+      objects.map(([_objectId, object]) => (
+        <ObjRef obj={object} showIcon={true} />
+      ))
+    }
   </div>
 </nav>
 
@@ -37,5 +39,4 @@ const { title, objects } = Astro.props;
     display: block;
     width: 100%;
   }
-  
 </style>

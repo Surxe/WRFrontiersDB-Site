@@ -1,4 +1,4 @@
-Source of truth for all agent related documentation. 
+Source of truth for all agent related documentation.
 
 Create symbolic links to gitignore'd `.windsurf/`, `.cursor/`, etc. to keep them in sync.
 

@@ -26,12 +26,4 @@ const filteredTalents = Object.entries(enrichedTalents)
   });
 ---
 
-<BaseNavBox title={`Level ${level} Talents`}>
-  {
-    filteredTalents.map(([talentId, talent]) => (
-      <a href={`/${import.meta.env.BASE_URL}pilot_talents/${talentId}`}>
-        {talent.name?.Key || talent.id}
-      </a>
-    ))
-  }
-</BaseNavBox>
+<BaseNavBox title={`Level ${level} Talents`} objects={filteredTalents} />

@@ -4,23 +4,18 @@ import { getParseObjects } from '../../utils/parse_object';
 import type { PilotPersonality } from '../../types/pilot';
 
 // Load pilot personalities
-const pilotPersonalities = getParseObjects<PilotPersonality>('Objects/PilotPersonality.json');
+const pilotPersonalities = getParseObjects<PilotPersonality>(
+  'Objects/PilotPersonality.json'
+);
 
 // Sort personalities by name
-const sortedPersonalities = Object.entries(pilotPersonalities)
-  .sort(([_a, a], [_b, b]) => {
+const sortedPersonalities = Object.entries(pilotPersonalities).sort(
+  ([_a, a], [_b, b]) => {
     const nameA = a.name?.Key || a.id;
     const nameB = b.name?.Key || b.id;
     return nameA.localeCompare(nameB);
-  });
+  }
+);
 ---
 
-<BaseNavBox title="Pilot Personalities">
-  {
-    sortedPersonalities.map(([personalityId, personality]) => (
-      <a href={`/${import.meta.env.BASE_URL}pilot_personalities/${personalityId}`}>
-        {personality.name?.Key || personality.id}
-      </a>
-    ))
-  }
-</BaseNavBox>
+<BaseNavBox title="Pilot Personalities" objects={sortedPersonalities} />

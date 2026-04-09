@@ -36,6 +36,7 @@ timeout 60 npm run dev || true
 ### 3. Launch Playwright Testing
 
 Use Playwright to open and navigate to both dev and preview sites to compare:
+
 - Development server: http://localhost:4321/
 - Production preview: http://localhost:4321/ (from npm run preview)
 

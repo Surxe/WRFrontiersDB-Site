@@ -1,0 +1,21 @@
+---
+import BaseNavBox from './BaseNavBox.astro';
+import { getParseObjects } from '../../utils/parse_object';
+import type { PilotClass } from '../../types/pilot';
+
+// Load pilot classes
+const pilotClasses = getParseObjects<PilotClass>('Objects/PilotClass.json');
+
+// Sort classes by name
+const sortedClasses = Object.entries(pilotClasses).sort(([_a, a], [_b, b]) => {
+  const nameA = a.name?.Key || a.id;
+  const nameB = b.name?.Key || b.id;
+  return nameA.localeCompare(nameB);
+});
+
+// Generate descriptive title
+const classCount = sortedClasses.length;
+const title = `Pilot Classes (${classCount})`;
+---
+
+<BaseNavBox title={title} objects={sortedClasses} />

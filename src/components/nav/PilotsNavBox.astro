@@ -21,7 +21,7 @@ const filteredPilots = Object.entries(pilots)
     const pilotTypeId = refToId(pilot.pilot_type_ref);
     const pilotType = pilotTypes[pilotTypeId];
     if (!pilotType) return false;
-    
+
     if (isHero) {
       return pilot.pilot_type_ref === PILOT_TYPE_LEGENDARY_REF;
     } else {
@@ -35,14 +35,10 @@ const filteredPilots = Object.entries(pilots)
     return nameA.localeCompare(nameB);
   });
 
-
 // Generate descriptive title
 const pilotCount = filteredPilots.length;
 const heroTitle = `Hero Pilots (${pilotCount})`;
 const commonTitle = `Common Pilots (${pilotCount})`;
 ---
 
-<BaseNavBox 
-  title={isHero ? heroTitle : commonTitle}
-  objects={filteredPilots}
-/>
+<BaseNavBox title={isHero ? heroTitle : commonTitle} objects={filteredPilots} />

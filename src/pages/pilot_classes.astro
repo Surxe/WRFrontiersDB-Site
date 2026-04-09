@@ -5,6 +5,7 @@ import { getParseObjects } from '../utils/parse_object';
 import type { PilotClass } from '../types/pilot';
 import { prepareObjectList } from '../utils/list';
 import ObjRef from '../components/obj_ref/ObjRef.astro';
+import PilotClassesNavBox from '../components/nav/PilotClassesNavBox.astro';
 
 const pilotClasses = getParseObjects<PilotClass>('Objects/PilotClass.json');
 
@@ -31,4 +32,6 @@ const entries = prepareObjectList(pilotClasses, { prodReadyOnly: false });
       ))
     }
   </ul>
+
+  <PilotClassesNavBox />
 </ParseObjectListPage>

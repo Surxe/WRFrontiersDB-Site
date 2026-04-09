@@ -4,7 +4,10 @@
  */
 
 // Import shared stat formatting functions
-import { formatStatValue, replaceStatPlaceholdersFromChoiceMap } from './stat-formatting.js';
+import {
+  formatStatValue as _formatStatValue,
+  replaceStatPlaceholdersFromChoiceMap,
+} from './stat-formatting.js';
 
 // Localization cache shared across all pages
 const localizationCache = {};
