@@ -3,22 +3,36 @@ import BackToHome from '../components/BackToHome.astro';
 import ParseObjectListPage from '../components/ParseObjectListPage.astro';
 import { getParseObjects } from '../utils/parse_object';
 import { prepareObjectList, groupBy, sortGroups } from '../utils/list';
-import type { Module } from '../types/module';
+import { refToId } from '../utils/object_reference';
+import type { Module, ModuleCategory, ModuleType } from '../types/module';
 import ObjRef from '../components/obj_ref/ObjRef.astro';
 
 const modules = getParseObjects<Module>('Objects/Module.json');
+const moduleTypes = getParseObjects<ModuleType>('Objects/ModuleType.json');
+const moduleCategories = getParseObjects<ModuleCategory>('Objects/ModuleCategory.json');
 
 // Prepare and filter modules
 const entries = prepareObjectList(modules, { prodReadyOnly: true });
 
-// Group by module_type_id
+// Group by module_category_ref (resolved through ModuleType)
 const grouped = groupBy(
   entries,
-  ([_, module]) => module.module_type_ref || 'Unknown'
+  ([_, module]) => {
+    // Get ModuleType from module_type_ref using refToId
+    const moduleTypeRef = refToId(module.module_type_ref);
+    const moduleType = moduleTypes[moduleTypeRef];
+    if (!moduleType) throw new Error(`ModuleType not found for reference: ${module.module_type_ref}`);
+    
+    // Get ModuleCategory from module_type.module_category_ref using refToId
+    const categoryRef = refToId(moduleType.module_category_ref);
+    const category = moduleCategories[categoryRef];
+    return category?.name?.en || category?.name?.InvariantString || categoryRef || 'Unknown';
+  }
 );
 
 // Sort groups alphabetically
 const sortedGroups = sortGroups(grouped);
+
 ---
 
 <ParseObjectListPage
@@ -32,9 +46,9 @@ const sortedGroups = sortGroups(grouped);
   <p>Showing modules from current version</p>
 
   {
-    sortedGroups.map(([moduleTypeId, moduleEntries]) => (
+    sortedGroups.map(([categoryName, moduleEntries]) => (
       <section>
-        <h2>{moduleTypeId}</h2>
+        <h2>{categoryName}</h2>
         <ul>
           {moduleEntries.map(([_id, module]) => (
             <li>
