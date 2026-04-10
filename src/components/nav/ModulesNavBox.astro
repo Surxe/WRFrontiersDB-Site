@@ -1,0 +1,46 @@
+---
+import BaseNavBox from './BaseNavBox.astro';
+import { getParseObjects } from '../../utils/parse_object';
+import { enrichModulesWithGroups, MODULE_GROUPS, type ModuleGroupId } from '../../utils/module_group_mapping';
+import { prepareObjectList } from '../../utils/list';
+import type { Module, ModuleCategory, ModuleType } from '../../types/module';
+
+interface Props {
+  moduleGroupId: ModuleGroupId;
+}
+
+const { moduleGroupId } = Astro.props;
+
+// Load modules, module types, and module categories
+const modules = getParseObjects<Module>('Objects/Module.json');
+const moduleTypes = getParseObjects<ModuleType>('Objects/ModuleType.json');
+const moduleCategories = getParseObjects<ModuleCategory>('Objects/ModuleCategory.json');
+
+// Enrich modules with their module group assignments
+const enrichedModules = enrichModulesWithGroups(
+  modules,
+  moduleTypes,
+  moduleCategories
+);
+
+// Filter modules for this specific group and production-ready only
+const allGroupModules = Object.entries(enrichedModules)
+  .filter(([_, module]) => module.module_group === moduleGroupId);
+
+// Use prepareObjectList to filter production-ready modules
+const filteredModules = prepareObjectList(
+  Object.fromEntries(allGroupModules),
+  { prodReadyOnly: true }
+).sort(([_a, a], [_b, b]) => {
+  // Sort by module name
+  const nameA = a.name?.Key || a.id;
+  const nameB = b.name?.Key || b.id;
+  return nameA.localeCompare(nameB);
+});
+
+// Get localized title for this module group
+const moduleGroup = MODULE_GROUPS[moduleGroupId];
+const title = moduleGroup.name.en || moduleGroup.id;
+---
+
+<BaseNavBox title={title} objects={filteredModules} />

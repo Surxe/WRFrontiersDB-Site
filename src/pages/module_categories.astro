@@ -1,0 +1,51 @@
+---
+import type { ModuleCategory } from '../../types/module';
+import BackToHome from '../components/BackToHome.astro';
+import ParseObjectListPage from '../components/ParseObjectListPage.astro';
+import { getParseObjects } from '../utils/parse_object';
+import { prepareObjectList, groupBy, sortGroups } from '../utils/list';
+import ObjRef from '../components/obj_ref/ObjRef.astro';
+
+const moduleCategories = getParseObjects<ModuleCategory>(
+  'Objects/ModuleCategory.json'
+);
+
+// Prepare categories (no production filtering since ModuleCategory doesn't have production_status)
+const entries = prepareObjectList(moduleCategories, { prodReadyOnly: false });
+
+// Group by name for sorting
+const grouped = groupBy(
+  entries,
+  ([_category, category]) =>
+    category.name?.en || category.name?.InvariantString || 'Unknown'
+);
+
+// Sort groups alphabetically
+const sortedGroups = sortGroups(grouped);
+---
+
+<ParseObjectListPage
+  title="Module Categories"
+  description="Browse all module categories with their descriptions and icons"
+  headerImage="/images/T_AlphaUnlock.png"
+>
+  <BackToHome />
+  <h1>Module Categories</h1>
+
+  <p>Showing module categories from current version</p>
+
+  {
+    sortedGroups.map(([categoryName, categoryEntries]) => (
+      <section>
+        <h2>{categoryName}</h2>
+        <ul>
+          {categoryEntries.map(([_id, category]) => (
+            <li>
+              <ObjRef obj={category} />
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))
+  }
+</ParseObjectListPage>

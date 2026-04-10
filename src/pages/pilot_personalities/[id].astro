@@ -9,6 +9,7 @@ import {
   generateObjectListStaticPaths,
 } from '../../utils/parse_object';
 import { getDefaultString } from '../../utils/localization';
+import { generateSimpleLocalizedMetaDescriptions } from '../../utils/build_localization';
 import PilotPersonalitiesNavBox from '../../components/nav/PilotPersonalitiesNavBox.astro';
 
 export async function getStaticPaths() {
@@ -25,10 +26,17 @@ const pilotPersonality = getParseObject<PilotPersonality>(
 // Extract English text as fallback
 const defaultName =
   getDefaultString(pilotPersonality.name) || pilotPersonality.id;
+
+// Generate localized meta descriptions
+const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
+  { Key: 'PilotPersonality_Meta_Description', TableNamespace: 'Web_UI' },
+  { name: pilotPersonality.name },
+  defaultName
+);
 ---
 
 <ParseObjectPage
-  description={`View detailed information about ${defaultName}, a pilot personality in War Robots Frontiers. Includes traits and effects.`}
+  localizedDescriptions={localizedDescriptions}
   headerImage="/images/T_Trait_Madman.png"
   type="article"
 >

@@ -1,0 +1,28 @@
+---
+import ModulesNavBox from './ModulesNavBox.astro';
+import { getAllModuleGroupIdsSorted } from '../../utils/module_group_mapping';
+
+// Get all module group IDs sorted by sort_order
+const moduleGroupIds = getAllModuleGroupIdsSorted();
+---
+
+<div class="modules-navboxes-container">
+  {moduleGroupIds.map((moduleGroupId) => (
+    <ModulesNavBox moduleGroupId={moduleGroupId} />
+  ))}
+</div>
+
+<style>
+  .modules-navboxes-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-top: 20px;
+  }
+  
+  .modules-navboxes-container > :global(*) {
+    flex: 1;
+    min-width: 250px;
+    max-width: 400px;
+  }
+</style>

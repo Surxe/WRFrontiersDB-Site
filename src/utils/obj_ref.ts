@@ -6,7 +6,7 @@ import type {
   PilotTalentType,
   Pilot,
 } from '../types/pilot';
-import type { Module } from '../types/module';
+import type { Module, ModuleCategory } from '../types/module';
 import type { Rarity } from '../types/rarity';
 import type { ParseObject } from '../types/parse_object';
 
@@ -21,6 +21,7 @@ export interface ObjRefData {
 
 // For each class, define a method to retrieve the ObjRefData
 export function getObjRefData(_obj: Module): ObjRefData;
+export function getObjRefData(_obj: ModuleCategory): ObjRefData;
 export function getObjRefData(_obj: PilotPersonality): ObjRefData;
 export function getObjRefData(_obj: PilotClass): ObjRefData;
 export function getObjRefData(_obj: PilotTalent): ObjRefData;
@@ -41,6 +42,17 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
         text: module.name,
         iconPath: module.inventory_icon_path,
         hoverText: module.description,
+      };
+    }
+    case 'ModuleCategory': {
+      const moduleCategory = obj as ModuleCategory;
+      if (!moduleCategory.name) {
+        throw new Error('ModuleCategory object has no name');
+      }
+      return {
+        text: moduleCategory.name,
+        iconPath: moduleCategory.icon_path,
+        hoverText: moduleCategory.description,
       };
     }
     case 'PilotClass': {

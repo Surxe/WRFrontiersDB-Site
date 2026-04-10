@@ -1,0 +1,108 @@
+---
+import type { ModuleCategory, Module } from '../../types/module';
+import Icon from '../../components/Icon.astro';
+import LocalizedText from '../../components/LocalizedText.astro';
+import ObjectPageScripts from '../../components/ObjectPageScripts.astro';
+import ParseObjectPage from '../../components/ParseObjectPage.astro';
+import {
+  getParseObject,
+  generateObjectListStaticPaths,
+  getParseObjects,
+} from '../../utils/parse_object';
+import { getDefaultString } from '../../utils/localization';
+
+export async function getStaticPaths() {
+  return generateObjectListStaticPaths('ModuleCategory');
+}
+
+const { id } = Astro.params;
+
+const moduleCategory = getParseObject<ModuleCategory>(
+  id,
+  'Objects/ModuleCategory.json'
+);
+
+if (!moduleCategory.name) {
+  throw new Error(`ModuleCategory with id ${id} is missing name.`);
+}
+
+// Extract English text as fallback
+const defaultName = getDefaultString(moduleCategory.name) || moduleCategory.id;
+
+// Get modules that belong to this category
+const allModules = getParseObjects<Module>('Objects/Module.json');
+const categoryModules = Object.values(allModules).filter(
+  (module: Module): boolean => module.module_category_ref === id
+);
+---
+
+<ParseObjectPage
+  description={`View detailed information about ${defaultName}, a module category in War Robots Frontiers. Includes category description and related UI stats references.`}
+  headerImage={moduleCategory.icon_path}
+  type="article"
+>
+  <LocalizedText
+    id="category-name-title"
+    tag="title"
+    localizationKey={moduleCategory.name}
+    slot="head"
+  />
+  <p>Back to <a href="/module_categories">Module Categories</a></p>
+  <LocalizedText
+    id="category-name"
+    tag="h1"
+    localizationKey={moduleCategory.name}
+  />
+
+  <Icon iconPath={moduleCategory.icon_path} altText={`${defaultName} icon`} />
+
+  {
+    moduleCategory.description && (
+      <LocalizedText
+        id="category-desc"
+        tag="p"
+        localizationKey={moduleCategory.description}
+      />
+    )
+  }
+
+  <h2>UI Stats References</h2>
+  <div id="stats">
+    {
+      moduleCategory.module_type_ui_stats?.map((stat, index) => (
+        <div key={index}>
+          <h3>Stat Reference {index + 1}</h3>
+          <p>
+            <strong>Stat Ref:</strong> {stat.module_stat_ref}
+          </p>
+          <p>
+            <strong>Type Ref:</strong> {stat.module_type_ref || 'N/A'}
+          </p>
+        </div>
+      ))
+    }
+  </div>
+
+  <h2>Modules in this Category</h2>
+  <div id="modules-in-category">
+    {
+      categoryModules.map(([_id, module]) => (
+        <div key={_id}>
+          <h3>
+            <a href={`/modules/${_id}`}>
+              {module.name?.en || module.name?.InvariantString || _id}
+            </a>
+          </h3>
+          <p>Rarity: {module.module_rarity_ref}</p>
+        </div>
+      ))
+    }
+  </div>
+
+  <p>Language: <span id="current-lang">en</span></p>
+
+  <ObjectPageScripts
+    objectData={moduleCategory}
+    jsFileName="module_category_page.js"
+  />
+</ParseObjectPage>

@@ -159,7 +159,15 @@ export async function generateObjectStaticPaths(
 
 // Generate static paths for object list pages (e.g., /modules, /pilots, etc.) - current version only
 export function generateObjectListStaticPaths(
-  objectType: string,
+  objectType:
+    | 'Module'
+    | 'ModuleCategory'
+    | 'Pilot'
+    | 'PilotTalent'
+    | 'PilotTalentType'
+    | 'PilotClass'
+    | 'PilotPersonality'
+    | 'Rarity',
   prodReadyOnly: boolean = false
 ): { params: { id: string } }[] {
   const objectPath = path.join(

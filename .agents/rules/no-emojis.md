@@ -1,0 +1,1 @@
+Never use emojis or emoticons in the code, comments, or written documentation.

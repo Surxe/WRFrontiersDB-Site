@@ -67,47 +67,6 @@ export function loadLocalizationData(lang: string) {
 }
 
 /**
- * Generate localized description for all supported languages
- * Uses extracted stat formatting logic for consistency
- */
-export function generateLocalizedMetaDescriptions(
-  localizationKey: LocalizationKey | undefined,
-  statValueChoices: StatValueChoices,
-  fallbackName: string
-): { lang: string; description: string }[] {
-  const supportedLangs = Object.keys(langs);
-  const results: { lang: string; description: string }[] = [];
-
-  for (const lang of supportedLangs) {
-    const locData = loadLocalizationData(lang);
-
-    // Use shared logic for consistent formatting
-    const localizedText = processLocalizedTextWithStats(
-      localizationKey,
-      statValueChoices,
-      0, // Use choice 0 for meta descriptions (default stat values)
-      locData || {},
-      false // Don't wrap in HTML tags for meta descriptions
-    );
-
-    // Clean up any remaining HTML tags and normalize whitespace
-    const cleanText = localizedText
-      .replace(/<[^>]*>/g, '') // Remove HTML tags
-      .replace(/\s+/g, ' ') // Normalize whitespace
-      .trim();
-
-    // Build meta description with name prefix and length limit
-    const metaDescription = `${fallbackName} - ${cleanText}`;
-    results.push({
-      lang,
-      description: metaDescription.substring(0, 160), // SEO best practice
-    });
-  }
-
-  return results;
-}
-
-/**
  * Generate localized pilot talent meta descriptions using the embedment system
  */
 export function generatePilotTalentLocalizedMetaDescriptions(
@@ -241,7 +200,52 @@ export function generatePilotLocalizedMetaDescriptions(
     const locData = loadLocalizationData(lang);
     if (!locData) continue;
 
-    const description = resolveLocalizedEmbeds(templateKey, embeds, locData);
+    let description = resolveLocalizedEmbeds(templateKey, embeds, locData);
+
+    // Fallback to English template if localized template is empty or not found
+    if (!description && lang !== 'en') {
+      const enLocData = loadLocalizationData('en');
+      if (enLocData) {
+        description = resolveLocalizedEmbeds(templateKey, embeds, enLocData);
+      }
+    }
+
+    results.push({ lang, description });
+  }
+
+  return results;
+}
+
+/**
+ * Generate localized meta descriptions for simple templates with basic embeds
+ */
+export function generateSimpleLocalizedMetaDescriptions(
+  templateKey: LocalizationKey,
+  embeds: Record<string, LocalizationKey>,
+  fallbackName: string
+): { lang: string; description: string }[] {
+  const supportedLangs = Object.keys(langs);
+  const results: { lang: string; description: string }[] = [];
+
+  for (const lang of supportedLangs) {
+    const locData = loadLocalizationData(lang);
+    if (!locData) continue;
+
+    let description = resolveLocalizedEmbeds(templateKey, embeds, locData);
+
+    // Fallback to English template if localized template is empty or not found
+    if (!description && lang !== 'en') {
+      const enLocData = loadLocalizationData('en');
+      if (enLocData) {
+        description = resolveLocalizedEmbeds(templateKey, embeds, enLocData);
+      }
+    }
+
+    // Final fallback to a simple description if still empty
+    if (!description) {
+      description = `${fallbackName}: View detailed information.`;
+    }
+
     results.push({ lang, description });
   }
 
@@ -281,19 +285,41 @@ export function generatePilotTalentTypeLocalizedMetaDescriptions(
       TalentTypeName: talentType.name,
     };
 
-    // Add talent names to embeds (up to 3 for the template)
-    const maxTalents = Math.min(talentCount, 3);
-    for (let i = 0; i < maxTalents; i++) {
+    // Add talent names to embeds
+    for (let i = 0; i < Math.min(talentsForType.length, 5); i++) {
       const talent = talentsForType[i][1];
       embeds[`talent${i + 1}`] = talent.name;
     }
 
+    // Add talent5_type for hero pilots
+    if (talentCount > 5) {
+      const level5 = talentsForType[4][1];
+      embeds['talent5_type'] = level5.name;
+    }
+
     // Resolve the final template with all embeds
-    const description = resolveLocalizedEmbeds(
+    let description = resolveLocalizedEmbeds(
       resolvedTemplateKey,
       embeds,
       locData
     );
+
+    // Fallback to English template if localized template is empty or not found
+    if (!description && lang !== 'en') {
+      const enLocData = loadLocalizationData('en');
+      if (enLocData) {
+        description = resolveLocalizedEmbeds(
+          resolvedTemplateKey,
+          embeds,
+          enLocData
+        );
+      }
+    }
+
+    // Final fallback to a simple description if still empty
+    if (!description) {
+      description = `${_defaultName}: View detailed information.`;
+    }
 
     // Apply length limit for SEO
     results.push({

@@ -1,0 +1,57 @@
+---
+import BackToHome from '../../components/BackToHome.astro';
+import ParseObjectPage from '../../components/ParseObjectPage.astro';
+import LocalizedText from '../../components/LocalizedText.astro';
+import {
+  MODULE_GROUPS,
+  getAllModuleGroupIds,
+} from '../../utils/module_group_mapping';
+import { generateSimpleLocalizedMetaDescriptions } from '../../utils/build_localization';
+
+export async function getStaticPaths() {
+  const groupIds = getAllModuleGroupIds();
+  return groupIds.map((id) => ({
+    params: { id },
+  }));
+}
+
+const { id } = Astro.params;
+
+const group = MODULE_GROUPS[id as keyof typeof MODULE_GROUPS];
+
+if (!group) {
+  throw new Error(`Module group not found: ${id}`);
+}
+
+// Generate localized meta descriptions
+const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
+  { Key: 'ModuleGroup_Meta_Description', TableNamespace: 'Web_UI' },
+  {
+    groupName: group.name,
+    groupDescription: group.description,
+  },
+  group.name.en || id
+);
+---
+
+<ParseObjectPage
+  title={`${group.name.en} - Module Group`}
+  localizedDescriptions={localizedDescriptions}
+  type="article"
+>
+  <BackToHome />
+  <p><a href="/module_groups">← Back to Module Groups</a></p>
+
+  <LocalizedText id="category-name" tag="h1" localizationKey={group.name} />
+
+  {
+    group.description && (
+      <LocalizedText
+        id="category-desc"
+        tag="p"
+        localizationKey={group.description}
+      />
+    )
+  }
+  <p>Language: <span id="current-lang">en</span></p>
+</ParseObjectPage>

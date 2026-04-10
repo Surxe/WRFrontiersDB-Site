@@ -8,8 +8,36 @@
     "PilotTalent_Meta_Description_3": "{TalentName}: {TalentDescriptionWithStats} Learned by {pilot1}, {pilot2}, and {pilot3}.",
     "PilotTalent_Meta_Description_4": "{TalentName}: {TalentDescriptionWithStats} Learned by {pilot1}, {pilot2}, {pilot3}, and {pilot4}.",
     "PilotTalent_Meta_Description_5": "{TalentName}: {TalentDescriptionWithStats} Learned by {pilot1}, {pilot2}, {pilot3}, {pilot4}, and {pilot5}.",
-    "PilotTalent_Meta_Description_More": "{TalentName}: {TalentDescriptionWithStats} Learned by {pilot1}, {pilot2}, {pilot3}, {pilot4}, and more.",
+    "PilotTalent_Meta_Description_More": "{TalentName}: {TalentDescriptionWithStats} Learned by {pilot1}, {pilot2}, {pilot3}, {pilot4}, {pilot5}, and more.",
     "PilotTalentType_Meta_Description_3": "{TalentTypeName} pilot talent type includes {talent1}, {talent2}, and {talent3}.",
-    "PilotTalentType_Meta_Description_More": "{TalentTypeName} pilot talent type includes {talent1}, {talent2}, {talent3}, and more."
+    "PilotTalentType_Meta_Description_More": "{TalentTypeName} pilot talent type includes {talent1}, {talent2}, {talent3}, and more.",
+    "ModuleGroups": {
+      "GRP_TitanTorsos_Name": "Titan Torsos",
+      "GRP_TitanTorsos_Desc": "Torso modules for Titan mechs",
+      "GRP_Torsos_Name": "Torsos",
+      "GRP_Torsos_Desc": "Standard torso modules",
+      "GRP_TitanChassis_Name": "Titan Chassis",
+      "GRP_TitanChassis_Desc": "Chassis modules for Titan mechs",
+      "GRP_Chassis_Name": "Chassis",
+      "GRP_Chassis_Desc": "Standard chassis modules",
+      "GRP_TitanShoulders_Name": "Titan Shoulders",
+      "GRP_TitanShoulders_Desc": "Shoulder modules for Titan mechs",
+      "GRP_Shoulders_Name": "Shoulders",
+      "GRP_Shoulders_Desc": "Standard shoulder modules",
+      "GRP_LightWeapons_Name": "Light Weapons",
+      "GRP_LightWeapons_Desc": "Light weapon modules",
+      "GRP_HeavyWeapons_Name": "Heavy Weapons",
+      "GRP_HeavyWeapons_Desc": "Heavy weapon modules",
+      "GRP_TitanWeapons_Name": "Titan Weapons",
+      "GRP_TitanWeapons_Desc": "Weapon modules for Titan mechs",
+      "GRP_SupplyGear_Name": "Supply Gear",
+      "GRP_SupplyGear_Desc": "Supply gear modules",
+      "GRP_CycleGear_Name": "Cycle Gear",
+      "GRP_CycleGear_Desc": "Cycle gear modules"
+    },
+    "ModuleGroup_Meta_Description": "{groupName}: {groupDescription} View all {groupName} modules in War Robots Frontiers.",
+    "PilotPersonality_Meta_Description": "{name}: View detailed information about this pilot personality in War Robots Frontiers. Includes traits and effects.",
+    "PilotClass_Meta_Description": "{name}: View detailed information about this pilot class in War Robots Frontiers. Includes characteristics and abilities.",
+    "Module_Meta_Description": "{name}: View detailed information about this module in War Robots Frontiers. Includes stats, effects, and usage information."
   }
 }
