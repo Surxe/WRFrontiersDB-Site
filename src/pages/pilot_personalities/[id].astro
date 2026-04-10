@@ -9,7 +9,7 @@ import {
   generateObjectListStaticPaths,
 } from '../../utils/parse_object';
 import { getDefaultString } from '../../utils/localization';
-import { generatePilotPersonalityLocalizedMetaDescriptions } from '../../utils/build_localization';
+import { generateSimpleLocalizedMetaDescriptions } from '../../utils/build_localization';
 import PilotPersonalitiesNavBox from '../../components/nav/PilotPersonalitiesNavBox.astro';
 
 export async function getStaticPaths() {
@@ -28,8 +28,9 @@ const defaultName =
   getDefaultString(pilotPersonality.name) || pilotPersonality.id;
 
 // Generate localized meta descriptions
-const localizedDescriptions = generatePilotPersonalityLocalizedMetaDescriptions(
-  pilotPersonality,
+const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
+  { Key: 'PilotPersonality_Meta_Description', TableNamespace: 'Web_UI' },
+  { name: pilotPersonality.name },
   defaultName
 );
 
