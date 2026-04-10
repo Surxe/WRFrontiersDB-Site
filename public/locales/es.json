@@ -34,6 +34,7 @@
       "GRP_SupplyGear_Desc": "Módulos de equipo de suministro",
       "GRP_CycleGear_Name": "Equipo de Ciclo",
       "GRP_CycleGear_Desc": "Módulos de equipo de ciclo"
-    }
+    },
+    "ModuleGroup_Meta_Description": "{groupName}: {groupDescription} Ver todos los módulos {groupName} en War Robots Frontiers."
   }
 }

@@ -8,7 +8,7 @@ const groupIds = getAllModuleGroupIds();
 
 // Sort groups by sort_order
 const sortedGroups = groupIds
-  .map(id => ({ id, ...MODULE_GROUPS[id] }))
+  .map(groupId => ({ ...MODULE_GROUPS[groupId], id: groupId }))
   .sort((a, b) => (a.sort_order || 999) - (b.sort_order || 999));
 
 ---

@@ -249,6 +249,40 @@ export function generatePilotLocalizedMetaDescriptions(
 }
 
 /**
+ * Generate localized module group meta descriptions using the embedment system
+ */
+export function generateModuleGroupLocalizedMetaDescriptions(
+  group: { name: LocalizationKey; description?: LocalizationKey },
+  _defaultName: string
+): { lang: string; description: string }[] {
+  const supportedLangs = Object.keys(langs);
+  const results: { lang: string; description: string }[] = [];
+
+  const templateKey = resolveLocalizationKey(
+    'ModuleGroup_Meta_Description',
+    'Web_UI'
+  );
+
+  const embeds: Record<string, LocalizationKey> = {
+    groupName: group.name,
+  };
+
+  if (group.description) {
+    embeds['groupDescription'] = group.description;
+  }
+
+  for (const lang of supportedLangs) {
+    const locData = loadLocalizationData(lang);
+    if (!locData) continue;
+
+    const description = resolveLocalizedEmbeds(templateKey, embeds, locData);
+    results.push({ lang, description });
+  }
+
+  return results;
+}
+
+/**
  * Generate localized pilot talent type meta descriptions using the embedment system
  */
 export function generatePilotTalentTypeLocalizedMetaDescriptions(

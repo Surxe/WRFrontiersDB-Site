@@ -4,9 +4,9 @@ import ParseObjectPage from '../../components/ParseObjectPage.astro';
 import LocalizedText from '../../components/LocalizedText.astro';
 import {
   MODULE_GROUPS,
-  getAllModuleGroupIds,
-  getModuleGroupName
+  getAllModuleGroupIds
 } from '../../utils/module_group_mapping';
+import { generateModuleGroupLocalizedMetaDescriptions } from '../../utils/build_localization';
 
 export async function getStaticPaths() {
   const groupIds = getAllModuleGroupIds();
@@ -23,12 +23,17 @@ if (!group) {
   throw new Error(`Module group not found: ${id}`);
 }
 
-const groupName = getModuleGroupName(id);
+// Generate localized meta descriptions
+const localizedDescriptions = generateModuleGroupLocalizedMetaDescriptions(
+  group,
+  group.name.en || id
+);
+
 ---
 
 <ParseObjectPage
-  title={`${groupName} - Module Group`}
-  description={`View ${groupName} module group in War Robots Frontiers`}
+  title={`${group.name.en} - Module Group`}
+  localizedDescriptions={localizedDescriptions}
   type="article"
 >
   <BackToHome />

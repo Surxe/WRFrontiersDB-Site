@@ -34,6 +34,7 @@
       "GRP_SupplyGear_Desc": "Supply gear modules",
       "GRP_CycleGear_Name": "Cycle Gear",
       "GRP_CycleGear_Desc": "Cycle gear modules"
-    }
+    },
+    "ModuleGroup_Meta_Description": "{groupName}: {groupDescription} View all {groupName} modules in War Robots Frontiers."
   }
 }
