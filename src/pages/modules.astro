@@ -5,8 +5,10 @@ import { getParseObjects } from '../utils/parse_object';
 import { prepareObjectList, groupBy, sortGroups } from '../utils/list';
 import {
   enrichModulesWithGroups,
-  getModuleGroupName
+  MODULE_GROUPS,
+  type ModuleGroupId
 } from '../utils/module_group_mapping';
+import LocalizedText from '../components/LocalizedText.astro';
 import type { Module, ModuleCategory, ModuleType } from '../types/module';
 import ObjRef from '../components/obj_ref/ObjRef.astro';
 
@@ -24,9 +26,9 @@ const entries = prepareObjectList(enrichedModules, { prodReadyOnly: true });
 const grouped = groupBy(
   entries,
   ([_, module]) => {
-    const groupId = module.module_group;
+    const groupId = module.module_group as ModuleGroupId;
     if (!groupId) throw new Error(`Module group not found for module: ${module.id}`);
-    return getModuleGroupName(groupId);
+    return groupId;
   }
 );
 
@@ -46,9 +48,14 @@ const sortedGroups = sortGroups(grouped);
   <p>Showing modules from current version</p>
 
   {
-    sortedGroups.map(([categoryName, moduleEntries]) => (
+    sortedGroups.map(([groupId, moduleEntries]) => (
       <section>
-        <h2>{categoryName}</h2>
+        <h2>
+          <LocalizedText 
+            localizationKey={MODULE_GROUPS[groupId as ModuleGroupId]?.name} 
+            tag="span" 
+          />
+        </h2>
         <ul>
           {moduleEntries.map(([_id, module]) => (
             <li>
