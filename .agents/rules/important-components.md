@@ -12,7 +12,7 @@ Universal object reference component that handles:
 - Used across ALL list/detail pages for consistent object references
 - Replaces manual `<a href>` + `<Icon>` combinations
 
-### 2. LocalizedText.astr
+### 2. LocalizedText.astro
 Core localization component for UI text:
 - Handles lazy-loading and fallback text
 - Used throughout site for translatable content
