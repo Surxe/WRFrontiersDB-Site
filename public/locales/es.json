@@ -35,6 +35,9 @@
       "GRP_CycleGear_Name": "Equipo de Ciclo",
       "GRP_CycleGear_Desc": "Módulos de equipo de ciclo"
     },
-    "ModuleGroup_Meta_Description": "{groupName}: {groupDescription} Ver todos los módulos {groupName} en War Robots Frontiers."
+    "ModuleGroup_Meta_Description": "{groupName}: {groupDescription} Ver todos los módulos {groupName} en War Robots Frontiers.",
+    "PilotPersonality_Meta_Description": "{personalityName}: Ver información detallada sobre esta personalidad de piloto en War Robots Frontiers. Incluye rasgos y efectos.",
+    "PilotClass_Meta_Description": "{className}: Ver información detallada sobre esta clase de piloto en War Robots Frontiers. Incluye características y habilidades.",
+    "Module_Meta_Description": "{moduleName}: Ver información detallada sobre este módulo en War Robots Frontiers. Incluye estadísticas, efectos e información de uso."
   }
 }

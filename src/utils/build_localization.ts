@@ -283,6 +283,96 @@ export function generateModuleGroupLocalizedMetaDescriptions(
 }
 
 /**
+ * Generate localized pilot personality meta descriptions using the embedment system
+ */
+export function generatePilotPersonalityLocalizedMetaDescriptions(
+  personality: { name: LocalizationKey },
+  _defaultName: string
+): { lang: string; description: string }[] {
+  const supportedLangs = Object.keys(langs);
+  const results: { lang: string; description: string }[] = [];
+
+  const templateKey = resolveLocalizationKey(
+    'PilotPersonality_Meta_Description',
+    'Web_UI'
+  );
+
+  const embeds: Record<string, LocalizationKey> = {
+    personalityName: personality.name,
+  };
+
+  for (const lang of supportedLangs) {
+    const locData = loadLocalizationData(lang);
+    if (!locData) continue;
+
+    const description = resolveLocalizedEmbeds(templateKey, embeds, locData);
+    results.push({ lang, description });
+  }
+
+  return results;
+}
+
+/**
+ * Generate localized pilot class meta descriptions using the embedment system
+ */
+export function generatePilotClassLocalizedMetaDescriptions(
+  pilotClass: { name: LocalizationKey },
+  _defaultName: string
+): { lang: string; description: string }[] {
+  const supportedLangs = Object.keys(langs);
+  const results: { lang: string; description: string }[] = [];
+
+  const templateKey = resolveLocalizationKey(
+    'PilotClass_Meta_Description',
+    'Web_UI'
+  );
+
+  const embeds: Record<string, LocalizationKey> = {
+    className: pilotClass.name,
+  };
+
+  for (const lang of supportedLangs) {
+    const locData = loadLocalizationData(lang);
+    if (!locData) continue;
+
+    const description = resolveLocalizedEmbeds(templateKey, embeds, locData);
+    results.push({ lang, description });
+  }
+
+  return results;
+}
+
+/**
+ * Generate localized module meta descriptions using the embedment system
+ */
+export function generateModuleLocalizedMetaDescriptions(
+  module: { name: LocalizationKey },
+  _defaultName: string
+): { lang: string; description: string }[] {
+  const supportedLangs = Object.keys(langs);
+  const results: { lang: string; description: string }[] = [];
+
+  const templateKey = resolveLocalizationKey(
+    'Module_Meta_Description',
+    'Web_UI'
+  );
+
+  const embeds: Record<string, LocalizationKey> = {
+    moduleName: module.name,
+  };
+
+  for (const lang of supportedLangs) {
+    const locData = loadLocalizationData(lang);
+    if (!locData) continue;
+
+    const description = resolveLocalizedEmbeds(templateKey, embeds, locData);
+    results.push({ lang, description });
+  }
+
+  return results;
+}
+
+/**
  * Generate localized pilot talent type meta descriptions using the embedment system
  */
 export function generatePilotTalentTypeLocalizedMetaDescriptions(

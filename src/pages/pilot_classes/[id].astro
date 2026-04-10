@@ -9,6 +9,7 @@ import {
   generateObjectListStaticPaths,
 } from '../../utils/parse_object';
 import { getDefaultString } from '../../utils/localization';
+import { generatePilotClassLocalizedMetaDescriptions } from '../../utils/build_localization';
 import PilotClassesNavBox from '../../components/nav/PilotClassesNavBox.astro';
 
 export async function getStaticPaths() {
@@ -21,10 +22,17 @@ const pilotClass = getParseObject<PilotClass>(id, 'Objects/PilotClass.json');
 
 // Extract English text as fallback
 const defaultName = getDefaultString(pilotClass.name) || pilotClass.id;
+
+// Generate localized meta descriptions
+const localizedDescriptions = generatePilotClassLocalizedMetaDescriptions(
+  pilotClass,
+  defaultName
+);
+
 ---
 
 <ParseObjectPage
-  description={`View detailed information about ${defaultName}, a pilot class in War Robots Frontiers. Includes characteristics and abilities.`}
+  localizedDescriptions={localizedDescriptions}
   headerImage="/images/T_RobotClassesDefenderBig.png"
   type="article"
 >
