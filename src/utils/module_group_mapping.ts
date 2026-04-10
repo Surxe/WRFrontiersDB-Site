@@ -26,11 +26,13 @@ export const MODULE_GROUPS = {
     sort_order: 1,
     name: {
       Key: 'GRP_TitanTorsos_Name',
-      TableNamespace: 'ModuleGroups'
+      TableNamespace: 'ModuleGroups',
+      en: 'Titan Torsos'
     },
     description: {
       Key: 'GRP_TitanTorsos_Desc',
-      TableNamespace: 'ModuleGroups'
+      TableNamespace: 'ModuleGroups',
+      en: 'Torso modules for Titan mechs'
     }
   },
   'non-titan-torsos': {
@@ -38,11 +40,13 @@ export const MODULE_GROUPS = {
     sort_order: 2,
     name: {
       Key: 'GRP_Torsos_Name',
-      TableNamespace: 'ModuleGroups'
+      TableNamespace: 'ModuleGroups',
+      en: 'Torsos'
     },
     description: {
       Key: 'GRP_Torsos_Desc',
-      TableNamespace: 'ModuleGroups'
+      TableNamespace: 'ModuleGroups',
+      en: 'Standard torso modules'
     }
   },
   'titan-chassis': {
@@ -50,11 +54,13 @@ export const MODULE_GROUPS = {
     sort_order: 3,
     name: {
       Key: 'GRP_TitanChassis_Name',
-      TableNamespace: 'ModuleGroups'
+      TableNamespace: 'ModuleGroups',
+      en: 'Titan Chassis'
     },
     description: {
       Key: 'GRP_TitanChassis_Desc',
-      TableNamespace: 'ModuleGroups'
+      TableNamespace: 'ModuleGroups',
+      en: 'Chassis modules for Titan mechs'
     }
   },
   'non-titan-chassis': {
@@ -62,11 +68,13 @@ export const MODULE_GROUPS = {
     sort_order: 4,
     name: {
       Key: 'GRP_Chassis_Name',
-      TableNamespace: 'ModuleGroups'
+      TableNamespace: 'ModuleGroups',
+      en: 'Chassis'
     },
     description: {
       Key: 'GRP_Chassis_Desc',
-      TableNamespace: 'ModuleGroups'
+      TableNamespace: 'ModuleGroups',
+      en: 'Standard chassis modules'
     }
   },
   'titan-shoulder': {
@@ -74,11 +82,13 @@ export const MODULE_GROUPS = {
     sort_order: 5,
     name: {
       Key: 'GRP_TitanShoulders_Name',
-      TableNamespace: 'ModuleGroups'
+      TableNamespace: 'ModuleGroups',
+      en: 'Titan Shoulders'
     },
     description: {
       Key: 'GRP_TitanShoulders_Desc',
-      TableNamespace: 'ModuleGroups'
+      TableNamespace: 'ModuleGroups',
+      en: 'Shoulder modules for Titan mechs'
     }
   },
   'non-titan-shoulder': {
@@ -86,11 +96,13 @@ export const MODULE_GROUPS = {
     sort_order: 6,
     name: {
       Key: 'GRP_Shoulders_Name',
-      TableNamespace: 'ModuleGroups'
+      TableNamespace: 'ModuleGroups',
+      en: 'Shoulders'
     },
     description: {
       Key: 'GRP_Shoulders_Desc',
-      TableNamespace: 'ModuleGroups'
+      TableNamespace: 'ModuleGroups',
+      en: 'Standard shoulder modules'
     }
   },
   'light-weapon': {
@@ -98,11 +110,13 @@ export const MODULE_GROUPS = {
     sort_order: 7,
     name: {
       Key: 'GRP_LightWeapons_Name',
-      TableNamespace: 'ModuleGroups'
+      TableNamespace: 'ModuleGroups',
+      en: 'Light Weapons'
     },
     description: {
       Key: 'GRP_LightWeapons_Desc',
-      TableNamespace: 'ModuleGroups'
+      TableNamespace: 'ModuleGroups',
+      en: 'Light weapon modules'
     }
   },
   'heavy-weapon': {
@@ -110,11 +124,13 @@ export const MODULE_GROUPS = {
     sort_order: 8,
     name: {
       Key: 'GRP_HeavyWeapons_Name',
-      TableNamespace: 'ModuleGroups'
+      TableNamespace: 'ModuleGroups',
+      en: 'Heavy Weapons'
     },
     description: {
       Key: 'GRP_HeavyWeapons_Desc',
-      TableNamespace: 'ModuleGroups'
+      TableNamespace: 'ModuleGroups',
+      en: 'Heavy weapon modules'
     }
   },
   'titan-weapon': {
@@ -122,11 +138,13 @@ export const MODULE_GROUPS = {
     sort_order: 9,
     name: {
       Key: 'GRP_TitanWeapons_Name',
-      TableNamespace: 'ModuleGroups'
+      TableNamespace: 'ModuleGroups',
+      en: 'Titan Weapons'
     },
     description: {
       Key: 'GRP_TitanWeapons_Desc',
-      TableNamespace: 'ModuleGroups'
+      TableNamespace: 'ModuleGroups',
+      en: 'Weapon modules for Titan mechs'
     }
   },
   'supply-gear': {
@@ -134,11 +152,13 @@ export const MODULE_GROUPS = {
     sort_order: 10,
     name: {
       Key: 'GRP_SupplyGear_Name',
-      TableNamespace: 'ModuleGroups'
+      TableNamespace: 'ModuleGroups',
+      en: 'Supply Gear'
     },
     description: {
       Key: 'GRP_SupplyGear_Desc',
-      TableNamespace: 'ModuleGroups'
+      TableNamespace: 'ModuleGroups',
+      en: 'Supply gear modules'
     }
   },
   'cycle-gear': {
@@ -146,11 +166,13 @@ export const MODULE_GROUPS = {
     sort_order: 11,
     name: {
       Key: 'GRP_CycleGear_Name',
-      TableNamespace: 'ModuleGroups'
+      TableNamespace: 'ModuleGroups',
+      en: 'Cycle Gear'
     },
     description: {
       Key: 'GRP_CycleGear_Desc',
-      TableNamespace: 'ModuleGroups'
+      TableNamespace: 'ModuleGroups',
+      en: 'Cycle gear modules'
     }
   }
 } as const;
