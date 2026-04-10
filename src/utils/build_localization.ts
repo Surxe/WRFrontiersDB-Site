@@ -210,11 +210,6 @@ export function generatePilotLocalizedMetaDescriptions(
       }
     }
     
-    // Final fallback to a simple description if still empty
-    if (!description) {
-      description = `${fallbackName}: View detailed information.`;
-    }
-    
     results.push({ lang, description });
   }
 
