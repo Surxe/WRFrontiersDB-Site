@@ -26,13 +26,13 @@ export const MODULE_GROUPS = {
     name: {
       Key: 'GRP_TitanTorsos_Name',
       TableNamespace: 'ModuleGroups',
-      en: 'Titan Torsos'
+      en: 'Titan Torsos',
     },
     description: {
       Key: 'GRP_TitanTorsos_Desc',
       TableNamespace: 'ModuleGroups',
-      en: 'Torso modules for Titan mechs'
-    }
+      en: 'Torso modules for Titan mechs',
+    },
   },
   'non-titan-torsos': {
     id: 'non-titan-torsos',
@@ -40,13 +40,13 @@ export const MODULE_GROUPS = {
     name: {
       Key: 'GRP_Torsos_Name',
       TableNamespace: 'ModuleGroups',
-      en: 'Torsos'
+      en: 'Torsos',
     },
     description: {
       Key: 'GRP_Torsos_Desc',
       TableNamespace: 'ModuleGroups',
-      en: 'Standard torso modules'
-    }
+      en: 'Standard torso modules',
+    },
   },
   'titan-chassis': {
     id: 'titan-chassis',
@@ -54,13 +54,13 @@ export const MODULE_GROUPS = {
     name: {
       Key: 'GRP_TitanChassis_Name',
       TableNamespace: 'ModuleGroups',
-      en: 'Titan Chassis'
+      en: 'Titan Chassis',
     },
     description: {
       Key: 'GRP_TitanChassis_Desc',
       TableNamespace: 'ModuleGroups',
-      en: 'Chassis modules for Titan mechs'
-    }
+      en: 'Chassis modules for Titan mechs',
+    },
   },
   'non-titan-chassis': {
     id: 'non-titan-chassis',
@@ -68,13 +68,13 @@ export const MODULE_GROUPS = {
     name: {
       Key: 'GRP_Chassis_Name',
       TableNamespace: 'ModuleGroups',
-      en: 'Chassis'
+      en: 'Chassis',
     },
     description: {
       Key: 'GRP_Chassis_Desc',
       TableNamespace: 'ModuleGroups',
-      en: 'Standard chassis modules'
-    }
+      en: 'Standard chassis modules',
+    },
   },
   'titan-shoulder': {
     id: 'titan-shoulder',
@@ -82,13 +82,13 @@ export const MODULE_GROUPS = {
     name: {
       Key: 'GRP_TitanShoulders_Name',
       TableNamespace: 'ModuleGroups',
-      en: 'Titan Shoulders'
+      en: 'Titan Shoulders',
     },
     description: {
       Key: 'GRP_TitanShoulders_Desc',
       TableNamespace: 'ModuleGroups',
-      en: 'Shoulder modules for Titan mechs'
-    }
+      en: 'Shoulder modules for Titan mechs',
+    },
   },
   'non-titan-shoulder': {
     id: 'non-titan-shoulder',
@@ -96,13 +96,13 @@ export const MODULE_GROUPS = {
     name: {
       Key: 'GRP_Shoulders_Name',
       TableNamespace: 'ModuleGroups',
-      en: 'Shoulders'
+      en: 'Shoulders',
     },
     description: {
       Key: 'GRP_Shoulders_Desc',
       TableNamespace: 'ModuleGroups',
-      en: 'Standard shoulder modules'
-    }
+      en: 'Standard shoulder modules',
+    },
   },
   'light-weapon': {
     id: 'light-weapon',
@@ -110,13 +110,13 @@ export const MODULE_GROUPS = {
     name: {
       Key: 'GRP_LightWeapons_Name',
       TableNamespace: 'ModuleGroups',
-      en: 'Light Weapons'
+      en: 'Light Weapons',
     },
     description: {
       Key: 'GRP_LightWeapons_Desc',
       TableNamespace: 'ModuleGroups',
-      en: 'Light weapon modules'
-    }
+      en: 'Light weapon modules',
+    },
   },
   'heavy-weapon': {
     id: 'heavy-weapon',
@@ -124,13 +124,13 @@ export const MODULE_GROUPS = {
     name: {
       Key: 'GRP_HeavyWeapons_Name',
       TableNamespace: 'ModuleGroups',
-      en: 'Heavy Weapons'
+      en: 'Heavy Weapons',
     },
     description: {
       Key: 'GRP_HeavyWeapons_Desc',
       TableNamespace: 'ModuleGroups',
-      en: 'Heavy weapon modules'
-    }
+      en: 'Heavy weapon modules',
+    },
   },
   'titan-weapon': {
     id: 'titan-weapon',
@@ -138,13 +138,13 @@ export const MODULE_GROUPS = {
     name: {
       Key: 'GRP_TitanWeapons_Name',
       TableNamespace: 'ModuleGroups',
-      en: 'Titan Weapons'
+      en: 'Titan Weapons',
     },
     description: {
       Key: 'GRP_TitanWeapons_Desc',
       TableNamespace: 'ModuleGroups',
-      en: 'Weapon modules for Titan mechs'
-    }
+      en: 'Weapon modules for Titan mechs',
+    },
   },
   'supply-gear': {
     id: 'supply-gear',
@@ -152,13 +152,13 @@ export const MODULE_GROUPS = {
     name: {
       Key: 'GRP_SupplyGear_Name',
       TableNamespace: 'ModuleGroups',
-      en: 'Supply Gear'
+      en: 'Supply Gear',
     },
     description: {
       Key: 'GRP_SupplyGear_Desc',
       TableNamespace: 'ModuleGroups',
-      en: 'Supply gear modules'
-    }
+      en: 'Supply gear modules',
+    },
   },
   'cycle-gear': {
     id: 'cycle-gear',
@@ -166,14 +166,14 @@ export const MODULE_GROUPS = {
     name: {
       Key: 'GRP_CycleGear_Name',
       TableNamespace: 'ModuleGroups',
-      en: 'Cycle Gear'
+      en: 'Cycle Gear',
     },
     description: {
       Key: 'GRP_CycleGear_Desc',
       TableNamespace: 'ModuleGroups',
-      en: 'Cycle gear modules'
-    }
-  }
+      en: 'Cycle gear modules',
+    },
+  },
 } as const;
 
 export type ModuleGroupId = keyof typeof MODULE_GROUPS;
@@ -234,7 +234,7 @@ const MODULE_TYPE_TO_GROUP: Record<string, ModuleGroupId> = {
   'DA_ModuleType_Ability3.0': 'supply-gear',
 
   // Cycle gear
-  'DA_ModuleType_Ability4.0': 'cycle-gear'
+  'DA_ModuleType_Ability4.0': 'cycle-gear',
 };
 
 /**
@@ -242,7 +242,9 @@ const MODULE_TYPE_TO_GROUP: Record<string, ModuleGroupId> = {
  * @param moduleTypeRef - The module type reference (e.g., "OBJID_ModuleType::DA_ModuleType_Chassis.0")
  * @returns The module group ID or undefined if not found
  */
-export function getModuleGroupId(moduleTypeRef: string): ModuleGroupId | undefined {
+export function getModuleGroupId(
+  moduleTypeRef: string
+): ModuleGroupId | undefined {
   const typeId = refToId(moduleTypeRef);
   return MODULE_TYPE_TO_GROUP[typeId];
 }
@@ -257,7 +259,7 @@ export function getModuleGroupId(moduleTypeRef: string): ModuleGroupId | undefin
  */
 export function enrichModulesWithGroups(
   modules: Record<string, Module>,
-  moduleTypes: Record<string, ModuleType>,
+  _moduleTypes: Record<string, ModuleType>,
   _moduleCategories: Record<string, ModuleCategory>
 ): Record<string, EnrichedModule> {
   const enriched: Record<string, EnrichedModule> = {};
@@ -268,7 +270,7 @@ export function enrichModulesWithGroups(
 
     enriched[moduleId] = {
       ...module,
-      module_group: moduleGroup
+      module_group: moduleGroup,
     };
   }
 

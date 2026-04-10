@@ -4,11 +4,11 @@ import BackToHome from '../components/BackToHome.astro';
 import ParseObjectListPage from '../components/ParseObjectListPage.astro';
 import { getParseObjects } from '../utils/parse_object';
 import { prepareObjectList, groupBy, sortGroups } from '../utils/list';
-import type { Module } from '../../types/module';
-import Icon from '../components/Icon.astro';
 import ObjRef from '../components/obj_ref/ObjRef.astro';
 
-const moduleCategories = getParseObjects<ModuleCategory>('Objects/ModuleCategory.json');
+const moduleCategories = getParseObjects<ModuleCategory>(
+  'Objects/ModuleCategory.json'
+);
 
 // Prepare categories (no production filtering since ModuleCategory doesn't have production_status)
 const entries = prepareObjectList(moduleCategories, { prodReadyOnly: false });
@@ -16,12 +16,12 @@ const entries = prepareObjectList(moduleCategories, { prodReadyOnly: false });
 // Group by name for sorting
 const grouped = groupBy(
   entries,
-  ([_category, category]) => category.name?.en || category.name?.InvariantString || 'Unknown'
+  ([_category, category]) =>
+    category.name?.en || category.name?.InvariantString || 'Unknown'
 );
 
 // Sort groups alphabetically
 const sortedGroups = sortGroups(grouped);
-
 ---
 
 <ParseObjectListPage
@@ -41,8 +41,7 @@ const sortedGroups = sortGroups(grouped);
         <ul>
           {categoryEntries.map(([_id, category]) => (
             <li>
-              <Icon iconPath={category.icon_path} altText={`${categoryName} icon`} />
-              <a href={`/module_categories/${_id}`}>{category.name?.en || category.name?.InvariantString || _id}</a>
+              <ObjRef obj={category} />
             </li>
           ))}
         </ul>

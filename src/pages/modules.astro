@@ -6,7 +6,7 @@ import { prepareObjectList, groupBy, sortGroups } from '../utils/list';
 import {
   enrichModulesWithGroups,
   MODULE_GROUPS,
-  type ModuleGroupId
+  type ModuleGroupId,
 } from '../utils/module_group_mapping';
 import LocalizedText from '../components/LocalizedText.astro';
 import type { Module, ModuleCategory, ModuleType } from '../types/module';
@@ -14,27 +14,30 @@ import ObjRef from '../components/obj_ref/ObjRef.astro';
 
 const modules = getParseObjects<Module>('Objects/Module.json');
 const moduleTypes = getParseObjects<ModuleType>('Objects/ModuleType.json');
-const moduleCategories = getParseObjects<ModuleCategory>('Objects/ModuleCategory.json');
+const moduleCategories = getParseObjects<ModuleCategory>(
+  'Objects/ModuleCategory.json'
+);
 
 // Enrich modules with their module group assignments
-const enrichedModules = enrichModulesWithGroups(modules, moduleTypes, moduleCategories);
+const enrichedModules = enrichModulesWithGroups(
+  modules,
+  moduleTypes,
+  moduleCategories
+);
 
 // Prepare and filter modules
 const entries = prepareObjectList(enrichedModules, { prodReadyOnly: true });
 
 // Group by module_group
-const grouped = groupBy(
-  entries,
-  ([_, module]) => {
-    const groupId = module.module_group as ModuleGroupId;
-    if (!groupId) throw new Error(`Module group not found for module: ${module.id}`);
-    return groupId;
-  }
-);
+const grouped = groupBy(entries, ([_, module]) => {
+  const groupId = module.module_group as ModuleGroupId;
+  if (!groupId)
+    throw new Error(`Module group not found for module: ${module.id}`);
+  return groupId;
+});
 
 // Sort groups alphabetically
 const sortedGroups = sortGroups(grouped);
-
 ---
 
 <ParseObjectListPage
@@ -51,9 +54,9 @@ const sortedGroups = sortGroups(grouped);
     sortedGroups.map(([groupId, moduleEntries]) => (
       <section>
         <h2>
-          <LocalizedText 
-            localizationKey={MODULE_GROUPS[groupId as ModuleGroupId]?.name} 
-            tag="span" 
+          <LocalizedText
+            localizationKey={MODULE_GROUPS[groupId as ModuleGroupId]?.name}
+            tag="span"
           />
         </h2>
         <ul>

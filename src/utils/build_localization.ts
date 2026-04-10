@@ -201,7 +201,7 @@ export function generatePilotLocalizedMetaDescriptions(
     if (!locData) continue;
 
     let description = resolveLocalizedEmbeds(templateKey, embeds, locData);
-    
+
     // Fallback to English template if localized template is empty or not found
     if (!description && lang !== 'en') {
       const enLocData = loadLocalizationData('en');
@@ -209,13 +209,12 @@ export function generatePilotLocalizedMetaDescriptions(
         description = resolveLocalizedEmbeds(templateKey, embeds, enLocData);
       }
     }
-    
+
     results.push({ lang, description });
   }
 
   return results;
 }
-
 
 /**
  * Generate localized meta descriptions for simple templates with basic embeds
@@ -233,7 +232,7 @@ export function generateSimpleLocalizedMetaDescriptions(
     if (!locData) continue;
 
     let description = resolveLocalizedEmbeds(templateKey, embeds, locData);
-    
+
     // Fallback to English template if localized template is empty or not found
     if (!description && lang !== 'en') {
       const enLocData = loadLocalizationData('en');
@@ -241,12 +240,12 @@ export function generateSimpleLocalizedMetaDescriptions(
         description = resolveLocalizedEmbeds(templateKey, embeds, enLocData);
       }
     }
-    
+
     // Final fallback to a simple description if still empty
     if (!description) {
       description = `${fallbackName}: View detailed information.`;
     }
-    
+
     results.push({ lang, description });
   }
 
@@ -286,19 +285,41 @@ export function generatePilotTalentTypeLocalizedMetaDescriptions(
       TalentTypeName: talentType.name,
     };
 
-    // Add talent names to embeds (up to 3 for the template)
-    const maxTalents = Math.min(talentCount, 3);
-    for (let i = 0; i < maxTalents; i++) {
+    // Add talent names to embeds
+    for (let i = 0; i < Math.min(talentsForType.length, 5); i++) {
       const talent = talentsForType[i][1];
       embeds[`talent${i + 1}`] = talent.name;
     }
 
+    // Add talent5_type for hero pilots
+    if (talentCount > 5) {
+      const level5 = talentsForType[4][1];
+      embeds['talent5_type'] = level5.name;
+    }
+
     // Resolve the final template with all embeds
-    const description = resolveLocalizedEmbeds(
+    let description = resolveLocalizedEmbeds(
       resolvedTemplateKey,
       embeds,
       locData
     );
+
+    // Fallback to English template if localized template is empty or not found
+    if (!description && lang !== 'en') {
+      const enLocData = loadLocalizationData('en');
+      if (enLocData) {
+        description = resolveLocalizedEmbeds(
+          resolvedTemplateKey,
+          embeds,
+          enLocData
+        );
+      }
+    }
+
+    // Final fallback to a simple description if still empty
+    if (!description) {
+      description = `${_defaultName}: View detailed information.`;
+    }
 
     // Apply length limit for SEO
     results.push({
