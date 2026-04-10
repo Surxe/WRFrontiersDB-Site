@@ -241,7 +241,21 @@ export function generatePilotLocalizedMetaDescriptions(
     const locData = loadLocalizationData(lang);
     if (!locData) continue;
 
-    const description = resolveLocalizedEmbeds(templateKey, embeds, locData);
+    let description = resolveLocalizedEmbeds(templateKey, embeds, locData);
+    
+    // Fallback to English template if localized template is empty or not found
+    if (!description && lang !== 'en') {
+      const enLocData = loadLocalizationData('en');
+      if (enLocData) {
+        description = resolveLocalizedEmbeds(templateKey, embeds, enLocData);
+      }
+    }
+    
+    // Final fallback to a simple description if still empty
+    if (!description) {
+      description = `${fallbackName}: View detailed information.`;
+    }
+    
     results.push({ lang, description });
   }
 
