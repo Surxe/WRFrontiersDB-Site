@@ -14,6 +14,8 @@ import { getDefaultString } from '../../utils/localization';
 import { generateSimpleLocalizedMetaDescriptions } from '../../utils/build_localization';
 import { resolveObjectRef } from '../../utils/object_resolver';
 import ObjRef from '../../components/obj_ref/ObjRef.astro';
+import ModulesNavBox from '../../components/nav/ModulesNavBox.astro';
+import { getModuleGroupId } from '../../utils/module_group_mapping';
 
 export async function getStaticPaths() {
   return generateObjectListStaticPaths('Module', true);
@@ -33,6 +35,9 @@ const allRarities = getParseObjects<Rarity>('Objects/Rarity.json');
 const rarity = moduleRarity
   ? resolveObjectRef(moduleRarity.rarity_ref, allRarities)
   : undefined;
+
+// Get module group for this module
+const moduleGroupId = getModuleGroupId(module.module_type_ref);
 
 if (!module.name) {
   throw new Error(`Module with id ${id} is missing name. 
@@ -82,6 +87,13 @@ const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
   </p>
 
   <div id="stats">stats</div>
+
+  {moduleGroupId && (
+    <section style="margin-top: 2rem;">
+      <h2>Related Modules</h2>
+      <ModulesNavBox moduleGroupId={moduleGroupId} />
+    </section>
+  )}
 
   <ObjectPageScripts objectData={module} jsFileName="module_page.js" />
 </ParseObjectPage>

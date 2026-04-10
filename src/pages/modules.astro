@@ -11,6 +11,7 @@ import {
 import LocalizedText from '../components/LocalizedText.astro';
 import type { Module, ModuleCategory, ModuleType } from '../types/module';
 import ObjRef from '../components/obj_ref/ObjRef.astro';
+import AllModulesNavBoxes from '../components/nav/AllModulesNavBoxes.astro';
 
 const modules = getParseObjects<Module>('Objects/Module.json');
 const moduleTypes = getParseObjects<ModuleType>('Objects/ModuleType.json');
@@ -49,6 +50,8 @@ const sortedGroups = sortGroups(grouped);
   <h1>Modules</h1>
 
   <p>Showing modules from current version</p>
+
+  <AllModulesNavBoxes />
 
   {
     sortedGroups.map(([groupId, moduleEntries]) => (

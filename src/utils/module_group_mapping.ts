@@ -284,3 +284,13 @@ export function enrichModulesWithGroups(
 export function getAllModuleGroupIds(): ModuleGroupId[] {
   return Object.keys(MODULE_GROUPS) as ModuleGroupId[];
 }
+
+/**
+ * Get all module group IDs sorted by sort_order
+ * @returns Array of all module group IDs sorted by sort_order
+ */
+export function getAllModuleGroupIdsSorted(): ModuleGroupId[] {
+  return Object.entries(MODULE_GROUPS)
+    .sort(([, a], [, b]) => a.sort_order - b.sort_order)
+    .map(([id]) => id as ModuleGroupId);
+}
