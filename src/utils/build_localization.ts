@@ -67,47 +67,6 @@ export function loadLocalizationData(lang: string) {
 }
 
 /**
- * Generate localized description for all supported languages
- * Uses extracted stat formatting logic for consistency
- */
-export function generateLocalizedMetaDescriptions(
-  localizationKey: LocalizationKey | undefined,
-  statValueChoices: StatValueChoices,
-  fallbackName: string
-): { lang: string; description: string }[] {
-  const supportedLangs = Object.keys(langs);
-  const results: { lang: string; description: string }[] = [];
-
-  for (const lang of supportedLangs) {
-    const locData = loadLocalizationData(lang);
-
-    // Use shared logic for consistent formatting
-    const localizedText = processLocalizedTextWithStats(
-      localizationKey,
-      statValueChoices,
-      0, // Use choice 0 for meta descriptions (default stat values)
-      locData || {},
-      false // Don't wrap in HTML tags for meta descriptions
-    );
-
-    // Clean up any remaining HTML tags and normalize whitespace
-    const cleanText = localizedText
-      .replace(/<[^>]*>/g, '') // Remove HTML tags
-      .replace(/\s+/g, ' ') // Normalize whitespace
-      .trim();
-
-    // Build meta description with name prefix and length limit
-    const metaDescription = `${fallbackName} - ${cleanText}`;
-    results.push({
-      lang,
-      description: metaDescription.substring(0, 160), // SEO best practice
-    });
-  }
-
-  return results;
-}
-
-/**
  * Generate localized pilot talent meta descriptions using the embedment system
  */
 export function generatePilotTalentLocalizedMetaDescriptions(

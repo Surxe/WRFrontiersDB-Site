@@ -12,7 +12,6 @@
  */
 
 import type { Module, ModuleType, ModuleCategory } from '../types/module';
-import type { LocalizationKey } from '../types/localization';
 import { refToId } from './object_reference';
 
 export interface EnrichedModule extends Module {
@@ -246,26 +245,6 @@ const MODULE_TYPE_TO_GROUP: Record<string, ModuleGroupId> = {
 export function getModuleGroupId(moduleTypeRef: string): ModuleGroupId | undefined {
   const typeId = refToId(moduleTypeRef);
   return MODULE_TYPE_TO_GROUP[typeId];
-}
-
-/**
- * Get module group name for display
- * @param groupId - The module group ID
- * @returns The localized name or ID if not found
- */
-export function getModuleGroupName(groupId: string): string {
-  const group = MODULE_GROUPS[groupId as ModuleGroupId];
-  return group?.name?.Key || groupId;
-}
-
-/**
- * Get the module group description
- * @param groupId - The module group ID
- * @returns The localized description or empty string if not found
- */
-export function getModuleGroupDescription(groupId: string): string {
-  const group = MODULE_GROUPS[groupId as ModuleGroupId];
-  return group?.description?.Key || '';
 }
 
 /**
