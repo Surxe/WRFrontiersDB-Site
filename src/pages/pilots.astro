@@ -1,83 +1,15 @@
 ---
-import Breadcrumb from '../components/Breadcrumb.astro';
-import ParseObjectListPage from '../components/ParseObjectListPage.astro';
-import { getParseObjects } from '../utils/parse_object';
-import PilotTables from '../components/pilot/Tables.astro';
-import type { Pilot } from '../types/pilot';
-import '../styles/pilots.css';
-import { resolveLocalizationKey } from '../utils/localization';
-import LocalizedText from '../components/LocalizedText.astro';
-import PilotsNavBox from '../components/nav/PilotsNavBox.astro';
-import { getPilotsBreadcrumbs } from '../utils/breadcrumb';
-
-// Load pilots
-const pilots = getParseObjects<Pilot>('Objects/Pilot.json');
-
-const pilot = pilots['DA_Pilot_Common1.0']; // Pick an arbitary pilot. All are validated to have the same reputation costs by Parser
+// Redirect to the default pilots view
 ---
-
-<ParseObjectListPage
-  title="Pilots"
-  description="Browse all pilots with their stats, abilities, and available talents from War Robots Frontiers"
-  headerImage="/images/T_UnLockPilots.png"
-  jsFileName="pilots.js"
->
-  <Breadcrumb breadcrumbs={getPilotsBreadcrumbs()} />
-
-  <p>Showing pilots from current version</p>
-
-  <p>
-    Generic Local Override Test:
-    <LocalizedText
-      id="manual-override-test"
-      tag="span"
-      localizationKey={resolveLocalizationKey('Sora_Custom_Label', 'Web_UI')}
-    />
-  </p>
-
-  <h1>Pilots</h1>
-  
-  <!-- View navigation buttons -->
-  <div class="table-switcher">
-    <div class="switcher-buttons">
-      <a href="?view=pilot-talent-hover" class="switcher-btn">
-        Pilot Talents (Hover)
-      </a>
-      <a href="?view=pilot-talent-type" class="switcher-btn">
-        Pilot Talent Types
-      </a>
-      <a href="?view=pilot-talent-full" class="switcher-btn">
-        Pilot Talents (Full)
-      </a>
-    </div>
-  </div>
-  
-  <PilotTables pilots={pilots} />
-
-  <h2>Reputation Costs</h2>
-  <!--Table for reputation costs-->
-  <p>All pilots have the same reputation costs.</p>
-  <table>
-    <thead>
-      <tr>
-        <th>Level</th>
-        <th>Reputation Cost</th>
-      </tr>
-    </thead>
-    <tbody>
-      {
-        pilot.levels?.map((level, index) => (
-          <tr>
-            <td>{index + 1}</td>
-            <td>{level.reputation_cost || 'N/A'}</td>
-          </tr>
-        ))
-      }
-    </tbody>
-  </table>
-
-  <div style="display: flex; gap: 20px; margin-top: 20px;">
-    <PilotsNavBox isHero={false} />
-    <PilotsNavBox isHero={true} />
-  </div>
-</ParseObjectListPage>
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Redirecting to Pilots...</title>
+    <meta http-equiv="refresh" content="0; url=/pilots/pilot-talent-hover">
+    <link rel="canonical" href="/pilots/pilot-talent-hover">
+  </head>
+  <body>
+    <p>Redirecting to <a href="/pilots/pilot-talent-hover">Pilots - Talents (Hover)</a>...</p>
+  </body>
+</html>
