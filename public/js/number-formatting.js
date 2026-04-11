@@ -42,7 +42,12 @@ export function formatNumberWithSeparator(value, separator, decimalPlaces) {
  * @returns {string} Current separator preference (',' or '.')
  */
 export function getCurrentSeparator() {
-  return localStorage.getItem('numberSeparator') || ',';
+  try {
+    return localStorage.getItem('numberSeparator') || ',';
+  } catch (e) {
+    // localStorage not available (server-side rendering), fallback to comma
+    return ',';
+  }
 }
 
 /**

@@ -30,7 +30,10 @@ export function initNumberFormatSelector(
 
     // Also update stat elements that contain numbers
     const { initializeLocalization } = await import('./localization.js');
-    await initializeLocalization('current', '[data-stat-value-choices]');
+    // Small delay to ensure DOM updates complete before re-localization
+    setTimeout(async () => {
+      await initializeLocalization('current', '[data-stat-value-choices]');
+    }, 50);
 
     if (onChange) {
       onChange(newSeparator);
