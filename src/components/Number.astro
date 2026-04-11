@@ -1,0 +1,87 @@
+---
+/**
+ * Number formatting component with live-updatable thousands separators
+ * Renders numbers with data attributes for client-side formatting updates
+ */
+
+interface Props {
+  value: number;
+  decimalPlaces?: number;
+  separator?: string;
+  tag?: string;
+  id?: string;
+  class?: string;
+}
+
+const {
+  value,
+  decimalPlaces,
+  separator,
+  tag = 'span',
+  id,
+  class: className,
+} = Astro.props;
+
+const Tag = tag as any;
+
+// Helper function to format number with separator
+function formatNumberWithSeparator(
+  value: number,
+  separator: string,
+  decimalPlaces?: number
+): string {
+  // Apply decimal places first (preserving existing system)
+  let processedValue: string;
+  if (decimalPlaces !== undefined) {
+    processedValue = parseFloat(value.toFixed(decimalPlaces)).toString();
+  } else {
+    processedValue = value.toString();
+  }
+
+  // Split into integer and decimal parts
+  const [integerPart, decimalPart] = processedValue.split('.');
+
+  // Apply thousands separator to integer part
+  let formattedInteger = integerPart;
+  if (separator && integerPart.length > 3) {
+    const regex = /\B(?=(\d{3})+(?!\d))/g;
+    formattedInteger = integerPart.replace(regex, separator);
+  }
+
+  // Combine with decimal part if it exists
+  if (decimalPart !== undefined) {
+    return `${formattedInteger}.${decimalPart}`;
+  }
+
+  return formattedInteger;
+}
+
+// Format number at build time if separator is provided
+let formattedValue: string;
+if (separator) {
+  formattedValue = formatNumberWithSeparator(value, separator, decimalPlaces);
+} else {
+  // Default formatting without separator
+  formattedValue =
+    decimalPlaces !== undefined
+      ? String(parseFloat(value.toFixed(decimalPlaces)))
+      : String(value);
+}
+
+// Build data attributes for client-side formatting
+const dataAttributes: Record<string, string> = {
+  'data-number-value': String(value),
+};
+
+if (decimalPlaces !== undefined) {
+  dataAttributes['data-decimal-places'] = String(decimalPlaces);
+}
+
+if (separator) {
+  dataAttributes['data-separator'] = separator;
+}
+---
+
+<Tag id={id} class={className} {...dataAttributes}>
+  {formattedValue}
+</Tag>
