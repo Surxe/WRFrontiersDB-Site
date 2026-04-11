@@ -1,5 +1,5 @@
 ---
-import BackToHome from '../components/BackToHome.astro';
+import Breadcrumb from '../components/Breadcrumb.astro';
 import ParseObjectListPage from '../components/ParseObjectListPage.astro';
 import { getParseObjects } from '../utils/parse_object';
 import { prepareObjectList, groupBy, sortGroups } from '../utils/list';
@@ -10,6 +10,7 @@ import type { ModuleStat } from '../types/module';
 import StatEmbedLocalizedText from '../components/StatEmbedLocalizedText.astro';
 import ObjRef from '../components/obj_ref/ObjRef.astro';
 import PilotTalentsNavBox from '../components/nav/PilotTalentsNavBox.astro';
+import { getPilotTalentsBreadcrumbs } from '../utils/breadcrumb';
 
 // Load all data
 const pilotTalents = getParseObjects<PilotTalent>('Objects/PilotTalent.json');
@@ -41,7 +42,7 @@ const sortedGroups = sortGroups(grouped, (a, b) => Number(a) - Number(b));
   description="Browse all pilot talents with their effects and pilot assignments from War Robots Frontiers"
   headerImage="/images/T_GeneralTalent3.png"
 >
-  <BackToHome />
+  <Breadcrumb breadcrumbs={getPilotTalentsBreadcrumbs()} />
   <h1>Pilot Talents</h1>
 
   <p>Showing pilot talents from current version</p>

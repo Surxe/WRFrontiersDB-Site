@@ -1,6 +1,7 @@
 ---
 import type { PilotTalentType, PilotTalent, Pilot } from '../../types/pilot';
 import type { ModuleStat } from '../../types/module';
+import Breadcrumb from '../../components/Breadcrumb.astro';
 import Icon from '../../components/Icon.astro';
 import LocalizedText from '../../components/LocalizedText.astro';
 import StatEmbedLocalizedText from '../../components/StatEmbedLocalizedText.astro';
@@ -17,6 +18,7 @@ import { getStatValueChoices } from '../../utils/stat';
 import { getDefaultString } from '../../utils/localization';
 import { generatePilotTalentTypeLocalizedMetaDescriptions } from '../../utils/build_localization';
 import PilotTalentTypesNavBox from '../../components/nav/PilotTalentTypesNavBox.astro';
+import { getPilotTalentTypeDetailBreadcrumbs } from '../../utils/breadcrumb';
 
 export async function getStaticPaths() {
   return generateObjectListStaticPaths('PilotTalentType');
@@ -69,9 +71,7 @@ const englishDescription =
     localizationKey={pilotTalentType.name}
     slot="head"
   />
-  <p>
-    Back to <a href="/pilot_talent_types">Pilot Talent Types</a>
-  </p>
+  <Breadcrumb breadcrumbs={getPilotTalentTypeDetailBreadcrumbs(pilotTalentType)} />
   <LocalizedText
     id="pilot-talent-type-name"
     tag="h1"

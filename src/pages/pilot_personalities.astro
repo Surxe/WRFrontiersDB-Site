@@ -1,8 +1,17 @@
 ---
-import ParseObjectList from '../components/ParseObjectList.astro';
-import PilotPersonalitiesNavBox from '../components/nav/PilotPersonalitiesNavBox.astro';
-import BackToHome from '../components/BackToHome.astro';
+import type { PilotPersonality } from '../types/pilot';
+import Breadcrumb from '../components/Breadcrumb.astro';
 import ParseObjectListPage from '../components/ParseObjectListPage.astro';
+import { getParseObjects } from '../utils/parse_object';
+import { prepareObjectList } from '../utils/list';
+import { getPilotPersonalitiesBreadcrumbs } from '../utils/breadcrumb';
+import PilotPersonalitiesNavBox from '../components/nav/PilotPersonalitiesNavBox.astro';
+import ObjRef from '../components/obj_ref/ObjRef.astro';
+
+const pilotPersonalities = getParseObjects<PilotPersonality>('Objects/PilotPersonality.json');
+
+// Prepare and filter personalities
+const entries = prepareObjectList(pilotPersonalities, { prodReadyOnly: false });
 ---
 
 <ParseObjectListPage
@@ -10,12 +19,20 @@ import ParseObjectListPage from '../components/ParseObjectListPage.astro';
   description="Browse all pilot personalities with their unique traits and gameplay styles from War Robots Frontiers"
   headerImage="/images/T_UnLockPilots.png"
 >
-  <BackToHome />
+  <Breadcrumb breadcrumbs={getPilotPersonalitiesBreadcrumbs()} />
   <h1>Pilot Personalities</h1>
 
   <p>Showing pilot personalities from latest version (current)</p>
 
-  <ParseObjectList parseObjectFile="Objects/PilotPersonality.json" />
+  <ul>
+    {
+      entries.map(([_id, personality]) => (
+        <li>
+          <ObjRef obj={personality} />
+        </li>
+      ))
+    }
+  </ul>
 
   <PilotPersonalitiesNavBox />
 </ParseObjectListPage>

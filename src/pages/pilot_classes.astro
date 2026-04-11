@@ -1,11 +1,12 @@
 ---
-import BackToHome from '../components/BackToHome.astro';
+import Breadcrumb from '../components/Breadcrumb.astro';
 import ParseObjectListPage from '../components/ParseObjectListPage.astro';
 import { getParseObjects } from '../utils/parse_object';
 import type { PilotClass } from '../types/pilot';
 import { prepareObjectList } from '../utils/list';
 import ObjRef from '../components/obj_ref/ObjRef.astro';
 import PilotClassesNavBox from '../components/nav/PilotClassesNavBox.astro';
+import { getPilotClassesBreadcrumbs } from '../utils/breadcrumb';
 
 const pilotClasses = getParseObjects<PilotClass>('Objects/PilotClass.json');
 
@@ -18,7 +19,7 @@ const entries = prepareObjectList(pilotClasses, { prodReadyOnly: false });
   description="Browse all pilot classes with their characteristics and abilities from War Robots Frontiers"
   headerImage="/images/T_RobotClassesDefenderBig.png"
 >
-  <BackToHome />
+  <Breadcrumb breadcrumbs={getPilotClassesBreadcrumbs()} />
   <h1>Pilot Classes</h1>
 
   <p>Showing pilot classes from current version</p>
