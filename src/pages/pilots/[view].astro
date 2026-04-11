@@ -15,22 +15,22 @@ import PilotTable from '../../components/pilot/PilotsPageTable.astro';
 // Export static paths for dynamic route
 export function getStaticPaths() {
   return [
-    { params: { view: 'pilot-talent-hover' } },
-    { params: { view: 'pilot-talent-type' } },
-    { params: { view: 'pilot-talent-full' } }
+    { params: { view: 'talent-overview' } },
+    { params: { view: 'talent-types' } },
+    { params: { view: 'talent-complete' } }
   ];
 }
 
 // Get view from URL params
 const { view } = Astro.params;
-const validViews = ['pilot-talent-hover', 'pilot-talent-type', 'pilot-talent-full'];
+const validViews = ['talent-overview', 'talent-types', 'talent-complete'];
 
 // Ensure view is a string, fallback to default if undefined
-const currentView = view || 'pilot-talent-hover';
+const currentView = view || 'talent-overview';
 
 // Validate view and redirect to default if invalid
 if (!validViews.includes(currentView)) {
-  return Astro.redirect('/pilots/pilot-talent-hover', 301);
+  return Astro.redirect('/pilots/talent-overview', 301);
 }
 
 // Load base data (always needed)
@@ -63,15 +63,15 @@ let pilotTalentTypes: Record<string, PilotTalentType> = {};
 let pageTitle = '';
 let pageDescription = '';
 
-if (currentView === 'pilot-talent-hover' || currentView === 'pilot-talent-full') {
+if (currentView === 'talent-overview' || currentView === 'talent-complete') {
   pilotTalents = getParseObjects<PilotTalent>('Objects/PilotTalent.json');
-  pageTitle = currentView === 'pilot-talent-hover' ? 'Pilots - Talents (Hover)' : 'Pilots - Talents (Full)';
-  pageDescription = currentView === 'pilot-talent-hover' 
+  pageTitle = currentView === 'talent-overview' ? 'Talent Overview' : 'Complete Talents';
+  pageDescription = currentView === 'talent-overview' 
     ? 'Browse all pilots with their hover talent information from War Robots Frontiers'
     : 'Browse all pilots with their full talent information from War Robots Frontiers';
-} else if (currentView === 'pilot-talent-type') {
+} else if (currentView === 'talent-types') {
   pilotTalentTypes = getParseObjects<PilotTalentType>('Objects/PilotTalentType.json');
-  pageTitle = 'Pilots - Talent Types';
+  pageTitle = 'Talent Types';
   pageDescription = 'Browse all pilots with their talent type information from War Robots Frontiers';
 }
 
@@ -85,19 +85,19 @@ const pilot = pilots['DA_Pilot_Common1.0']; // Pick an arbitrary pilot for reput
 >
   <Breadcrumb breadcrumbs={getPilotsBreadcrumbs()} />
 
-  <h1>{pageTitle}</h1>
+  <h1>Pilots</h1>
   
   <!-- View navigation buttons -->
   <div class="table-switcher">
     <div class="switcher-buttons">
-      <a href="/pilots/pilot-talent-hover" class={`switcher-btn ${view === 'pilot-talent-hover' ? 'active' : ''}`}>
-        Pilot Talents (Hover)
+      <a href="/pilots/talent-overview" class={`switcher-btn ${view === 'talent-overview' ? 'active' : ''}`}>
+        Talent Overview
       </a>
-      <a href="/pilots/pilot-talent-type" class={`switcher-btn ${view === 'pilot-talent-type' ? 'active' : ''}`}>
-        Pilot Talent Types
+      <a href="/pilots/talent-types" class={`switcher-btn ${view === 'talent-types' ? 'active' : ''}`}>
+        Talent Types
       </a>
-      <a href="/pilots/pilot-talent-full" class={`switcher-btn ${view === 'pilot-talent-full' ? 'active' : ''}`}>
-        Pilot Talents (Full)
+      <a href="/pilots/talent-complete" class={`switcher-btn ${view === 'talent-complete' ? 'active' : ''}`}>
+        Complete Talents
       </a>
     </div>
   </div>
@@ -123,7 +123,7 @@ const pilot = pilots['DA_Pilot_Common1.0']; // Pick an arbitrary pilot for reput
           })()}
         </h2>
         
-        {currentView === 'pilot-talent-hover' && (
+        {currentView === 'talent-overview' && (
           <PilotTable
             tableClass="pilots-table-pilot-talent-hover"
             pilots={pilotEntries}
@@ -132,7 +132,7 @@ const pilot = pilots['DA_Pilot_Common1.0']; // Pick an arbitrary pilot for reput
           />
         )}
         
-        {currentView === 'pilot-talent-full' && (
+        {currentView === 'talent-complete' && (
           <PilotTable
             tableClass="pilots-table-pilot-talent-full"
             pilots={pilotEntries}
@@ -141,7 +141,7 @@ const pilot = pilots['DA_Pilot_Common1.0']; // Pick an arbitrary pilot for reput
           />
         )}
         
-        {currentView === 'pilot-talent-type' && (
+        {currentView === 'talent-types' && (
           <PilotTable
             tableClass="pilots-table-pilot-talent-type"
             pilots={pilotEntries}
