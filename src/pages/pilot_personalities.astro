@@ -8,7 +8,9 @@ import { getPilotPersonalitiesBreadcrumbs } from '../utils/breadcrumb';
 import PilotPersonalitiesNavBox from '../components/nav/PilotPersonalitiesNavBox.astro';
 import ObjRef from '../components/obj_ref/ObjRef.astro';
 
-const pilotPersonalities = getParseObjects<PilotPersonality>('Objects/PilotPersonality.json');
+const pilotPersonalities = getParseObjects<PilotPersonality>(
+  'Objects/PilotPersonality.json'
+);
 
 // Prepare and filter personalities
 const entries = prepareObjectList(pilotPersonalities, { prodReadyOnly: false });

@@ -48,7 +48,9 @@ const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
     localizationKey={pilotPersonality.name}
     slot="head"
   />
-  <Breadcrumb breadcrumbs={getPilotPersonalityDetailBreadcrumbs(pilotPersonality)} />
+  <Breadcrumb
+    breadcrumbs={getPilotPersonalityDetailBreadcrumbs(pilotPersonality)}
+  />
   <LocalizedText
     id="pilot-personality-name"
     tag="h1"

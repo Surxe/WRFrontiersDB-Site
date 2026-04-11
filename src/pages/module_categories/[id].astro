@@ -49,7 +49,9 @@ const categoryModules = Object.values(allModules).filter(
     localizationKey={moduleCategory.name}
     slot="head"
   />
-  <Breadcrumb breadcrumbs={getModuleCategoryDetailBreadcrumbs(moduleCategory)} />
+  <Breadcrumb
+    breadcrumbs={getModuleCategoryDetailBreadcrumbs(moduleCategory)}
+  />
   <LocalizedText
     id="category-name"
     tag="h1"

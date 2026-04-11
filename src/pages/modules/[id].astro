@@ -90,12 +90,14 @@ const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
 
   <div id="stats">stats</div>
 
-  {moduleGroupId && (
-    <section style="margin-top: 2rem;">
-      <h2>Related Modules</h2>
-      <ModulesNavBox moduleGroupId={moduleGroupId} />
-    </section>
-  )}
+  {
+    moduleGroupId && (
+      <section style="margin-top: 2rem;">
+        <h2>Related Modules</h2>
+        <ModulesNavBox moduleGroupId={moduleGroupId} />
+      </section>
+    )
+  }
 
   <ObjectPageScripts objectData={module} jsFileName="module_page.js" />
 </ParseObjectPage>

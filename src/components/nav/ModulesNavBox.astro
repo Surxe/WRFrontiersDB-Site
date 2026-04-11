@@ -1,7 +1,11 @@
 ---
 import BaseNavBox from './BaseNavBox.astro';
 import { getParseObjects } from '../../utils/parse_object';
-import { enrichModulesWithGroups, MODULE_GROUPS, type ModuleGroupId } from '../../utils/module_group_mapping';
+import {
+  enrichModulesWithGroups,
+  MODULE_GROUPS,
+  type ModuleGroupId,
+} from '../../utils/module_group_mapping';
 import { prepareObjectList } from '../../utils/list';
 import type { Module, ModuleCategory, ModuleType } from '../../types/module';
 
@@ -14,7 +18,9 @@ const { moduleGroupId } = Astro.props;
 // Load modules, module types, and module categories
 const modules = getParseObjects<Module>('Objects/Module.json');
 const moduleTypes = getParseObjects<ModuleType>('Objects/ModuleType.json');
-const moduleCategories = getParseObjects<ModuleCategory>('Objects/ModuleCategory.json');
+const moduleCategories = getParseObjects<ModuleCategory>(
+  'Objects/ModuleCategory.json'
+);
 
 // Enrich modules with their module group assignments
 const enrichedModules = enrichModulesWithGroups(
@@ -24,14 +30,14 @@ const enrichedModules = enrichModulesWithGroups(
 );
 
 // Filter modules for this specific group and production-ready only
-const allGroupModules = Object.entries(enrichedModules)
-  .filter(([_, module]) => module.module_group === moduleGroupId);
+const allGroupModules = Object.entries(enrichedModules).filter(
+  ([_, module]) => module.module_group === moduleGroupId
+);
 
 // Use prepareObjectList to filter production-ready modules
-const filteredModules = prepareObjectList(
-  Object.fromEntries(allGroupModules),
-  { prodReadyOnly: true }
-).sort(([_a, a], [_b, b]) => {
+const filteredModules = prepareObjectList(Object.fromEntries(allGroupModules), {
+  prodReadyOnly: true,
+}).sort(([_a, a], [_b, b]) => {
   // Sort by module name
   const nameA = a.name?.Key || a.id;
   const nameB = b.name?.Key || b.id;

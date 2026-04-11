@@ -1,9 +1,7 @@
-import type { LocalizationKey } from './localization';
-
 export interface BreadcrumbItem {
-  label: string;           // Display text (localized)
-  href?: string;          // URL (undefined for current page)
-  isCurrent: boolean;    // true for current page
+  label: string; // Display text (localized)
+  href?: string; // URL (undefined for current page)
+  isCurrent: boolean; // true for current page
 }
 
 export type BreadcrumbTrail = BreadcrumbItem[];
@@ -11,22 +9,22 @@ export type BreadcrumbTrail = BreadcrumbItem[];
 export interface BreadcrumbConfig {
   // Module hierarchy
   moduleCategories: BreadcrumbItem[];
-  modules: (category?: any) => BreadcrumbTrail;
-  moduleDetail: (module: any, category?: any) => BreadcrumbTrail;
-  
+  modules: (_category?: unknown) => BreadcrumbTrail;
+  moduleDetail: (_module: unknown, _category?: unknown) => BreadcrumbTrail;
+
   // Module groups (separate hierarchy)
   moduleGroups: BreadcrumbItem[];
-  moduleGroupDetail: (groupId: string) => BreadcrumbTrail;
-  
+  moduleGroupDetail: (_groupId: string) => BreadcrumbTrail;
+
   // Pilot hierarchy
   pilots: BreadcrumbItem[];
-  pilotDetail: (pilot: any) => BreadcrumbTrail;
+  pilotDetail: (_pilot: unknown) => BreadcrumbTrail;
   pilotClasses: BreadcrumbItem[];
-  pilotClassDetail: (pilotClass: any) => BreadcrumbTrail;
+  pilotClassDetail: (_pilotClass: unknown) => BreadcrumbTrail;
   pilotPersonalities: BreadcrumbItem[];
-  pilotPersonalityDetail: (personality: any) => BreadcrumbTrail;
+  pilotPersonalityDetail: (_personality: unknown) => BreadcrumbTrail;
   pilotTalentTypes: BreadcrumbItem[];
-  pilotTalentTypeDetail: (talentType: any) => BreadcrumbTrail;
+  pilotTalentTypeDetail: (_talentType: unknown) => BreadcrumbTrail;
   pilotTalents: BreadcrumbItem[];
-  pilotTalentDetail: (talent: any) => BreadcrumbTrail;
+  pilotTalentDetail: (_talent: unknown) => BreadcrumbTrail;
 }
