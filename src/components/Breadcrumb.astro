@@ -1,0 +1,53 @@
+---
+import type { BreadcrumbTrail } from '../types/breadcrumb';
+
+interface Props {
+  breadcrumbs: BreadcrumbTrail;
+}
+
+const { breadcrumbs } = Astro.props;
+---
+
+<nav class="breadcrumb">
+  {
+    breadcrumbs.map((breadcrumb, index) => (
+      <span>
+        {breadcrumb.href ? (
+          <a href={breadcrumb.href}>{breadcrumb.label}</a>
+        ) : (
+          <span class="current">{breadcrumb.label}</span>
+        )}
+        {index < breadcrumbs.length - 1 && (
+          <span class="separator"> &gt; </span>
+        )}
+      </span>
+    ))
+  }
+</nav>
+
+<style>
+  .breadcrumb {
+    margin: 8px 0;
+    font-size: 14px;
+    color: #666;
+  }
+
+  .breadcrumb a {
+    color: #0066cc;
+    text-decoration: none;
+  }
+
+  .breadcrumb a:hover {
+    text-decoration: underline;
+  }
+
+  .breadcrumb .current {
+    color: #333;
+    font-weight: 500;
+  }
+
+  .breadcrumb .separator {
+    color: #999;
+    margin: 0 4px;
+  }
+</style>

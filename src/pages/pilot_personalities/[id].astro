@@ -1,5 +1,6 @@
 ---
 import type { PilotPersonality } from '../../types/pilot';
+import Breadcrumb from '../../components/Breadcrumb.astro';
 import Icon from '../../components/Icon.astro';
 import LocalizedText from '../../components/LocalizedText.astro';
 import ObjectPageScripts from '../../components/ObjectPageScripts.astro';
@@ -9,6 +10,7 @@ import {
   generateObjectListStaticPaths,
 } from '../../utils/parse_object';
 import { getDefaultString } from '../../utils/localization';
+import { getPilotPersonalityDetailBreadcrumbs } from '../../utils/breadcrumb';
 import { generateSimpleLocalizedMetaDescriptions } from '../../utils/build_localization';
 import PilotPersonalitiesNavBox from '../../components/nav/PilotPersonalitiesNavBox.astro';
 
@@ -46,9 +48,9 @@ const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
     localizationKey={pilotPersonality.name}
     slot="head"
   />
-  <p>
-    Back to <a href="/pilot_personalities">Pilot Personalities</a>
-  </p>
+  <Breadcrumb
+    breadcrumbs={getPilotPersonalityDetailBreadcrumbs(pilotPersonality)}
+  />
   <LocalizedText
     id="pilot-personality-name"
     tag="h1"

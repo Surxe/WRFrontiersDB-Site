@@ -1,11 +1,12 @@
 ---
-import BackToHome from '../components/BackToHome.astro';
+import Breadcrumb from '../components/Breadcrumb.astro';
 import ParseObjectListPage from '../components/ParseObjectListPage.astro';
 import {
   MODULE_GROUPS,
   getAllModuleGroupIds,
 } from '../utils/module_group_mapping';
 import LocalizedText from '../components/LocalizedText.astro';
+import { getModuleGroupsBreadcrumbs } from '../utils/breadcrumb';
 
 const groupIds = getAllModuleGroupIds();
 
@@ -20,7 +21,7 @@ const sortedGroups = groupIds
   description="Browse all module groups in War Robots Frontiers"
   headerImage="/images/T_AlphaUnlock.png"
 >
-  <BackToHome />
+  <Breadcrumb breadcrumbs={getModuleGroupsBreadcrumbs()} />
   <h1>Module Groups</h1>
 
   <p>Showing module groups from current version</p>

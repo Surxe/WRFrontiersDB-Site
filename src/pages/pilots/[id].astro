@@ -7,7 +7,8 @@ import {
   type PilotTalent,
   type PilotTalentType,
 } from '../../types/pilot';
-import { type Rarity } from '../../types/rarity';
+import type { Rarity } from '../../types/rarity';
+import Breadcrumb from '../../components/Breadcrumb.astro';
 import Icon from '../../components/Icon.astro';
 import LocalizedText from '../../components/LocalizedText.astro';
 import ObjectPageScripts from '../../components/ObjectPageScripts.astro';
@@ -26,6 +27,7 @@ import ObjRef from '../../components/obj_ref/ObjRef.astro';
 import { generatePilotLocalizedMetaDescriptions } from '../../utils/build_localization';
 import PilotsNavBox from '../../components/nav/PilotsNavBox.astro';
 import { PILOT_TYPE_LEGENDARY_REF } from '../../utils/constants';
+import { getPilotDetailBreadcrumbs } from '../../utils/breadcrumb';
 
 export async function getStaticPaths() {
   return generateObjectListStaticPaths('Pilot');
@@ -84,11 +86,11 @@ const localizedDescriptions = generatePilotLocalizedMetaDescriptions(
     localizationKey={pilot.first_name}
     slot="head"
   />
-  <p>Back to <a href="/pilots">Pilots</a></p>
+  <Breadcrumb breadcrumbs={getPilotDetailBreadcrumbs(pilot)} />
   <p>
     <LocalizedText
       id="pilot-first-name"
-      tag="span"
+      tag="h1"
       localizationKey={pilot.first_name}
     />
     {' '}

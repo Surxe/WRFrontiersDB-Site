@@ -7,9 +7,11 @@ const moduleGroupIds = getAllModuleGroupIdsSorted();
 ---
 
 <div class="modules-navboxes-container">
-  {moduleGroupIds.map((moduleGroupId) => (
-    <ModulesNavBox moduleGroupId={moduleGroupId} />
-  ))}
+  {
+    moduleGroupIds.map((moduleGroupId) => (
+      <ModulesNavBox moduleGroupId={moduleGroupId} />
+    ))
+  }
 </div>
 
 <style>
@@ -19,7 +21,7 @@ const moduleGroupIds = getAllModuleGroupIdsSorted();
     gap: 20px;
     margin-top: 20px;
   }
-  
+
   .modules-navboxes-container > :global(*) {
     flex: 1;
     min-width: 250px;

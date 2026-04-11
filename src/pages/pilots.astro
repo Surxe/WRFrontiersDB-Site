@@ -1,5 +1,5 @@
 ---
-import BackToHome from '../components/BackToHome.astro';
+import Breadcrumb from '../components/Breadcrumb.astro';
 import ParseObjectListPage from '../components/ParseObjectListPage.astro';
 import { getParseObjects } from '../utils/parse_object';
 import PilotTables from '../components/pilot/Tables.astro';
@@ -8,6 +8,7 @@ import '../styles/pilots.css';
 import { resolveLocalizationKey } from '../utils/localization';
 import LocalizedText from '../components/LocalizedText.astro';
 import PilotsNavBox from '../components/nav/PilotsNavBox.astro';
+import { getPilotsBreadcrumbs } from '../utils/breadcrumb';
 
 // Load pilots
 const pilots = getParseObjects<Pilot>('Objects/Pilot.json');
@@ -21,7 +22,7 @@ const pilot = pilots['DA_Pilot_Common1.0']; // Pick an arbitary pilot. All are v
   headerImage="/images/T_UnLockPilots.png"
   jsFileName="pilots.js"
 >
-  <BackToHome />
+  <Breadcrumb breadcrumbs={getPilotsBreadcrumbs()} />
 
   <p>Showing pilots from current version</p>
 

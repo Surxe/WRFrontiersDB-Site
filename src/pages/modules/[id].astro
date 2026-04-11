@@ -1,6 +1,7 @@
 ---
 import type { Module, ModuleRarity } from '../../types/module';
 import type { Rarity } from '../../types/rarity';
+import Breadcrumb from '../../components/Breadcrumb.astro';
 import Icon from '../../components/Icon.astro';
 import LocalizedText from '../../components/LocalizedText.astro';
 import ObjectPageScripts from '../../components/ObjectPageScripts.astro';
@@ -16,6 +17,7 @@ import { resolveObjectRef } from '../../utils/object_resolver';
 import ObjRef from '../../components/obj_ref/ObjRef.astro';
 import ModulesNavBox from '../../components/nav/ModulesNavBox.astro';
 import { getModuleGroupId } from '../../utils/module_group_mapping';
+import { getModuleDetailBreadcrumbs } from '../../utils/breadcrumb';
 
 export async function getStaticPaths() {
   return generateObjectListStaticPaths('Module', true);
@@ -66,7 +68,7 @@ const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
     localizationKey={module.name}
     slot="head"
   />
-  <p>Back to <a href="/modules">Modules</a></p>
+  <Breadcrumb breadcrumbs={getModuleDetailBreadcrumbs(module)} />
   <LocalizedText id="module-name" tag="h1" localizationKey={module.name} />
 
   <Icon iconPath={module.inventory_icon_path} altText={`${defaultName} icon`} />
@@ -88,12 +90,14 @@ const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
 
   <div id="stats">stats</div>
 
-  {moduleGroupId && (
-    <section style="margin-top: 2rem;">
-      <h2>Related Modules</h2>
-      <ModulesNavBox moduleGroupId={moduleGroupId} />
-    </section>
-  )}
+  {
+    moduleGroupId && (
+      <section style="margin-top: 2rem;">
+        <h2>Related Modules</h2>
+        <ModulesNavBox moduleGroupId={moduleGroupId} />
+      </section>
+    )
+  }
 
   <ObjectPageScripts objectData={module} jsFileName="module_page.js" />
 </ParseObjectPage>

@@ -1,5 +1,5 @@
 ---
-import BackToHome from '../components/BackToHome.astro';
+import Breadcrumb from '../components/Breadcrumb.astro';
 import ParseObjectListPage from '../components/ParseObjectListPage.astro';
 import { getParseObjects } from '../utils/parse_object';
 import { prepareObjectList, groupBy, sortGroups } from '../utils/list';
@@ -8,6 +8,7 @@ import type { PilotTalentType, Pilot } from '../types/pilot';
 import LocalizedText from '../components/LocalizedText.astro';
 import ObjRef from '../components/obj_ref/ObjRef.astro';
 import PilotTalentTypesNavBox from '../components/nav/PilotTalentTypesNavBox.astro';
+import { getPilotTalentTypesBreadcrumbs } from '../utils/breadcrumb';
 
 // Load pilot talent types and pilots
 const pilotTalentTypes = getParseObjects<PilotTalentType>(
@@ -57,7 +58,7 @@ const sortedGroups = sortGroups(grouped, (a, b) => Number(a) - Number(b));
   description="Browse all pilot talent types with their characteristics and available talents from War Robots Frontiers"
   headerImage="/images/T_Trait_UltimateAll.png"
 >
-  <BackToHome />
+  <Breadcrumb breadcrumbs={getPilotTalentTypesBreadcrumbs()} />
   <h1>Pilot Talent Types</h1>
 
   <p>Showing pilot talent types from current version</p>
