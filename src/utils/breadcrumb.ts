@@ -18,9 +18,9 @@ export function getHomeBreadcrumbs(): BreadcrumbTrail {
 }
 
 /**
- * Generate breadcrumb trail for module categories page
+ * Generate breadcrumb trail for module groups page
  */
-export function getModuleCategoriesBreadcrumbs(): BreadcrumbTrail {
+export function getModuleGroupsBreadcrumbs(): BreadcrumbTrail {
   return [
     {
       label: 'Home',
@@ -28,8 +28,8 @@ export function getModuleCategoriesBreadcrumbs(): BreadcrumbTrail {
       isCurrent: false
     },
     {
-      label: 'Module Categories',
-      href: '/module_categories',
+      label: 'Module Groups',
+      href: '/module_groups',
       isCurrent: true
     }
   ];
@@ -46,8 +46,8 @@ export function getModulesBreadcrumbs(): BreadcrumbTrail {
       isCurrent: false
     },
     {
-      label: 'Module Categories',
-      href: '/module_categories',
+      label: 'Module Groups',
+      href: '/module_groups',
       isCurrent: false
     },
     {
@@ -71,8 +71,8 @@ export function getModuleDetailBreadcrumbs(module: Module): BreadcrumbTrail {
       isCurrent: false
     },
     {
-      label: 'Module Categories',
-      href: '/module_categories',
+      label: 'Module Groups',
+      href: '/module_groups',
       isCurrent: false
     },
     {
@@ -101,31 +101,13 @@ export function getModuleCategoryDetailBreadcrumbs(category: ModuleCategory): Br
       isCurrent: false
     },
     {
-      label: 'Module Categories',
-      href: '/module_categories',
+      label: 'Module Groups',
+      href: '/module_groups',
       isCurrent: false
     },
     {
       label: categoryName,
       href: undefined,
-      isCurrent: true
-    }
-  ];
-}
-
-/**
- * Generate breadcrumb trail for module groups page
- */
-export function getModuleGroupsBreadcrumbs(): BreadcrumbTrail {
-  return [
-    {
-      label: 'Home',
-      href: '/',
-      isCurrent: false
-    },
-    {
-      label: 'Module Groups',
-      href: '/module_groups',
       isCurrent: true
     }
   ];
