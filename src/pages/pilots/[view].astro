@@ -6,9 +6,7 @@ import { resolveObjectRef } from '../../utils/object_resolver';
 import { refToId } from '../../utils/object_reference';
 import ObjRef from '../../components/obj_ref/ObjRef.astro';
 import Breadcrumb from '../../components/Breadcrumb.astro';
-import LocalizedText from '../../components/LocalizedText.astro';
 import ParseObjectListPage from '../../components/ParseObjectListPage.astro';
-import { resolveLocalizationKey } from '../../utils/localization';
 import PilotsNavBox from '../../components/nav/PilotsNavBox.astro';
 import { getPilotsBreadcrumbs } from '../../utils/breadcrumb';
 import '../../styles/pilots.css';
@@ -86,17 +84,6 @@ const pilot = pilots['DA_Pilot_Common1.0']; // Pick an arbitrary pilot for reput
   headerImage="/images/T_UnLockPilots.png"
 >
   <Breadcrumb breadcrumbs={getPilotsBreadcrumbs()} />
-
-  <p>Showing pilots from current version</p>
-
-  <p>
-    Generic Local Override Test:
-    <LocalizedText
-      id="manual-override-test"
-      tag="span"
-      localizationKey={resolveLocalizationKey('Sora_Custom_Label', 'Web_UI')}
-    />
-  </p>
 
   <h1>{pageTitle}</h1>
   
