@@ -36,6 +36,22 @@ const pilot = pilots['DA_Pilot_Common1.0']; // Pick an arbitary pilot. All are v
   </p>
 
   <h1>Pilots</h1>
+  
+  <!-- View navigation buttons -->
+  <div class="table-switcher">
+    <div class="switcher-buttons">
+      <a href="?view=pilot-talent-hover" class="switcher-btn">
+        Pilot Talents (Hover)
+      </a>
+      <a href="?view=pilot-talent-type" class="switcher-btn">
+        Pilot Talent Types
+      </a>
+      <a href="?view=pilot-talent-full" class="switcher-btn">
+        Pilot Talents (Full)
+      </a>
+    </div>
+  </div>
+  
   <PilotTables pilots={pilots} />
 
   <h2>Reputation Costs</h2>
