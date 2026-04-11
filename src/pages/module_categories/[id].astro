@@ -1,5 +1,6 @@
 ---
 import type { ModuleCategory, Module } from '../../types/module';
+import Breadcrumb from '../../components/Breadcrumb.astro';
 import Icon from '../../components/Icon.astro';
 import LocalizedText from '../../components/LocalizedText.astro';
 import ObjectPageScripts from '../../components/ObjectPageScripts.astro';
@@ -10,6 +11,7 @@ import {
   getParseObjects,
 } from '../../utils/parse_object';
 import { getDefaultString } from '../../utils/localization';
+import { getModuleCategoryDetailBreadcrumbs } from '../../utils/breadcrumb';
 
 export async function getStaticPaths() {
   return generateObjectListStaticPaths('ModuleCategory');
@@ -47,7 +49,7 @@ const categoryModules = Object.values(allModules).filter(
     localizationKey={moduleCategory.name}
     slot="head"
   />
-  <p>Back to <a href="/module_categories">Module Categories</a></p>
+  <Breadcrumb breadcrumbs={getModuleCategoryDetailBreadcrumbs(moduleCategory)} />
   <LocalizedText
     id="category-name"
     tag="h1"

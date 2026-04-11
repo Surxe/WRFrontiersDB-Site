@@ -1,5 +1,5 @@
 ---
-import BackToHome from '../../components/BackToHome.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
 import ParseObjectPage from '../../components/ParseObjectPage.astro';
 import LocalizedText from '../../components/LocalizedText.astro';
 import {
@@ -7,6 +7,7 @@ import {
   getAllModuleGroupIds,
 } from '../../utils/module_group_mapping';
 import { generateSimpleLocalizedMetaDescriptions } from '../../utils/build_localization';
+import { getModuleGroupDetailBreadcrumbs } from '../../utils/breadcrumb';
 
 export async function getStaticPaths() {
   const groupIds = getAllModuleGroupIds();
@@ -39,8 +40,7 @@ const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
   localizedDescriptions={localizedDescriptions}
   type="article"
 >
-  <BackToHome />
-  <p><a href="/module_groups">← Back to Module Groups</a></p>
+  <Breadcrumb breadcrumbs={getModuleGroupDetailBreadcrumbs(id)} />
 
   <LocalizedText id="category-name" tag="h1" localizationKey={group.name} />
 
