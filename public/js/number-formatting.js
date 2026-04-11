@@ -21,19 +21,19 @@ export function formatNumberWithSeparator(value, separator, decimalPlaces) {
 
   // Split into integer and decimal parts
   const [integerPart, decimalPart] = processedValue.split('.');
-  
+
   // Apply thousands separator to integer part
   let formattedInteger = integerPart;
   if (separator && integerPart.length > 3) {
     const regex = /\B(?=(\d{3})+(?!\d))/g;
     formattedInteger = integerPart.replace(regex, separator);
   }
-  
+
   // Combine with decimal part if it exists
   if (decimalPart !== undefined) {
     return `${formattedInteger}.${decimalPart}`;
   }
-  
+
   return formattedInteger;
 }
 
@@ -44,7 +44,7 @@ export function formatNumberWithSeparator(value, separator, decimalPlaces) {
 export function getCurrentSeparator() {
   try {
     return localStorage.getItem('numberSeparator') || ',';
-  } catch (e) {
+  } catch {
     // localStorage not available (server-side rendering), fallback to comma
     return ',';
   }
@@ -74,9 +74,14 @@ export function updateNumberElements(selectors) {
 
       if (numberValue !== undefined) {
         const value = parseFloat(numberValue);
-        const decimalPlacesNum = decimalPlaces !== undefined ? parseInt(decimalPlaces, 10) : undefined;
-        
-        const formattedValue = formatNumberWithSeparator(value, currentSeparator, decimalPlacesNum);
+        const decimalPlacesNum =
+          decimalPlaces !== undefined ? parseInt(decimalPlaces, 10) : undefined;
+
+        const formattedValue = formatNumberWithSeparator(
+          value,
+          currentSeparator,
+          decimalPlacesNum
+        );
         element.textContent = formattedValue;
       }
     });
@@ -93,7 +98,14 @@ export function updateNumberElements(selectors) {
  * @param {Object} locData - Localization data for unit names
  * @returns {string} Formatted stat value with thousands separators
  */
-export function formatStatValueWithSeparator(value, pattern, unitName, unitExponent, decimalPlaces, locData) {
+export function formatStatValueWithSeparator(
+  value,
+  pattern,
+  unitName,
+  unitExponent,
+  decimalPlaces,
+  locData
+) {
   // Apply exponent (default to 1.0)
   const exponentValue = unitExponent ?? 1.0;
   const exponentiatedValue = Math.pow(value, exponentValue);
@@ -105,7 +117,11 @@ export function formatStatValueWithSeparator(value, pattern, unitName, unitExpon
   const separator = getCurrentSeparator();
 
   // Format amount with decimal places and thousands separator
-  const formattedAmount = formatNumberWithSeparator(roundedValue, separator, decimalPlaces);
+  const formattedAmount = formatNumberWithSeparator(
+    roundedValue,
+    separator,
+    decimalPlaces
+  );
 
   // Get localized unit name (reuse existing logic)
   let localizedUnit = '';

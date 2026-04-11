@@ -42,7 +42,7 @@
   },
   "TestStats": {
     "desc_ArmorBoost": "This stat provides {ArmorBoost} bonus to the pilot",
-    "desc_BlinkSpeed": "This stat provides {BlinkSpeed} bonus to the pilot", 
+    "desc_BlinkSpeed": "This stat provides {BlinkSpeed} bonus to the pilot",
     "desc_CastDuration": "This stat provides {CastDuration} bonus to the pilot"
   }
 }

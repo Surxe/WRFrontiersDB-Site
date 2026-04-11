@@ -1,4 +1,8 @@
-import { getCurrentSeparator, setCurrentSeparator, updateNumberElements } from './number-formatting.js';
+import {
+  getCurrentSeparator,
+  setCurrentSeparator,
+  updateNumberElements,
+} from './number-formatting.js';
 
 /**
  * Initializes number format selector dropdown
@@ -30,10 +34,11 @@ export function initNumberFormatSelector(
 
     // Also update stat elements that contain numbers
     const { initializeLocalization } = await import('./localization.js');
-    // Small delay to ensure DOM updates complete before re-localization
-    setTimeout(async () => {
+    // Use requestAnimationFrame to ensure DOM updates complete before re-localization
+    // eslint-disable-next-line no-undef
+    requestAnimationFrame(async () => {
       await initializeLocalization('current', '[data-stat-value-choices]');
-    }, 50);
+    });
 
     if (onChange) {
       onChange(newSeparator);

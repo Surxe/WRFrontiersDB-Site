@@ -13,19 +13,23 @@ interface Props {
   class?: string;
 }
 
-const { 
-  value, 
-  decimalPlaces, 
-  separator, 
-  tag = 'span', 
-  id, 
-  class: className 
+const {
+  value,
+  decimalPlaces,
+  separator,
+  tag = 'span',
+  id,
+  class: className,
 } = Astro.props;
 
 const Tag = tag as any;
 
 // Helper function to format number with separator
-function formatNumberWithSeparator(value: number, separator: string, decimalPlaces?: number): string {
+function formatNumberWithSeparator(
+  value: number,
+  separator: string,
+  decimalPlaces?: number
+): string {
   // Apply decimal places first (preserving existing system)
   let processedValue: string;
   if (decimalPlaces !== undefined) {
@@ -36,19 +40,19 @@ function formatNumberWithSeparator(value: number, separator: string, decimalPlac
 
   // Split into integer and decimal parts
   const [integerPart, decimalPart] = processedValue.split('.');
-  
+
   // Apply thousands separator to integer part
   let formattedInteger = integerPart;
   if (separator && integerPart.length > 3) {
     const regex = /\B(?=(\d{3})+(?!\d))/g;
     formattedInteger = integerPart.replace(regex, separator);
   }
-  
+
   // Combine with decimal part if it exists
   if (decimalPart !== undefined) {
     return `${formattedInteger}.${decimalPart}`;
   }
-  
+
   return formattedInteger;
 }
 
@@ -58,9 +62,10 @@ if (separator) {
   formattedValue = formatNumberWithSeparator(value, separator, decimalPlaces);
 } else {
   // Default formatting without separator
-  formattedValue = decimalPlaces !== undefined 
-    ? String(parseFloat(value.toFixed(decimalPlaces)))
-    : String(value);
+  formattedValue =
+    decimalPlaces !== undefined
+      ? String(parseFloat(value.toFixed(decimalPlaces)))
+      : String(value);
 }
 
 // Build data attributes for client-side formatting
@@ -77,11 +82,6 @@ if (separator) {
 }
 ---
 
-<Tag 
-  id={id} 
-  class={className}
-  {...dataAttributes}
->
+<Tag id={id} class={className} {...dataAttributes}>
   {formattedValue}
 </Tag>
-

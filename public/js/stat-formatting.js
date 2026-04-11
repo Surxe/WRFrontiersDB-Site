@@ -4,7 +4,10 @@
  */
 
 // Import number formatting utilities
-import { formatNumberWithSeparator, getCurrentSeparator } from './number-formatting.js';
+import {
+  formatNumberWithSeparator,
+  getCurrentSeparator,
+} from './number-formatting.js';
 
 /**
  * Formats a stat value using pattern, unit name, and decimal places
@@ -35,7 +38,11 @@ export function formatStatValue(
   const separator = getCurrentSeparator();
 
   // Format amount with decimal places and thousands separator
-  const formattedAmount = formatNumberWithSeparator(roundedValue, separator, decimalPlaces);
+  const formattedAmount = formatNumberWithSeparator(
+    roundedValue,
+    separator,
+    decimalPlaces
+  );
 
   // Get localized unit name (or empty string if not provided)
   let localizedUnit = '';
