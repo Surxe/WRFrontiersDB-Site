@@ -3,11 +3,12 @@
  * @typedef {import('../../src/types/localization').LocalizationData} LocalizationData
  */
 
-// Import shared stat formatting functions
+// Import shared stat formatting functions and number formatting
 import {
   formatStatValue as _formatStatValue,
   replaceStatPlaceholdersFromChoiceMap,
 } from './stat-formatting.js';
+import { updateNumberElements } from './number-formatting.js';
 
 // Localization cache shared across all pages
 const localizationCache = {};
@@ -164,6 +165,9 @@ export async function initializeLocalization(
   if (locData) {
     updateLocalizedElements(locData, selectors);
   }
+
+  // Also update number formatting
+  updateNumberElements('[data-number-value]');
 }
 
 /**

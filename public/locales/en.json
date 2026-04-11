@@ -39,5 +39,10 @@
     "PilotPersonality_Meta_Description": "{name}: View detailed information about this pilot personality in War Robots Frontiers. Includes traits and effects.",
     "PilotClass_Meta_Description": "{name}: View detailed information about this pilot class in War Robots Frontiers. Includes characteristics and abilities.",
     "Module_Meta_Description": "{name}: View detailed information about this module in War Robots Frontiers. Includes stats, effects, and usage information."
+  },
+  "TestStats": {
+    "desc_ArmorBoost": "This stat provides {ArmorBoost} bonus to the pilot",
+    "desc_BlinkSpeed": "This stat provides {BlinkSpeed} bonus to the pilot", 
+    "desc_CastDuration": "This stat provides {CastDuration} bonus to the pilot"
   }
 }

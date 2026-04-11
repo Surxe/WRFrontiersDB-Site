@@ -1,0 +1,158 @@
+---
+import Page from '../components/Page.astro';
+import Number from '../components/Number.astro';
+import StatEmbedLocalizedText from '../components/StatEmbedLocalizedText.astro';
+import { getParseObjects } from '../utils/parse_object';
+import { getStatValueChoices } from '../utils/stat';
+import type { ModuleStat } from '../types/module';
+
+// Load some sample stats for testing
+const moduleStats = getParseObjects<ModuleStat>('Objects/ModuleStat.json');
+
+// Create sample stat data for testing
+const sampleStats = [
+  { stat_ref: 'OBJID_ModuleStat::DA_ModuleStat_ArmorBoost.0', value: 12.34 },
+  { stat_ref: 'OBJID_ModuleStat::DA_ModuleStat_BlinkSpeed.0', value: 15.678 },
+  { stat_ref: 'OBJID_ModuleStat::DA_ModuleStat_CastDuration.0', value: 45.6 },
+];
+
+const statValueChoices = getStatValueChoices(sampleStats, moduleStats);
+---
+
+<Page title="Number Format Test">
+  <h1>Number Formatting Test Page</h1>
+  
+  <div style="margin-bottom: 2rem;">
+    <h2>Language and Number Format Selectors</h2>
+    <div style="display: flex; gap: 2rem; align-items: center;">
+      <div>
+        <label for="lang-selector">Language:</label>
+        <select id="lang-selector">
+          <option value="en">English</option>
+          <option value="ru">Russian</option>
+          <option value="ja">Japanese</option>
+        </select>
+      </div>
+      
+      <div>
+        <label for="number-format-selector">Number Format:</label>
+        <select id="number-format-selector">
+          <option value=",">1,234 (Comma)</option>
+          <option value=".">1.234 (Period)</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <h2>Basic Number Component Tests</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+      <div>
+        <h3>Whole Number</h3>
+        <Number value={1234} separator="," />
+        <br />
+        <Number value={1234} separator="." />
+      </div>
+      
+      <div>
+        <h3>Decimal Places (1)</h3>
+        <Number value={1234.567} decimalPlaces={1} separator="," />
+        <br />
+        <Number value={1234.567} decimalPlaces={1} separator="." />
+      </div>
+      
+      <div>
+        <h3>Decimal Places (2)</h3>
+        <Number value={1234.567} decimalPlaces={2} separator="," />
+        <br />
+        <Number value={1234.567} decimalPlaces={2} separator="." />
+      </div>
+      
+      <div>
+        <h3>Large Number</h3>
+        <Number value={1234567.89} decimalPlaces={2} separator="," />
+        <br />
+        <Number value={1234567.89} decimalPlaces={2} separator="." />
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Live Update Tests</h2>
+    <p>These numbers should update when you change the number format selector above:</p>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+      <div>
+        <h3>No Separator (Client Update)</h3>
+        <span data-number-value="1234.567" data-decimal-places="2">1234.567</span>
+      </div>
+      
+      <div>
+        <h3>Large Number (Client Update)</h3>
+        <span data-number-value="9876543.21" data-decimal-places="2">9876543.21</span>
+      </div>
+      
+      <div>
+        <h3>Whole Number (Client Update)</h3>
+        <span data-number-value="123456789">123456789</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Stat Formatting Tests</h2>
+    <p>Testing integration with existing stat system:</p>
+    
+    {Object.entries(statValueChoices).map(([statKey, _statData]) => (
+      <div style="margin-bottom: 1rem; padding: 0.5rem; border: 1px solid #ccc;">
+        <h4>{statKey}</h4>
+        <StatEmbedLocalizedText
+          tag="div"
+          localizationKey={{
+            TableNamespace: 'TestStats',
+            Key: `desc_${statKey}`,
+            en: `This stat provides {${statKey}} bonus to the pilot`
+          }}
+          statValueChoices={statValueChoices}
+        />
+      </div>
+    ))}
+  </section>
+
+  <section>
+    <h2>Current Settings</h2>
+    <p>Language: <span id="current-lang">en</span></p>
+    <p>Number Separator: <span id="current-separator">,</span></p>
+  </section>
+</Page>
+
+<script type="module">
+  // Initialize language selector
+  const { initLanguageSelector } = await import('/js/language_selector.js');
+  initLanguageSelector('lang-selector');
+
+  // Initialize number format selector
+  const { initNumberFormatSelector } = await import('/js/number_format_selector.js');
+  const { getCurrentSeparator } = await import('/js/number-formatting.js');
+  initNumberFormatSelector('number-format-selector');
+
+  // Update current separator display
+  function updateSeparatorDisplay() {
+    const separatorSpan = document.getElementById('current-separator');
+    if (separatorSpan) {
+      separatorSpan.textContent = getCurrentSeparator();
+    }
+  }
+
+  // Initial display update
+  updateSeparatorDisplay();
+
+  // Listen for changes
+  const selector = document.getElementById('number-format-selector');
+  if (selector) {
+    selector.addEventListener('change', updateSeparatorDisplay);
+  }
+
+  // Initialize localization
+  const { initializeLocalization } = await import('/js/localization.js');
+  initializeLocalization('current');
+</script>

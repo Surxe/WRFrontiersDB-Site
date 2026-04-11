@@ -3,6 +3,9 @@
  * Used by both TypeScript build-time and client-side JavaScript
  */
 
+// Import number formatting utilities
+import { formatNumberWithSeparator, getCurrentSeparator } from './number-formatting.js';
+
 /**
  * Formats a stat value using pattern, unit name, and decimal places
  * @param {number} value - The stat value
@@ -28,11 +31,11 @@ export function formatStatValue(
   // Round to avoid floating point precision errors (e.g., 7.000000001 -> 7)
   const roundedValue = Math.round(exponentiatedValue * 1e10) / 1e10;
 
-  // Format amount with decimal places (only show as many as needed)
-  const formattedAmount =
-    decimalPlaces !== undefined
-      ? String(parseFloat(roundedValue.toFixed(decimalPlaces)))
-      : String(roundedValue);
+  // Get current separator preference
+  const separator = getCurrentSeparator();
+
+  // Format amount with decimal places and thousands separator
+  const formattedAmount = formatNumberWithSeparator(roundedValue, separator, decimalPlaces);
 
   // Get localized unit name (or empty string if not provided)
   let localizedUnit = '';
