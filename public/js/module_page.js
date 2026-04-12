@@ -2,7 +2,7 @@
  * Module page functionality
  * Waits for DOM to be ready before accessing elements
  */
-function initializeModulePage() {
+async function initializeModulePage() {
   try {
     const el = document.getElementById('object-data');
     if (!el) {
@@ -10,13 +10,17 @@ function initializeModulePage() {
       return;
     }
 
-    const module = JSON.parse(el.textContent.replace(/&quot;/g, '"'));
+    const _module = JSON.parse(el.textContent.replace(/&quot;/g, '"'));
 
-    const statsEl = document.getElementById('stats');
-    if (statsEl) {
-      statsEl.innerHTML = `
-        <p>Production_Status: ${module.production_status || 'Unknown'}</p>
-      `;
+    const levelSwitcher = document.getElementById('level-switcher');
+    if (levelSwitcher) {
+      // Import setStatChoice dynamically
+      const { setStatChoice } = await import('./localization.js');
+
+      levelSwitcher.addEventListener('change', (e) => {
+        const levelIndex = parseInt(e.target.value, 10);
+        setStatChoice(levelIndex);
+      });
     }
   } catch (error) {
     console.error('Error initializing module page:', error);
