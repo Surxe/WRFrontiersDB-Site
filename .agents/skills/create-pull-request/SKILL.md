@@ -24,6 +24,8 @@ Before creating a pull request, ensure that:
 
 ## Creating the pull request
 
-1. Use the `create_pull_request` tool to create a pull request.
+1. Write a temp .md file that contains the body of the PR
+2. Use `gh pr create --title "title" --body-file pr-body.md`
+3. Clean up temp files
 
 No need to ask for permission to actually create the pull request. Include a link to the pull request in your response, and I will edit it in-post if needed.
