@@ -67,7 +67,7 @@ export function scaleStatValue(
   value: number,
   applyScaler: boolean = true
 ): number {
-  const scaler = applyScaler ? statObject.unit_scaler ?? 1 : 1;
+  const scaler = applyScaler ? (statObject.unit_scaler ?? 1) : 1;
   return value * scaler;
 }
 
