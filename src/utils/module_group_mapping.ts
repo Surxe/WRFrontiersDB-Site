@@ -28,11 +28,6 @@ export const MODULE_GROUPS = {
       TableNamespace: 'ModuleGroups',
       en: 'Titan Torsos',
     },
-    description: {
-      Key: 'GRP_TitanTorsos_Desc',
-      TableNamespace: 'ModuleGroups',
-      en: 'Torso modules for Titan mechs',
-    },
   },
   'non-titan-torsos': {
     id: 'non-titan-torsos',
@@ -41,11 +36,6 @@ export const MODULE_GROUPS = {
       Key: 'GRP_Torsos_Name',
       TableNamespace: 'ModuleGroups',
       en: 'Torsos',
-    },
-    description: {
-      Key: 'GRP_Torsos_Desc',
-      TableNamespace: 'ModuleGroups',
-      en: 'Standard torso modules',
     },
   },
   'titan-chassis': {
@@ -56,11 +46,6 @@ export const MODULE_GROUPS = {
       TableNamespace: 'ModuleGroups',
       en: 'Titan Chassis',
     },
-    description: {
-      Key: 'GRP_TitanChassis_Desc',
-      TableNamespace: 'ModuleGroups',
-      en: 'Chassis modules for Titan mechs',
-    },
   },
   'non-titan-chassis': {
     id: 'non-titan-chassis',
@@ -69,11 +54,6 @@ export const MODULE_GROUPS = {
       Key: 'GRP_Chassis_Name',
       TableNamespace: 'ModuleGroups',
       en: 'Chassis',
-    },
-    description: {
-      Key: 'GRP_Chassis_Desc',
-      TableNamespace: 'ModuleGroups',
-      en: 'Standard chassis modules',
     },
   },
   'titan-shoulder': {
@@ -84,11 +64,6 @@ export const MODULE_GROUPS = {
       TableNamespace: 'ModuleGroups',
       en: 'Titan Shoulders',
     },
-    description: {
-      Key: 'GRP_TitanShoulders_Desc',
-      TableNamespace: 'ModuleGroups',
-      en: 'Shoulder modules for Titan mechs',
-    },
   },
   'non-titan-shoulder': {
     id: 'non-titan-shoulder',
@@ -97,11 +72,6 @@ export const MODULE_GROUPS = {
       Key: 'GRP_Shoulders_Name',
       TableNamespace: 'ModuleGroups',
       en: 'Shoulders',
-    },
-    description: {
-      Key: 'GRP_Shoulders_Desc',
-      TableNamespace: 'ModuleGroups',
-      en: 'Standard shoulder modules',
     },
   },
   'light-weapon': {
@@ -112,11 +82,6 @@ export const MODULE_GROUPS = {
       TableNamespace: 'ModuleGroups',
       en: 'Light Weapons',
     },
-    description: {
-      Key: 'GRP_LightWeapons_Desc',
-      TableNamespace: 'ModuleGroups',
-      en: 'Light weapon modules',
-    },
   },
   'heavy-weapon': {
     id: 'heavy-weapon',
@@ -125,11 +90,6 @@ export const MODULE_GROUPS = {
       Key: 'GRP_HeavyWeapons_Name',
       TableNamespace: 'ModuleGroups',
       en: 'Heavy Weapons',
-    },
-    description: {
-      Key: 'GRP_HeavyWeapons_Desc',
-      TableNamespace: 'ModuleGroups',
-      en: 'Heavy weapon modules',
     },
   },
   'titan-weapon': {
@@ -140,11 +100,6 @@ export const MODULE_GROUPS = {
       TableNamespace: 'ModuleGroups',
       en: 'Titan Weapons',
     },
-    description: {
-      Key: 'GRP_TitanWeapons_Desc',
-      TableNamespace: 'ModuleGroups',
-      en: 'Weapon modules for Titan mechs',
-    },
   },
   'supply-gear': {
     id: 'supply-gear',
@@ -153,11 +108,6 @@ export const MODULE_GROUPS = {
       Key: 'GRP_SupplyGear_Name',
       TableNamespace: 'ModuleGroups',
       en: 'Supply Gear',
-    },
-    description: {
-      Key: 'GRP_SupplyGear_Desc',
-      TableNamespace: 'ModuleGroups',
-      en: 'Supply gear modules',
     },
   },
   'cycle-gear': {
@@ -168,18 +118,13 @@ export const MODULE_GROUPS = {
       TableNamespace: 'ModuleGroups',
       en: 'Cycle Gear',
     },
-    description: {
-      Key: 'GRP_CycleGear_Desc',
-      TableNamespace: 'ModuleGroups',
-      en: 'Cycle gear modules',
-    },
   },
 } as const;
 
 export type ModuleGroupId = keyof typeof MODULE_GROUPS;
 
 // Mapping from module type reference to module group
-const MODULE_TYPE_TO_GROUP: Record<string, ModuleGroupId> = {
+export const MODULE_TYPE_TO_GROUP: Record<string, ModuleGroupId> = {
   // Titan torsos
   'DA_ModuleType_TitanAlphaTorso.0': 'titan-torsos',
   'DA_ModuleType_TitanGrimTorso.0': 'titan-torsos',
@@ -293,4 +238,38 @@ export function getAllModuleGroupIdsSorted(): ModuleGroupId[] {
   return Object.entries(MODULE_GROUPS)
     .sort(([, a], [, b]) => a.sort_order - b.sort_order)
     .map(([id]) => id as ModuleGroupId);
+}
+
+/**
+ * Get the most appropriate module type description for a module group
+ * @param groupId - The module group ID
+ * @param moduleTypes - Record of all module types
+ * @returns The localized description object
+ * @throws Error if no description is found for the module group
+ */
+export function getModuleGroupDescription(
+  groupId: ModuleGroupId,
+  moduleTypes: Record<string, ModuleType>
+): { Key: string; TableNamespace: string; en: string } {
+  // Special handling for Supply Gear - use Ability3's description
+  if (groupId === 'supply-gear') {
+    const ability3Type = moduleTypes['DA_ModuleType_Ability3.0'];
+    if (ability3Type?.description) {
+      return ability3Type.description as { Key: string; TableNamespace: string; en: string };
+    }
+    throw new Error(`No description found for Supply Gear module group (DA_ModuleType_Ability3.0)`);
+  }
+
+  // For other groups, find the first module type that maps to this group
+  for (const [moduleTypeId, targetGroupId] of Object.entries(MODULE_TYPE_TO_GROUP)) {
+    if (targetGroupId === groupId) {
+      const moduleType = moduleTypes[moduleTypeId];
+      if (moduleType?.description) {
+        return moduleType.description as { Key: string; TableNamespace: string; en: string };
+      }
+      // If the first module type doesn't have a description, continue searching
+    }
+  }
+
+  throw new Error(`No description found for module group: ${groupId}`);
 }

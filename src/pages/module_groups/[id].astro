@@ -6,9 +6,12 @@ import ModulesNavBox from '../../components/nav/ModulesNavBox.astro';
 import {
   MODULE_GROUPS,
   getAllModuleGroupIds,
+  getModuleGroupDescription,
 } from '../../utils/module_group_mapping';
+import { getParseObjects } from '../../utils/parse_object';
 import { generateSimpleLocalizedMetaDescriptions } from '../../utils/build_localization';
 import { getModuleGroupDetailBreadcrumbs } from '../../utils/breadcrumb';
+import type { ModuleType } from '../../types/module';
 
 export async function getStaticPaths() {
   const groupIds = getAllModuleGroupIds();
@@ -25,12 +28,23 @@ if (!group) {
   throw new Error(`Module group not found: ${id}`);
 }
 
+// Load module types to get dynamic descriptions
+const moduleTypes = getParseObjects<ModuleType>('Objects/ModuleType.json');
+
+// Get the dynamic description for this module group
+let dynamicDescription: { Key: string; TableNamespace: string; en: string } | undefined;
+try {
+  dynamicDescription = getModuleGroupDescription(id as keyof typeof MODULE_GROUPS, moduleTypes);
+} catch {
+  // No description available for this module group - dynamicDescription remains undefined
+}
+
 // Generate localized meta descriptions
 const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
   { Key: 'ModuleGroup_Meta_Description', TableNamespace: 'Web_UI' },
   {
     groupName: group.name,
-    groupDescription: group.description,
+    groupDescription: dynamicDescription || { Key: '', TableNamespace: '', en: '' },
   },
   group.name.en || id
 );
@@ -46,11 +60,11 @@ const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
   <LocalizedText id="category-name" tag="h1" localizationKey={group.name} />
 
   {
-    group.description && (
+    dynamicDescription && (
       <LocalizedText
         id="category-desc"
         tag="p"
-        localizationKey={group.description}
+        localizationKey={dynamicDescription}
       />
     )
   }
