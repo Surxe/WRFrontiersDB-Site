@@ -1,0 +1,181 @@
+---
+import { getParseObjects } from '../../utils/parse_object';
+import type { Pilot, PilotType, PilotTalent, PilotTalentType } from '../../types/pilot';
+import { prepareObjectList, groupBy, sortGroups } from '../../utils/list';
+import { resolveObjectRef } from '../../utils/object_resolver';
+import { refToId } from '../../utils/object_reference';
+import ObjRef from '../../components/obj_ref/ObjRef.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import ParseObjectListPage from '../../components/ParseObjectListPage.astro';
+import PilotsNavBox from '../../components/nav/PilotsNavBox.astro';
+import { getPilotsBreadcrumbs } from '../../utils/breadcrumb';
+import '../../styles/pilots.css';
+import PilotTable from '../../components/pilot/PilotsPageTable.astro';
+
+// Export static paths for dynamic route
+export function getStaticPaths() {
+  return [
+    { params: { view: 'talent-overview' } },
+    { params: { view: 'talent-types' } },
+    { params: { view: 'talent-complete' } }
+  ];
+}
+
+// Get view from URL params
+const { view } = Astro.params;
+const validViews = ['talent-overview', 'talent-types', 'talent-complete'];
+
+// Ensure view is a string, fallback to default if undefined
+const currentView = view || 'talent-overview';
+
+// Validate view and redirect to default if invalid
+if (!validViews.includes(currentView)) {
+  return Astro.redirect('/pilots/talent-overview', 301);
+}
+
+// Load base data (always needed)
+const pilots = getParseObjects<Pilot>('Objects/Pilot.json');
+const pilotTypes = getParseObjects<PilotType>('Objects/PilotType.json');
+const rarities = getParseObjects('Objects/Rarity.json');
+
+// Prepare and filter pilots
+const entries = prepareObjectList(pilots, { prodReadyOnly: false });
+
+// Group by pilot type
+const grouped = groupBy(entries, ([_, pilot]) => refToId(pilot.pilot_type_ref));
+
+// Define explicit sort order for pilot types
+const pilotTypeOrder: Record<string, number> = {
+  'DA_PilotType_Legendary.0': 1,
+  'DA_PilotType_Common.0': 2,
+};
+
+// Sort groups with explicit order: Legendary before Common
+const sortedGroups = sortGroups(grouped, (a, b) => {
+  const orderA = pilotTypeOrder[a] || 999;
+  const orderB = pilotTypeOrder[b] || 999;
+  return orderA - orderB;
+});
+
+// Dynamic data loading based on view
+let pilotTalents: Record<string, PilotTalent> = {};
+let pilotTalentTypes: Record<string, PilotTalentType> = {};
+let pageTitle = '';
+let pageDescription = '';
+
+if (currentView === 'talent-overview' || currentView === 'talent-complete') {
+  pilotTalents = getParseObjects<PilotTalent>('Objects/PilotTalent.json');
+  pageTitle = currentView === 'talent-overview' ? 'Talent Overview' : 'Complete Talents';
+  pageDescription = currentView === 'talent-overview' 
+    ? 'Browse all pilots with their hover talent information from War Robots Frontiers'
+    : 'Browse all pilots with their full talent information from War Robots Frontiers';
+} else if (currentView === 'talent-types') {
+  pilotTalentTypes = getParseObjects<PilotTalentType>('Objects/PilotTalentType.json');
+  pageTitle = 'Talent Types';
+  pageDescription = 'Browse all pilots with their talent type information from War Robots Frontiers';
+}
+
+const pilot = pilots['DA_Pilot_Common1.0']; // Pick an arbitrary pilot for reputation costs
+---
+
+<ParseObjectListPage
+  title={pageTitle}
+  description={pageDescription}
+  headerImage="/images/T_UnLockPilots.png"
+>
+  <Breadcrumb breadcrumbs={getPilotsBreadcrumbs()} />
+
+  <h1>Pilots</h1>
+  
+  <!-- View navigation buttons -->
+  <div class="table-switcher">
+    <div class="switcher-buttons">
+      <a href="/pilots/talent-overview" class={`switcher-btn ${view === 'talent-overview' ? 'active' : ''}`}>
+        Talent Overview
+      </a>
+      <a href="/pilots/talent-types" class={`switcher-btn ${view === 'talent-types' ? 'active' : ''}`}>
+        Talent Types
+      </a>
+      <a href="/pilots/talent-complete" class={`switcher-btn ${view === 'talent-complete' ? 'active' : ''}`}>
+        Complete Talents
+      </a>
+    </div>
+  </div>
+
+  <!-- 
+  Create tables. Levels 1 through 4 may have multiple talents in them, so 
+  the other columns have rowspan to center them within their group of rows
+  -->{
+    sortedGroups.map(([pilotTypeId, pilotEntries]) => (
+      <section>
+        <h2>
+          {(() => {
+            const pilotType = pilotTypes[pilotTypeId];
+            if (!pilotType) {
+              return <span>Unknown Pilot Type: {pilotTypeId}</span>;
+            }
+            const rarity = resolveObjectRef(pilotType.rarity_ref, rarities);
+            return rarity ? (
+              <ObjRef obj={rarity} useHref={false} />
+            ) : (
+              <span>Unknown Rarity</span>
+            );
+          })()}
+        </h2>
+        
+        {currentView === 'talent-overview' && (
+          <PilotTable
+            tableClass="pilots-table-pilot-talent-hover"
+            pilots={pilotEntries}
+            pilotTalents={pilotTalents}
+            fullOrOnHover="onHover"
+          />
+        )}
+        
+        {currentView === 'talent-complete' && (
+          <PilotTable
+            tableClass="pilots-table-pilot-talent-full"
+            pilots={pilotEntries}
+            pilotTalents={pilotTalents}
+            fullOrOnHover="full"
+          />
+        )}
+        
+        {currentView === 'talent-types' && (
+          <PilotTable
+            tableClass="pilots-table-pilot-talent-type"
+            pilots={pilotEntries}
+            pilotTalentTypes={pilotTalentTypes}
+          />
+        )}
+      </section>
+    ))
+  }
+
+  <h2>Reputation Costs</h2>
+  <!--Table for reputation costs-->
+  <p>All pilots have the same reputation costs.</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Level</th>
+        <th>Reputation Cost</th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        pilot.levels?.map((level, index) => (
+          <tr>
+            <td>{index + 1}</td>
+            <td>{level.reputation_cost || 'N/A'}</td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+
+  <div style="display: flex; gap: 20px; margin-top: 20px;">
+    <PilotsNavBox isHero={false} />
+    <PilotsNavBox isHero={true} />
+  </div>
+</ParseObjectListPage>

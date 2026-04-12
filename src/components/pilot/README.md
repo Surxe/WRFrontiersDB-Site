@@ -4,16 +4,6 @@ This directory contains Astro components for rendering pilot data tables and tal
 
 ## Components Overview
 
-### Tables.astro
-
-**Main container component** that orchestrates all pilot table rendering.
-
-- Groups pilots by type (Legendary, Common)
-- Renders three table variants per pilot type:
-  - Talent hover table (onHover)
-  - Full talent table (full)
-  - Talent type table
-
 ### Table.astro
 
 **Generic table renderer** that creates the HTML table structure.
