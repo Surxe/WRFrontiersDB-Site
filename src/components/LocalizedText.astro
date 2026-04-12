@@ -6,9 +6,10 @@ export interface Props {
   id?: string;
   tag: string;
   localizationKey: LocalizationKey;
+  stripColorMarkup?: boolean;
 }
 
-const { id, tag, localizationKey } = Astro.props;
+const { id, tag, localizationKey, stripColorMarkup = false } = Astro.props;
 const Tag = tag as any;
 
 const namespace = localizationKey.TableNamespace;
@@ -27,7 +28,12 @@ otherwise, create a localization element with the necessary data attributes.
   invariantString ? (
     <Tag id={id}>{invariantString}</Tag>
   ) : (
-    <Tag id={id} data-loc-key={key} data-loc-namespace={namespace}>
+    <Tag
+      id={id}
+      data-loc-key={key}
+      data-loc-namespace={namespace}
+      data-strip-color-markup={stripColorMarkup}
+    >
       {defaultText}
     </Tag>
   )
