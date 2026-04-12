@@ -1,6 +1,7 @@
 ---
 import Breadcrumb from '../components/Breadcrumb.astro';
 import ParseObjectListPage from '../components/ParseObjectListPage.astro';
+import ModuleGroupsNavBox from '../components/nav/ModuleGroupsNavBox.astro';
 import {
   MODULE_GROUPS,
   getAllModuleGroupIds,
@@ -37,4 +38,6 @@ const sortedGroups = groupIds
       ))
     }
   </ul>
+
+  <ModuleGroupsNavBox />
 </ParseObjectListPage>

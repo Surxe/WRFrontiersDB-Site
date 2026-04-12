@@ -33,10 +33,7 @@ const {
 // Get the page reference data (localization key, icon path, hex color)
 const objRefData = getObjRefData(obj);
 
-// For ModuleGroup objects, the URL doesn't include the ID
-const pageUrl = obj.parseObjectClass === 'ModuleGroup' 
-  ? (obj.parseObjectUrl && obj.parseObjectUrl.startsWith('/') ? obj.parseObjectUrl : `/${obj.parseObjectUrl}`)
-  : `/${obj.parseObjectUrl}/${obj.id}`;
+const pageUrl = `/${obj.parseObjectUrl}/${obj.id}`;
 
 // Validate hover
 if (useOnHover && !objRefData.hoverText) {
