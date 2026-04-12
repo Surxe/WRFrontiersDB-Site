@@ -2,7 +2,7 @@
 import Breadcrumb from '../../components/Breadcrumb.astro';
 import ParseObjectPage from '../../components/ParseObjectPage.astro';
 import LocalizedText from '../../components/LocalizedText.astro';
-import ModulesNavBox from '../../components/nav/ModulesNavBox.astro';
+import ModuleGroupsNavBox from '../../components/nav/ModuleGroupsNavBox.astro';
 import {
   MODULE_GROUPS,
   getAllModuleGroupIds,
@@ -70,5 +70,5 @@ const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
   }
   <p>Language: <span id="current-lang">en</span></p>
   
-  <ModulesNavBox moduleGroupId={id} />
+  <ModuleGroupsNavBox />
 </ParseObjectPage>

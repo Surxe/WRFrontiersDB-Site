@@ -10,6 +10,14 @@ import type { Module, ModuleCategory } from '../types/module';
 import type { Rarity } from '../types/rarity';
 import type { ParseObject } from '../types/parse_object';
 
+// Define ModuleGroup interface for obj_ref support
+interface ModuleGroup {
+  id: string;
+  name: LocalizationKey;
+  parseObjectClass: string;
+  parseObjectUrl: string;
+}
+
 // All the data necessary to reference the page in a generic way
 export interface ObjRefData {
   text: LocalizationKey;
@@ -98,6 +106,12 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
       return {
         text: rarity.name,
         textBackgroundColor: rarity.hex,
+      };
+    }
+    case 'ModuleGroup': {
+      const moduleGroup = obj as unknown as ModuleGroup;
+      return {
+        text: moduleGroup.name,
       };
     }
     default:

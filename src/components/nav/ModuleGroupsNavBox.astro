@@ -1,0 +1,26 @@
+---
+import BaseNavBox from './BaseNavBox.astro';
+import {
+  MODULE_GROUPS,
+  getAllModuleGroupIdsSorted,
+} from '../../utils/module_group_mapping';
+
+// Get all module group IDs sorted by sort_order
+const moduleGroupIds = getAllModuleGroupIdsSorted();
+
+// Create objects in the format BaseNavBox expects
+const moduleGroupObjects: Array<[string, any]> = moduleGroupIds.map((groupId) => {
+  const group = MODULE_GROUPS[groupId];
+  return [
+    groupId,
+    {
+      id: groupId,
+      name: group.name,
+      parseObjectClass: 'ModuleGroup',
+      parseObjectUrl: `/module_groups/${groupId}`,
+    }
+  ];
+});
+---
+
+<BaseNavBox title="All Module Groups" objects={moduleGroupObjects} />
