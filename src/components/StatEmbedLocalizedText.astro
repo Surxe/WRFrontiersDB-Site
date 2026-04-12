@@ -1,19 +1,7 @@
 ---
 import type { LocalizationKey } from '../types/localization';
+import type { StatValueChoices } from '../types/stat';
 import { getDefaultString } from '../utils/localization';
-
-export interface StatValueChoices {
-  [stat_id: string]: {
-    pattern: string;
-    unitName?: LocalizationKey;
-    unitExponent?: number;
-    decimalPlaces?: number;
-    shortKey: string;
-    choices: {
-      [choiceIndex: number]: number;
-    };
-  };
-}
 
 export interface Props {
   id?: string;

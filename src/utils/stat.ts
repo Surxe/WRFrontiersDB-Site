@@ -25,30 +25,50 @@ export function getStatValueChoices(
   stats.forEach(({ stat_ref, value }) => {
     const statObject = resolveObjectRef(stat_ref, moduleStats);
     if (statObject) {
-      // Get unit pattern (default to {Amount}{Unit} for older versions)
-      const unitPattern =
-        getDefaultString(statObject.unit_pattern) || '{Amount}{Unit}';
-
-      // Apply unit scaler (default to 1.0)
-      const scaler = statObject.unit_scaler ?? 1;
-      const scaledValue = value * scaler;
-
       const statId = statObject.short_key;
       statValueChoices[statId] = {
-        pattern: unitPattern,
-        unitName: statObject.unit_name,
-        unitExponent: statObject.unit_exponent,
-        decimalPlaces: statObject.decimal_places,
-        shortKey: statObject.short_key,
+        ...getStatMetadata(statObject),
         choices: {
-          0: scaledValue,
+          0: scaleStatValue(statObject, value, true),
         },
       };
     }
   });
 
-
   return statValueChoices;
+}
+
+/**
+ * Gets common metadata for a stat object.
+ *
+ * @param statObject - The ModuleStat object
+ * @returns Metadata for StatValueChoices
+ */
+export function getStatMetadata(statObject: ModuleStat) {
+  return {
+    pattern: getDefaultString(statObject.unit_pattern) || '{Amount}{Unit}',
+    unitName: statObject.unit_name,
+    unitExponent: statObject.unit_exponent,
+    decimalPlaces: statObject.decimal_places,
+    shortKey: statObject.short_key,
+  };
+}
+
+/**
+ * Scales a stat value based on its unit_scaler.
+ *
+ * @param statObject - The ModuleStat object
+ * @param value - The raw value to scale
+ * @param applyScaler - Whether to apply the unit_scaler (true for talents, false for module leveled variables)
+ * @returns The scaled value
+ */
+export function scaleStatValue(
+  statObject: ModuleStat,
+  value: number,
+  applyScaler: boolean = true
+): number {
+  const scaler = applyScaler ? statObject.unit_scaler ?? 1 : 1;
+  return value * scaler;
 }
 
 /**
@@ -82,47 +102,41 @@ export function getModuleStatValueChoices(
   const variables = scalars.levels.variables;
 
   if (primaryStat) {
-    const unitPattern =
-      getDefaultString(primaryStat.unit_pattern) || '{Amount}{Unit}';
-    const scaler = primaryStat.unit_scaler ?? 1;
     const statId = primaryStat.short_key;
-
     statValueChoices[statId] = {
-      pattern: unitPattern,
-      unitName: primaryStat.unit_name,
-      unitExponent: primaryStat.unit_exponent,
-      decimalPlaces: primaryStat.decimal_places,
-      shortKey: primaryStat.short_key,
+      ...getStatMetadata(primaryStat),
       choices: {},
     };
 
     variables.forEach((variable, index) => {
       const value = variable.PrimaryParameter as number | undefined;
       if (value !== undefined) {
-        statValueChoices[statId].choices[index] = value * scaler;
+        // Module leveled variables are already scaled in the data
+        statValueChoices[statId].choices[index] = scaleStatValue(
+          primaryStat,
+          value,
+          false
+        );
       }
     });
   }
 
   if (secondaryStat) {
-    const unitPattern =
-      getDefaultString(secondaryStat.unit_pattern) || '{Amount}{Unit}';
-    const scaler = secondaryStat.unit_scaler ?? 1;
     const statId = secondaryStat.short_key;
-
     statValueChoices[statId] = {
-      pattern: unitPattern,
-      unitName: secondaryStat.unit_name,
-      unitExponent: secondaryStat.unit_exponent,
-      decimalPlaces: secondaryStat.decimal_places,
-      shortKey: secondaryStat.short_key,
+      ...getStatMetadata(secondaryStat),
       choices: {},
     };
 
     variables.forEach((variable, index) => {
       const value = variable.SecondaryParameter as number | undefined;
       if (value !== undefined) {
-        statValueChoices[statId].choices[index] = value * scaler;
+        // Module leveled variables are already scaled in the data
+        statValueChoices[statId].choices[index] = scaleStatValue(
+          secondaryStat,
+          value,
+          false
+        );
       }
     });
   }
