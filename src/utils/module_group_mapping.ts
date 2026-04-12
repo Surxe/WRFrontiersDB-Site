@@ -255,17 +255,29 @@ export function getModuleGroupDescription(
   if (groupId === 'supply-gear') {
     const ability3Type = moduleTypes['DA_ModuleType_Ability3.0'];
     if (ability3Type?.description) {
-      return ability3Type.description as { Key: string; TableNamespace: string; en: string };
+      return ability3Type.description as {
+        Key: string;
+        TableNamespace: string;
+        en: string;
+      };
     }
-    throw new Error(`No description found for Supply Gear module group (DA_ModuleType_Ability3.0)`);
+    throw new Error(
+      `No description found for Supply Gear module group (DA_ModuleType_Ability3.0)`
+    );
   }
 
   // For other groups, find the first module type that maps to this group
-  for (const [moduleTypeId, targetGroupId] of Object.entries(MODULE_TYPE_TO_GROUP)) {
+  for (const [moduleTypeId, targetGroupId] of Object.entries(
+    MODULE_TYPE_TO_GROUP
+  )) {
     if (targetGroupId === groupId) {
       const moduleType = moduleTypes[moduleTypeId];
       if (moduleType?.description) {
-        return moduleType.description as { Key: string; TableNamespace: string; en: string };
+        return moduleType.description as {
+          Key: string;
+          TableNamespace: string;
+          en: string;
+        };
       }
       // If the first module type doesn't have a description, continue searching
     }

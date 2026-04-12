@@ -36,7 +36,9 @@ const moduleTypes = getParseObjects<ModuleType>('Objects/ModuleType.json');
 
 // Load modules, module types, and module categories
 const modules = getParseObjects<Module>('Objects/Module.json');
-const moduleCategories = getParseObjects<ModuleCategory>('Objects/ModuleCategory.json');
+const moduleCategories = getParseObjects<ModuleCategory>(
+  'Objects/ModuleCategory.json'
+);
 
 // Enrich modules with their module group assignments
 const enrichedModules = enrichModulesWithGroups(
@@ -61,9 +63,14 @@ const filteredModules = prepareObjectList(Object.fromEntries(allGroupModules), {
 });
 
 // Get the dynamic description for this module group
-let dynamicDescription: { Key: string; TableNamespace: string; en: string } | undefined;
+let dynamicDescription:
+  | { Key: string; TableNamespace: string; en: string }
+  | undefined;
 try {
-  dynamicDescription = getModuleGroupDescription(id as keyof typeof MODULE_GROUPS, moduleTypes);
+  dynamicDescription = getModuleGroupDescription(
+    id as keyof typeof MODULE_GROUPS,
+    moduleTypes
+  );
 } catch {
   // No description available for this module group - dynamicDescription remains undefined
 }
@@ -73,7 +80,11 @@ const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
   { Key: 'ModuleGroup_Meta_Description', TableNamespace: 'Web_UI' },
   {
     groupName: group.name,
-    groupDescription: dynamicDescription || { Key: '', TableNamespace: '', en: '' },
+    groupDescription: dynamicDescription || {
+      Key: '',
+      TableNamespace: '',
+      en: '',
+    },
   },
   group.name.en || id
 );
@@ -99,18 +110,20 @@ const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
   }
   <p>Language: <span id="current-lang">en</span></p>
 
-  {filteredModules.length > 0 && (
-    <section>
-      <h2>Modules in this group</h2>
-      <ul>
-        {filteredModules.map(([_id, module]) => (
-          <li>
-            <ObjRef obj={module} />
-          </li>
-        ))}
-      </ul>
-    </section>
-  )}
-  
+  {
+    filteredModules.length > 0 && (
+      <section>
+        <h2>Modules in this group</h2>
+        <ul>
+          {filteredModules.map(([_id, module]) => (
+            <li>
+              <ObjRef obj={module} />
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+
   <ModuleGroupsNavBox />
 </ParseObjectPage>
