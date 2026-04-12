@@ -1,0 +1,26 @@
+---
+export interface Props {
+  maxLevel: number;
+  initialLevel?: number;
+}
+
+const { maxLevel, initialLevel = 0 } = Astro.props;
+---
+
+<div class="level-switcher" style="margin-bottom: 1rem;">
+  <label for="level-switcher" style="font-size: 0.9rem; opacity: 0.8;">
+    Item Level:{' '}
+  </label>
+  <select
+    id="level-switcher"
+    style="background: #1a1a1a; color: white; border: 1px solid #333; padding: 2px 5px; cursor: pointer;"
+  >
+    {
+      Array.from({ length: maxLevel }).map((_, i) => (
+        <option value={i} selected={i === initialLevel}>
+          Level {i + 1}
+        </option>
+      ))
+    }
+  </select>
+</div>

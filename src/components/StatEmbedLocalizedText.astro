@@ -1,19 +1,7 @@
 ---
 import type { LocalizationKey } from '../types/localization';
+import type { StatValueChoices } from '../types/stat';
 import { getDefaultString } from '../utils/localization';
-
-export interface StatValueChoices {
-  [stat_id: string]: {
-    pattern: string;
-    unitName?: LocalizationKey;
-    unitExponent?: number;
-    decimalPlaces?: number;
-    shortKey: string;
-    choices: {
-      [choiceIndex: number]: number;
-    };
-  };
-}
 
 export interface Props {
   id?: string;
@@ -74,6 +62,7 @@ Creates an html element with localization data attributes and stat replacement d
       data-current-choice="0"
       data-number-format="true"
       data-strip-color-markup={stripColorMarkup}
+      data-loc-fallback={defaultText}
     >
       {defaultText}
     </Tag>

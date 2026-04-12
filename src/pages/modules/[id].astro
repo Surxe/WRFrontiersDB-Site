@@ -14,6 +14,10 @@ import {
 import { getDefaultString } from '../../utils/localization';
 import { generateSimpleLocalizedMetaDescriptions } from '../../utils/build_localization';
 import { resolveObjectRef } from '../../utils/object_resolver';
+import type { ModuleStat } from '../../types/module';
+import { getModuleStatValueChoices } from '../../utils/stat';
+import StatEmbedLocalizedText from '../../components/StatEmbedLocalizedText.astro';
+import LevelSwitcher from '../../components/LevelSwitcher.astro';
 import ObjRef from '../../components/obj_ref/ObjRef.astro';
 import ModulesNavBox from '../../components/nav/ModulesNavBox.astro';
 import { getModuleGroupId } from '../../utils/module_group_mapping';
@@ -40,6 +44,11 @@ const rarity = moduleRarity
 
 // Get module group for this module
 const moduleGroupId = getModuleGroupId(module.module_type_ref);
+
+// Get stat choices for leveled descriptions
+const allModuleStats = getParseObjects<ModuleStat>('Objects/ModuleStat.json');
+const statValueChoices = getModuleStatValueChoices(module, allModuleStats);
+const maxLevel = module.module_scalars?.levels?.variables?.length || 0;
 
 if (!module.name) {
   throw new Error(`Module with id ${id} is missing name. 
@@ -75,11 +84,16 @@ const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
 
   {
     module.description && (
-      <LocalizedText
-        id="module-desc"
-        tag="p"
-        localizationKey={module.description}
-      />
+      <div class="module-description-section">
+        <StatEmbedLocalizedText
+          id="module-desc"
+          tag="p"
+          localizationKey={module.description}
+          statValueChoices={statValueChoices}
+        />
+
+        {maxLevel > 0 && <LevelSwitcher maxLevel={maxLevel} />}
+      </div>
     )
   }
   <p>Language: <span id="current-lang">en</span></p>
