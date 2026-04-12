@@ -7,11 +7,14 @@ import {
   MODULE_GROUPS,
   getAllModuleGroupIds,
   getModuleGroupDescription,
+  enrichModulesWithGroups,
 } from '../../utils/module_group_mapping';
 import { getParseObjects } from '../../utils/parse_object';
 import { generateSimpleLocalizedMetaDescriptions } from '../../utils/build_localization';
 import { getModuleGroupDetailBreadcrumbs } from '../../utils/breadcrumb';
-import type { ModuleType } from '../../types/module';
+import { prepareObjectList } from '../../utils/list';
+import type { ModuleType, Module, ModuleCategory } from '../../types/module';
+import ObjRef from '../../components/obj_ref/ObjRef.astro';
 
 export async function getStaticPaths() {
   const groupIds = getAllModuleGroupIds();
@@ -30,6 +33,32 @@ if (!group) {
 
 // Load module types to get dynamic descriptions
 const moduleTypes = getParseObjects<ModuleType>('Objects/ModuleType.json');
+
+// Load modules, module types, and module categories
+const modules = getParseObjects<Module>('Objects/Module.json');
+const moduleCategories = getParseObjects<ModuleCategory>('Objects/ModuleCategory.json');
+
+// Enrich modules with their module group assignments
+const enrichedModules = enrichModulesWithGroups(
+  modules,
+  moduleTypes,
+  moduleCategories
+);
+
+// Filter modules for this specific group and production-ready only
+const allGroupModules = Object.entries(enrichedModules).filter(
+  ([_, module]) => module.module_group === id
+);
+
+// Use prepareObjectList to filter production-ready modules
+const filteredModules = prepareObjectList(Object.fromEntries(allGroupModules), {
+  prodReadyOnly: true,
+}).sort(([_a, a], [_b, b]) => {
+  // Sort by module name
+  const nameA = a.name?.Key || a.id;
+  const nameB = b.name?.Key || b.id;
+  return nameA.localeCompare(nameB);
+});
 
 // Get the dynamic description for this module group
 let dynamicDescription: { Key: string; TableNamespace: string; en: string } | undefined;
@@ -69,6 +98,19 @@ const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
     )
   }
   <p>Language: <span id="current-lang">en</span></p>
+
+  {filteredModules.length > 0 && (
+    <section>
+      <h2>Modules in this group</h2>
+      <ul>
+        {filteredModules.map(([_id, module]) => (
+          <li>
+            <ObjRef obj={module} />
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
   
   <ModuleGroupsNavBox />
 </ParseObjectPage>
