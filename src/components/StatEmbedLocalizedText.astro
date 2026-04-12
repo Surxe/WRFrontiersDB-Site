@@ -20,9 +20,10 @@ export interface Props {
   tag: string;
   localizationKey: LocalizationKey;
   statValueChoices: StatValueChoices;
+  stripColorMarkup?: boolean;
 }
 
-const { id, tag, localizationKey, statValueChoices } = Astro.props;
+const { id, tag, localizationKey, statValueChoices, stripColorMarkup = false } = Astro.props;
 const Tag = tag as any;
 
 // Build the choice map using shortKey from data
@@ -66,6 +67,7 @@ Creates an html element with localization data attributes and stat replacement d
       data-stat-value-choices={JSON.stringify(choiceMap)}
       data-current-choice="0"
       data-number-format="true"
+      data-strip-color-markup={stripColorMarkup}
     >
       {defaultText}
     </Tag>

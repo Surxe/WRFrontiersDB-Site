@@ -10,6 +10,21 @@ import {
 } from './stat-formatting.js';
 import { updateNumberElements } from './number-formatting.js';
 
+/**
+ * Removes color markup patterns from text
+ * Patterns like <Orange>Gear</> become Gear
+ * @param {string} text - Text to process
+ * @returns {string} Text with color markup removed
+ */
+function removeColorMarkup(text) {
+  if (!text || typeof text !== 'string') {
+    return text;
+  }
+  
+  // Remove patterns like <Color>text</> where Color can be any word
+  return text.replace(/<(\w+)>([^<]*)<\/>/g, '$2');
+}
+
 // Localization cache shared across all pages
 const localizationCache = {};
 
@@ -135,6 +150,12 @@ export function updateLocalizedElements(locData, selectors) {
           } catch (error) {
             console.warn('Failed to parse stat value choices:', error);
           }
+        }
+
+        // Apply color markup stripping if requested
+        const shouldStripColorMarkup = element.dataset.stripColorMarkup === 'true';
+        if (shouldStripColorMarkup) {
+          localizedText = removeColorMarkup(localizedText);
         }
 
         element.innerHTML = localizedText;

@@ -3,6 +3,7 @@ import Breadcrumb from '../../components/Breadcrumb.astro';
 import ParseObjectPage from '../../components/ParseObjectPage.astro';
 import LocalizedText from '../../components/LocalizedText.astro';
 import ModuleGroupsNavBox from '../../components/nav/ModuleGroupsNavBox.astro';
+import ObjectPageScripts from '../../components/ObjectPageScripts.astro';
 import {
   MODULE_GROUPS,
   getAllModuleGroupIds,
@@ -105,6 +106,7 @@ const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
         id="category-desc"
         tag="p"
         localizationKey={dynamicDescription}
+        stripColorMarkup={true}
       />
     )
   }
@@ -126,4 +128,6 @@ const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
   }
 
   <ModuleGroupsNavBox />
+  
+  <ObjectPageScripts objectData={{}} />
 </ParseObjectPage>
