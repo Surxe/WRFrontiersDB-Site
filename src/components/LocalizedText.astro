@@ -28,7 +28,12 @@ otherwise, create a localization element with the necessary data attributes.
   invariantString ? (
     <Tag id={id}>{invariantString}</Tag>
   ) : (
-    <Tag id={id} data-loc-key={key} data-loc-namespace={namespace} data-strip-color-markup={stripColorMarkup}>
+    <Tag
+      id={id}
+      data-loc-key={key}
+      data-loc-namespace={namespace}
+      data-strip-color-markup={stripColorMarkup}
+    >
       {defaultText}
     </Tag>
   )

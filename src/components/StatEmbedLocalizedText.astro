@@ -23,7 +23,13 @@ export interface Props {
   stripColorMarkup?: boolean;
 }
 
-const { id, tag, localizationKey, statValueChoices, stripColorMarkup = false } = Astro.props;
+const {
+  id,
+  tag,
+  localizationKey,
+  statValueChoices,
+  stripColorMarkup = false,
+} = Astro.props;
 const Tag = tag as any;
 
 // Build the choice map using shortKey from data

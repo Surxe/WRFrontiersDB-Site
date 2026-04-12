@@ -20,7 +20,7 @@ function removeColorMarkup(text) {
   if (!text || typeof text !== 'string') {
     return text;
   }
-  
+
   // Remove patterns like <Color>text</> where Color can be any word
   return text.replace(/<(\w+)>([^<]*)<\/>/g, '$2');
 }
@@ -153,7 +153,8 @@ export function updateLocalizedElements(locData, selectors) {
         }
 
         // Apply color markup stripping if requested
-        const shouldStripColorMarkup = element.dataset.stripColorMarkup === 'true';
+        const shouldStripColorMarkup =
+          element.dataset.stripColorMarkup === 'true';
         if (shouldStripColorMarkup) {
           localizedText = removeColorMarkup(localizedText);
         }
