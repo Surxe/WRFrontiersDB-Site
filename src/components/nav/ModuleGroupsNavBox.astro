@@ -9,18 +9,20 @@ import {
 const moduleGroupIds = getAllModuleGroupIdsSorted();
 
 // Create objects in the format BaseNavBox expects
-const moduleGroupObjects: Array<[string, any]> = moduleGroupIds.map((groupId) => {
-  const group = MODULE_GROUPS[groupId];
-  return [
-    groupId,
-    {
-      id: groupId,
-      name: group.name,
-      parseObjectClass: 'ModuleGroup',
-      parseObjectUrl: 'module_groups',
-    }
-  ];
-});
+const moduleGroupObjects: Array<[string, any]> = moduleGroupIds.map(
+  (groupId) => {
+    const group = MODULE_GROUPS[groupId];
+    return [
+      groupId,
+      {
+        id: groupId,
+        name: group.name,
+        parseObjectClass: 'ModuleGroup',
+        parseObjectUrl: 'module_groups',
+      },
+    ];
+  }
+);
 ---
 
 <BaseNavBox title="All Module Groups" objects={moduleGroupObjects} />

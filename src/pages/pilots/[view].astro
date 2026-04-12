@@ -1,6 +1,11 @@
 ---
 import { getParseObjects } from '../../utils/parse_object';
-import type { Pilot, PilotType, PilotTalent, PilotTalentType } from '../../types/pilot';
+import type {
+  Pilot,
+  PilotType,
+  PilotTalent,
+  PilotTalentType,
+} from '../../types/pilot';
 import { prepareObjectList, groupBy, sortGroups } from '../../utils/list';
 import { resolveObjectRef } from '../../utils/object_resolver';
 import { refToId } from '../../utils/object_reference';
@@ -17,7 +22,7 @@ export function getStaticPaths() {
   return [
     { params: { view: 'talent-overview' } },
     { params: { view: 'talent-types' } },
-    { params: { view: 'talent-complete' } }
+    { params: { view: 'talent-complete' } },
   ];
 }
 
@@ -65,14 +70,19 @@ let pageDescription = '';
 
 if (currentView === 'talent-overview' || currentView === 'talent-complete') {
   pilotTalents = getParseObjects<PilotTalent>('Objects/PilotTalent.json');
-  pageTitle = currentView === 'talent-overview' ? 'Talent Overview' : 'Complete Talents';
-  pageDescription = currentView === 'talent-overview' 
-    ? 'Browse all pilots with their hover talent information from War Robots Frontiers'
-    : 'Browse all pilots with their full talent information from War Robots Frontiers';
+  pageTitle =
+    currentView === 'talent-overview' ? 'Talent Overview' : 'Complete Talents';
+  pageDescription =
+    currentView === 'talent-overview'
+      ? 'Browse all pilots with their hover talent information from War Robots Frontiers'
+      : 'Browse all pilots with their full talent information from War Robots Frontiers';
 } else if (currentView === 'talent-types') {
-  pilotTalentTypes = getParseObjects<PilotTalentType>('Objects/PilotTalentType.json');
+  pilotTalentTypes = getParseObjects<PilotTalentType>(
+    'Objects/PilotTalentType.json'
+  );
   pageTitle = 'Talent Types';
-  pageDescription = 'Browse all pilots with their talent type information from War Robots Frontiers';
+  pageDescription =
+    'Browse all pilots with their talent type information from War Robots Frontiers';
 }
 
 const pilot = pilots['DA_Pilot_Common1.0']; // Pick an arbitrary pilot for reputation costs
@@ -86,17 +96,26 @@ const pilot = pilots['DA_Pilot_Common1.0']; // Pick an arbitrary pilot for reput
   <Breadcrumb breadcrumbs={getPilotsBreadcrumbs()} />
 
   <h1>Pilots</h1>
-  
+
   <!-- View navigation buttons -->
   <div class="table-switcher">
     <div class="switcher-buttons">
-      <a href="/pilots/talent-overview" class={`switcher-btn ${view === 'talent-overview' ? 'active' : ''}`}>
+      <a
+        href="/pilots/talent-overview"
+        class={`switcher-btn ${view === 'talent-overview' ? 'active' : ''}`}
+      >
         Talent Overview
       </a>
-      <a href="/pilots/talent-types" class={`switcher-btn ${view === 'talent-types' ? 'active' : ''}`}>
+      <a
+        href="/pilots/talent-types"
+        class={`switcher-btn ${view === 'talent-types' ? 'active' : ''}`}
+      >
         Talent Types
       </a>
-      <a href="/pilots/talent-complete" class={`switcher-btn ${view === 'talent-complete' ? 'active' : ''}`}>
+      <a
+        href="/pilots/talent-complete"
+        class={`switcher-btn ${view === 'talent-complete' ? 'active' : ''}`}
+      >
         Complete Talents
       </a>
     </div>
@@ -122,7 +141,7 @@ const pilot = pilots['DA_Pilot_Common1.0']; // Pick an arbitrary pilot for reput
             );
           })()}
         </h2>
-        
+
         {currentView === 'talent-overview' && (
           <PilotTable
             tableClass="pilots-table-pilot-talent-hover"
@@ -131,7 +150,7 @@ const pilot = pilots['DA_Pilot_Common1.0']; // Pick an arbitrary pilot for reput
             fullOrOnHover="onHover"
           />
         )}
-        
+
         {currentView === 'talent-complete' && (
           <PilotTable
             tableClass="pilots-table-pilot-talent-full"
@@ -140,7 +159,7 @@ const pilot = pilots['DA_Pilot_Common1.0']; // Pick an arbitrary pilot for reput
             fullOrOnHover="full"
           />
         )}
-        
+
         {currentView === 'talent-types' && (
           <PilotTable
             tableClass="pilots-table-pilot-talent-type"

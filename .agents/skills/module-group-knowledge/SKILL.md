@@ -16,7 +16,7 @@ This document explains the differences between Module Type, Module Category, and
 **Structure**: Each module belongs to exactly one category that determines its physical placement:
 
 - **Chassis** - Defines robot mobility, weight capacity, and energy supply
-- **Shoulder** - Provides weapon slots and shield generators  
+- **Shoulder** - Provides weapon slots and shield generators
 - **Torso** - Contains signature core gear modules, some with weapon slots
 - **Weapon** - Weapons (heavy weapons only in universal slots, light weapons in any slot)
 - **Ability** - Tactical consumables with limited uses per battle
@@ -54,12 +54,15 @@ The mapping uses a constant that maps each module type ID to a group ID, then en
 ## Data Relationships
 
 ### Module Object Structure
+
 Each module has:
+
 - `module_type_ref`: Points to a specific ModuleType
 - ModuleType has `module_category_ref`: Points to a ModuleCategory
 
 ### Navigation Flow
-1. **Module** (actual game item) 
+
+1. **Module** (actual game item)
 2. **ModuleType** (specific variant)
 3. **ModuleCategory** (slot type)
 4. **ModuleGroup** (user-friendly grouping)

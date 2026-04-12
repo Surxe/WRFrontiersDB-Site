@@ -1,5 +1,8 @@
 import { describe, test, expect } from 'vitest';
-import { MODULE_GROUPS, MODULE_TYPE_TO_GROUP } from '../src/utils/module_group_mapping';
+import {
+  MODULE_GROUPS,
+  MODULE_TYPE_TO_GROUP,
+} from '../src/utils/module_group_mapping';
 import type { ModuleType } from '../src/types/module';
 import { readFileSync } from 'fs';
 
@@ -12,9 +15,11 @@ describe('Module Group Consistency', () => {
   test('module types within the same group should have consistent names and descriptions (except Supply Gear)', () => {
     // Group module types by their module group
     const typesByGroup: Record<string, string[]> = {};
-    
+
     // Build the mapping from module group to module type IDs
-    for (const [moduleTypeId, groupId] of Object.entries(MODULE_TYPE_TO_GROUP)) {
+    for (const [moduleTypeId, groupId] of Object.entries(
+      MODULE_TYPE_TO_GROUP
+    )) {
       if (!typesByGroup[groupId]) {
         typesByGroup[groupId] = [];
       }
@@ -43,7 +48,8 @@ describe('Module Group Consistency', () => {
       for (const typeId of moduleTypeIds) {
         const moduleType = moduleTypesData[typeId];
         if (moduleType && moduleType.name) {
-          namesByType[typeId] = (moduleType.name as any).en || '';
+          const nameObj = moduleType.name as { en?: string };
+          namesByType[typeId] = nameObj.en || '';
         }
       }
 
@@ -54,7 +60,9 @@ describe('Module Group Consistency', () => {
           groupName,
           issue: 'name',
           moduleTypes: moduleTypeIds,
-          values: Object.entries(namesByType).map(([type, name]) => `${type}: "${name}"`)
+          values: Object.entries(namesByType).map(
+            ([type, name]) => `${type}: "${name}"`
+          ),
         });
       }
 
@@ -63,14 +71,15 @@ describe('Module Group Consistency', () => {
       for (const typeId of moduleTypeIds) {
         const moduleType = moduleTypesData[typeId];
         if (moduleType && moduleType.description) {
-          descriptionsByType[typeId] = (moduleType.description as any).en || '';
+          const descObj = moduleType.description as { en?: string };
+          descriptionsByType[typeId] = descObj.en || '';
         } else {
           descriptionsByType[typeId] = '[NO DESCRIPTION]';
         }
       }
 
       const uniqueDescriptions = new Set(Object.values(descriptionsByType));
-      
+
       // Supply Gear is expected to have differing descriptions (Ability2 vs Ability3)
       if (groupId === 'supply-gear') {
         if (uniqueDescriptions.size <= 1) {
@@ -79,7 +88,9 @@ describe('Module Group Consistency', () => {
             groupName,
             issue: 'description',
             moduleTypes: moduleTypeIds,
-            values: [`Expected differing descriptions for Supply Gear, but found: ${Array.from(uniqueDescriptions).join(', ')}`]
+            values: [
+              `Expected differing descriptions for Supply Gear, but found: ${Array.from(uniqueDescriptions).join(', ')}`,
+            ],
           });
         }
       } else {
@@ -90,7 +101,9 @@ describe('Module Group Consistency', () => {
             groupName,
             issue: 'description',
             moduleTypes: moduleTypeIds,
-            values: Object.entries(descriptionsByType).map(([type, desc]) => `${type}: "${desc}"`)
+            values: Object.entries(descriptionsByType).map(
+              ([type, desc]) => `${type}: "${desc}"`
+            ),
           });
         }
       }
@@ -99,17 +112,19 @@ describe('Module Group Consistency', () => {
     // Report inconsistencies
     if (inconsistencies.length > 0) {
       console.warn('\n=== Module Group Consistency Issues ===\n');
-      
+
       for (const inconsistency of inconsistencies) {
-        console.warn(`Group: ${inconsistency.groupName} (${inconsistency.groupId})`);
+        console.warn(
+          `Group: ${inconsistency.groupName} (${inconsistency.groupId})`
+        );
         console.warn(`Issue: ${inconsistency.issue} mismatch\n`);
-        
+
         for (const value of inconsistency.values) {
           console.warn(`  ${value}`);
         }
         console.warn('');
       }
-      
+
       console.warn(`Total inconsistencies found: ${inconsistencies.length}`);
     }
 
@@ -119,7 +134,7 @@ describe('Module Group Consistency', () => {
 
   test('all module types in mapping should exist in the data', () => {
     const missingTypes: string[] = [];
-    
+
     for (const moduleTypeId of Object.keys(MODULE_TYPE_TO_GROUP)) {
       if (!moduleTypesData[moduleTypeId]) {
         missingTypes.push(moduleTypeId);
@@ -128,7 +143,7 @@ describe('Module Group Consistency', () => {
 
     if (missingTypes.length > 0) {
       console.warn('\n=== Missing Module Types ===\n');
-      missingTypes.forEach(type => console.warn(`Missing: ${type}`));
+      missingTypes.forEach((type) => console.warn(`Missing: ${type}`));
     }
 
     expect(missingTypes.length).toBe(0);
