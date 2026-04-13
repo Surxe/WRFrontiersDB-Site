@@ -4,9 +4,12 @@ import ParseObjectListPage from '../components/ParseObjectListPage.astro';
 import { getCharacterPresetsBreadcrumbs } from '../utils/breadcrumb';
 import { getParseObjects } from '../utils/parse_object';
 import { prepareObjectList } from '../utils/list';
+import ObjRef from '../components/obj_ref/ObjRef.astro';
+import { refToId } from '../utils/object_reference';
 
-// Load character presets
+// Load character presets and modules
 const presets = getParseObjects('Objects/CharacterPreset.json');
+const modules = getParseObjects('Objects/Module.json');
 
 // Prepare and filter presets
 const entries = prepareObjectList(presets, { prodReadyOnly: false });
@@ -31,12 +34,27 @@ const sortedPresets = entries.sort(([_a, a], [_b, b]) => {
   <div class="presets-list">
     {sortedPresets.map(([id, preset]) => (
       <div class="preset-item">
-        <h3>{preset.name?.en || preset.id}</h3>
+        <ObjRef obj={preset} showIcon={false} />
         <p>
           {preset.is_factory_preset ? 'Factory' : 'Custom'} • {preset.character_type}
         </p>
         <p>Pilot: {preset.pilot_ref}</p>
-        <p>Modules: {Object.keys(preset.modules).length}</p>
+        {preset.is_factory_preset ? (
+          <p>Modules: {Object.keys(preset.modules).length}</p>
+        ) : (
+          <div class="modules-list">
+            <strong>Modules:</strong>
+            {Object.values(preset.modules).map((moduleInfo) => {
+              const moduleId = refToId(moduleInfo.module_ref);
+              const module = modules[moduleId];
+              return module ? (
+                <ObjRef obj={module} showIcon={false} />
+              ) : (
+                <span>{moduleInfo.module_ref}</span>
+              );
+            })}
+          </div>
+        )}
       </div>
     ))}
   </div>
@@ -56,13 +74,24 @@ const sortedPresets = entries.sort(([_a, a], [_b, b]) => {
     background: #f9f9f9;
   }
 
-  .preset-item h3 {
-    margin: 0 0 0.5rem 0;
-    color: #333;
-  }
-
+  
   .preset-item p {
     margin: 0.25rem 0;
     color: #666;
+  }
+
+  .modules-list {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+  }
+
+  .modules-list strong {
+    display: block;
+    margin-bottom: 0.25rem;
+    color: #333;
+  }
+
+  .modules-list .obj-ref {
+    margin-right: 0.5rem;
   }
 </style>

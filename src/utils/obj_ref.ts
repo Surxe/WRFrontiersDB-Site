@@ -8,6 +8,7 @@ import type {
 } from '../types/pilot';
 import type { Module, ModuleCategory } from '../types/module';
 import type { Rarity } from '../types/rarity';
+import type { CharacterPreset } from '../types/character_preset';
 import type { ParseObject } from '../types/parse_object';
 
 // Define ModuleGroup interface for obj_ref support
@@ -106,6 +107,12 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
       return {
         text: rarity.name,
         textBackgroundColor: rarity.hex,
+      };
+    }
+    case 'CharacterPreset': {
+      const characterPreset = obj as CharacterPreset;
+      return {
+        text: characterPreset.name,
       };
     }
     case 'ModuleGroup': {
