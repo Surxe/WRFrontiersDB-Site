@@ -8,6 +8,7 @@ import type {
   PilotTalent,
   PilotTalentType,
 } from '../types/pilot';
+import type { CharacterPreset } from '../types/character_preset';
 import { MODULE_GROUPS } from './module_group_mapping';
 
 /**
@@ -406,6 +407,67 @@ export function getPilotTalentDetailBreadcrumbs(
     },
     {
       label: talentName,
+      href: undefined,
+      isCurrent: true,
+    },
+  ];
+}
+
+/**
+ * Generate breadcrumb trail for character presets list page
+ */
+export function getCharacterPresetsBreadcrumbs(): BreadcrumbTrail {
+  return [
+    {
+      label: 'Home',
+      href: '/',
+      isCurrent: false,
+    },
+    {
+      label: 'Character Presets',
+      href: '/character_presets',
+      isCurrent: true,
+    },
+  ];
+}
+
+/**
+ * Generate breadcrumb trail for factory presets list page
+ */
+export function getFactoryPresetsBreadcrumbs(): BreadcrumbTrail {
+  return [
+    {
+      label: 'Home',
+      href: '/',
+      isCurrent: false,
+    },
+    {
+      label: 'Factory Presets',
+      href: '/factory_presets',
+      isCurrent: true,
+    },
+  ];
+}
+
+/**
+ * Generate breadcrumb trail for character preset detail page
+ */
+export function getCharacterPresetDetailBreadcrumbs(preset: CharacterPreset): BreadcrumbTrail {
+  const presetName = getDefaultString(preset.name) || preset.id;
+  
+  return [
+    {
+      label: 'Home',
+      href: '/',
+      isCurrent: false,
+    },
+    {
+      label: 'Character Presets',
+      href: '/character_presets',
+      isCurrent: false,
+    },
+    {
+      label: presetName,
       href: undefined,
       isCurrent: true,
     },

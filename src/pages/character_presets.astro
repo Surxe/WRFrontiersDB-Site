@@ -1,0 +1,68 @@
+---
+import Breadcrumb from '../components/Breadcrumb.astro';
+import ParseObjectListPage from '../components/ParseObjectListPage.astro';
+import { getCharacterPresetsBreadcrumbs } from '../utils/breadcrumb';
+import { getParseObjects } from '../utils/parse_object';
+import { prepareObjectList } from '../utils/list';
+
+// Load character presets
+const presets = getParseObjects('Objects/CharacterPreset.json');
+
+// Prepare and filter presets
+const entries = prepareObjectList(presets, { prodReadyOnly: false });
+
+// Sort presets by name
+const sortedPresets = entries.sort(([_a, a], [_b, b]) => {
+  const nameA = a.name?.en || a.id;
+  const nameB = b.name?.en || b.id;
+  return nameA.localeCompare(nameB);
+});
+---
+
+<ParseObjectListPage
+  title="Character Presets"
+  description="Browse all character presets from War Robots Frontiers"
+  headerImage="/images/T_UnLockPilots.png"
+>
+  <Breadcrumb breadcrumbs={getCharacterPresetsBreadcrumbs()} />
+
+  <h1>Character Presets</h1>
+
+  <div class="presets-list">
+    {sortedPresets.map(([id, preset]) => (
+      <div class="preset-item">
+        <h3>{preset.name?.en || preset.id}</h3>
+        <p>
+          {preset.is_factory_preset ? 'Factory' : 'Custom'} • {preset.character_type}
+        </p>
+        <p>Pilot: {preset.pilot_ref}</p>
+        <p>Modules: {Object.keys(preset.modules).length}</p>
+      </div>
+    ))}
+  </div>
+</ParseObjectListPage>
+
+<style>
+  .presets-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .preset-item {
+    padding: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #f9f9f9;
+  }
+
+  .preset-item h3 {
+    margin: 0 0 0.5rem 0;
+    color: #333;
+  }
+
+  .preset-item p {
+    margin: 0.25rem 0;
+    color: #666;
+  }
+</style>
