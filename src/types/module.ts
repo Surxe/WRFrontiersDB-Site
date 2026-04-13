@@ -58,7 +58,19 @@ export interface Module extends ParseObject {
     };
     module_name?: string;
   };
-  abilities_scalars?: unknown; // TODO
+  abilities_scalars?: Array<{
+    primary_stat_ref?: string;
+    secondary_stat_ref?: string;
+    levels?: {
+      constants: Record<string, unknown>;
+      variables?: Array<{
+        upgrade_cost_ref?: string;
+        scrap_rewards_refs?: string[];
+        [key: string]: unknown;
+      }>;
+    };
+    default_scalars?: Record<string, unknown>;
+  }>;
   faction_ref: string;
   module_classes_refs?: string[];
   module_stats_table_ref?: string;
