@@ -190,7 +190,7 @@ export function getModuleAbilityStats(
       if (levels && levels.variables) {
         const primaryStatRef = scalar.primary_stat_ref;
         const secondaryStatRef = scalar.secondary_stat_ref;
-        
+
         const primaryStat = primaryStatRef
           ? resolveObjectRef(primaryStatRef, moduleStats)
           : undefined;
