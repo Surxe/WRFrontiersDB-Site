@@ -4,10 +4,10 @@ import ParseObjectListPage from '../components/ParseObjectListPage.astro';
 import { getCharacterPresetsBreadcrumbs } from '../utils/breadcrumb';
 import { getParseObjects } from '../utils/parse_object';
 import { prepareObjectList } from '../utils/list';
-import ObjRef from '../components/obj_ref/ObjRef.astro';
+import ModuleRef from '../components/obj_ref/ModuleRef.astro';
 import { refToId } from '../utils/object_reference';
 
-// Load character presets and modules
+// Load character presets, modules, and module types
 const presets = getParseObjects('Objects/CharacterPreset.json');
 const modules = getParseObjects('Objects/Module.json');
 
@@ -16,8 +16,8 @@ const entries = prepareObjectList(presets, { prodReadyOnly: false });
 
 // Sort presets by name
 const sortedPresets = entries.sort(([_a, a], [_b, b]) => {
-  const nameA = a.name?.en || a.id;
-  const nameB = b.name?.en || b.id;
+  const nameA = (a.name as any)?.en || a.id;
+  const nameB = (b.name as any)?.en || b.id;
   return nameA.localeCompare(nameB);
 });
 ---
@@ -32,26 +32,26 @@ const sortedPresets = entries.sort(([_a, a], [_b, b]) => {
   <h1>Character Presets</h1>
 
   <div class="presets-list">
-    {sortedPresets.map(([id, preset]) => (
+    {sortedPresets.map(([_id, preset]) => (
       <div class="preset-item">
-        <ObjRef obj={preset} showIcon={false} />
+        <ModuleRef obj={preset} showIcon={false} />
         <p>
           {preset.is_factory_preset ? 'Factory' : 'Custom'} • {preset.character_type}
         </p>
         <p>Pilot: {preset.pilot_ref}</p>
         {preset.is_factory_preset ? (
-          <p>Modules: {Object.keys(preset.modules).length}</p>
+          <p>Modules: {Object.keys(preset.modules as any).length}</p>
         ) : (
           <div class="modules-list">
             <strong>Modules:</strong>
-            {Object.values(preset.modules).map((moduleInfo) => {
-              const moduleId = refToId(moduleInfo.module_ref);
+            {Object.values(preset.modules as any).map((moduleInfo: any) => {
+              const moduleId = refToId(moduleInfo.module_ref as string);
               const module = modules[moduleId];
-              return module ? (
-                <ObjRef obj={module} showIcon={false} />
-              ) : (
-                <span>{moduleInfo.module_ref}</span>
-              );
+              if (!module) {
+                return <span>{moduleInfo.module_ref}</span>;
+              }
+              
+              return <span style="margin-right: 0.5rem;"><ModuleRef obj={module} showIcon={false} /></span>;
             })}
           </div>
         )}
@@ -91,7 +91,4 @@ const sortedPresets = entries.sort(([_a, a], [_b, b]) => {
     color: #333;
   }
 
-  .modules-list .obj-ref {
-    margin-right: 0.5rem;
-  }
-</style>
+  </style>
