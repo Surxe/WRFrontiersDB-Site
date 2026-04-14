@@ -39,22 +39,18 @@ const sortedPresets = entries.sort(([_a, a], [_b, b]) => {
           {preset.is_factory_preset ? 'Factory' : 'Custom'} • {preset.character_type}
         </p>
         <p>Pilot: {preset.pilot_ref}</p>
-        {preset.is_factory_preset ? (
-          <p>Modules: {Object.keys(preset.modules as any).length}</p>
-        ) : (
-          <div class="modules-list">
-            <strong>Modules:</strong>
-            {Object.values(preset.modules as any).map((moduleInfo: any) => {
-              const moduleId = refToId(moduleInfo.module_ref as string);
-              const module = modules[moduleId];
-              if (!module) {
-                return <span>{moduleInfo.module_ref}</span>;
-              }
-              
-              return <span style="margin-right: 0.5rem;"><ObjRef obj={module} showIcon={false} /></span>;
-            })}
-          </div>
-        )}
+        <div class="modules-list">
+          <strong>Modules:</strong>
+          {Object.values(preset.modules as any).map((moduleInfo: any) => {
+            const moduleId = refToId(moduleInfo.module_ref as string);
+            const module = modules[moduleId];
+            if (!module) {
+              return <span>{moduleInfo.module_ref}</span>;
+            }
+            
+            return <span style="margin-right: 0.5rem;"><ObjRef obj={module} showIcon={false} /></span>;
+          })}
+        </div>
       </div>
     ))}
   </div>
