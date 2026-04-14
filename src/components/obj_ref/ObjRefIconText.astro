@@ -1,6 +1,6 @@
 ---
 import Icon from '../../components/Icon.astro';
-import LocalizedText from '../../components/LocalizedText.astro';
+import ObjRefText from './ObjRefText.astro';
 import type { ObjRefData } from '../../utils/obj_ref';
 import type { LocalizationKey } from '../../types/localization';
 import { getDefaultString } from '../../utils/localization';
@@ -18,7 +18,6 @@ const isMultipleTexts = (text: LocalizationKey | LocalizationKey[]) => {
   return Array.isArray(text);
 };
 
-
 ---
 
 {
@@ -31,32 +30,5 @@ const isMultipleTexts = (text: LocalizationKey | LocalizationKey[]) => {
     />
   )
 }
-{
-  objRefData.textBackgroundColor ? (
-    <div
-      style={`display: inline-block; padding: 2px 8px; background-color: #${objRefData.textBackgroundColor}; border-radius: 4px;`}
-    >
-      {isMultipleTexts(objRefData.text) ? (
-        objRefData.text.map((localizationKey, index) => (
-          <>
-            <LocalizedText id={`text-${index}`} tag="span" localizationKey={localizationKey} />
-            {index < (objRefData.text as LocalizationKey[]).length - 1 && ' '}
-          </>
-        ))
-      ) : (
-        <LocalizedText tag="span" localizationKey={objRefData.text} />
-      )}
-    </div>
-  ) : (
-    isMultipleTexts(objRefData.text) ? (
-      objRefData.text.map((localizationKey, index) => (
-        <>
-          <LocalizedText id={`text-${index}`} tag="span" localizationKey={localizationKey} />
-          {index < (objRefData.text as LocalizationKey[]).length - 1 && ' '}
-        </>
-      ))
-    ) : (
-      <LocalizedText tag="span" localizationKey={objRefData.text} />
-    )
-  )
-}
+
+<ObjRefText objRefData={objRefData} />
