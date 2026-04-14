@@ -17,7 +17,7 @@ const { objRefData, showIcon, iconSize } = Astro.props;
   showIcon && objRefData.iconPath && (
     <Icon
       iconPath={objRefData.iconPath}
-      altText={`${getDefaultString(objRefData.text)} icon`}
+      altText={`${Array.isArray(objRefData.text) ? objRefData.text.map(t => getDefaultString(t)).join(' ') : getDefaultString(objRefData.text)} icon`}
       size={iconSize}
       color={objRefData.iconColor}
     />
@@ -28,9 +28,21 @@ const { objRefData, showIcon, iconSize } = Astro.props;
     <div
       style={`display: inline-block; padding: 2px 8px; background-color: #${objRefData.textBackgroundColor}; border-radius: 4px;`}
     >
-      <LocalizedText tag="span" localizationKey={objRefData.text} />
+      {Array.isArray(objRefData.text) ? (
+        objRefData.text.map((localizationKey, index) => (
+          <LocalizedText id={`text-${index}`} tag="span" localizationKey={localizationKey} />
+        ))
+      ) : (
+        <LocalizedText tag="span" localizationKey={objRefData.text} />
+      )}
     </div>
   ) : (
-    <LocalizedText tag="span" localizationKey={objRefData.text} />
+    Array.isArray(objRefData.text) ? (
+      objRefData.text.map((localizationKey, index) => (
+        <LocalizedText id={`text-${index}`} tag="span" localizationKey={localizationKey} />
+      ))
+    ) : (
+      <LocalizedText tag="span" localizationKey={objRefData.text} />
+    )
   )
 }

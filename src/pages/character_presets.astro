@@ -4,7 +4,7 @@ import ParseObjectListPage from '../components/ParseObjectListPage.astro';
 import { getCharacterPresetsBreadcrumbs } from '../utils/breadcrumb';
 import { getParseObjects } from '../utils/parse_object';
 import { prepareObjectList } from '../utils/list';
-import ModuleRef from '../components/obj_ref/ModuleRef.astro';
+import ObjRef from '../components/obj_ref/ObjRef.astro';
 import { refToId } from '../utils/object_reference';
 
 // Load character presets, modules, and module types
@@ -34,7 +34,7 @@ const sortedPresets = entries.sort(([_a, a], [_b, b]) => {
   <div class="presets-list">
     {sortedPresets.map(([_id, preset]) => (
       <div class="preset-item">
-        <ModuleRef obj={preset} showIcon={false} />
+        <ObjRef obj={preset} showIcon={false} />
         <p>
           {preset.is_factory_preset ? 'Factory' : 'Custom'} • {preset.character_type}
         </p>
@@ -51,7 +51,7 @@ const sortedPresets = entries.sort(([_a, a], [_b, b]) => {
                 return <span>{moduleInfo.module_ref}</span>;
               }
               
-              return <span style="margin-right: 0.5rem;"><ModuleRef obj={module} showIcon={false} /></span>;
+              return <span style="margin-right: 0.5rem;"><ObjRef obj={module} showIcon={false} /></span>;
             })}
           </div>
         )}
