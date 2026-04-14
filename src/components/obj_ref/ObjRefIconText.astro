@@ -2,6 +2,7 @@
 import Icon from '../../components/Icon.astro';
 import LocalizedText from '../../components/LocalizedText.astro';
 import type { ObjRefData } from '../../utils/obj_ref';
+import type { LocalizationKey } from '../../types/localization';
 import { getDefaultString } from '../../utils/localization';
 
 interface Props {
@@ -30,7 +31,10 @@ const { objRefData, showIcon, iconSize } = Astro.props;
     >
       {Array.isArray(objRefData.text) ? (
         objRefData.text.map((localizationKey, index) => (
-          <LocalizedText id={`text-${index}`} tag="span" localizationKey={localizationKey} />
+          <>
+            <LocalizedText id={`text-${index}`} tag="span" localizationKey={localizationKey} />
+            {index < (objRefData.text as LocalizationKey[]).length - 1 && ' '}
+          </>
         ))
       ) : (
         <LocalizedText tag="span" localizationKey={objRefData.text} />
@@ -39,7 +43,10 @@ const { objRefData, showIcon, iconSize } = Astro.props;
   ) : (
     Array.isArray(objRefData.text) ? (
       objRefData.text.map((localizationKey, index) => (
-        <LocalizedText id={`text-${index}`} tag="span" localizationKey={localizationKey} />
+        <>
+          <LocalizedText id={`text-${index}`} tag="span" localizationKey={localizationKey} />
+          {index < (objRefData.text as LocalizationKey[]).length - 1 && ' '}
+        </>
       ))
     ) : (
       <LocalizedText tag="span" localizationKey={objRefData.text} />

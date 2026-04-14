@@ -56,7 +56,7 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
           throw new Error('Core module has no valid category');
         }
         return {
-          text: [category.name as LocalizationKey, module.name as LocalizationKey],
+          text: [module.name as LocalizationKey, category.name as LocalizationKey],
           iconPath: module.inventory_icon_path,
           hoverText: module.description || undefined,
         };
