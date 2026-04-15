@@ -22,7 +22,6 @@ const sortedPresets = botEntries.sort(([_a, a], [_b, b]) => {
   const nameB = (b.name as any)?.en || b.id;
   return nameA.localeCompare(nameB);
 });
-
 ---
 
 <ParseObjectListPage
@@ -31,7 +30,7 @@ const sortedPresets = botEntries.sort(([_a, a], [_b, b]) => {
   headerImage="/images/T_UnLockPilots.png"
 >
   <Breadcrumb breadcrumbs={getBotPresetsBreadcrumbs()} />
-  
+
   <PresetsNavBox />
 
   <h1>Bot Presets</h1>

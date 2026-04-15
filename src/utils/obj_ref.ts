@@ -48,7 +48,7 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
         // The only modules without names are ones without production_status=Ready, which are never display
         throw new Error('Module object has no name');
       }
-      
+
       // Check if this is a core module
       if (isCoreModule(module)) {
         const category = getCoreModuleCategory(module);
@@ -56,12 +56,15 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
           throw new Error('Core module has no valid category');
         }
         return {
-          text: [module.name as LocalizationKey, category.name as LocalizationKey],
+          text: [
+            module.name as LocalizationKey,
+            category.name as LocalizationKey,
+          ],
           iconPath: module.inventory_icon_path,
           hoverText: module.description || undefined,
         };
       }
-      
+
       return {
         text: module.name,
         iconPath: module.inventory_icon_path,

@@ -15,10 +15,11 @@ const isMultipleTexts = (text: LocalizationKey | LocalizationKey[]) => {
 };
 
 // Helper function to normalize text to array
-const getTextElements = (text: LocalizationKey | LocalizationKey[]): LocalizationKey[] => {
+const getTextElements = (
+  text: LocalizationKey | LocalizationKey[]
+): LocalizationKey[] => {
   return isMultipleTexts(text) ? text : [text];
 };
-
 ---
 
 {

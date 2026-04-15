@@ -13,13 +13,18 @@ const MODULE_CATEGORIES = getParseObjects('Objects/ModuleCategory.json');
  */
 export function isCoreModule(module: ParseObject): boolean {
   if (!module.module_type_ref) return false;
-  
+
   // Use object resolver to get the module type
-  const moduleType = resolveObjectRef(module.module_type_ref as string, MODULE_TYPES);
+  const moduleType = resolveObjectRef(
+    module.module_type_ref as string,
+    MODULE_TYPES
+  );
   if (!moduleType?.module_category_ref) return false;
-  
+
   const categoryId = refToId(moduleType.module_category_ref as string);
-  return CORE_MODULE_CATEGORIES.includes(categoryId as typeof CORE_MODULE_CATEGORIES[number]);
+  return CORE_MODULE_CATEGORIES.includes(
+    categoryId as (typeof CORE_MODULE_CATEGORIES)[number]
+  );
 }
 
 /**
@@ -27,12 +32,19 @@ export function isCoreModule(module: ParseObject): boolean {
  */
 export function getCoreModuleCategory(module: ParseObject): ParseObject | null {
   if (!module.module_type_ref) return null;
-  
-  // Use object resolver to get the module type
-  const moduleType = resolveObjectRef(module.module_type_ref as string, MODULE_TYPES);
-  if (!moduleType?.module_category_ref) return null;
-  
-  // Use object resolver to get the category
-  return resolveObjectRef(moduleType.module_category_ref as string, MODULE_CATEGORIES) || null;
-}
 
+  // Use object resolver to get the module type
+  const moduleType = resolveObjectRef(
+    module.module_type_ref as string,
+    MODULE_TYPES
+  );
+  if (!moduleType?.module_category_ref) return null;
+
+  // Use object resolver to get the category
+  return (
+    resolveObjectRef(
+      moduleType.module_category_ref as string,
+      MODULE_CATEGORIES
+    ) || null
+  );
+}

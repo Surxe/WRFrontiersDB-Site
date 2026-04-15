@@ -10,30 +10,35 @@ interface Props {
 const { presets, modules, pilots } = Astro.props;
 
 // Group presets by character type
-const groupedPresets = presets.reduce((groups, [_id, preset]) => {
-  const characterType = preset.character_type || 'Unknown';
-  if (!groups[characterType]) {
-    groups[characterType] = [];
-  }
-  groups[characterType].push([_id, preset]);
-  return groups;
-}, {} as Record<string, any[]>);
+const groupedPresets = presets.reduce(
+  (groups, [_id, preset]) => {
+    const characterType = preset.character_type || 'Unknown';
+    if (!groups[characterType]) {
+      groups[characterType] = [];
+    }
+    groups[characterType].push([_id, preset]);
+    return groups;
+  },
+  {} as Record<string, any[]>
+);
 
 // Sort groups by character type
 const sortedGroups = Object.keys(groupedPresets).sort();
 ---
 
 <div class="presets-list">
-  {sortedGroups.map(characterType => (
-    <div class="character-type-group">
-      <h2 class="character-type-header">{characterType}</h2>
-      <div class="presets-in-group">
-        {groupedPresets[characterType].map(([_id, preset]) => (
-          <PresetItem preset={preset} modules={modules} pilots={pilots} />
-        ))}
+  {
+    sortedGroups.map((characterType) => (
+      <div class="character-type-group">
+        <h2 class="character-type-header">{characterType}</h2>
+        <div class="presets-in-group">
+          {groupedPresets[characterType].map(([_id, preset]) => (
+            <PresetItem preset={preset} modules={modules} pilots={pilots} />
+          ))}
+        </div>
       </div>
-    </div>
-  ))}
+    ))
+  }
 </div>
 
 <style>

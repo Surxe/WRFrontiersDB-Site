@@ -17,14 +17,13 @@ const { objRefData, showIcon, iconSize } = Astro.props;
 const isMultipleTexts = (text: LocalizationKey | LocalizationKey[]) => {
   return Array.isArray(text);
 };
-
 ---
 
 {
   showIcon && objRefData.iconPath && (
     <Icon
       iconPath={objRefData.iconPath}
-      altText={`${isMultipleTexts(objRefData.text) ? objRefData.text.map(t => getDefaultString(t)).join(' ') : getDefaultString(objRefData.text)} icon`}
+      altText={`${isMultipleTexts(objRefData.text) ? objRefData.text.map((t) => getDefaultString(t)).join(' ') : getDefaultString(objRefData.text)} icon`}
       size={iconSize}
       color={objRefData.iconColor}
     />

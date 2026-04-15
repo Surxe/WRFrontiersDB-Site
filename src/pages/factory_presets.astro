@@ -14,7 +14,9 @@ const pilots = getParseObjects('Objects/Pilot.json');
 
 // Prepare and filter to only factory presets
 const entries = prepareObjectList(presets, { prodReadyOnly: false });
-const factoryEntries = entries.filter(([_, preset]) => preset.is_factory_preset);
+const factoryEntries = entries.filter(
+  ([_, preset]) => preset.is_factory_preset
+);
 
 // Sort presets by name
 const sortedPresets = factoryEntries.sort(([_a, a], [_b, b]) => {
@@ -30,7 +32,7 @@ const sortedPresets = factoryEntries.sort(([_a, a], [_b, b]) => {
   headerImage="/images/T_UnLockPilots.png"
 >
   <Breadcrumb breadcrumbs={getFactoryPresetsBreadcrumbs()} />
-  
+
   <PresetsNavBox />
 
   <h1>Factory Presets</h1>

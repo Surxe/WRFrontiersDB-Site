@@ -16,8 +16,8 @@ export async function getStaticPaths() {
 const { id } = Astro.params;
 
 const preset = getParseObject(id, 'Objects/CharacterPreset.json');
-const pilots = getParseObjects('Objects/Pilot.json');
-const modules = getParseObjects('Objects/Module.json');
+const _pilots = getParseObjects('Objects/Pilot.json');
+const _modules = getParseObjects('Objects/Module.json');
 ---
 
 <ParseObjectListPage
@@ -26,37 +26,50 @@ const modules = getParseObjects('Objects/Module.json');
   headerImage="/images/T_UnLockPilots.png"
 >
   <Breadcrumb breadcrumbs={getCharacterPresetDetailBreadcrumbs(preset)} />
-  
-  {preset ? (
-    <div class="character-preset-detail">
-      <h1>{preset.name?.en || preset.id}</h1>
-      
-      <div class="preset-info">
-        <p><strong>Type:</strong> {preset.is_factory_preset ? 'Factory' : 'Custom'} • {preset.character_type}</p>
-        <p><strong>Pilot:</strong> {preset.pilot_ref}</p>
-        <p><strong>Modules:</strong> {Object.keys(preset.modules).length}</p>
-      </div>
 
-      <div class="preset-sections">
-        <section>
-          <h2>Modules</h2>
-          <ul>
-            {Object.entries(preset.modules).map(([socketName, moduleInfo]) => (
-              <li>
-                <strong>{socketName}:</strong> {moduleInfo.module_ref} (Level {moduleInfo.level})
-              </li>
-            ))}
-          </ul>
-        </section>
+  {
+    preset ? (
+      <div class="character-preset-detail">
+        <h1>{preset.name?.en || preset.id}</h1>
+
+        <div class="preset-info">
+          <p>
+            <strong>Type:</strong>{' '}
+            {preset.is_factory_preset ? 'Factory' : 'Custom'} •{' '}
+            {preset.character_type}
+          </p>
+          <p>
+            <strong>Pilot:</strong> {preset.pilot_ref}
+          </p>
+          <p>
+            <strong>Modules:</strong> {Object.keys(preset.modules).length}
+          </p>
+        </div>
+
+        <div class="preset-sections">
+          <section>
+            <h2>Modules</h2>
+            <ul>
+              {Object.entries(preset.modules).map(
+                ([socketName, moduleInfo]) => (
+                  <li>
+                    <strong>{socketName}:</strong> {moduleInfo.module_ref}{' '}
+                    (Level {moduleInfo.level})
+                  </li>
+                )
+              )}
+            </ul>
+          </section>
+        </div>
       </div>
-    </div>
-  ) : (
-    <div>
-      <h1>Character Preset Not Found</h1>
-      <p>The character preset with ID "{id}" was not found.</p>
-    </div>
-  )}
-  
+    ) : (
+      <div>
+        <h1>Character Preset Not Found</h1>
+        <p>The character preset with ID "{id}" was not found.</p>
+      </div>
+    )
+  }
+
   <ObjectPageScripts objectData={preset} />
 </ParseObjectListPage>
 

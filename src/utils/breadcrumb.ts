@@ -452,9 +452,11 @@ export function getFactoryPresetsBreadcrumbs(): BreadcrumbTrail {
 /**
  * Generate breadcrumb trail for character preset detail page
  */
-export function getCharacterPresetDetailBreadcrumbs(preset: CharacterPreset): BreadcrumbTrail {
+export function getCharacterPresetDetailBreadcrumbs(
+  preset: CharacterPreset
+): BreadcrumbTrail {
   const presetName = getDefaultString(preset.name) || preset.id;
-  
+
   return [
     {
       label: 'Home',
