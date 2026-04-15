@@ -9,6 +9,7 @@ import {
   generateObjectListStaticPaths,
 } from '../../utils/parse_object';
 import { getCharacterPresetDetailBreadcrumbs } from '../../utils/breadcrumb';
+import { getDefaultString } from '../../utils/localization';
 import type { CharacterPreset } from '../../types/character_preset';
 
 export async function getStaticPaths() {
@@ -23,8 +24,8 @@ const modules = getParseObjects('Objects/Module.json');
 ---
 
 <ParseObjectListPage
-  title={preset?.name?.en || preset?.id || 'Character Preset'}
-  description={`View details for character preset ${preset?.name?.en || preset?.id} from War Robots Frontiers`}
+  title={getDefaultString(preset?.name) || preset?.id || 'Character Preset'}
+  description={`View details for character preset ${getDefaultString(preset?.name) || preset?.id} from War Robots Frontiers`}
   headerImage="/images/T_UnLockPilots.png"
 >
   <Breadcrumb breadcrumbs={getCharacterPresetDetailBreadcrumbs(preset)} />
