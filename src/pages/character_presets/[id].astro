@@ -1,6 +1,7 @@
 ---
 import Breadcrumb from '../../components/Breadcrumb.astro';
 import ParseObjectListPage from '../../components/ParseObjectListPage.astro';
+import PresetItem from '../../components/preset/PresetItem.astro';
 import ObjectPageScripts from '../../components/ObjectPageScripts.astro';
 import {
   getParseObject,
@@ -16,8 +17,8 @@ export async function getStaticPaths() {
 const { id } = Astro.params;
 
 const preset = getParseObject(id, 'Objects/CharacterPreset.json');
-const _pilots = getParseObjects('Objects/Pilot.json');
-const _modules = getParseObjects('Objects/Module.json');
+const pilots = getParseObjects('Objects/Pilot.json');
+const modules = getParseObjects('Objects/Module.json');
 ---
 
 <ParseObjectListPage
@@ -32,35 +33,7 @@ const _modules = getParseObjects('Objects/Module.json');
       <div class="character-preset-detail">
         <h1>{preset.name?.en || preset.id}</h1>
 
-        <div class="preset-info">
-          <p>
-            <strong>Type:</strong>{' '}
-            {preset.is_factory_preset ? 'Factory' : 'Custom'} •{' '}
-            {preset.character_type}
-          </p>
-          <p>
-            <strong>Pilot:</strong> {preset.pilot_ref}
-          </p>
-          <p>
-            <strong>Modules:</strong> {Object.keys(preset.modules).length}
-          </p>
-        </div>
-
-        <div class="preset-sections">
-          <section>
-            <h2>Modules</h2>
-            <ul>
-              {Object.entries(preset.modules).map(
-                ([socketName, moduleInfo]) => (
-                  <li>
-                    <strong>{socketName}:</strong> {moduleInfo.module_ref}{' '}
-                    (Level {moduleInfo.level})
-                  </li>
-                )
-              )}
-            </ul>
-          </section>
-        </div>
+        <PresetItem preset={preset} modules={modules} pilots={pilots} />
       </div>
     ) : (
       <div>
@@ -77,40 +50,5 @@ const _modules = getParseObjects('Objects/Module.json');
   .character-preset-detail {
     max-width: 800px;
     margin: 0 auto;
-  }
-
-  .preset-info {
-    background: #f9f9f9;
-    padding: 1rem;
-    border-radius: 8px;
-    margin-bottom: 2rem;
-  }
-
-  .preset-info p {
-    margin: 0.5rem 0;
-  }
-
-  .preset-sections {
-    margin-top: 2rem;
-  }
-
-  .preset-sections h2 {
-    color: #333;
-    border-bottom: 2px solid #eee;
-    padding-bottom: 0.5rem;
-  }
-
-  .preset-sections ul {
-    list-style: none;
-    padding: 0;
-  }
-
-  .preset-sections li {
-    padding: 0.5rem 0;
-    border-bottom: 1px solid #f0f0f0;
-  }
-
-  .preset-sections li:last-child {
-    border-bottom: none;
   }
 </style>
