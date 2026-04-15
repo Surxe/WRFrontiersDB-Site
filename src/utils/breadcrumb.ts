@@ -453,9 +453,9 @@ export function getFactoryPresetsBreadcrumbs(): BreadcrumbTrail {
  * Generate breadcrumb trail for character preset detail page
  */
 export function getCharacterPresetDetailBreadcrumbs(
-  preset: CharacterPreset
+  preset: CharacterPreset | undefined
 ): BreadcrumbTrail {
-  const presetName = getDefaultString(preset.name) || preset.id;
+  const presetName = preset ? getDefaultString(preset.name) || preset.id : 'Unknown Preset';
 
   return [
     {
@@ -464,8 +464,8 @@ export function getCharacterPresetDetailBreadcrumbs(
       isCurrent: false,
     },
     {
-      label: preset.is_factory_preset ? 'Factory Presets' : 'Bot Presets',
-      href: preset.is_factory_preset ? '/factory_presets' : '/bot_presets',
+      label: preset?.is_factory_preset ? 'Factory Presets' : 'Bot Presets',
+      href: preset?.is_factory_preset ? '/factory_presets' : '/bot_presets',
       isCurrent: false,
     },
     {
