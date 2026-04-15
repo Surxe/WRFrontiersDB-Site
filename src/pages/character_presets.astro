@@ -7,9 +7,10 @@ import { prepareObjectList } from '../utils/list';
 import ObjRef from '../components/obj_ref/ObjRef.astro';
 import { refToId } from '../utils/object_reference';
 
-// Load character presets, modules, and module types
+// Load character presets, modules, and pilots
 const presets = getParseObjects('Objects/CharacterPreset.json');
 const modules = getParseObjects('Objects/Module.json');
+const pilots = getParseObjects('Objects/Pilot.json');
 
 // Prepare and filter presets
 const entries = prepareObjectList(presets, { prodReadyOnly: false });
@@ -38,7 +39,16 @@ const sortedPresets = entries.sort(([_a, a], [_b, b]) => {
         <p>
           {preset.is_factory_preset ? 'Factory' : 'Custom'} • {preset.character_type}
         </p>
-        <p>Pilot: {preset.pilot_ref}</p>
+        {preset.pilot_ref && (
+          <p>
+            Pilot: 
+            {(() => {
+              const pilotId = refToId(preset.pilot_ref as string);
+              const pilot = pilots[pilotId];
+              return pilot ? <ObjRef obj={pilot} showIcon={false} /> : preset.pilot_ref;
+            })()}
+          </p>
+        )}
         <div class="modules-list">
           <strong>Modules:</strong>
           {Object.values(preset.modules as any).map((moduleInfo: any) => {
