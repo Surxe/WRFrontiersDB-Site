@@ -136,6 +136,12 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
         text: moduleGroup.name,
       };
     }
+    case 'NavigationLink': {
+      return {
+        text: obj.name as LocalizationKey,
+        iconPath: undefined,
+      };
+    }
     default:
       throw new Error(`Unsupported parseObjectClass: ${obj.parseObjectClass}`);
   }

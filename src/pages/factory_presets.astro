@@ -2,6 +2,7 @@
 import Breadcrumb from '../components/Breadcrumb.astro';
 import ParseObjectListPage from '../components/ParseObjectListPage.astro';
 import PresetsList from '../components/preset/PresetsList.astro';
+import PresetsNavBox from '../components/nav/PresetsNavBox.astro';
 import { getFactoryPresetsBreadcrumbs } from '../utils/breadcrumb';
 import { getParseObjects } from '../utils/parse_object';
 import { prepareObjectList } from '../utils/list';
@@ -29,6 +30,8 @@ const sortedPresets = factoryEntries.sort(([_a, a], [_b, b]) => {
   headerImage="/images/T_UnLockPilots.png"
 >
   <Breadcrumb breadcrumbs={getFactoryPresetsBreadcrumbs()} />
+  
+  <PresetsNavBox />
 
   <h1>Factory Presets</h1>
 

@@ -13,9 +13,6 @@ const { preset, modules, pilots } = Astro.props;
 
 <div class="preset-item">
   <ObjRef obj={preset} showIcon={false} />
-  <p>
-    {preset.is_factory_preset ? 'Factory' : 'Custom'}  {preset.character_type}
-  </p>
   {preset.pilot_ref && (
     <p>
       Pilot: 

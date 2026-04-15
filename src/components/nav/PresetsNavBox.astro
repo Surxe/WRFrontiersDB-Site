@@ -1,0 +1,47 @@
+---
+// Simple navbox for preset navigation
+---
+
+<nav class="nav-box">
+  <h3 class="nav-box-title">Presets</h3>
+  <div class="nav-box-content">
+    <a href="/factory_presets" class="nav-link">Factory Presets</a>
+    <a href="/bot_presets" class="nav-link">Bot Presets</a>
+  </div>
+</nav>
+
+<style>
+  .nav-box {
+    border: 1px solid #ddd;
+    padding: 8px;
+    margin: 12px 0;
+    background: #fff;
+  }
+
+  .nav-box-title {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .nav-box-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .nav-link {
+    display: block;
+    padding: 4px 8px;
+    text-decoration: none;
+    color: #0066cc;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+  }
+
+  .nav-link:hover {
+    background-color: #f0f0f0;
+    color: #004499;
+  }
+</style>
