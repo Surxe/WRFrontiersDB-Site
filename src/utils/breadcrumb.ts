@@ -414,9 +414,9 @@ export function getPilotTalentDetailBreadcrumbs(
 }
 
 /**
- * Generate breadcrumb trail for character presets list page
+ * Generate breadcrumb trail for bot presets list page
  */
-export function getCharacterPresetsBreadcrumbs(): BreadcrumbTrail {
+export function getBotPresetsBreadcrumbs(): BreadcrumbTrail {
   return [
     {
       label: 'Home',
@@ -424,8 +424,8 @@ export function getCharacterPresetsBreadcrumbs(): BreadcrumbTrail {
       isCurrent: false,
     },
     {
-      label: 'Character Presets',
-      href: '/character_presets',
+      label: 'Bot Presets',
+      href: '/bot_presets',
       isCurrent: true,
     },
   ];
@@ -462,8 +462,8 @@ export function getCharacterPresetDetailBreadcrumbs(preset: CharacterPreset): Br
       isCurrent: false,
     },
     {
-      label: 'Character Presets',
-      href: '/character_presets',
+      label: preset.is_factory_preset ? 'Factory Presets' : 'Bot Presets',
+      href: preset.is_factory_preset ? '/factory_presets' : '/bot_presets',
       isCurrent: false,
     },
     {

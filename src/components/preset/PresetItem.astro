@@ -1,0 +1,66 @@
+---
+import ObjRef from '../obj_ref/ObjRef.astro';
+import { refToId } from '../../utils/object_reference';
+
+interface Props {
+  preset: any;
+  modules: any;
+  pilots: any;
+}
+
+const { preset, modules, pilots } = Astro.props;
+---
+
+<div class="preset-item">
+  <ObjRef obj={preset} showIcon={false} />
+  <p>
+    {preset.is_factory_preset ? 'Factory' : 'Custom'}  {preset.character_type}
+  </p>
+  {preset.pilot_ref && (
+    <p>
+      Pilot: 
+      {(() => {
+        const pilotId = refToId(preset.pilot_ref as string);
+        const pilot = pilots[pilotId];
+        return pilot ? <ObjRef obj={pilot} showIcon={false} /> : preset.pilot_ref;
+      })()}
+    </p>
+  )}
+  <div class="modules-list">
+    <strong>Modules:</strong>
+    {Object.values(preset.modules as any).map((moduleInfo: any) => {
+      const moduleId = refToId(moduleInfo.module_ref as string);
+      const module = modules[moduleId];
+      if (!module) {
+        return <span>{moduleInfo.module_ref}</span>;
+      }
+      
+      return <span style="margin-right: 0.5rem;"><ObjRef obj={module} showIcon={false} /></span>;
+    })}
+  </div>
+</div>
+
+<style>
+  .preset-item {
+    padding: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #f9f9f9;
+  }
+
+  .preset-item p {
+    margin: 0.25rem 0;
+    color: #666;
+  }
+
+  .modules-list {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+  }
+
+  .modules-list strong {
+    display: block;
+    margin-bottom: 0.25rem;
+    color: #333;
+  }
+</style>

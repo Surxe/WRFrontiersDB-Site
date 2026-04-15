@@ -2,7 +2,7 @@
 import Breadcrumb from '../components/Breadcrumb.astro';
 import ParseObjectListPage from '../components/ParseObjectListPage.astro';
 import PresetsList from '../components/preset/PresetsList.astro';
-import { getFactoryPresetsBreadcrumbs } from '../utils/breadcrumb';
+import { getBotPresetsBreadcrumbs } from '../utils/breadcrumb';
 import { getParseObjects } from '../utils/parse_object';
 import { prepareObjectList } from '../utils/list';
 
@@ -11,26 +11,27 @@ const presets = getParseObjects('Objects/CharacterPreset.json');
 const modules = getParseObjects('Objects/Module.json');
 const pilots = getParseObjects('Objects/Pilot.json');
 
-// Prepare and filter to only factory presets
+// Prepare and filter presets (only non-factory/bot presets)
 const entries = prepareObjectList(presets, { prodReadyOnly: false });
-const factoryEntries = entries.filter(([_, preset]) => preset.is_factory_preset);
+const botEntries = entries.filter(([_, preset]) => !preset.is_factory_preset);
 
 // Sort presets by name
-const sortedPresets = factoryEntries.sort(([_a, a], [_b, b]) => {
+const sortedPresets = botEntries.sort(([_a, a], [_b, b]) => {
   const nameA = (a.name as any)?.en || a.id;
   const nameB = (b.name as any)?.en || b.id;
   return nameA.localeCompare(nameB);
 });
+
 ---
 
 <ParseObjectListPage
-  title="Factory Presets"
-  description="Browse all factory character presets from War Robots Frontiers"
+  title="Bot Presets"
+  description="Browse all bot presets from War Robots Frontiers"
   headerImage="/images/T_UnLockPilots.png"
 >
-  <Breadcrumb breadcrumbs={getFactoryPresetsBreadcrumbs()} />
+  <Breadcrumb breadcrumbs={getBotPresetsBreadcrumbs()} />
 
-  <h1>Factory Presets</h1>
+  <h1>Bot Presets</h1>
 
   <PresetsList presets={sortedPresets} modules={modules} pilots={pilots} />
 </ParseObjectListPage>

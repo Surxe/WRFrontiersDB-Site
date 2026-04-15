@@ -1,0 +1,25 @@
+---
+import PresetItem from './PresetItem.astro';
+
+interface Props {
+  presets: any[];
+  modules: any;
+  pilots: any;
+}
+
+const { presets, modules, pilots } = Astro.props;
+---
+
+<div class="presets-list">
+  {presets.map(([_id, preset]) => (
+    <PresetItem preset={preset} modules={modules} pilots={pilots} />
+  ))}
+</div>
+
+<style>
+  .presets-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+</style>
