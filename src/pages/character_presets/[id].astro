@@ -9,6 +9,7 @@ import {
   generateObjectListStaticPaths,
 } from '../../utils/parse_object';
 import { getCharacterPresetDetailBreadcrumbs } from '../../utils/breadcrumb';
+import type { CharacterPreset } from '../../types/character_preset';
 
 export async function getStaticPaths() {
   return generateObjectListStaticPaths('CharacterPreset');
@@ -16,7 +17,7 @@ export async function getStaticPaths() {
 
 const { id } = Astro.params;
 
-const preset = getParseObject(id, 'Objects/CharacterPreset.json');
+const preset = getParseObject(id, 'Objects/CharacterPreset.json') as CharacterPreset;
 const pilots = getParseObjects('Objects/Pilot.json');
 const modules = getParseObjects('Objects/Module.json');
 ---
