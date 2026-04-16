@@ -32,57 +32,31 @@ const { preset, modules, pilots } = Astro.props;
   <div class="modules-list">
     <strong>Modules:</strong>
     {
-      Object.entries(preset.modules as any)
-        .sort(([socketA], [socketB]) => {
-          const socketOrder = [
-            'Root',
-            'None', 
-            'Shoulder_L',
-            'Shoulder_R',
-            'Ability',
-            'UltAbility'
-          ];
-          
-          const orderA = socketOrder.indexOf(socketA);
-          const orderB = socketOrder.indexOf(socketB);
-          
-          // If both sockets are in the predefined order, sort by that order
-          if (orderA !== -1 && orderB !== -1) {
-            return orderA - orderB;
-          }
-          
-          // If only one is in predefined order, it comes first
-          if (orderA !== -1) return -1;
-          if (orderB !== -1) return 1;
-          
-          // If neither is in predefined order, maintain original order
-          return 0;
-        })
-        .flatMap(([socketName, moduleInfo]) => {
-          const moduleId = refToId(moduleInfo.module_ref as string);
-          const module = modules[moduleId];
-          if (!module) {
-            return <span>{moduleInfo.module_ref}</span>;
-          }
+      Object.values(preset.modules as any).flatMap((moduleInfo: any) => {
+        const moduleId = refToId(moduleInfo.module_ref as string);
+        const module = modules[moduleId];
+        if (!module) {
+          return <span>{moduleInfo.module_ref}</span>;
+        }
 
-          // If parent_socket_name is "Shoulder_R", display it twice (for both shoulders)
-          if (moduleInfo.parent_socket_name === 'Shoulder_R') {
-            return [
-              <span style="margin-right: 0.5rem;">
-                <ObjRef obj={module} />
-              </span>,
-              <span style="margin-right: 0.5rem;">
-                <ObjRef obj={module} />
-              </span>
-            ];
-          }
-
-          return (
+        // If parent_socket_name is "Shoulder_R", display it twice (for both shoulders)
+        if (moduleInfo.parent_socket_name === 'Shoulder_R') {
+          return [
+            <span style="margin-right: 0.5rem;">
+              <ObjRef obj={module} />
+            </span>,
             <span style="margin-right: 0.5rem;">
               <ObjRef obj={module} />
             </span>
-          );
-        })
+          ];
+        }
+
+        return (
+          <span style="margin-right: 0.5rem;">
+            <ObjRef obj={module} />
+          </span>
+        );
+      })
     }
   </div>
 </div>
