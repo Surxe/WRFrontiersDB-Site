@@ -119,61 +119,85 @@ const shouldShowWeaponGroups = hasDifferentWeaponIds();
 const groupedModules = getGroupedModules();
 ---
 
-<div class="preset-item">
-  <ObjRef obj={preset} iconSize={48} />
-  {
-    preset.pilot_ref && (
-      <p>
-        Pilot:
-        <ObjRef obj={pilots[refToId(preset.pilot_ref)]} iconSize={24} />
-      </p>
-    )
-  }
-  <div class="modules-list">
-    <strong>Modules:</strong>
+<tr class="bot-row">
+  <td class="bot-name">
+    <ObjRef obj={preset} iconSize={32} />
+  </td>
+  <td class="bot-pilot">
     {
-      groupedModules.map(({ module, socketName, moduleInfo, count }) => {
-        // Only show module group info for weapons and only when there are different weapon IDs
-        const isWeapon = isWeaponSocket(socketName);
-        const parentSocket = moduleInfo.parent_socket_name;
-        const moduleGroup =
-          isWeapon && parentSocket
-            ? getModuleGroupForWeaponSocket(socketName)
-            : undefined;
-        const moduleGroupName =
-          shouldShowWeaponGroups && moduleGroup
-            ? getModuleGroupName(moduleGroup)
-            : undefined;
-
-        return (
-          <span style="margin-right: 0.5rem;">
-            <ObjRef obj={module} />
-            {moduleGroupName && (
-              <span style="margin-left: 0.25rem; color: #666; font-size: 0.85rem;">
-                ({moduleGroupName})
-              </span>
-            )}
-            {count > 1 && (
-              <span style="margin-left: 0.25rem; color: #666; font-size: 0.85rem;">
-                x{count}
-              </span>
-            )}
-          </span>
-        );
-      })
+      preset.pilot_ref ? (
+        <ObjRef obj={pilots[refToId(preset.pilot_ref)]} iconSize={24} />
+      ) : (
+        <span class="no-pilot">-</span>
+      )
     }
-  </div>
-</div>
+  </td>
+  <td class="bot-modules">
+    <div class="modules-list">
+      {
+        groupedModules.map(({ module, socketName, moduleInfo, count }) => {
+          // Only show module group info for weapons and only when there are different weapon IDs
+          const isWeapon = isWeaponSocket(socketName);
+          const parentSocket = moduleInfo.parent_socket_name;
+          const moduleGroup =
+            isWeapon && parentSocket
+              ? getModuleGroupForWeaponSocket(socketName)
+              : undefined;
+          const moduleGroupName =
+            shouldShowWeaponGroups && moduleGroup
+              ? getModuleGroupName(moduleGroup)
+              : undefined;
+
+          return (
+            <span class="module-item">
+              <ObjRef obj={module} />
+              {moduleGroupName && (
+                <span class="module-group">
+                  ({moduleGroupName})
+                </span>
+              )}
+              {count > 1 && (
+                <span class="module-count">
+                  x{count}
+                </span>
+              )}
+            </span>
+          );
+        })
+      }
+    </div>
+  </td>
+</tr>
 
 <style>
-  .preset-item {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    padding: 1rem;
-    border: 1px solid #ddd;
-    border-radius: 0.5rem;
-    background-color: #f9f9f9;
+  .bot-row {
+    border-bottom: 1px solid #eee;
+  }
+
+  .bot-row:hover {
+    background-color: #f8f9fa;
+  }
+
+  .bot-name {
+    padding: 0.75rem;
+    font-weight: 500;
+    vertical-align: middle;
+  }
+
+  .bot-pilot {
+    padding: 0.75rem;
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  .no-pilot {
+    color: #999;
+    font-style: italic;
+  }
+
+  .bot-modules {
+    padding: 0.75rem;
+    vertical-align: middle;
   }
 
   .modules-list {
@@ -183,8 +207,20 @@ const groupedModules = getGroupedModules();
     align-items: center;
   }
 
-  .modules-list strong {
-    width: 100%;
-    margin-bottom: 0.25rem;
+  .module-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .module-group {
+    color: #666;
+    font-size: 0.8rem;
+  }
+
+  .module-count {
+    color: #666;
+    font-size: 0.8rem;
+    font-weight: 500;
   }
 </style>

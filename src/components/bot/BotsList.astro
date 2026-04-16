@@ -73,68 +73,115 @@ const sortedGroups = Object.keys(groupedPresets).sort();
 ---
 
 <div class="bots-list">
-  {
-    sortedGroups.map((characterType) => (
-      <div class="character-type-group">
-        <h2 class="character-type-header">{characterType}</h2>
-        {Object.keys(groupedPresets[characterType])
-          .sort()
-          .map((torsoId) => (
-            <div class="torso-group">
-              <h3 class="torso-header">{torsoId}</h3>
-              <div class="bots-in-torso-group">
-                {groupedPresets[characterType][torsoId].map((item: any) => (
-                  <BotItem preset={item[1]} modules={modules} pilots={pilots} />
-                ))}
-              </div>
-            </div>
-          ))}
-      </div>
-    ))
-  }
+  <table class="bots-table">
+    <thead>
+      <tr>
+        <th class="header-name">Bot</th>
+        <th class="header-pilot">Pilot</th>
+        <th class="header-modules">Modules</th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        sortedGroups.map((characterType) => (
+          <>
+            <tr class="character-type-header">
+              <td colspan="3">
+                <h2>{characterType}</h2>
+              </td>
+            </tr>
+            {Object.keys(groupedPresets[characterType])
+              .sort()
+              .map((torsoId) => (
+                <>
+                  <tr class="torso-header">
+                    <td colspan="3">
+                      <h3>{torsoId}</h3>
+                    </td>
+                  </tr>
+                  {groupedPresets[characterType][torsoId].map((item: any) => (
+                    <BotItem preset={item[1]} modules={modules} pilots={pilots} />
+                  ))}
+                </>
+              ))}
+          </>
+        ))
+      }
+    </tbody>
+  </table>
 </div>
 
 <style>
   .bots-list {
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
+    width: 100%;
+    overflow-x: auto;
   }
 
-  .character-type-group {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
+  .bots-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 0.5rem;
+    overflow: hidden;
   }
 
-  .character-type-header {
+  .bots-table th {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+    text-align: left;
+    padding: 1rem;
+    color: #495057;
+  }
+
+  .header-name {
+    width: 25%;
+  }
+
+  .header-pilot {
+    width: 20%;
+    text-align: center;
+  }
+
+  .header-modules {
+    width: 55%;
+  }
+
+  .bots-table td {
+    vertical-align: top;
+  }
+
+  .character-type-header td {
+    background-color: #e9ecef;
+    padding: 1rem;
+  }
+
+  .character-type-header h2 {
+    margin: 0;
     font-size: 1.5rem;
     font-weight: 600;
     color: #333;
+  }
+
+  .torso-header td {
+    background-color: #f8f9fa;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #dee2e6;
+  }
+
+  .torso-header h3 {
     margin: 0;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid #ddd;
-  }
-
-  .torso-group {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .torso-header {
     font-size: 1.2rem;
     font-weight: 500;
     color: #555;
-    margin: 0;
-    padding-bottom: 0.3rem;
-    border-bottom: 1px solid #eee;
   }
 
-  .bots-in-torso-group {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    margin-left: 1rem;
+  .bots-table tbody tr:not(.character-type-header):not(.torso-header):hover {
+    background-color: #f8f9fa;
+  }
+
+  .bots-table tbody tr:not(.character-type-header):not(.torso-header) {
+    border-bottom: 1px solid #eee;
   }
 </style>
