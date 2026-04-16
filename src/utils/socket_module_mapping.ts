@@ -1,6 +1,6 @@
 /**
  * Socket to Module Group Mapping Utility
- * 
+ *
  * Maps weapon socket names from CharacterPreset.json to module groups.
  * Only weapon sockets (Shoulder_Weapon or Torso_Weapon) are mapped.
  */
@@ -17,7 +17,7 @@ export const WEAPON_SOCKET_PREFIXES = {
 export const WEAPON_SOCKET_TO_MODULE_GROUP: Record<string, ModuleGroupId> = {
   // Shoulder weapons map to Shoulder group
   [WEAPON_SOCKET_PREFIXES.SHOULDER_WEAPON]: 'non-titan-shoulder',
-  // Torso weapons map to Torso group  
+  // Torso weapons map to Torso group
   [WEAPON_SOCKET_PREFIXES.TORSO_WEAPON]: 'non-titan-torsos',
 };
 
@@ -27,8 +27,10 @@ export const WEAPON_SOCKET_TO_MODULE_GROUP: Record<string, ModuleGroupId> = {
  * @returns True if it's a weapon socket
  */
 export function isWeaponSocket(socketName: string): boolean {
-  return socketName.startsWith(WEAPON_SOCKET_PREFIXES.SHOULDER_WEAPON) ||
-         socketName.startsWith(WEAPON_SOCKET_PREFIXES.TORSO_WEAPON);
+  return (
+    socketName.startsWith(WEAPON_SOCKET_PREFIXES.SHOULDER_WEAPON) ||
+    socketName.startsWith(WEAPON_SOCKET_PREFIXES.TORSO_WEAPON)
+  );
 }
 
 /**
@@ -36,17 +38,21 @@ export function isWeaponSocket(socketName: string): boolean {
  * @param socketName - The weapon socket name from CharacterPreset.json
  * @returns The module group ID or undefined if not found
  */
-export function getModuleGroupForWeaponSocket(socketName: string): ModuleGroupId | undefined {
+export function getModuleGroupForWeaponSocket(
+  socketName: string
+): ModuleGroupId | undefined {
   if (!isWeaponSocket(socketName)) {
     return undefined;
   }
-  
+
   // Find the matching prefix and return its module group
-  for (const [prefix, groupId] of Object.entries(WEAPON_SOCKET_TO_MODULE_GROUP)) {
+  for (const [prefix, groupId] of Object.entries(
+    WEAPON_SOCKET_TO_MODULE_GROUP
+  )) {
     if (socketName.startsWith(prefix)) {
       return groupId;
     }
   }
-  
+
   return undefined;
 }

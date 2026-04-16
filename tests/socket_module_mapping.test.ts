@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { getModuleGroupForWeaponSocket, isWeaponSocket, WEAPON_SOCKET_PREFIXES } from '../src/utils/socket_module_mapping';
+import {
+  getModuleGroupForWeaponSocket,
+  isWeaponSocket,
+  WEAPON_SOCKET_PREFIXES,
+} from '../src/utils/socket_module_mapping';
 
 describe('socket_module_mapping', () => {
   describe('isWeaponSocket', () => {
@@ -22,12 +26,18 @@ describe('socket_module_mapping', () => {
 
   describe('getModuleGroupForWeaponSocket', () => {
     it('should return correct module group for Shoulder_Weapon sockets', () => {
-      expect(getModuleGroupForWeaponSocket('Shoulder_Weapon_0')).toBe('non-titan-shoulder');
-      expect(getModuleGroupForWeaponSocket('Shoulder_Weapon_1')).toBe('non-titan-shoulder');
+      expect(getModuleGroupForWeaponSocket('Shoulder_Weapon_0')).toBe(
+        'non-titan-shoulder'
+      );
+      expect(getModuleGroupForWeaponSocket('Shoulder_Weapon_1')).toBe(
+        'non-titan-shoulder'
+      );
     });
 
     it('should return correct module group for Torso_Weapon sockets', () => {
-      expect(getModuleGroupForWeaponSocket('Torso_Weapon_0')).toBe('non-titan-torsos');
+      expect(getModuleGroupForWeaponSocket('Torso_Weapon_0')).toBe(
+        'non-titan-torsos'
+      );
     });
 
     it('should return undefined for non-weapon sockets', () => {

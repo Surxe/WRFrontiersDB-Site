@@ -455,7 +455,9 @@ export function getFactoryPresetsBreadcrumbs(): BreadcrumbTrail {
 export function getCharacterPresetDetailBreadcrumbs(
   preset: CharacterPreset | undefined
 ): BreadcrumbTrail {
-  const presetName = preset ? getDefaultString(preset.name) || preset.id : 'Unknown Preset';
+  const presetName = preset
+    ? getDefaultString(preset.name) || preset.id
+    : 'Unknown Preset';
 
   return [
     {

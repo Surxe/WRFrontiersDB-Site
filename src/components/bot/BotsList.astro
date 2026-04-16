@@ -14,34 +14,48 @@ const { presets, modules, pilots } = Astro.props;
 // Helper function to get torso ID from preset
 function getTorsoId(preset: any): string {
   if (!preset.modules) return getDefaultString({ en: 'Unknown' })!;
-  
+
   // Find the torso module (typically in "Root" socket)
   const torsoModule = Object.values(preset.modules as any).find(
     (moduleInfo: any) => {
-      if (!moduleInfo || typeof moduleInfo !== 'object' || !('module_ref' in moduleInfo)) {
+      if (
+        !moduleInfo ||
+        typeof moduleInfo !== 'object' ||
+        !('module_ref' in moduleInfo)
+      ) {
         return false;
       }
       const moduleId = refToId(moduleInfo.module_ref as string);
       const module = modules[moduleId];
-      return module && module.module_type_ref && module.module_type_ref.includes('Torso');
+      return (
+        module &&
+        module.module_type_ref &&
+        module.module_type_ref.includes('Torso')
+      );
     }
   );
-  
-  if (torsoModule && typeof torsoModule === 'object' && torsoModule !== null && 'module_ref' in torsoModule) {
+
+  if (
+    torsoModule &&
+    typeof torsoModule === 'object' &&
+    torsoModule !== null &&
+    'module_ref' in torsoModule
+  ) {
     const torsoId = refToId((torsoModule as any).module_ref as string);
     const torso = modules[torsoId];
     return getDefaultString(torso?.name)!;
   }
-  
+
   return getDefaultString({ en: 'Unknown' })!;
 }
 
 // Group presets by character type, then by torso ID
 const groupedPresets = presets.reduce(
   (groups, [id, preset]) => {
-    const characterType = preset.character_type || getDefaultString({ en: 'Unknown' })!;
+    const characterType =
+      preset.character_type || getDefaultString({ en: 'Unknown' })!;
     const torsoId = getTorsoId(preset);
-    
+
     if (!groups[characterType]) {
       groups[characterType] = {};
     }
@@ -63,8 +77,9 @@ const sortedGroups = Object.keys(groupedPresets).sort();
     sortedGroups.map((characterType) => (
       <div class="character-type-group">
         <h2 class="character-type-header">{characterType}</h2>
-        {
-          Object.keys(groupedPresets[characterType]).sort().map((torsoId) => (
+        {Object.keys(groupedPresets[characterType])
+          .sort()
+          .map((torsoId) => (
             <div class="torso-group">
               <h3 class="torso-header">{torsoId}</h3>
               <div class="bots-in-torso-group">
@@ -73,8 +88,7 @@ const sortedGroups = Object.keys(groupedPresets).sort();
                 ))}
               </div>
             </div>
-          ))
-        }
+          ))}
       </div>
     ))
   }
