@@ -8,7 +8,9 @@ import type {
 } from '../types/pilot';
 import type { Module, ModuleCategory } from '../types/module';
 import type { Rarity } from '../types/rarity';
+import type { CharacterPreset } from '../types/character_preset';
 import type { ParseObject } from '../types/parse_object';
+import { isCoreModule, getCoreModuleCategory } from './core_modules';
 
 // Define ModuleGroup interface for obj_ref support
 interface ModuleGroup {
@@ -20,7 +22,7 @@ interface ModuleGroup {
 
 // All the data necessary to reference the page in a generic way
 export interface ObjRefData {
-  text: LocalizationKey;
+  text: LocalizationKey | LocalizationKey[];
   textBackgroundColor?: string;
   iconPath?: string;
   iconColor?: string;
@@ -46,6 +48,23 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
         // The only modules without names are ones without production_status=Ready, which are never display
         throw new Error('Module object has no name');
       }
+
+      // Check if this is a core module
+      if (isCoreModule(module)) {
+        const category = getCoreModuleCategory(module);
+        if (!category) {
+          throw new Error('Core module has no valid category');
+        }
+        return {
+          text: [
+            module.name as LocalizationKey,
+            category.name as LocalizationKey,
+          ],
+          iconPath: module.inventory_icon_path,
+          hoverText: module.description || undefined,
+        };
+      }
+
       return {
         text: module.name,
         iconPath: module.inventory_icon_path,
@@ -108,10 +127,23 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
         textBackgroundColor: rarity.hex,
       };
     }
+    case 'CharacterPreset': {
+      const characterPreset = obj as CharacterPreset;
+      return {
+        text: characterPreset.name,
+        iconPath: characterPreset.icon || undefined,
+      };
+    }
     case 'ModuleGroup': {
       const moduleGroup = obj as unknown as ModuleGroup;
       return {
         text: moduleGroup.name,
+      };
+    }
+    case 'NavigationLink': {
+      return {
+        text: obj.name as LocalizationKey,
+        iconPath: undefined,
       };
     }
     default:

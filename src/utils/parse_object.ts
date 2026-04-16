@@ -4,12 +4,14 @@ import type { StaticPathsResult, ParseObject } from '../types/parse_object';
 import * as moduleTypes from '../types/module';
 import * as pilotTypes from '../types/pilot';
 import * as rarityTypes from '../types/rarity';
+import * as characterPresetTypes from '../types/character_preset';
 
 // Merge all exported constants from type modules
 const allTypeExports = {
   ...moduleTypes,
   ...pilotTypes,
   ...rarityTypes,
+  ...characterPresetTypes,
 };
 
 /**
@@ -167,7 +169,8 @@ export function generateObjectListStaticPaths(
     | 'PilotTalentType'
     | 'PilotClass'
     | 'PilotPersonality'
-    | 'Rarity',
+    | 'Rarity'
+    | 'CharacterPreset',
   prodReadyOnly: boolean = false
 ): { params: { id: string } }[] {
   const objectPath = path.join(

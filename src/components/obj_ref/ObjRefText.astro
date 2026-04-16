@@ -1,12 +1,25 @@
 ---
-import LocalizedText from '../LocalizedText.astro';
+import TextElements from './TextElements.astro';
 import type { ObjRefData } from '../../utils/obj_ref';
+import type { LocalizationKey } from '../../types/localization';
 
 interface Props {
   objRefData: ObjRefData;
 }
 
 const { objRefData } = Astro.props;
+
+// Helper function to check if text is an array
+const isMultipleTexts = (text: LocalizationKey | LocalizationKey[]) => {
+  return Array.isArray(text);
+};
+
+// Helper function to normalize text to array
+const getTextElements = (
+  text: LocalizationKey | LocalizationKey[]
+): LocalizationKey[] => {
+  return isMultipleTexts(text) ? text : [text];
+};
 ---
 
 {
@@ -14,9 +27,9 @@ const { objRefData } = Astro.props;
     <div
       style={`display: inline-block; padding: 2px 8px; background-color: #${objRefData.textBackgroundColor}; border-radius: 4px;`}
     >
-      <LocalizedText tag="span" localizationKey={objRefData.text} />
+      <TextElements textElements={getTextElements(objRefData.text)} />
     </div>
   ) : (
-    <LocalizedText tag="span" localizationKey={objRefData.text} />
+    <TextElements textElements={getTextElements(objRefData.text)} />
   )
 }

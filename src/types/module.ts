@@ -86,6 +86,8 @@ export interface ModuleCategory extends ParseObject {
   blueprint_name: LocalizationKey;
   tag_color?: string;
   tag_background_color?: string;
+  icon_path: string;
+  description: string;
 }
 
 export interface ModuleType extends ParseObject {

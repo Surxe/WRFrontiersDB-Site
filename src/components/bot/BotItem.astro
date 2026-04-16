@@ -1,0 +1,190 @@
+---
+import ObjRef from '../obj_ref/ObjRef.astro';
+import { refToId } from '../../utils/object_reference';
+import {
+  getModuleGroupForWeaponSocket,
+  isWeaponSocket,
+} from '../../utils/socket_module_mapping';
+import { MODULE_GROUPS } from '../../utils/module_group_mapping';
+
+interface Props {
+  preset: any;
+  modules: any;
+  pilots: any;
+}
+
+const { preset, modules, pilots } = Astro.props;
+
+// Helper function to get module group name
+function getModuleGroupName(groupId: string): string {
+  return (
+    MODULE_GROUPS[groupId as keyof typeof MODULE_GROUPS]?.name?.en || groupId
+  );
+}
+
+// Check if there are different weapon IDs across preset
+function hasDifferentWeaponIds(): boolean {
+  const weaponIds = new Set<string>();
+
+  Object.entries(preset.modules as any).forEach(
+    ([socketName, moduleInfo]: [string, any]) => {
+      if (isWeaponSocket(socketName)) {
+        const moduleId = refToId(moduleInfo.module_ref as string);
+        weaponIds.add(moduleId);
+      }
+    }
+  );
+
+  return weaponIds.size > 1;
+}
+
+// Define desired socket order
+const SOCKET_ORDER = [
+  'Root',
+  'None',
+  'Shoulder_L',
+  'Shoulder_R',
+  'Ability',
+  'UltAbility',
+];
+
+// Group modules by their module reference and parent socket
+function getGroupedModules() {
+  const moduleGroups = new Map<
+    string,
+    {
+      module: any;
+      socketName: string;
+      moduleInfo: any;
+      count: number;
+      socketOrder: number;
+    }
+  >();
+
+  Object.entries(preset.modules as any).forEach(
+    ([socketName, moduleInfo]: [string, any]) => {
+      const moduleId = refToId(moduleInfo.module_ref as string);
+      const module = modules[moduleId];
+      if (!module) {
+        return;
+      }
+
+      // For weapons, group by module reference only
+      // For non-weapons, group by module reference and parent socket
+      const isWeapon = isWeaponSocket(socketName);
+      const key = isWeapon
+        ? moduleInfo.module_ref
+        : `${moduleInfo.module_ref}|${moduleInfo.parent_socket_name || 'none'}`;
+
+      // Calculate the contribution of this entry to the total count
+      const entryCount =
+        isWeapon && moduleInfo.parent_socket_name === 'Shoulder_R' ? 2 : 1;
+
+      // Determine socket order for sorting
+      const socketOrderIndex = SOCKET_ORDER.indexOf(socketName);
+      const socketOrder =
+        socketOrderIndex !== -1 ? socketOrderIndex : SOCKET_ORDER.length;
+
+      if (moduleGroups.has(key)) {
+        // Increment count if already exists
+        const existing = moduleGroups.get(key)!;
+        existing.count += entryCount;
+        // Use the earliest socket order for the group
+        existing.socketOrder = Math.min(existing.socketOrder, socketOrder);
+      } else {
+        // Add new entry with its contribution count and socket order
+        moduleGroups.set(key, {
+          module,
+          socketName,
+          moduleInfo,
+          count: entryCount,
+          socketOrder,
+        });
+      }
+    }
+  );
+
+  // Convert to array and sort by socket order, then by socket name for consistency
+  return Array.from(moduleGroups.values()).sort((a, b) => {
+    // First sort by socket order
+    if (a.socketOrder !== b.socketOrder) {
+      return a.socketOrder - b.socketOrder;
+    }
+    // Then sort by socket name for consistent ordering within the same order
+    return a.socketName.localeCompare(b.socketName);
+  });
+}
+
+const shouldShowWeaponGroups = hasDifferentWeaponIds();
+const groupedModules = getGroupedModules();
+---
+
+<div class="preset-item">
+  <ObjRef obj={preset} iconSize={48} />
+  {
+    preset.pilot_ref && (
+      <p>
+        Pilot:
+        <ObjRef obj={pilots[refToId(preset.pilot_ref)]} iconSize={24} />
+      </p>
+    )
+  }
+  <div class="modules-list">
+    <strong>Modules:</strong>
+    {
+      groupedModules.map(({ module, socketName, moduleInfo, count }) => {
+        // Only show module group info for weapons and only when there are different weapon IDs
+        const isWeapon = isWeaponSocket(socketName);
+        const parentSocket = moduleInfo.parent_socket_name;
+        const moduleGroup =
+          isWeapon && parentSocket
+            ? getModuleGroupForWeaponSocket(socketName)
+            : undefined;
+        const moduleGroupName =
+          shouldShowWeaponGroups && moduleGroup
+            ? getModuleGroupName(moduleGroup)
+            : undefined;
+
+        return (
+          <span style="margin-right: 0.5rem;">
+            <ObjRef obj={module} />
+            {moduleGroupName && (
+              <span style="margin-left: 0.25rem; color: #666; font-size: 0.85rem;">
+                ({moduleGroupName})
+              </span>
+            )}
+            {count > 1 && (
+              <span style="margin-left: 0.25rem; color: #666; font-size: 0.85rem;">
+                x{count}
+              </span>
+            )}
+          </span>
+        );
+      })
+    }
+  </div>
+</div>
+
+<style>
+  .preset-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 0.5rem;
+    background-color: #f9f9f9;
+  }
+
+  .modules-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .modules-list strong {
+    width: 100%;
+    margin-bottom: 0.25rem;
+  }
+</style>

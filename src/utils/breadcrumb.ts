@@ -8,6 +8,7 @@ import type {
   PilotTalent,
   PilotTalentType,
 } from '../types/pilot';
+import type { CharacterPreset } from '../types/character_preset';
 import { MODULE_GROUPS } from './module_group_mapping';
 
 /**
@@ -407,6 +408,107 @@ export function getPilotTalentDetailBreadcrumbs(
     {
       label: talentName,
       href: undefined,
+      isCurrent: true,
+    },
+  ];
+}
+
+/**
+ * Generate breadcrumb trail for bot presets list page
+ */
+export function getBotPresetsBreadcrumbs(): BreadcrumbTrail {
+  return [
+    {
+      label: 'Home',
+      href: '/',
+      isCurrent: false,
+    },
+    {
+      label: 'AI Bots',
+      href: '/ai_bots',
+      isCurrent: true,
+    },
+  ];
+}
+
+/**
+ * Generate breadcrumb trail for factory presets list page
+ */
+export function getFactoryPresetsBreadcrumbs(): BreadcrumbTrail {
+  return [
+    {
+      label: 'Home',
+      href: '/',
+      isCurrent: false,
+    },
+    {
+      label: 'Factory Bots',
+      href: '/factory_bots',
+      isCurrent: true,
+    },
+  ];
+}
+
+/**
+ * Generate breadcrumb trail for character preset detail page
+ */
+export function getCharacterPresetDetailBreadcrumbs(
+  preset: CharacterPreset | undefined
+): BreadcrumbTrail {
+  const presetName = preset
+    ? getDefaultString(preset.name) || preset.id
+    : 'Unknown Preset';
+
+  return [
+    {
+      label: 'Home',
+      href: '/',
+      isCurrent: false,
+    },
+    {
+      label: preset?.is_factory_preset ? 'Factory Bots' : 'AI Bots',
+      href: preset?.is_factory_preset ? '/factory_bots' : '/ai_bots',
+      isCurrent: false,
+    },
+    {
+      label: presetName,
+      href: undefined,
+      isCurrent: true,
+    },
+  ];
+}
+
+/**
+ * Generate breadcrumb trail for AI bots page
+ */
+export function getAiBotsBreadcrumbs(): BreadcrumbTrail {
+  return [
+    {
+      label: 'Home',
+      href: '/',
+      isCurrent: false,
+    },
+    {
+      label: 'AI Bots',
+      href: '/ai_bots',
+      isCurrent: true,
+    },
+  ];
+}
+
+/**
+ * Generate breadcrumb trail for factory bots page
+ */
+export function getFactoryBotsBreadcrumbs(): BreadcrumbTrail {
+  return [
+    {
+      label: 'Home',
+      href: '/',
+      isCurrent: false,
+    },
+    {
+      label: 'Factory Bots',
+      href: '/factory_bots',
       isCurrent: true,
     },
   ];

@@ -1,0 +1,23 @@
+---
+import LocalizedText from '../LocalizedText.astro';
+import type { LocalizationKey } from '../../types/localization';
+
+interface Props {
+  textElements: LocalizationKey[];
+}
+
+const { textElements } = Astro.props;
+---
+
+{
+  textElements.map((localizationKey, index) => (
+    <span>
+      <LocalizedText
+        id={`text-${index}`}
+        tag="span"
+        localizationKey={localizationKey}
+      />
+      {index < textElements.length - 1 && ' '}
+    </span>
+  ))
+}

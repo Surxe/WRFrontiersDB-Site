@@ -1,0 +1,39 @@
+---
+import Breadcrumb from '../components/Breadcrumb.astro';
+import ParseObjectListPage from '../components/ParseObjectListPage.astro';
+import BotsList from '../components/bot/BotsList.astro';
+import BotsNavBox from '../components/nav/BotsNavBox.astro';
+import { getAiBotsBreadcrumbs } from '../utils/breadcrumb';
+import { getParseObjects } from '../utils/parse_object';
+import { prepareObjectList } from '../utils/list';
+
+// Load character presets, modules, and pilots
+const presets = getParseObjects('Objects/CharacterPreset.json');
+const modules = getParseObjects('Objects/Module.json');
+const pilots = getParseObjects('Objects/Pilot.json');
+
+// Prepare and filter presets (only non-factory/bot presets)
+const entries = prepareObjectList(presets, { prodReadyOnly: false });
+const botEntries = entries.filter(([_, preset]) => !preset.is_factory_preset);
+
+// Sort presets by name
+const sortedPresets = botEntries.sort(([_a, a], [_b, b]) => {
+  const nameA = (a.name as any)?.en || a.id;
+  const nameB = (b.name as any)?.en || b.id;
+  return nameA.localeCompare(nameB);
+});
+---
+
+<ParseObjectListPage
+  title="AI Bots"
+  description="Browse all AI bot presets from War Robots Frontiers"
+  headerImage="/images/T_UnLockPilots.png"
+>
+  <Breadcrumb breadcrumbs={getAiBotsBreadcrumbs()} />
+
+  <BotsNavBox />
+
+  <h1>AI Bots</h1>
+
+  <BotsList presets={sortedPresets} modules={modules} pilots={pilots} />
+</ParseObjectListPage>
