@@ -93,16 +93,9 @@ const sortedGroups = Object.keys(groupedPresets).sort();
             {Object.keys(groupedPresets[characterType])
               .sort()
               .map((torsoId) => (
-                <>
-                  <tr class="torso-header">
-                    <td colspan="3">
-                      <h3>{torsoId}</h3>
-                    </td>
-                  </tr>
-                  {groupedPresets[characterType][torsoId].map((item: any) => (
-                    <BotItem preset={item[1]} modules={modules} pilots={pilots} />
-                  ))}
-                </>
+                groupedPresets[characterType][torsoId].map((item: any) => (
+                  <BotItem preset={item[1]} modules={modules} pilots={pilots} />
+                ))
               ))}
           </>
         ))
@@ -164,24 +157,12 @@ const sortedGroups = Object.keys(groupedPresets).sort();
     color: #333;
   }
 
-  .torso-header td {
-    background-color: #f8f9fa;
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid #dee2e6;
-  }
-
-  .torso-header h3 {
-    margin: 0;
-    font-size: 1.2rem;
-    font-weight: 500;
-    color: #555;
-  }
-
-  .bots-table tbody tr:not(.character-type-header):not(.torso-header):hover {
+  
+  .bots-table tbody tr:not(.character-type-header):hover {
     background-color: #f8f9fa;
   }
 
-  .bots-table tbody tr:not(.character-type-header):not(.torso-header) {
+  .bots-table tbody tr:not(.character-type-header) {
     border-bottom: 1px solid #eee;
   }
 </style>
