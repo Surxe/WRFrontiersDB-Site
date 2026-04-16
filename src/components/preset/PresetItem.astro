@@ -1,6 +1,8 @@
 ---
 import ObjRef from '../obj_ref/ObjRef.astro';
 import { refToId } from '../../utils/object_reference';
+import { getModuleGroupForWeaponSocket, isWeaponSocket } from '../../utils/socket_module_mapping';
+import { MODULE_GROUPS } from '../../utils/module_group_mapping';
 
 interface Props {
   preset: any;
@@ -9,6 +11,27 @@ interface Props {
 }
 
 const { preset, modules, pilots } = Astro.props;
+
+// Helper function to get module group name
+function getModuleGroupName(groupId: string): string {
+  return MODULE_GROUPS[groupId as keyof typeof MODULE_GROUPS]?.name?.en || groupId;
+}
+
+// Check if there are different weapon IDs across the preset
+function hasDifferentWeaponIds(): boolean {
+  const weaponIds = new Set<string>();
+  
+  Object.entries(preset.modules as any).forEach(([socketName, moduleInfo]: [string, any]) => {
+    if (isWeaponSocket(socketName)) {
+      const moduleId = refToId(moduleInfo.module_ref as string);
+      weaponIds.add(moduleId);
+    }
+  });
+  
+  return weaponIds.size > 1;
+}
+
+const shouldShowWeaponGroups = hasDifferentWeaponIds();
 ---
 
 <div class="preset-item">
@@ -32,30 +55,47 @@ const { preset, modules, pilots } = Astro.props;
   <div class="modules-list">
     <strong>Modules:</strong>
     {
-      Object.values(preset.modules as any).flatMap((moduleInfo: any) => {
+      Object.entries(preset.modules as any).flatMap(([socketName, moduleInfo]: [string, any]) => {
         const moduleId = refToId(moduleInfo.module_ref as string);
         const module = modules[moduleId];
         if (!module) {
           return <span>{moduleInfo.module_ref}</span>;
         }
 
+        // Only show module group info for weapons and only when there are different weapon IDs
+        const isWeapon = isWeaponSocket(socketName);
+        const parentSocket = moduleInfo.parent_socket_name;
+        const moduleGroup = isWeapon && parentSocket ? getModuleGroupForWeaponSocket(socketName) : undefined;
+        const moduleGroupName = shouldShowWeaponGroups && moduleGroup ? getModuleGroupName(moduleGroup) : undefined;
+
+        // Create the module display with optional group information
+        const moduleDisplay = (
+          <span style="margin-right: 0.5rem;">
+            <ObjRef obj={module} />
+            {moduleGroupName && (
+              <span style="margin-left: 0.25rem; color: #666; font-size: 0.85rem;">
+                ({moduleGroupName})
+              </span>
+            )}
+          </span>
+        );
+
         // If parent_socket_name is "Shoulder_R", display it twice (for both shoulders)
         if (moduleInfo.parent_socket_name === 'Shoulder_R') {
           return [
+            moduleDisplay,
             <span style="margin-right: 0.5rem;">
               <ObjRef obj={module} />
-            </span>,
-            <span style="margin-right: 0.5rem;">
-              <ObjRef obj={module} />
+              {moduleGroupName && (
+                <span style="margin-left: 0.25rem; color: #666; font-size: 0.85rem;">
+                  ({moduleGroupName})
+                </span>
+              )}
             </span>
           ];
         }
 
-        return (
-          <span style="margin-right: 0.5rem;">
-            <ObjRef obj={module} />
-          </span>
-        );
+        return moduleDisplay;
       })
     }
   </div>
