@@ -131,6 +131,7 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
       const characterPreset = obj as CharacterPreset;
       return {
         text: characterPreset.name,
+        iconPath: characterPreset.icon || undefined,
       };
     }
     case 'ModuleGroup': {

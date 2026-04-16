@@ -12,6 +12,7 @@ export interface CharacterPresetModule {
 export interface CharacterPreset extends ParseObject {
   parseObjectClass: 'CharacterPreset';
   parseObjectUrl: typeof CHARACTERPRESET_URL;
+  icon?: string;
   name: LocalizationKey;
   modules: Record<string, CharacterPresetModule>;
   pilot_ref: string;
