@@ -31,7 +31,7 @@ function hasDifferentWeaponIds(): boolean {
   return weaponIds.size > 1;
 }
 
-// Define the desired socket order
+// Define desired socket order
 const SOCKET_ORDER = [
   'Root',
   'None', 
@@ -101,7 +101,6 @@ function getGroupedModules() {
 
 const shouldShowWeaponGroups = hasDifferentWeaponIds();
 const groupedModules = getGroupedModules();
-
 ---
 
 <div class="preset-item">
@@ -110,15 +109,10 @@ const groupedModules = getGroupedModules();
     preset.pilot_ref && (
       <p>
         Pilot:
-        {(() => {
-          const pilotId = refToId(preset.pilot_ref as string);
-          const pilot = pilots[pilotId];
-          return pilot ? (
-            <ObjRef obj={pilot} />
-          ) : (
-            preset.pilot_ref
-          );
-        })()}
+        <ObjRef 
+          obj={pilots[refToId(preset.pilot_ref)]} 
+          iconSize={24} 
+        />
       </p>
     )
   }
@@ -159,25 +153,24 @@ const groupedModules = getGroupedModules();
 
 <style>
   .preset-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
     padding: 1rem;
     border: 1px solid #ddd;
-    border-radius: 8px;
-    background: #f9f9f9;
-  }
-
-  .preset-item p {
-    margin: 0.25rem 0;
-    color: #666;
+    border-radius: 0.5rem;
+    background-color: #f9f9f9;
   }
 
   .modules-list {
-    margin-top: 0.5rem;
-    font-size: 0.9rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
   }
 
   .modules-list strong {
-    display: block;
+    width: 100%;
     margin-bottom: 0.25rem;
-    color: #333;
   }
 </style>

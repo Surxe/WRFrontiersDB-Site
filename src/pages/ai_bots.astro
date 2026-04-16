@@ -1,9 +1,9 @@
 ---
 import Breadcrumb from '../components/Breadcrumb.astro';
 import ParseObjectListPage from '../components/ParseObjectListPage.astro';
-import PresetsList from '../components/preset/PresetsList.astro';
-import PresetsNavBox from '../components/nav/PresetsNavBox.astro';
-import { getBotPresetsBreadcrumbs } from '../utils/breadcrumb';
+import BotsList from '../components/bot/BotsList.astro';
+import BotsNavBox from '../components/nav/BotsNavBox.astro';
+import { getAiBotsBreadcrumbs } from '../utils/breadcrumb';
 import { getParseObjects } from '../utils/parse_object';
 import { prepareObjectList } from '../utils/list';
 
@@ -25,15 +25,15 @@ const sortedPresets = botEntries.sort(([_a, a], [_b, b]) => {
 ---
 
 <ParseObjectListPage
-  title="Bot Presets"
-  description="Browse all bot presets from War Robots Frontiers"
+  title="AI Bots"
+  description="Browse all AI bot presets from War Robots Frontiers"
   headerImage="/images/T_UnLockPilots.png"
 >
-  <Breadcrumb breadcrumbs={getBotPresetsBreadcrumbs()} />
+  <Breadcrumb breadcrumbs={getAiBotsBreadcrumbs()} />
 
-  <PresetsNavBox />
+  <BotsNavBox />
 
-  <h1>Bot Presets</h1>
+  <h1>AI Bots</h1>
 
-  <PresetsList presets={sortedPresets} modules={modules} pilots={pilots} />
+  <BotsList presets={sortedPresets} modules={modules} pilots={pilots} />
 </ParseObjectListPage>

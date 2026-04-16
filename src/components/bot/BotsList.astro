@@ -1,5 +1,5 @@
 ---
-import PresetItem from './PresetItem.astro';
+import BotItem from './BotItem.astro';
 import { refToId } from '../../utils/object_reference';
 import { getDefaultString } from '../../utils/localization';
 
@@ -38,7 +38,7 @@ function getTorsoId(preset: any): string {
 
 // Group presets by character type, then by torso ID
 const groupedPresets = presets.reduce(
-  (groups, [_id, preset]) => {
+  (groups, [id, preset]) => {
     const characterType = preset.character_type || getDefaultString({ en: 'Unknown' })!;
     const torsoId = getTorsoId(preset);
     
@@ -48,7 +48,7 @@ const groupedPresets = presets.reduce(
     if (!groups[characterType][torsoId]) {
       groups[characterType][torsoId] = [];
     }
-    groups[characterType][torsoId].push([_id, preset]);
+    groups[characterType][torsoId].push([id, preset]);
     return groups;
   },
   {} as Record<string, Record<string, any[]>>
@@ -58,7 +58,7 @@ const groupedPresets = presets.reduce(
 const sortedGroups = Object.keys(groupedPresets).sort();
 ---
 
-<div class="presets-list">
+<div class="bots-list">
   {
     sortedGroups.map((characterType) => (
       <div class="character-type-group">
@@ -67,9 +67,9 @@ const sortedGroups = Object.keys(groupedPresets).sort();
           Object.keys(groupedPresets[characterType]).sort().map((torsoId) => (
             <div class="torso-group">
               <h3 class="torso-header">{torsoId}</h3>
-              <div class="presets-in-torso-group">
-                {groupedPresets[characterType][torsoId].map(([_id, preset]) => (
-                  <PresetItem preset={preset} modules={modules} pilots={pilots} />
+              <div class="bots-in-torso-group">
+                {groupedPresets[characterType][torsoId].map((item: any) => (
+                  <BotItem preset={item[1]} modules={modules} pilots={pilots} />
                 ))}
               </div>
             </div>
@@ -81,7 +81,7 @@ const sortedGroups = Object.keys(groupedPresets).sort();
 </div>
 
 <style>
-  .presets-list {
+  .bots-list {
     display: flex;
     flex-direction: column;
     gap: 2rem;
@@ -117,7 +117,7 @@ const sortedGroups = Object.keys(groupedPresets).sort();
     border-bottom: 1px solid #eee;
   }
 
-  .presets-in-torso-group {
+  .bots-in-torso-group {
     display: flex;
     flex-direction: column;
     gap: 1rem;

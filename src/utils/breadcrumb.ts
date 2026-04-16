@@ -424,8 +424,8 @@ export function getBotPresetsBreadcrumbs(): BreadcrumbTrail {
       isCurrent: false,
     },
     {
-      label: 'Bot Presets',
-      href: '/bot_presets',
+      label: 'AI Bots',
+      href: '/ai_bots',
       isCurrent: true,
     },
   ];
@@ -442,8 +442,8 @@ export function getFactoryPresetsBreadcrumbs(): BreadcrumbTrail {
       isCurrent: false,
     },
     {
-      label: 'Factory Presets',
-      href: '/factory_presets',
+      label: 'Factory Bots',
+      href: '/factory_bots',
       isCurrent: true,
     },
   ];
@@ -464,13 +464,49 @@ export function getCharacterPresetDetailBreadcrumbs(
       isCurrent: false,
     },
     {
-      label: preset?.is_factory_preset ? 'Factory Presets' : 'Bot Presets',
-      href: preset?.is_factory_preset ? '/factory_presets' : '/bot_presets',
+      label: preset?.is_factory_preset ? 'Factory Bots' : 'AI Bots',
+      href: preset?.is_factory_preset ? '/factory_bots' : '/ai_bots',
       isCurrent: false,
     },
     {
       label: presetName,
       href: undefined,
+      isCurrent: true,
+    },
+  ];
+}
+
+/**
+ * Generate breadcrumb trail for AI bots page
+ */
+export function getAiBotsBreadcrumbs(): BreadcrumbTrail {
+  return [
+    {
+      label: 'Home',
+      href: '/',
+      isCurrent: false,
+    },
+    {
+      label: 'AI Bots',
+      href: '/ai_bots',
+      isCurrent: true,
+    },
+  ];
+}
+
+/**
+ * Generate breadcrumb trail for factory bots page
+ */
+export function getFactoryBotsBreadcrumbs(): BreadcrumbTrail {
+  return [
+    {
+      label: 'Home',
+      href: '/',
+      isCurrent: false,
+    },
+    {
+      label: 'Factory Bots',
+      href: '/factory_bots',
       isCurrent: true,
     },
   ];

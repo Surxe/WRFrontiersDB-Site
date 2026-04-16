@@ -1,7 +1,7 @@
 ---
 import Breadcrumb from '../../components/Breadcrumb.astro';
 import ParseObjectListPage from '../../components/ParseObjectListPage.astro';
-import PresetItem from '../../components/preset/PresetItem.astro';
+import BotItem from '../../components/bot/BotItem.astro';
 import ObjectPageScripts from '../../components/ObjectPageScripts.astro';
 import {
   getParseObject,
@@ -35,7 +35,7 @@ const modules = getParseObjects('Objects/Module.json');
       <div class="character-preset-detail">
         <h1>{preset.name?.en || preset.id}</h1>
 
-        <PresetItem preset={preset} modules={modules} pilots={pilots} />
+        <BotItem preset={preset} modules={modules} pilots={pilots} />
       </div>
     ) : (
       <div>

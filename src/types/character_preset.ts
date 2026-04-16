@@ -1,7 +1,7 @@
 import type { LocalizationKey } from './localization';
 import type { ParseObject } from './parse_object';
 
-export const CHARACTERPRESET_URL = 'character_presets'; // Keep for backwards compatibility, actual URLs are factory_presets and bot_presets
+export const CHARACTERPRESET_URL = 'character_presets'; // Keep for backwards compatibility, actual URLs are factory_bots and ai_bots
 
 export interface CharacterPresetModule {
   module_ref: string;
