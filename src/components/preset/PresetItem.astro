@@ -47,40 +47,31 @@ function getGroupedModules() {
       return;
     }
 
-    // Create a unique key based on module reference and parent socket
-    const key = `${moduleInfo.module_ref}|${moduleInfo.parent_socket_name || 'none'}`;
+    // For weapons, group by module reference only
+    // For non-weapons, group by module reference and parent socket
+    const isWeapon = isWeaponSocket(socketName);
+    const key = isWeapon ? moduleInfo.module_ref : `${moduleInfo.module_ref}|${moduleInfo.parent_socket_name || 'none'}`;
+    
+    // Calculate the contribution of this entry to the total count
+    const entryCount = (isWeapon && moduleInfo.parent_socket_name === 'Shoulder_R') ? 2 : 1;
     
     if (moduleGroups.has(key)) {
       // Increment count if already exists
       const existing = moduleGroups.get(key)!;
-      existing.count++;
+      existing.count += entryCount;
     } else {
-      // Determine initial count - always start with 1 for each entry
-      const initialCount = 1;
-      
-      // Add new entry
+      // Add new entry with its contribution count
       moduleGroups.set(key, {
         module,
         socketName,
         moduleInfo,
-        count: initialCount
+        count: entryCount
       });
     }
   });
 
-  // Convert to array and apply shoulder weapon multiplier
-  return Array.from(moduleGroups.values()).map((group) => {
-    // If this is a shoulder weapon with parent_socket_name "Shoulder_R", 
-    // multiply the count by 2 (for both shoulders)
-    if (isWeaponSocket(group.socketName) && group.moduleInfo.parent_socket_name === 'Shoulder_R') {
-      return {
-        ...group,
-        count: group.count * 2
-      };
-    }
-    
-    return group;
-  });
+  // Convert to array - no need for additional multiplier logic since it's applied above
+  return Array.from(moduleGroups.values());
 }
 
 const shouldShowWeaponGroups = hasDifferentWeaponIds();
