@@ -12,7 +12,7 @@ const { preset, modules, pilots } = Astro.props;
 ---
 
 <div class="preset-item">
-  <ObjRef obj={preset} showIcon={false} />
+  <ObjRef obj={preset} />
   {
     preset.pilot_ref && (
       <p>
@@ -21,7 +21,7 @@ const { preset, modules, pilots } = Astro.props;
           const pilotId = refToId(preset.pilot_ref as string);
           const pilot = pilots[pilotId];
           return pilot ? (
-            <ObjRef obj={pilot} showIcon={false} />
+            <ObjRef obj={pilot} />
           ) : (
             preset.pilot_ref
           );
@@ -41,7 +41,7 @@ const { preset, modules, pilots } = Astro.props;
 
         return (
           <span style="margin-right: 0.5rem;">
-            <ObjRef obj={module} showIcon={false} />
+            <ObjRef obj={module} />
           </span>
         );
       })
