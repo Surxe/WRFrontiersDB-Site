@@ -31,6 +31,16 @@ function hasDifferentWeaponIds(): boolean {
   return weaponIds.size > 1;
 }
 
+// Define the desired socket order
+const SOCKET_ORDER = [
+  'Root',
+  'None', 
+  'Shoulder_L',
+  'Shoulder_R',
+  'Ability',
+  'UltAbility'
+];
+
 // Group modules by their module reference and parent socket
 function getGroupedModules() {
   const moduleGroups = new Map<string, {
@@ -38,6 +48,7 @@ function getGroupedModules() {
     socketName: string;
     moduleInfo: any;
     count: number;
+    socketOrder: number;
   }>();
 
   Object.entries(preset.modules as any).forEach(([socketName, moduleInfo]: [string, any]) => {
@@ -55,23 +66,37 @@ function getGroupedModules() {
     // Calculate the contribution of this entry to the total count
     const entryCount = (isWeapon && moduleInfo.parent_socket_name === 'Shoulder_R') ? 2 : 1;
     
+    // Determine socket order for sorting
+    const socketOrderIndex = SOCKET_ORDER.indexOf(socketName);
+    const socketOrder = socketOrderIndex !== -1 ? socketOrderIndex : SOCKET_ORDER.length;
+    
     if (moduleGroups.has(key)) {
       // Increment count if already exists
       const existing = moduleGroups.get(key)!;
       existing.count += entryCount;
+      // Use the earliest socket order for the group
+      existing.socketOrder = Math.min(existing.socketOrder, socketOrder);
     } else {
-      // Add new entry with its contribution count
+      // Add new entry with its contribution count and socket order
       moduleGroups.set(key, {
         module,
         socketName,
         moduleInfo,
-        count: entryCount
+        count: entryCount,
+        socketOrder
       });
     }
   });
 
-  // Convert to array - no need for additional multiplier logic since it's applied above
-  return Array.from(moduleGroups.values());
+  // Convert to array and sort by socket order, then by socket name for consistency
+  return Array.from(moduleGroups.values()).sort((a, b) => {
+    // First sort by socket order
+    if (a.socketOrder !== b.socketOrder) {
+      return a.socketOrder - b.socketOrder;
+    }
+    // Then sort by socket name for consistent ordering within the same order
+    return a.socketName.localeCompare(b.socketName);
+  });
 }
 
 const shouldShowWeaponGroups = hasDifferentWeaponIds();
