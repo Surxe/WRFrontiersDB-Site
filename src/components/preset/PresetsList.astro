@@ -1,5 +1,7 @@
 ---
 import PresetItem from './PresetItem.astro';
+import { refToId } from '../../utils/object_reference';
+import { getDefaultString } from '../../utils/localization';
 
 interface Props {
   presets: any[];
@@ -9,20 +11,50 @@ interface Props {
 
 const { presets, modules, pilots } = Astro.props;
 
-// Group presets by character type
+// Helper function to get torso ID from preset
+function getTorsoId(preset: any): string {
+  if (!preset.modules) return getDefaultString({ en: 'Unknown' })!;
+  
+  // Find the torso module (typically in "Root" socket)
+  const torsoModule = Object.values(preset.modules as any).find(
+    (moduleInfo: any) => {
+      if (!moduleInfo || typeof moduleInfo !== 'object' || !('module_ref' in moduleInfo)) {
+        return false;
+      }
+      const moduleId = refToId(moduleInfo.module_ref as string);
+      const module = modules[moduleId];
+      return module && module.module_type_ref && module.module_type_ref.includes('Torso');
+    }
+  );
+  
+  if (torsoModule && typeof torsoModule === 'object' && torsoModule !== null && 'module_ref' in torsoModule) {
+    const torsoId = refToId((torsoModule as any).module_ref as string);
+    const torso = modules[torsoId];
+    return getDefaultString(torso?.name)!;
+  }
+  
+  return getDefaultString({ en: 'Unknown' })!;
+}
+
+// Group presets by character type, then by torso ID
 const groupedPresets = presets.reduce(
   (groups, [_id, preset]) => {
-    const characterType = preset.character_type || 'Unknown';
+    const characterType = preset.character_type || getDefaultString({ en: 'Unknown' })!;
+    const torsoId = getTorsoId(preset);
+    
     if (!groups[characterType]) {
-      groups[characterType] = [];
+      groups[characterType] = {};
     }
-    groups[characterType].push([_id, preset]);
+    if (!groups[characterType][torsoId]) {
+      groups[characterType][torsoId] = [];
+    }
+    groups[characterType][torsoId].push([_id, preset]);
     return groups;
   },
-  {} as Record<string, any[]>
+  {} as Record<string, Record<string, any[]>>
 );
 
-// Sort groups by character type
+// Sort groups by character type, then by torso ID
 const sortedGroups = Object.keys(groupedPresets).sort();
 ---
 
@@ -31,11 +63,18 @@ const sortedGroups = Object.keys(groupedPresets).sort();
     sortedGroups.map((characterType) => (
       <div class="character-type-group">
         <h2 class="character-type-header">{characterType}</h2>
-        <div class="presets-in-group">
-          {groupedPresets[characterType].map(([_id, preset]) => (
-            <PresetItem preset={preset} modules={modules} pilots={pilots} />
-          ))}
-        </div>
+        {
+          Object.keys(groupedPresets[characterType]).sort().map((torsoId) => (
+            <div class="torso-group">
+              <h3 class="torso-header">{torsoId}</h3>
+              <div class="presets-in-torso-group">
+                {groupedPresets[characterType][torsoId].map(([_id, preset]) => (
+                  <PresetItem preset={preset} modules={modules} pilots={pilots} />
+                ))}
+              </div>
+            </div>
+          ))
+        }
       </div>
     ))
   }
@@ -51,7 +90,7 @@ const sortedGroups = Object.keys(groupedPresets).sort();
   .character-type-group {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.5rem;
   }
 
   .character-type-header {
@@ -63,9 +102,25 @@ const sortedGroups = Object.keys(groupedPresets).sort();
     border-bottom: 2px solid #ddd;
   }
 
-  .presets-in-group {
+  .torso-group {
     display: flex;
     flex-direction: column;
     gap: 1rem;
+  }
+
+  .torso-header {
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: #555;
+    margin: 0;
+    padding-bottom: 0.3rem;
+    border-bottom: 1px solid #eee;
+  }
+
+  .presets-in-torso-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-left: 1rem;
   }
 </style>
