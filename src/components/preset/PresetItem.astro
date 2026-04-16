@@ -32,11 +32,23 @@ const { preset, modules, pilots } = Astro.props;
   <div class="modules-list">
     <strong>Modules:</strong>
     {
-      Object.values(preset.modules as any).map((moduleInfo: any) => {
+      Object.values(preset.modules as any).flatMap((moduleInfo: any) => {
         const moduleId = refToId(moduleInfo.module_ref as string);
         const module = modules[moduleId];
         if (!module) {
           return <span>{moduleInfo.module_ref}</span>;
+        }
+
+        // If parent_socket_name is "Shoulder_R", display it twice (for both shoulders)
+        if (moduleInfo.parent_socket_name === 'Shoulder_R') {
+          return [
+            <span style="margin-right: 0.5rem;">
+              <ObjRef obj={module} />
+            </span>,
+            <span style="margin-right: 0.5rem;">
+              <ObjRef obj={module} />
+            </span>
+          ];
         }
 
         return (
