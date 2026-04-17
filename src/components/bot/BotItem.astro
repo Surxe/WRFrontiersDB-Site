@@ -24,21 +24,36 @@ function getModuleGroupName(groupId: string): string {
   );
 }
 
-// Check if there are different weapon IDs or shoulder module IDs across preset
+// Check if there are different weapon IDs across preset
 function hasDifferentWeaponIds(): boolean {
-  const moduleIds = new Set<string>();
+  const weaponIds = new Set<string>();
 
   Object.entries(preset.modules as any).forEach(
     ([socketName, moduleInfo]: [string, any]) => {
-      // Check for different IDs in weapons OR shoulder modules
-      if (isWeaponSocket(socketName) || socketName === 'Shoulder_L' || socketName === 'Shoulder_R') {
+      if (isWeaponSocket(socketName)) {
         const moduleId = refToId(moduleInfo.module_ref as string);
-        moduleIds.add(moduleId);
+        weaponIds.add(moduleId);
       }
     }
   );
 
-  return moduleIds.size > 1;
+  return weaponIds.size > 1;
+}
+
+// Check if there are different shoulder module IDs across preset
+function hasDifferentShoulderModuleIds(): boolean {
+  const shoulderModuleIds = new Set<string>();
+
+  Object.entries(preset.modules as any).forEach(
+    ([socketName, moduleInfo]: [string, any]) => {
+      if (socketName === 'Shoulder_L' || socketName === 'Shoulder_R') {
+        const moduleId = refToId(moduleInfo.module_ref as string);
+        shoulderModuleIds.add(moduleId);
+      }
+    }
+  );
+
+  return shoulderModuleIds.size > 1;
 }
 
 // Define desired socket order
@@ -182,19 +197,28 @@ const groupedModules = getGroupedModules();
               ? getModuleGroupForWeaponSocket(socketName)
               : undefined;
           const moduleGroupName =
-            shouldShowWeaponGroups && moduleGroup
+            isWeapon && shouldShowWeaponGroups && moduleGroup
               ? getModuleGroupName(moduleGroup)
               : undefined;
 
-          // For Titan weapons and shoulder modules with different IDs, show Left/Right labels
+          // For Titan weapons with different IDs, show Left/Right labels
+          // For Titan shoulder modules with different IDs, show Left/Right labels
           let socketSideLabel = undefined;
           const isShoulderModule = socketName === 'Shoulder_L' || socketName === 'Shoulder_R';
           
-          if (preset.character_type === 'Titan' && shouldShowWeaponGroups && (isWeapon || isShoulderModule)) {
-            const sideLocaleKey = getSocketSideLocaleKey(socketName);
-            if (sideLocaleKey) {
-              const localizationKey = resolveLocalizationKey(sideLocaleKey, 'Web_UI');
-              socketSideLabel = getDefaultString(localizationKey);
+          if (preset.character_type === 'Titan') {
+            if (isWeapon && hasDifferentWeaponIds()) {
+              const sideLocaleKey = getSocketSideLocaleKey(socketName);
+              if (sideLocaleKey) {
+                const localizationKey = resolveLocalizationKey(sideLocaleKey, 'Web_UI');
+                socketSideLabel = getDefaultString(localizationKey);
+              }
+            } else if (isShoulderModule && hasDifferentShoulderModuleIds()) {
+              const sideLocaleKey = getSocketSideLocaleKey(socketName);
+              if (sideLocaleKey) {
+                const localizationKey = resolveLocalizationKey(sideLocaleKey, 'Web_UI');
+                socketSideLabel = getDefaultString(localizationKey);
+              }
             }
           }
 
