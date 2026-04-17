@@ -30,9 +30,9 @@ if (!bot) {
 
 export function getRobotDetailBreadcrumbs(botName: string) {
   return [
-    { label: 'Home', url: '/' },
-    { label: 'Robots', url: '/robots' },
-    { label: botName },
+    { label: 'Home', href: '/', isCurrent: false },
+    { label: 'Robots', href: '/robots', isCurrent: false },
+    { label: botName, isCurrent: true },
   ];
 }
 ---

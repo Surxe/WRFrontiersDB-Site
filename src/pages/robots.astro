@@ -31,8 +31,8 @@ for (const key of sortedGroupKeys) {
 
 export function getRobotsBreadcrumbs() {
   return [
-    { label: 'Home', url: '/' },
-    { label: 'Robots' },
+    { label: 'Home', href: '/', isCurrent: false },
+    { label: 'Robots', isCurrent: true },
   ];
 }
 ---
@@ -68,7 +68,7 @@ export function getRobotsBreadcrumbs() {
             {groupedBots[type].map((bot) => (
               <tr>
                 <td>
-                  <a href={`/robots/${bot.id}`} style="font-weight: 600; font-size: 1.1em; color: inherit; text-decoration: none;">
+                  <a href={`/robots/${bot.id}`} style="font-weight: 600; font-size: 1.1em;">
                     {bot.name}
                   </a>
                 </td>
