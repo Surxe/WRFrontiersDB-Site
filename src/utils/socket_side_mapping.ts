@@ -7,8 +7,8 @@
 
 // Socket side constants
 export const SOCKET_SIDE_MAPPING: Record<string, string> = {
-  'Shoulder_L': 'Socket_Left',
-  'Shoulder_R': 'Socket_Right',
+  Shoulder_L: 'Socket_Left',
+  Shoulder_R: 'Socket_Right',
 };
 
 /**
@@ -16,6 +16,8 @@ export const SOCKET_SIDE_MAPPING: Record<string, string> = {
  * @param parentSocketName - The parent socket name from CharacterPreset.json
  * @returns The locale key for the side or undefined if not found
  */
-export function getSocketSideLocaleKey(parentSocketName: string): string | undefined {
+export function getSocketSideLocaleKey(
+  parentSocketName: string
+): string | undefined {
   return SOCKET_SIDE_MAPPING[parentSocketName];
 }

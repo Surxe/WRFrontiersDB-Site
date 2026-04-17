@@ -1,47 +1,64 @@
 import { describe, it, expect } from 'vitest';
 
+interface ModuleInfo {
+  module_ref: string;
+  parent_socket_name: string | null;
+  level: number;
+}
+
+interface Preset {
+  character_type: string;
+  modules: Record<string, ModuleInfo>;
+}
+
 describe('BotItem weapon count and side logic', () => {
   it('should display x2 for Titan shoulder weapons with single weapon', () => {
-    // Mock the logic from BotItem.astro
     function isWeaponSocket(socketName: string): boolean {
-      return socketName.startsWith('Shoulder_Weapon') || socketName.startsWith('Torso_Weapon');
+      return (
+        socketName.startsWith('Shoulder_Weapon') ||
+        socketName.startsWith('Torso_Weapon')
+      );
     }
 
-    function simulateGroupedModules(preset: any) {
+    function simulateGroupedModules(preset: Preset) {
       const moduleGroups = new Map();
-      
-      Object.entries(preset.modules).forEach(([socketName, moduleInfo]: [string, any]) => {
-        const isWeapon = isWeaponSocket(socketName);
-        const key = isWeapon ? moduleInfo.module_ref : `${moduleInfo.module_ref}|${moduleInfo.parent_socket_name || 'none'}`;
-        
-        const isShoulderWeapon = isWeapon && (
-          moduleInfo.parent_socket_name === 'Shoulder_L' || 
-          moduleInfo.parent_socket_name === 'Shoulder_R'
-        );
-        
-        if (moduleGroups.has(key)) {
-          const existing = moduleGroups.get(key);
-          existing.count += 1;
-          if (isShoulderWeapon) {
-            existing.shoulderCount += 1;
+
+      Object.entries(preset.modules).forEach(
+        ([socketName, moduleInfo]: [string, ModuleInfo]) => {
+          const isWeapon = isWeaponSocket(socketName);
+          const key = isWeapon
+            ? moduleInfo.module_ref
+            : `${moduleInfo.module_ref}|${moduleInfo.parent_socket_name || 'none'}`;
+
+          const isShoulderWeapon =
+            isWeapon &&
+            (moduleInfo.parent_socket_name === 'Shoulder_L' ||
+              moduleInfo.parent_socket_name === 'Shoulder_R');
+
+          if (moduleGroups.has(key)) {
+            const existing = moduleGroups.get(key);
+            existing.count += 1;
+            if (isShoulderWeapon) {
+              existing.shoulderCount += 1;
+            }
+          } else {
+            const shoulderCount = isShoulderWeapon ? 1 : 0;
+            moduleGroups.set(key, {
+              socketName,
+              moduleInfo,
+              count: 1,
+              shoulderCount,
+            });
           }
-        } else {
-          const shoulderCount = isShoulderWeapon ? 1 : 0;
-          moduleGroups.set(key, {
-            socketName,
-            moduleInfo,
-            count: 1,
-            shoulderCount,
-          });
         }
-      });
-      
+      );
+
       // Apply the fixed logic
       return Array.from(moduleGroups.values()).map((group) => {
         if (group.shoulderCount > 0) {
           const isTitan = preset.character_type === 'Titan';
           const isShoulderWeapon = isWeaponSocket(group.socketName);
-          
+
           if (isTitan && isShoulderWeapon) {
             return { ...group, count: group.count * 2 };
           } else if (group.shoulderCount === 2) {
@@ -56,12 +73,12 @@ describe('BotItem weapon count and side logic', () => {
     const titanPreset = {
       character_type: 'Titan',
       modules: {
-        'Shoulder_Weapon_0': {
+        Shoulder_Weapon_0: {
           module_ref: 'OBJID_Module::DA_Module_Weapon_Hive.0',
           parent_socket_name: 'Shoulder_L',
-          level: 10
-        }
-      }
+          level: 10,
+        },
+      },
     };
 
     const titanResult = simulateGroupedModules(titanPreset);
@@ -71,12 +88,12 @@ describe('BotItem weapon count and side logic', () => {
     const botPreset = {
       character_type: 'Bot',
       modules: {
-        'Shoulder_Weapon_0': {
+        Shoulder_Weapon_0: {
           module_ref: 'OBJID_Module::DA_Module_Weapon_Hive.0',
           parent_socket_name: 'Shoulder_L',
-          level: 10
-        }
-      }
+          level: 10,
+        },
+      },
     };
 
     const botResult = simulateGroupedModules(botPreset);
@@ -86,17 +103,17 @@ describe('BotItem weapon count and side logic', () => {
     const botDualPreset = {
       character_type: 'Bot',
       modules: {
-        'Shoulder_Weapon_0': {
+        Shoulder_Weapon_0: {
           module_ref: 'OBJID_Module::DA_Module_Weapon_Hive.0',
           parent_socket_name: 'Shoulder_L',
-          level: 10
+          level: 10,
         },
-        'Shoulder_Weapon_1': {
+        Shoulder_Weapon_1: {
           module_ref: 'OBJID_Module::DA_Module_Weapon_Hive.0',
           parent_socket_name: 'Shoulder_R',
-          level: 10
-        }
-      }
+          level: 10,
+        },
+      },
     };
 
     const botDualResult = simulateGroupedModules(botDualPreset);
@@ -105,17 +122,22 @@ describe('BotItem weapon count and side logic', () => {
 
   it('should detect different weapon IDs for Titan weapons', () => {
     function isWeaponSocket(socketName: string): boolean {
-      return socketName.startsWith('Shoulder_Weapon') || socketName.startsWith('Torso_Weapon');
+      return (
+        socketName.startsWith('Shoulder_Weapon') ||
+        socketName.startsWith('Torso_Weapon')
+      );
     }
 
-    function hasDifferentWeaponIds(preset: any): boolean {
+    function hasDifferentWeaponIds(preset: Preset): boolean {
       const weaponIds = new Set<string>();
-      Object.entries(preset.modules).forEach(([socketName, moduleInfo]: [string, any]) => {
-        if (isWeaponSocket(socketName)) {
-          const moduleId = moduleInfo.module_ref.split('::')[1];
-          weaponIds.add(moduleId);
+      Object.entries(preset.modules).forEach(
+        ([socketName, moduleInfo]: [string, ModuleInfo]) => {
+          if (isWeaponSocket(socketName)) {
+            const moduleId = moduleInfo.module_ref.split('::')[1];
+            weaponIds.add(moduleId);
+          }
         }
-      });
+      );
       return weaponIds.size > 1;
     }
 
@@ -123,29 +145,29 @@ describe('BotItem weapon count and side logic', () => {
     const titanDifferentWeapons = {
       character_type: 'Titan',
       modules: {
-        'Shoulder_Weapon_0': {
+        Shoulder_Weapon_0: {
           module_ref: 'OBJID_Module::DA_Module_Weapon_Hive.0',
           parent_socket_name: 'Shoulder_L',
-          level: 10
+          level: 10,
         },
-        'Shoulder_Weapon_1': {
+        Shoulder_Weapon_1: {
           module_ref: 'OBJID_Module::DA_Module_Weapon_Scrubber.0',
           parent_socket_name: 'Shoulder_R',
-          level: 10
-        }
-      }
+          level: 10,
+        },
+      },
     };
 
     // Test case: Titan with same weapon
     const titanSameWeapon = {
       character_type: 'Titan',
       modules: {
-        'Shoulder_Weapon_0': {
+        Shoulder_Weapon_0: {
           module_ref: 'OBJID_Module::DA_Module_Weapon_Hive.0',
           parent_socket_name: 'Shoulder_L',
-          level: 10
-        }
-      }
+          level: 10,
+        },
+      },
     };
 
     expect(hasDifferentWeaponIds(titanDifferentWeapons)).toBe(true);
@@ -153,10 +175,12 @@ describe('BotItem weapon count and side logic', () => {
   });
 
   it('should map socket names to side locale keys', () => {
-    function getSocketSideLocaleKey(parentSocketName: string): string | undefined {
+    function getSocketSideLocaleKey(
+      parentSocketName: string
+    ): string | undefined {
       const mapping: Record<string, string> = {
-        'Shoulder_L': 'Web_UI.Socket_Left',
-        'Shoulder_R': 'Web_UI.Socket_Right',
+        Shoulder_L: 'Web_UI.Socket_Left',
+        Shoulder_R: 'Web_UI.Socket_Right',
       };
       return mapping[parentSocketName];
     }
@@ -168,18 +192,27 @@ describe('BotItem weapon count and side logic', () => {
 
   it('should detect different shoulder module IDs for Titans', () => {
     function isWeaponSocket(socketName: string): boolean {
-      return socketName.startsWith('Shoulder_Weapon') || socketName.startsWith('Torso_Weapon');
+      return (
+        socketName.startsWith('Shoulder_Weapon') ||
+        socketName.startsWith('Torso_Weapon')
+      );
     }
 
-    function hasDifferentShoulderModuleIds(preset: any): boolean {
+    function hasDifferentShoulderModuleIds(preset: Preset): boolean {
       const moduleIds = new Set<string>();
-      Object.entries(preset.modules).forEach(([socketName, moduleInfo]: [string, any]) => {
-        // Check for different IDs in weapons OR shoulder modules
-        if (isWeaponSocket(socketName) || socketName === 'Shoulder_L' || socketName === 'Shoulder_R') {
-          const moduleId = moduleInfo.module_ref.split('::')[1];
-          moduleIds.add(moduleId);
+      Object.entries(preset.modules).forEach(
+        ([socketName, moduleInfo]: [string, ModuleInfo]) => {
+          // Check for different IDs in weapons OR shoulder modules
+          if (
+            isWeaponSocket(socketName) ||
+            socketName === 'Shoulder_L' ||
+            socketName === 'Shoulder_R'
+          ) {
+            const moduleId = moduleInfo.module_ref.split('::')[1];
+            moduleIds.add(moduleId);
+          }
         }
-      });
+      );
       return moduleIds.size > 1;
     }
 
@@ -187,39 +220,39 @@ describe('BotItem weapon count and side logic', () => {
     const titanDifferentShoulders = {
       character_type: 'Titan',
       modules: {
-        'Shoulder_L': {
+        Shoulder_L: {
           module_ref: 'OBJID_Module::DA_Module_ShoulderLMatriarch.0',
           parent_socket_name: 'Root',
-          level: 1
+          level: 1,
         },
-        'Shoulder_R': {
+        Shoulder_R: {
           module_ref: 'OBJID_Module::DA_Module_ShoulderRMatriarch.0',
           parent_socket_name: 'Root',
-          level: 1
+          level: 1,
         },
-        'Shoulder_Weapon_0': {
+        Shoulder_Weapon_0: {
           module_ref: 'OBJID_Module::DA_Module_Weapon_Hive.0',
           parent_socket_name: 'Shoulder_L',
-          level: 1
-        }
-      }
+          level: 1,
+        },
+      },
     };
 
     // Test case: Titan with same shoulder modules
     const titanSameShoulders = {
       character_type: 'Titan',
       modules: {
-        'Shoulder_L': {
+        Shoulder_L: {
           module_ref: 'OBJID_Module::DA_Module_ShoulderLAlpha.0',
           parent_socket_name: 'Root',
-          level: 1
+          level: 1,
         },
-        'Shoulder_R': {
+        Shoulder_R: {
           module_ref: 'OBJID_Module::DA_Module_ShoulderLAlpha.0',
           parent_socket_name: 'Root',
-          level: 1
-        }
-      }
+          level: 1,
+        },
+      },
     };
 
     expect(hasDifferentShoulderModuleIds(titanDifferentShoulders)).toBe(true);

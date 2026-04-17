@@ -7,7 +7,10 @@ import {
 } from '../../utils/socket_module_mapping';
 import { MODULE_GROUPS } from '../../utils/module_group_mapping';
 import { getSocketSideLocaleKey } from '../../utils/socket_side_mapping';
-import { getDefaultString, resolveLocalizationKey } from '../../utils/localization';
+import {
+  getDefaultString,
+  resolveLocalizationKey,
+} from '../../utils/localization';
 
 interface Props {
   preset: any;
@@ -91,10 +94,12 @@ function getGroupedModules() {
       // For weapons and shoulder modules, group by module reference only
       // For other modules, group by module reference and parent socket
       const isWeapon = isWeaponSocket(socketName);
-      const isShoulderModule = socketName === 'Shoulder_L' || socketName === 'Shoulder_R';
-      const key = (isWeapon || isShoulderModule)
-        ? moduleInfo.module_ref
-        : `${moduleInfo.module_ref}|${moduleInfo.parent_socket_name || 'none'}`;
+      const isShoulderModule =
+        socketName === 'Shoulder_L' || socketName === 'Shoulder_R';
+      const key =
+        isWeapon || isShoulderModule
+          ? moduleInfo.module_ref
+          : `${moduleInfo.module_ref}|${moduleInfo.parent_socket_name || 'none'}`;
 
       // Determine socket order for sorting
       const socketOrderIndex = SOCKET_ORDER.indexOf(socketName);
@@ -106,10 +111,10 @@ function getGroupedModules() {
         const existing = moduleGroups.get(key)!;
         existing.count += 1;
         // Track shoulder count separately - check if this is a shoulder weapon
-        const isShoulderWeapon = isWeapon && (
-          moduleInfo.parent_socket_name === 'Shoulder_L' || 
-          moduleInfo.parent_socket_name === 'Shoulder_R'
-        );
+        const isShoulderWeapon =
+          isWeapon &&
+          (moduleInfo.parent_socket_name === 'Shoulder_L' ||
+            moduleInfo.parent_socket_name === 'Shoulder_R');
         if (isShoulderWeapon) {
           existing.shoulderCount += 1;
         }
@@ -117,10 +122,10 @@ function getGroupedModules() {
         existing.socketOrder = Math.min(existing.socketOrder, socketOrder);
       } else {
         // Add new entry with initial count and socket order
-        const isShoulderWeapon = isWeapon && (
-          moduleInfo.parent_socket_name === 'Shoulder_L' || 
-          moduleInfo.parent_socket_name === 'Shoulder_R'
-        );
+        const isShoulderWeapon =
+          isWeapon &&
+          (moduleInfo.parent_socket_name === 'Shoulder_L' ||
+            moduleInfo.parent_socket_name === 'Shoulder_R');
         const shoulderCount = isShoulderWeapon ? 1 : 0;
         moduleGroups.set(key, {
           module,
@@ -135,37 +140,39 @@ function getGroupedModules() {
   );
 
   // Convert to array and apply shoulder multiplier, then sort
-  return Array.from(moduleGroups.values()).map((group) => {
-    // If this is a shoulder weapon, check if it should be doubled
-    if (group.shoulderCount > 0) {
-      // For Titans, shoulder weapons are implicitly dual-mounted
-      // Check if this is a Titan and the weapon is a shoulder weapon
-      const isTitan = preset.character_type === 'Titan';
-      const isShoulderWeapon = isWeaponSocket(group.socketName);
-      
-      if (isTitan && isShoulderWeapon) {
-        // Titan shoulder weapons are always dual-mounted, so multiply by 2
-        return {
-          ...group,
-          count: group.count * 2
-        };
-      } else if (group.shoulderCount === 2) {
-        // For non-Titans, only double if explicitly has both shoulders
-        return {
-          ...group,
-          count: group.count * 2
-        };
+  return Array.from(moduleGroups.values())
+    .map((group) => {
+      // If this is a shoulder weapon, check if it should be doubled
+      if (group.shoulderCount > 0) {
+        // For Titans, shoulder weapons are implicitly dual-mounted
+        // Check if this is a Titan and the weapon is a shoulder weapon
+        const isTitan = preset.character_type === 'Titan';
+        const isShoulderWeapon = isWeaponSocket(group.socketName);
+
+        if (isTitan && isShoulderWeapon) {
+          // Titan shoulder weapons are always dual-mounted, so multiply by 2
+          return {
+            ...group,
+            count: group.count * 2,
+          };
+        } else if (group.shoulderCount === 2) {
+          // For non-Titans, only double if explicitly has both shoulders
+          return {
+            ...group,
+            count: group.count * 2,
+          };
+        }
       }
-    }
-    return group;
-  }).sort((a, b) => {
-    // First sort by socket order
-    if (a.socketOrder !== b.socketOrder) {
-      return a.socketOrder - b.socketOrder;
-    }
-    // Then sort by socket name for consistent ordering within the same order
-    return a.socketName.localeCompare(b.socketName);
-  });
+      return group;
+    })
+    .sort((a, b) => {
+      // First sort by socket order
+      if (a.socketOrder !== b.socketOrder) {
+        return a.socketOrder - b.socketOrder;
+      }
+      // Then sort by socket name for consistent ordering within the same order
+      return a.socketName.localeCompare(b.socketName);
+    });
 }
 
 const shouldShowWeaponGroups = hasDifferentWeaponIds();
@@ -204,19 +211,26 @@ const groupedModules = getGroupedModules();
           // For Titan weapons with different IDs, show Left/Right labels
           // For Titan shoulder modules with different IDs, show Left/Right labels
           let socketSideLabel = undefined;
-          const isShoulderModule = socketName === 'Shoulder_L' || socketName === 'Shoulder_R';
-          
+          const isShoulderModule =
+            socketName === 'Shoulder_L' || socketName === 'Shoulder_R';
+
           if (preset.character_type === 'Titan') {
             if (isWeapon && hasDifferentWeaponIds()) {
               const sideLocaleKey = getSocketSideLocaleKey(socketName);
               if (sideLocaleKey) {
-                const localizationKey = resolveLocalizationKey(sideLocaleKey, 'Web_UI');
+                const localizationKey = resolveLocalizationKey(
+                  sideLocaleKey,
+                  'Web_UI'
+                );
                 socketSideLabel = getDefaultString(localizationKey);
               }
             } else if (isShoulderModule && hasDifferentShoulderModuleIds()) {
               const sideLocaleKey = getSocketSideLocaleKey(socketName);
               if (sideLocaleKey) {
-                const localizationKey = resolveLocalizationKey(sideLocaleKey, 'Web_UI');
+                const localizationKey = resolveLocalizationKey(
+                  sideLocaleKey,
+                  'Web_UI'
+                );
                 socketSideLabel = getDefaultString(localizationKey);
               }
             }
@@ -226,19 +240,13 @@ const groupedModules = getGroupedModules();
             <span class="module-item">
               <ObjRef obj={module} />
               {socketSideLabel && (
-                <span class="socket-side">
-                  ({socketSideLabel})
-                </span>
+                <span class="socket-side">({socketSideLabel})</span>
               )}
               {moduleGroupName && (
-                <span class="module-group">
-                  ({moduleGroupName})
-                </span>
+                <span class="module-group">({moduleGroupName})</span>
               )}
               {count > 1 && !socketSideLabel && (
-                <span class="module-count">
-                  x{count}
-                </span>
+                <span class="module-count">x{count}</span>
               )}
             </span>
           );
