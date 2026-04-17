@@ -23,7 +23,7 @@ const { preset, modules, pilots } = Astro.props;
 // Helper function to get module group name
 function getModuleGroupName(groupId: string): string {
   return (
-    MODULE_GROUPS[groupId as keyof typeof MODULE_GROUPS]?.name?.en || groupId
+    getDefaultString(MODULE_GROUPS[groupId as keyof typeof MODULE_GROUPS]?.name) || groupId
   );
 }
 

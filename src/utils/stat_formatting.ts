@@ -1,5 +1,6 @@
 import type { LocalizationKey, LocalizationData } from '../types/localization';
 import type { StatValueChoices } from '../types/stat';
+import { getDefaultString } from './localization';
 
 // Import shared stat formatting functions from public JavaScript module
 // Note: This is a build-time import that will be resolved during the build process
@@ -105,18 +106,7 @@ export function processLocalizedTextWithStats(
   locData: LocalizationData,
   wrapInHtml: boolean = false
 ): string {
-  let localizedText = '';
-
-  if (localizationKey?.InvariantString) {
-    localizedText = localizationKey.InvariantString;
-  } else if (localizationKey && locData) {
-    localizedText =
-      locData[localizationKey.TableNamespace!]?.[localizationKey.Key!] ||
-      localizationKey.en ||
-      '';
-  } else {
-    localizedText = localizationKey?.en || '';
-  }
+  let localizedText = getDefaultString(localizationKey) || '';
 
   // Apply stat replacements if available
   if (statValueChoices && Object.keys(statValueChoices).length > 0) {
