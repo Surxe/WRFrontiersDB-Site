@@ -6,20 +6,22 @@ import { refToId } from './object_reference';
 import { getDefaultString } from './localization';
 
 export interface VirtualBot {
-  id: string;          // slugified bot ID for URLs (e.g. "ares")
-  name: string;        // english name (e.g. "Ares")
+  id: string; // slugified bot ID for URLs (e.g. "ares")
+  name: string; // english name (e.g. "Ares")
   character_type: string;
   core_modules: string[]; // module IDs
   factory_presets: string[]; // preset IDs
 }
 
 export function slugify(text: string): string {
-  return text.toString().toLowerCase()
-    .replace(/\s+/g, '-')           // Replace spaces with -
-    .replace(/[^\w\-]+/g, '')       // Remove all non-word chars
-    .replace(/\-\-+/g, '-')         // Replace multiple - with single -
-    .replace(/^-+/, '')             // Trim - from start of text
-    .replace(/-+$/, '');            // Trim - from end of text
+  return text
+    .toString()
+    .toLowerCase()
+    .replace(/\s+/g, '-') // Replace spaces with -
+    .replace(/[^\w-]+/g, '') // Remove all non-word chars
+    .replace(/-+/g, '-') // Replace multiple - with single -
+    .replace(/^-+/, '') // Trim - from start of text
+    .replace(/-+$/, ''); // Trim - from end of text
 }
 
 export function getVirtualBots(
@@ -29,19 +31,24 @@ export function getVirtualBots(
   const bots: Record<string, VirtualBot> = {};
   const coreModuleToBotId: Record<string, string> = {};
 
-  const factoryPresets = Object.entries(presets)
-    .filter(([_, preset]) => preset.is_factory_preset);
+  const factoryPresets = Object.entries(presets).filter(
+    ([_, preset]) => preset.is_factory_preset
+  );
 
   // For determinism
   factoryPresets.sort(([a], [b]) => a.localeCompare(b));
 
-  const allCoreModuleIds = Object.keys(modules).filter(id => isCoreModule(modules[id]));
+  const allCoreModuleIds = Object.keys(modules).filter((id) =>
+    isCoreModule(modules[id])
+  );
 
   for (const moduleId of allCoreModuleIds) {
     if (coreModuleToBotId[moduleId]) continue;
 
     const firstPresetEntry = factoryPresets.find(([_, preset]) => {
-      return Object.values(preset.modules).some(m => refToId(m.module_ref) === moduleId);
+      return Object.values(preset.modules).some(
+        (m) => refToId(m.module_ref) === moduleId
+      );
     });
 
     if (firstPresetEntry) {
@@ -50,8 +57,8 @@ export function getVirtualBots(
       const slugId = slugify(botName);
 
       const coreModulesInPreset = Object.values(preset.modules)
-        .map(m => refToId(m.module_ref))
-        .filter(id => modules[id] && isCoreModule(modules[id]));
+        .map((m) => refToId(m.module_ref))
+        .filter((id) => modules[id] && isCoreModule(modules[id]));
 
       for (const cmId of coreModulesInPreset) {
         if (!coreModuleToBotId[cmId]) {
@@ -65,7 +72,7 @@ export function getVirtualBots(
           name: botName,
           character_type: preset.character_type || 'Unknown',
           core_modules: [],
-          factory_presets: []
+          factory_presets: [],
         };
       }
 
@@ -83,7 +90,7 @@ export function getVirtualBots(
       const mId = refToId(m.module_ref);
       if (coreModuleToBotId[mId]) {
         assignedBotId = coreModuleToBotId[mId];
-        break; 
+        break;
       }
     }
 
@@ -103,7 +110,7 @@ export function enrichModulesWithBotIds(
 ): Record<string, EnrichedModule> {
   const bots = getVirtualBots(modules, presets);
   const coreModuleToBotId: Record<string, string> = {};
-  
+
   for (const bot of Object.values(bots)) {
     for (const modId of bot.core_modules) {
       coreModuleToBotId[modId] = bot.id;
@@ -115,7 +122,7 @@ export function enrichModulesWithBotIds(
   for (const [moduleId, module] of Object.entries(modules)) {
     enriched[moduleId] = {
       ...module,
-      bot_id: coreModuleToBotId[moduleId]
+      bot_id: coreModuleToBotId[moduleId],
     };
   }
 
