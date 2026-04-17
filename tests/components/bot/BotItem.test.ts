@@ -337,8 +337,9 @@ describe('BotItem weapon count and side logic', () => {
             return { ...group, count: group.count * 2 };
           } else if (group.shoulderCount === 2) {
             return { ...group, count: group.count * 2 };
-          } else if (!isTitan && isShoulderWeapon && hasSameShoulderModules(preset)) {
+          } else if (!isTitan && isShoulderWeapon && hasSameShoulderModules(preset) && group.moduleInfo.parent_socket_name === 'Shoulder_L') {
             // For non-Titans with same shoulder modules (like Anansi), weapons are implicitly dual-mounted
+            // Only double when weapon is attached to Shoulder_L (not Shoulder_R)
             return { ...group, count: group.count * 2 };
           }
         }
@@ -362,7 +363,7 @@ describe('BotItem weapon count and side logic', () => {
         },
         'Shoulder_Weapon_0': {
           module_ref: 'OBJID_Module::DA_Module_Weapon_MLx2.0',
-          parent_socket_name: 'Shoulder_R',
+          parent_socket_name: 'Shoulder_L', // Changed to Shoulder_L to test doubling
           level: 1
         }
       }
@@ -376,6 +377,129 @@ describe('BotItem weapon count and side logic', () => {
 
     const finalModules = applyShoulderMultiplier(anansiPreset, groupedModules);
     const finalWeaponModule = finalModules.find(g => g.socketName === 'Shoulder_Weapon_0');
-    expect(finalWeaponModule?.count).toBe(2); // Should be doubled due to same shoulder modules
+    expect(finalWeaponModule?.count).toBe(2); // Should be doubled due to same shoulder modules and Shoulder_L parent
+  });
+
+  it('should not double weapons attached to Shoulder_R even with same shoulder modules (Alpha case)', () => {
+    function isWeaponSocket(socketName: string): boolean {
+      return (
+        socketName.startsWith('Shoulder_Weapon') ||
+        socketName.startsWith('Torso_Weapon')
+      );
+    }
+
+    function hasSameShoulderModules(preset: Preset): boolean {
+      const shoulderModuleIds = new Set<string>();
+      Object.entries(preset.modules).forEach(([socketName, moduleInfo]) => {
+        if (socketName === 'Shoulder_L' || socketName === 'Shoulder_R') {
+          const moduleId = moduleInfo.module_ref.split('::')[1];
+          shoulderModuleIds.add(moduleId);
+        }
+      });
+      return shoulderModuleIds.size === 1;
+    }
+
+    function simulateGroupedModules(preset: Preset) {
+      const moduleGroups = new Map();
+      const SOCKET_ORDER = ['Root', 'None', 'Shoulder_L', 'Shoulder_R', 'Ability', 'UltAbility'];
+      
+      Object.entries(preset.modules).forEach(([socketName, moduleInfo]) => {
+        const isWeapon = isWeaponSocket(socketName);
+        const isShoulderModule = socketName === 'Shoulder_L' || socketName === 'Shoulder_R';
+        
+        const key = (isWeapon || isShoulderModule) 
+          ? moduleInfo.module_ref 
+          : `${moduleInfo.module_ref}|${moduleInfo.parent_socket_name || 'none'}`;
+        
+        const socketOrderIndex = SOCKET_ORDER.indexOf(socketName);
+        const socketOrder = socketOrderIndex !== -1 ? socketOrderIndex : SOCKET_ORDER.length;
+        
+        if (moduleGroups.has(key)) {
+          const existing = moduleGroups.get(key);
+          existing.count += 1;
+          existing.socketOrder = Math.min(existing.socketOrder, socketOrder);
+        } else {
+          const isShoulderWeapon =
+            isWeapon &&
+            (moduleInfo.parent_socket_name === 'Shoulder_L' ||
+              moduleInfo.parent_socket_name === 'Shoulder_R');
+          const shoulderCount = isShoulderWeapon ? 1 : 0;
+          
+          moduleGroups.set(key, {
+            socketName,
+            moduleInfo,
+            count: 1,
+            socketOrder,
+            shoulderCount,
+          });
+        }
+      });
+      
+      return Array.from(moduleGroups.values()).sort((a, b) => {
+        if (a.socketOrder !== b.socketOrder) {
+          return a.socketOrder - b.socketOrder;
+        }
+        return a.socketName.localeCompare(b.socketName);
+      });
+    }
+
+    function applyShoulderMultiplier(preset: Preset, groupedModules: Array<{
+      socketName: string;
+      moduleInfo: ModuleInfo;
+      count: number;
+      shoulderCount: number;
+    }>) {
+      return groupedModules.map((group) => {
+        if (group.shoulderCount > 0) {
+          const isTitan = preset.character_type === 'Titan';
+          const isShoulderWeapon = isWeaponSocket(group.socketName);
+
+          if (isTitan && isShoulderWeapon) {
+            return { ...group, count: group.count * 2 };
+          } else if (group.shoulderCount === 2) {
+            return { ...group, count: group.count * 2 };
+          } else if (!isTitan && isShoulderWeapon && hasSameShoulderModules(preset) && group.moduleInfo.parent_socket_name === 'Shoulder_L') {
+            // For non-Titans with same shoulder modules (like Anansi), weapons are implicitly dual-mounted
+            // Only double when weapon is attached to Shoulder_L (not Shoulder_R)
+            return { ...group, count: group.count * 2 };
+          }
+        }
+        return group;
+      });
+    }
+
+    // Test case: Alpha preset (Titan with different shoulder modules and weapon on Shoulder_R)
+    const alphaPreset: Preset = {
+      character_type: 'Titan',
+      modules: {
+        'Shoulder_L': {
+          module_ref: 'OBJID_Module::DA_Module_ShoulderLAlpha.0',
+          parent_socket_name: 'Root',
+          level: 1
+        },
+        'Shoulder_R': {
+          module_ref: 'OBJID_Module::DA_Module_ShoulderRAlpha.0', // Different shoulder module
+          parent_socket_name: 'Root',
+          level: 1
+        },
+        'Shoulder_Weapon_0': {
+          module_ref: 'OBJID_Module::DA_Module_Weapon_Callisto.0',
+          parent_socket_name: 'Shoulder_R', // Weapon attached to Shoulder_R
+          level: 1
+        }
+      }
+    };
+
+    expect(hasSameShoulderModules(alphaPreset)).toBe(false); // Different shoulder modules
+
+    const groupedModules = simulateGroupedModules(alphaPreset);
+    const weaponModule = groupedModules.find(g => g.socketName === 'Shoulder_Weapon_0');
+    expect(weaponModule?.count).toBe(1); // Initial count should be 1
+
+    const finalModules = applyShoulderMultiplier(alphaPreset, groupedModules);
+    const finalWeaponModule = finalModules.find(g => g.socketName === 'Shoulder_Weapon_0');
+    
+    // For Titans, weapons are only doubled when attached to Shoulder_L
+    expect(finalWeaponModule?.count).toBe(1); // Should NOT be doubled because parent is Shoulder_R
   });
 });
