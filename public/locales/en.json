@@ -35,6 +35,8 @@
       "GRP_CycleGear_Name": "Cycle Gear",
       "GRP_CycleGear_Desc": "Cycle gear modules"
     },
+    "Socket_Left": "Left",
+    "Socket_Right": "Right",
     "ModuleGroup_Meta_Description": "{groupName}: {groupDescription} View all {groupName} modules in War Robots Frontiers.",
     "PilotPersonality_Meta_Description": "{name}: View detailed information about this pilot personality in War Robots Frontiers. Includes traits and effects.",
     "PilotClass_Meta_Description": "{name}: View detailed information about this pilot class in War Robots Frontiers. Includes characteristics and abilities.",
