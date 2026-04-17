@@ -27,6 +27,11 @@ import ObjRef from '../../components/obj_ref/ObjRef.astro';
 import ModulesNavBox from '../../components/nav/ModulesNavBox.astro';
 import { getModuleGroupId } from '../../utils/module_group_mapping';
 import { getModuleDetailBreadcrumbs } from '../../utils/breadcrumb';
+import { isCoreModule } from '../../utils/core_modules';
+import BotsList from '../../components/bot/BotsList.astro';
+import { refToId } from '../../utils/object_reference';
+import type { CharacterPreset } from '../../types/character_preset';
+import type { Pilot } from '../../types/pilot';
 
 export async function getStaticPaths() {
   return generateObjectListStaticPaths('Module', true);
@@ -82,6 +87,34 @@ const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
   { name: module.name! },
   defaultName
 );
+
+// Core Module Factory Bots logic
+const isCore = isCoreModule(module);
+let factoryBots: [string, CharacterPreset][] = [];
+let allModulesForBots = {};
+let allPilotsForBots = {};
+
+if (isCore) {
+  const allPresets = getParseObjects<CharacterPreset>(
+    'Objects/CharacterPreset.json'
+  );
+  allModulesForBots = getParseObjects<Module>('Objects/Module.json');
+  allPilotsForBots = getParseObjects<Pilot>('Objects/Pilot.json');
+
+  factoryBots = Object.entries(allPresets).filter(([_, preset]) => {
+    if (!preset.is_factory_preset) return false;
+    return Object.values(preset.modules).some(
+      (m) => refToId(m.module_ref) === module.id
+    );
+  }) as [string, CharacterPreset][];
+
+  // Sort by name
+  factoryBots.sort(([_a, a], [_b, b]) => {
+    const nameA = (a.name as any)?.en || a.id;
+    const nameB = (b.name as any)?.en || b.id;
+    return nameA.localeCompare(nameB);
+  });
+}
 ---
 
 <ParseObjectPage
@@ -157,6 +190,19 @@ const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
       <section style="margin-top: 2rem;">
         <h2>Related Modules</h2>
         <ModulesNavBox moduleGroupId={moduleGroupId} />
+      </section>
+    )
+  }
+
+  {
+    isCore && factoryBots.length > 0 && (
+      <section id="factory-bots-section" style="margin-top: 2rem;">
+        <h2>Factory Bots using this Module</h2>
+        <BotsList
+          presets={factoryBots}
+          modules={allModulesForBots}
+          pilots={allPilotsForBots}
+        />
       </section>
     )
   }
