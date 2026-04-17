@@ -59,6 +59,23 @@ function hasDifferentShoulderModuleIds(): boolean {
   return shoulderModuleIds.size > 1;
 }
 
+// Check if both shoulder modules have the same ID (for implicit dual-mounting)
+function hasSameShoulderModules(): boolean {
+  const shoulderModuleIds = new Set<string>();
+
+  Object.entries(preset.modules as any).forEach(
+    ([socketName, moduleInfo]: [string, any]) => {
+      if (socketName === 'Shoulder_L' || socketName === 'Shoulder_R') {
+        const moduleId = refToId(moduleInfo.module_ref as string);
+        shoulderModuleIds.add(moduleId);
+      }
+    }
+  );
+
+  // Return true if we have exactly 2 shoulder modules with the same ID
+  return shoulderModuleIds.size === 1;
+}
+
 // Define desired socket order
 const SOCKET_ORDER = [
   'Root',
@@ -157,6 +174,12 @@ function getGroupedModules() {
           };
         } else if (group.shoulderCount === 2) {
           // For non-Titans, only double if explicitly has both shoulders
+          return {
+            ...group,
+            count: group.count * 2,
+          };
+        } else if (!isTitan && isShoulderWeapon && hasSameShoulderModules()) {
+          // For non-Titans with same shoulder modules (like Anansi), weapons are implicitly dual-mounted
           return {
             ...group,
             count: group.count * 2,
