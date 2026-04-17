@@ -16,6 +16,7 @@ import { refToId } from './object_reference';
 
 export interface EnrichedModule extends Module {
   module_group?: string;
+  bot_id?: string;
 }
 
 // Module group definitions
