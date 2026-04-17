@@ -1,0 +1,148 @@
+---
+import Breadcrumb from '../components/Breadcrumb.astro';
+import ParseObjectListPage from '../components/ParseObjectListPage.astro';
+import BotsNavBox from '../components/nav/BotsNavBox.astro';
+import ObjRef from '../components/obj_ref/ObjRef.astro';
+import { getParseObjects } from '../utils/parse_object';
+import { getVirtualBots } from '../utils/robot';
+import type { CharacterPreset } from '../types/character_preset';
+import type { Module } from '../types/module';
+
+const presets = getParseObjects<CharacterPreset>('Objects/CharacterPreset.json');
+const modules = getParseObjects<Module>('Objects/Module.json');
+
+const virtualBotsMap = getVirtualBots(modules, presets);
+const bots = Object.values(virtualBotsMap);
+
+// Group by Mech/Titan
+const groupedBots = bots.reduce((groups, bot) => {
+  if (!groups[bot.character_type]) {
+    groups[bot.character_type] = [];
+  }
+  groups[bot.character_type].push(bot);
+  return groups;
+}, {} as Record<string, typeof bots>);
+
+// Sort groups alphabetically
+const sortedGroupKeys = Object.keys(groupedBots).sort();
+for (const key of sortedGroupKeys) {
+  groupedBots[key].sort((a, b) => a.name.localeCompare(b.name));
+}
+
+export function getRobotsBreadcrumbs() {
+  return [
+    { label: 'Home', url: '/' },
+    { label: 'Robots' },
+  ];
+}
+---
+
+<ParseObjectListPage
+  title="Robots"
+  description="Browse all base generic robot platforms from War Robots Frontiers"
+  headerImage="/images/T_UnLockPilots.png"
+>
+  <Breadcrumb breadcrumbs={getRobotsBreadcrumbs()} />
+
+  <BotsNavBox />
+
+  <h1>Robots</h1>
+  <p>This list displays the base robotic platforms available in the game, grouping individual module variants and factory presets under their generic foundation name.</p>
+
+  <div class="bots-list">
+    <table class="bots-table">
+      <thead>
+        <tr>
+          <th class="header-name">BotName</th>
+          <th class="header-modules">Core Modules</th>
+        </tr>
+      </thead>
+      <tbody>
+        {sortedGroupKeys.map((type) => (
+          <>
+            <tr class="character-type-header">
+              <td colspan="2">
+                <h2>{type}</h2>
+              </td>
+            </tr>
+            {groupedBots[type].map((bot) => (
+              <tr>
+                <td>
+                  <a href={`/robots/${bot.id}`} style="font-weight: 600; font-size: 1.1em; color: inherit; text-decoration: none;">
+                    {bot.name}
+                  </a>
+                </td>
+                <td>
+                  <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    {bot.core_modules.map((mId) => (
+                      modules[mId] && <ObjRef obj={modules[mId]} />
+                    ))}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</ParseObjectListPage>
+
+<style>
+  .bots-list {
+    width: 100%;
+    overflow-x: auto;
+    margin-top: 2rem;
+  }
+
+  .bots-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 0.5rem;
+    overflow: hidden;
+  }
+
+  .bots-table th {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+    text-align: left;
+    padding: 1rem;
+    color: #495057;
+  }
+
+  .header-name {
+    width: 30%;
+  }
+
+  .header-modules {
+    width: 70%;
+  }
+
+  .bots-table td {
+    padding: 1rem;
+    vertical-align: middle;
+  }
+
+  .character-type-header td {
+    background-color: #e9ecef;
+    padding: 1rem;
+  }
+
+  .character-type-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .bots-table tbody tr:not(.character-type-header):hover {
+    background-color: #f8f9fa;
+  }
+
+  .bots-table tbody tr:not(.character-type-header) {
+    border-bottom: 1px solid #eee;
+  }
+</style>

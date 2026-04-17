@@ -1,0 +1,71 @@
+---
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import ParseObjectPage from '../../components/ParseObjectPage.astro';
+import ObjRef from '../../components/obj_ref/ObjRef.astro';
+import { getParseObjects } from '../../utils/parse_object';
+import { getVirtualBots } from '../../utils/robot';
+import type { CharacterPreset } from '../../types/character_preset';
+import type { Module } from '../../types/module';
+
+export async function getStaticPaths() {
+  const presets = getParseObjects<CharacterPreset>('Objects/CharacterPreset.json');
+  const modules = getParseObjects<Module>('Objects/Module.json');
+  const virtualBotsMap = getVirtualBots(modules, presets);
+  
+  return Object.keys(virtualBotsMap).map((id) => ({
+    params: { id },
+  }));
+}
+
+const { id } = Astro.params;
+const presets = getParseObjects<CharacterPreset>('Objects/CharacterPreset.json');
+const modules = getParseObjects<Module>('Objects/Module.json');
+
+const virtualBotsMap = getVirtualBots(modules, presets);
+const bot = virtualBotsMap[id as string];
+
+if (!bot) {
+  throw new Error(`Bot with id ${id} not found.`);
+}
+
+export function getRobotDetailBreadcrumbs(botName: string) {
+  return [
+    { label: 'Home', url: '/' },
+    { label: 'Robots', url: '/robots' },
+    { label: botName },
+  ];
+}
+---
+
+<ParseObjectPage
+  localizedDescriptions={[{ lang: 'en', text: `View all details for ${bot.name} in War Robots Frontiers.` }]}
+  headerImage="/images/T_UnLockPilots.png"
+>
+  <title slot="head">{bot.name} - Robots</title>
+  
+  <Breadcrumb breadcrumbs={getRobotDetailBreadcrumbs(bot.name)} />
+
+  <h1>{bot.name}</h1>
+  <p><strong>Type:</strong> {bot.character_type}</p>
+
+  <section style="margin-top: 2rem;">
+    <h2>Core Modules</h2>
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+      {bot.core_modules.map((mId) => {
+        const module = modules[mId];
+        return module ? <ObjRef obj={module} /> : null;
+      })}
+    </div>
+  </section>
+
+  <section style="margin-top: 2rem;">
+    <h2>Factory Presets</h2>
+    <p>This generic robot platform is featured in the following factory presets:</p>
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem;">
+      {bot.factory_presets.map((pId) => {
+        const preset = presets[pId];
+        return preset ? <ObjRef obj={preset} /> : null;
+      })}
+    </div>
+  </section>
+</ParseObjectPage>
