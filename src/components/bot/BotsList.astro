@@ -92,11 +92,11 @@ const sortedGroups = Object.keys(groupedPresets).sort();
             </tr>
             {Object.keys(groupedPresets[characterType])
               .sort()
-              .map((torsoId) => (
+              .map((torsoId) =>
                 groupedPresets[characterType][torsoId].map((item: any) => (
                   <BotItem preset={item[1]} modules={modules} pilots={pilots} />
                 ))
-              ))}
+              )}
           </>
         ))
       }
@@ -157,7 +157,6 @@ const sortedGroups = Object.keys(groupedPresets).sort();
     color: #333;
   }
 
-  
   .bots-table tbody tr:not(.character-type-header):hover {
     background-color: #f8f9fa;
   }
