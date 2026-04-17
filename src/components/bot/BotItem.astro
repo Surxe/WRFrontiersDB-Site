@@ -86,15 +86,23 @@ function getGroupedModules() {
         // Increment count if already exists
         const existing = moduleGroups.get(key)!;
         existing.count += 1;
-        // Track shoulder count separately
-        if (socketName === 'Shoulder_L' || socketName === 'Shoulder_R') {
+        // Track shoulder count separately - check if this is a shoulder weapon
+        const isShoulderWeapon = isWeapon && (
+          moduleInfo.parent_socket_name === 'Shoulder_L' || 
+          moduleInfo.parent_socket_name === 'Shoulder_R'
+        );
+        if (isShoulderWeapon) {
           existing.shoulderCount += 1;
         }
         // Use the earliest socket order for the group
         existing.socketOrder = Math.min(existing.socketOrder, socketOrder);
       } else {
         // Add new entry with initial count and socket order
-        const shoulderCount = (socketName === 'Shoulder_L' || socketName === 'Shoulder_R') ? 1 : 0;
+        const isShoulderWeapon = isWeapon && (
+          moduleInfo.parent_socket_name === 'Shoulder_L' || 
+          moduleInfo.parent_socket_name === 'Shoulder_R'
+        );
+        const shoulderCount = isShoulderWeapon ? 1 : 0;
         moduleGroups.set(key, {
           module,
           socketName,
@@ -109,12 +117,26 @@ function getGroupedModules() {
 
   // Convert to array and apply shoulder multiplier, then sort
   return Array.from(moduleGroups.values()).map((group) => {
-    // If this is a shoulder weapon with both shoulders (shoulderCount === 2), double the count
-    if (group.shoulderCount === 2) {
-      return {
-        ...group,
-        count: group.count * 2
-      };
+    // If this is a shoulder weapon, check if it should be doubled
+    if (group.shoulderCount > 0) {
+      // For Titans, shoulder weapons are implicitly dual-mounted
+      // Check if this is a Titan and the weapon is a shoulder weapon
+      const isTitan = preset.character_type === 'Titan';
+      const isShoulderWeapon = isWeaponSocket(group.socketName);
+      
+      if (isTitan && isShoulderWeapon) {
+        // Titan shoulder weapons are always dual-mounted, so multiply by 2
+        return {
+          ...group,
+          count: group.count * 2
+        };
+      } else if (group.shoulderCount === 2) {
+        // For non-Titans, only double if explicitly has both shoulders
+        return {
+          ...group,
+          count: group.count * 2
+        };
+      }
     }
     return group;
   }).sort((a, b) => {
