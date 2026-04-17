@@ -94,7 +94,8 @@ function getGroupedModules() {
         existing.socketOrder = Math.min(existing.socketOrder, socketOrder);
       } else {
         // Add new entry with initial count and socket order
-        const shoulderCount = (socketName === 'Shoulder_L' || socketName === 'Shoulder_R') ? 1 : 0;
+        const shoulderCount =
+          socketName === 'Shoulder_L' || socketName === 'Shoulder_R' ? 1 : 0;
         moduleGroups.set(key, {
           module,
           socketName,
@@ -108,23 +109,25 @@ function getGroupedModules() {
   );
 
   // Convert to array and apply shoulder multiplier, then sort
-  return Array.from(moduleGroups.values()).map((group) => {
-    // If this is a shoulder weapon with both shoulders (shoulderCount === 2), double the count
-    if (group.shoulderCount === 2) {
-      return {
-        ...group,
-        count: group.count * 2
-      };
-    }
-    return group;
-  }).sort((a, b) => {
-    // First sort by socket order
-    if (a.socketOrder !== b.socketOrder) {
-      return a.socketOrder - b.socketOrder;
-    }
-    // Then sort by socket name for consistent ordering within the same order
-    return a.socketName.localeCompare(b.socketName);
-  });
+  return Array.from(moduleGroups.values())
+    .map((group) => {
+      // If this is a shoulder weapon with both shoulders (shoulderCount === 2), double the count
+      if (group.shoulderCount === 2) {
+        return {
+          ...group,
+          count: group.count * 2,
+        };
+      }
+      return group;
+    })
+    .sort((a, b) => {
+      // First sort by socket order
+      if (a.socketOrder !== b.socketOrder) {
+        return a.socketOrder - b.socketOrder;
+      }
+      // Then sort by socket name for consistent ordering within the same order
+      return a.socketName.localeCompare(b.socketName);
+    });
 }
 
 const shouldShowWeaponGroups = hasDifferentWeaponIds();
@@ -164,15 +167,9 @@ const groupedModules = getGroupedModules();
             <span class="module-item">
               <ObjRef obj={module} />
               {moduleGroupName && (
-                <span class="module-group">
-                  ({moduleGroupName})
-                </span>
+                <span class="module-group">({moduleGroupName})</span>
               )}
-              {count > 1 && (
-                <span class="module-count">
-                  x{count}
-                </span>
-              )}
+              {count > 1 && <span class="module-count">x{count}</span>}
             </span>
           );
         })
