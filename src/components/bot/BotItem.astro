@@ -58,6 +58,7 @@ function getGroupedModules() {
       moduleInfo: any;
       count: number;
       socketOrder: number;
+      shoulderCount: number;
     }
   >();
 
@@ -76,10 +77,6 @@ function getGroupedModules() {
         ? moduleInfo.module_ref
         : `${moduleInfo.module_ref}|${moduleInfo.parent_socket_name || 'none'}`;
 
-      // Calculate the contribution of this entry to the total count
-      const entryCount =
-        isWeapon && moduleInfo.parent_socket_name === 'Shoulder_R' ? 2 : 1;
-
       // Determine socket order for sorting
       const socketOrderIndex = SOCKET_ORDER.indexOf(socketName);
       const socketOrder =
@@ -88,24 +85,39 @@ function getGroupedModules() {
       if (moduleGroups.has(key)) {
         // Increment count if already exists
         const existing = moduleGroups.get(key)!;
-        existing.count += entryCount;
+        existing.count += 1;
+        // Track shoulder count separately
+        if (socketName === 'Shoulder_L' || socketName === 'Shoulder_R') {
+          existing.shoulderCount += 1;
+        }
         // Use the earliest socket order for the group
         existing.socketOrder = Math.min(existing.socketOrder, socketOrder);
       } else {
-        // Add new entry with its contribution count and socket order
+        // Add new entry with initial count and socket order
+        const shoulderCount = (socketName === 'Shoulder_L' || socketName === 'Shoulder_R') ? 1 : 0;
         moduleGroups.set(key, {
           module,
           socketName,
           moduleInfo,
-          count: entryCount,
+          count: 1,
           socketOrder,
+          shoulderCount,
         });
       }
     }
   );
 
-  // Convert to array and sort by socket order, then by socket name for consistency
-  return Array.from(moduleGroups.values()).sort((a, b) => {
+  // Convert to array and apply shoulder multiplier, then sort
+  return Array.from(moduleGroups.values()).map((group) => {
+    // If this is a shoulder weapon with both shoulders (shoulderCount === 2), double the count
+    if (group.shoulderCount === 2) {
+      return {
+        ...group,
+        count: group.count * 2
+      };
+    }
+    return group;
+  }).sort((a, b) => {
     // First sort by socket order
     if (a.socketOrder !== b.socketOrder) {
       return a.socketOrder - b.socketOrder;
