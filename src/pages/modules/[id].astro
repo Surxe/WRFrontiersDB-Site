@@ -110,8 +110,8 @@ if (isCore) {
 
   // Sort by name
   factoryBots.sort(([_a, a], [_b, b]) => {
-    const nameA = (a.name as any)?.en || a.id;
-    const nameB = (b.name as any)?.en || b.id;
+    const nameA = getDefaultString(a.name as any) || a.id;
+    const nameB = getDefaultString(b.name as any) || b.id;
     return nameA.localeCompare(nameB);
   });
 }

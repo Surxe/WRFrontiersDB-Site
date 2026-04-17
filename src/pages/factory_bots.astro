@@ -6,6 +6,7 @@ import BotsNavBox from '../components/nav/BotsNavBox.astro';
 import { getFactoryBotsBreadcrumbs } from '../utils/breadcrumb';
 import { getParseObjects } from '../utils/parse_object';
 import { prepareObjectList } from '../utils/list';
+import { getDefaultString } from '../utils/localization';
 
 // Load character presets, modules, and pilots
 const presets = getParseObjects('Objects/CharacterPreset.json');
@@ -20,8 +21,8 @@ const factoryEntries = entries.filter(
 
 // Sort presets by name
 const sortedPresets = factoryEntries.sort(([_a, a], [_b, b]) => {
-  const nameA = (a.name as any)?.en || a.id;
-  const nameB = (b.name as any)?.en || b.id;
+  const nameA = getDefaultString(a.name as any) || a.id;
+  const nameB = getDefaultString(b.name as any) || b.id;
   return nameA.localeCompare(nameB);
 });
 ---

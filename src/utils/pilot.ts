@@ -1,5 +1,6 @@
 import { refToId } from './object_reference';
 import { PILOT_TYPE_LEGENDARY_REF } from './constants';
+import { getDefaultString } from './localization';
 import type { PilotTalent, Pilot } from '../types/pilot';
 
 interface PilotWithTalentInfo {
@@ -88,10 +89,8 @@ export function enrichPilotTalents(
       if (!_isHeroA && _isHeroB) return 1;
 
       // Then sort by pilot name alphabetically
-      const _nameA =
-        a.pilot.first_name.en || a.pilot.first_name.InvariantString || '';
-      const _nameB =
-        b.pilot.first_name.en || b.pilot.first_name.InvariantString || '';
+      const _nameA = getDefaultString(a.pilot.first_name) || '';
+      const _nameB = getDefaultString(b.pilot.first_name) || '';
 
       return _nameA.localeCompare(_nameB);
     });

@@ -5,6 +5,7 @@ import Icon from '../../components/Icon.astro';
 import LocalizedText from '../../components/LocalizedText.astro';
 import ObjectPageScripts from '../../components/ObjectPageScripts.astro';
 import ParseObjectPage from '../../components/ParseObjectPage.astro';
+import ObjRef from '../../components/obj_ref/ObjRef.astro';
 import {
   getParseObject,
   generateObjectListStaticPaths,
@@ -94,7 +95,7 @@ const categoryModules = Object.values(allModules).filter(
         <div key={_id}>
           <h3>
             <a href={`/modules/${_id}`}>
-              {module.name?.en || module.name?.InvariantString || _id}
+              {getDefaultString(module.name) || _id}
             </a>
           </h3>
           <p>Rarity: {module.module_rarity_ref}</p>

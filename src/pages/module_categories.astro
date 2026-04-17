@@ -5,6 +5,7 @@ import ParseObjectListPage from '../components/ParseObjectListPage.astro';
 import { getParseObjects } from '../utils/parse_object';
 import { prepareObjectList, groupBy, sortGroups } from '../utils/list';
 import { getModuleGroupsBreadcrumbs } from '../utils/breadcrumb';
+import { getDefaultString } from '../utils/localization';
 import ObjRef from '../components/obj_ref/ObjRef.astro';
 
 const moduleCategories = getParseObjects<ModuleCategory>(
@@ -18,7 +19,7 @@ const entries = prepareObjectList(moduleCategories, { prodReadyOnly: false });
 const grouped = groupBy(
   entries,
   ([_category, category]) =>
-    category.name?.en || category.name?.InvariantString || 'Unknown'
+    getDefaultString(category.name) || 'Unknown'
 );
 
 // Sort groups alphabetically

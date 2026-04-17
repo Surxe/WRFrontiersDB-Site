@@ -129,7 +129,7 @@ export function getModuleGroupDetailBreadcrumbs(
   groupId: string
 ): BreadcrumbTrail {
   const group = MODULE_GROUPS[groupId as keyof typeof MODULE_GROUPS];
-  const groupName = group?.name.en || groupId;
+  const groupName = getDefaultString(group?.name) || groupId;
 
   return [
     {

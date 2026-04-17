@@ -7,6 +7,7 @@ import {
   type ModuleGroupId,
 } from '../../utils/module_group_mapping';
 import { prepareObjectList } from '../../utils/list';
+import { getDefaultString } from '../../utils/localization';
 import type { Module, ModuleCategory, ModuleType } from '../../types/module';
 
 interface Props {
@@ -46,7 +47,7 @@ const filteredModules = prepareObjectList(Object.fromEntries(allGroupModules), {
 
 // Get localized title for this module group
 const moduleGroup = MODULE_GROUPS[moduleGroupId];
-const title = moduleGroup.name.en || moduleGroup.id;
+const title = getDefaultString(moduleGroup.name) || moduleGroup.id;
 ---
 
 <BaseNavBox title={title} objects={filteredModules} />

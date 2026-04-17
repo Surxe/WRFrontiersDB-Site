@@ -16,6 +16,7 @@ import { getModuleGroupDetailBreadcrumbs } from '../../utils/breadcrumb';
 import { prepareObjectList } from '../../utils/list';
 import type { ModuleType, Module, ModuleCategory } from '../../types/module';
 import ObjRef from '../../components/obj_ref/ObjRef.astro';
+import { getDefaultString } from '../../utils/localization';
 
 export async function getStaticPaths() {
   const groupIds = getAllModuleGroupIds();
@@ -87,12 +88,12 @@ const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
       en: '',
     },
   },
-  group.name.en || id
+  getDefaultString(group.name) || id
 );
 ---
 
 <ParseObjectPage
-  title={`${group.name.en} - Module Group`}
+  title={`${getDefaultString(group.name)} - Module Group`}
   localizedDescriptions={localizedDescriptions}
   type="article"
 >

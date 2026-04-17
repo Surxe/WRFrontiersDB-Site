@@ -36,7 +36,7 @@ const modules = getParseObjects('Objects/Module.json');
   {
     preset ? (
       <div class="character-preset-detail">
-        <h1>{preset.name?.en || preset.id}</h1>
+        <h1>{getDefaultString(preset.name) || preset.id}</h1>
 
         <BotItem preset={preset} modules={modules} pilots={pilots} />
       </div>
