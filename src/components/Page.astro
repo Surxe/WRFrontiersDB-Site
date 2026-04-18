@@ -3,6 +3,9 @@ import langs from '../../public/langs.json';
 import { URL } from 'node:url';
 import '../styles/page-header.css';
 
+// Valid language codes — passed to the inline redirect script via define:vars
+const validLangs = Object.keys(langs);
+
 export interface Props {
   title?: string;
   description?: string;
@@ -74,9 +77,27 @@ const baseUrl = import.meta.env.BASE_URL;
 // Basic page layout
 ---
 
-<html lang="en">
+<html lang="en" id="html-root">
   <head>
     <meta charset="UTF-8" />
+    <!--
+      Inline script: validate `lang` query param and redirect if missing/invalid.
+      Runs synchronously before page content renders to avoid a flash of wrong language.
+    -->
+    <script define:vars={{ validLangs }}>
+      (function () {
+        var params = new URLSearchParams(window.location.search);
+        var lang = params.get('lang');
+        if (!lang || !validLangs.includes(lang)) {
+          var url = new URL(window.location.href);
+          url.searchParams.set('lang', 'en');
+          window.location.replace(url.toString());
+        } else {
+          // Set the html lang attribute now (before JS modules load)
+          document.documentElement.lang = lang;
+        }
+      })();
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
@@ -124,9 +145,7 @@ const baseUrl = import.meta.env.BASE_URL;
     <select id="lang-selector">
       {
         Object.entries(langs).map(([code, names]) => (
-          <option value={code} selected={code === 'en'}>
-            {(names as any)[code]}
-          </option>
+          <option value={code}>{(names as any)[code]}</option>
         ))
       }
     </select>
@@ -139,13 +158,49 @@ const baseUrl = import.meta.env.BASE_URL;
       const languageModule = await import('/js/language_selector.js');
       const { initLanguageSelector } = languageModule;
 
-      // Initialize language selector with default behavior (reload on change)
+      // Initialize language selector (pre-selects based on lang param)
       initLanguageSelector();
 
       // Initialize number format selector
       const { initNumberFormatSelector } =
         await import('/js/number_format_selector.js');
       initNumberFormatSelector('number-format-selector');
+    </script>
+
+    <!--
+      Href rewriter: appends or updates the `lang` query param on all internal
+      anchor tags so the active language is preserved during navigation.
+      Runs after DOM is ready; covers ObjRef links, Breadcrumb, nav boxes,
+      BackToHome, and any inline hrefs.
+    -->
+    <script type="module">
+      import { getCurrentLanguage } from '/js/localization.js';
+
+      function rewriteInternalLinks() {
+        const lang = getCurrentLanguage();
+        document.querySelectorAll('a[href]').forEach((a) => {
+          const href = a.getAttribute('href');
+          // Only touch internal links (starts with / or is relative, not external)
+          if (
+            !href ||
+            href.startsWith('http') ||
+            href.startsWith('//') ||
+            href.startsWith('#') ||
+            href.startsWith('mailto:')
+          )
+            return;
+          try {
+            const url = new URL(href, window.location.origin);
+            url.searchParams.set('lang', lang);
+            a.setAttribute('href', url.pathname + url.search + url.hash);
+          } catch (_) {
+            // Ignore malformed hrefs
+          }
+        });
+      }
+
+      // Run immediately (DOM is already built for static pages)
+      rewriteInternalLinks();
     </script>
   </body>
 </html>

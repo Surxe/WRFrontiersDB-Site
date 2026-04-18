@@ -18,8 +18,7 @@ const entries = prepareObjectList(moduleCategories, { prodReadyOnly: false });
 // Group by name for sorting
 const grouped = groupBy(
   entries,
-  ([_category, category]) =>
-    getDefaultString(category.name) || 'Unknown'
+  ([_category, category]) => getDefaultString(category.name) || 'Unknown'
 );
 
 // Sort groups alphabetically

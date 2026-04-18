@@ -95,19 +95,24 @@ export function getLocalizedText(locData, namespace, key, fallback = false) {
 }
 
 /**
- * Gets current language from localStorage with fallback
+ * Gets current language from the `lang` URL query parameter.
+ * Defaults to 'en'.
  * @returns {string} Current language code
  */
 export function getCurrentLanguage() {
-  return localStorage.getItem('selectedLang') || 'en';
+  const param = new URLSearchParams(window.location.search).get('lang');
+  return param || 'en';
 }
 
 /**
- * Sets current language in localStorage
- * @param {string} lang - Language code to save
+ * Navigates to the current page with the `lang` query parameter updated.
+ * This replaces the page in history so the back button works naturally.
+ * @param {string} lang - Language code to apply
  */
 export function setCurrentLanguage(lang) {
-  localStorage.setItem('selectedLang', lang);
+  const url = new URL(window.location.href);
+  url.searchParams.set('lang', lang);
+  window.location.href = url.toString();
 }
 
 /**
