@@ -573,5 +573,16 @@
   "DA_Preset_Titan_Grim.0": "grim",
   "DA_Preset_Titan_Matriarch.0": "matriarch",
   "DA_Preset_Titan_Norna.0": "norna",
-  "DA_Preset_Titan_Spire.0": "volta"
+  "DA_Preset_Titan_Spire.0": "volta",
+  "titan-torsos": "titan-torsos",
+  "non-titan-torsos": "torsos",
+  "titan-chassis": "titan-chassis",
+  "non-titan-chassis": "chassis",
+  "titan-shoulder": "titan-shoulders",
+  "non-titan-shoulder": "shoulders",
+  "light-weapon": "light-weapons",
+  "heavy-weapon": "heavy-weapons",
+  "titan-weapon": "titan-weapons",
+  "supply-gear": "supply-gear",
+  "cycle-gear": "cycle-gear"
 }

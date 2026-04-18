@@ -9,11 +9,29 @@ import {
 import LocalizedText from '../components/LocalizedText.astro';
 import { getModuleGroupsBreadcrumbs } from '../utils/breadcrumb';
 
+// Load slug map to get module group slugs
+const fs = await import('fs/promises');
+const path = await import('path');
+const projectRoot = process.cwd();
+const slugMapPath = path.join(projectRoot, 'public', 'slug-map.json');
+
+let slugMap: Record<string, string> = {};
+try {
+  const content = await fs.readFile(slugMapPath, 'utf-8');
+  slugMap = JSON.parse(content);
+} catch (error) {
+  console.warn('Could not load slug map for module groups list:', error);
+}
+
 const groupIds = getAllModuleGroupIds();
 
-// Sort groups by sort_order
+// Sort groups by sort_order and add slugs
 const sortedGroups = groupIds
-  .map((groupId) => ({ ...MODULE_GROUPS[groupId], id: groupId }))
+  .map((groupId) => ({ 
+    ...MODULE_GROUPS[groupId], 
+    id: groupId,
+    slug: slugMap[groupId] || groupId
+  }))
   .sort((a, b) => (a.sort_order || 999) - (b.sort_order || 999));
 ---
 
@@ -31,7 +49,7 @@ const sortedGroups = groupIds
     {
       sortedGroups.map((group) => (
         <li>
-          <a href={`/module_groups/${group.id}`}>
+          <a href={`/module_groups/${group.slug}`}>
             <LocalizedText localizationKey={group.name} tag="span" />
           </a>
         </li>
