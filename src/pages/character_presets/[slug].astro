@@ -13,10 +13,45 @@ import { getDefaultString } from '../../utils/localization';
 import type { CharacterPreset } from '../../types/character_preset';
 
 export async function getStaticPaths() {
-  return generateObjectListStaticPaths('CharacterPreset');
+  // Load slug map to generate slug-based paths
+  const fs = await import('fs/promises');
+  const path = await import('path');
+  const projectRoot = process.cwd();
+  const slugMapPath = path.join(projectRoot, 'public', 'slug-map.json');
+  
+  let slugMap = {};
+  try {
+    const content = await fs.readFile(slugMapPath, 'utf-8');
+    slugMap = JSON.parse(content);
+  } catch (error) {
+    console.warn('Could not load slug map, falling back to ID-based paths');
+    return generateObjectListStaticPaths('CharacterPreset');
+  }
+
+  // Get all character presets
+  const presets = getParseObjects<CharacterPreset>('Objects/CharacterPreset.json');
+  const paths = [];
+
+  for (const [presetId, preset] of Object.entries(presets)) {
+    // Skip presets without production_status = 'Ready' for production
+    if (import.meta.env.PROD && preset.production_status !== 'Ready') {
+      continue;
+    }
+
+    const slug = slugMap[presetId];
+    if (slug) {
+      paths.push({
+        params: { slug },
+        props: { id: presetId }
+      });
+    }
+  }
+
+  return paths;
 }
 
-const { id } = Astro.params;
+const { slug } = Astro.params;
+const { id } = Astro.props;
 
 const preset = getParseObject(
   id,
@@ -38,22 +73,19 @@ const modules = getParseObjects('Objects/Module.json');
       <div class="character-preset-detail">
         <h1>{getDefaultString(preset.name) || preset.id}</h1>
 
-        <BotItem preset={preset} modules={modules} pilots={pilots} />
+        <BotItem
+          preset={preset}
+          allModules={modules}
+          allPilots={pilots}
+        />
       </div>
     ) : (
-      <div>
+      <div class="character-preset-not-found">
         <h1>Character Preset Not Found</h1>
-        <p>The character preset with ID "{id}" was not found.</p>
+        <p>The character preset with ID {id} was not found.</p>
       </div>
     )
   }
 
   <ObjectPageScripts objectData={preset} />
 </ParseObjectListPage>
-
-<style>
-  .character-preset-detail {
-    max-width: 800px;
-    margin: 0 auto;
-  }
-</style>

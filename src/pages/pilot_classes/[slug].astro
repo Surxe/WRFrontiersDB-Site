@@ -7,6 +7,7 @@ import ObjectPageScripts from '../../components/ObjectPageScripts.astro';
 import ParseObjectPage from '../../components/ParseObjectPage.astro';
 import {
   getParseObject,
+  getParseObjects,
   generateObjectListStaticPaths,
 } from '../../utils/parse_object';
 import { getDefaultString } from '../../utils/localization';
@@ -15,10 +16,45 @@ import PilotClassesNavBox from '../../components/nav/PilotClassesNavBox.astro';
 import { getPilotClassDetailBreadcrumbs } from '../../utils/breadcrumb';
 
 export async function getStaticPaths() {
-  return generateObjectListStaticPaths('PilotClass');
+  // Load slug map to generate slug-based paths
+  const fs = await import('fs/promises');
+  const path = await import('path');
+  const projectRoot = process.cwd();
+  const slugMapPath = path.join(projectRoot, 'public', 'slug-map.json');
+  
+  let slugMap = {};
+  try {
+    const content = await fs.readFile(slugMapPath, 'utf-8');
+    slugMap = JSON.parse(content);
+  } catch (error) {
+    console.warn('Could not load slug map, falling back to ID-based paths');
+    return generateObjectListStaticPaths('PilotClass');
+  }
+
+  // Get all pilot classes
+  const pilotClasses = getParseObjects<PilotClass>('Objects/PilotClass.json');
+  const paths = [];
+
+  for (const [classId, pilotClass] of Object.entries(pilotClasses)) {
+    // Skip classes without production_status = 'Ready' for production
+    if (import.meta.env.PROD && pilotClass.production_status !== 'Ready') {
+      continue;
+    }
+
+    const slug = slugMap[classId];
+    if (slug) {
+      paths.push({
+        params: { slug },
+        props: { id: classId }
+      });
+    }
+  }
+
+  return paths;
 }
 
-const { id } = Astro.params;
+const { slug } = Astro.params;
+const { id } = Astro.props;
 
 const pilotClass = getParseObject<PilotClass>(id, 'Objects/PilotClass.json');
 
@@ -45,21 +81,13 @@ const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
     slot="head"
   />
   <Breadcrumb breadcrumbs={getPilotClassDetailBreadcrumbs(pilotClass)} />
-  <LocalizedText
-    id="pilot-class-name"
-    tag="h1"
-    localizationKey={pilotClass.name}
-  />
+  <LocalizedText id="pilot-class-name" tag="h1" localizationKey={pilotClass.name} />
 
-  <Icon
-    iconPath={pilotClass.badge.image_path}
-    altText={`${defaultName} icon`}
-    color={pilotClass.badge.hex}
-  />
+  <Icon iconPath={pilotClass.image_path} altText={`${defaultName} icon`} />
 
   <p>Language: <span id="current-lang">en</span></p>
 
-  <PilotClassesNavBox />
+  <PilotClassesNavBox currentClass={pilotClass} />
 
   <ObjectPageScripts objectData={pilotClass} />
 </ParseObjectPage>

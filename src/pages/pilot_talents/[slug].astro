@@ -1,0 +1,138 @@
+---
+import type { PilotTalent, Pilot, PilotTalentType } from '../../types/pilot';
+import type { ModuleStat } from '../../types/module';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import Icon from '../../components/Icon.astro';
+import LocalizedText from '../../components/LocalizedText.astro';
+import StatEmbedLocalizedText from '../../components/StatEmbedLocalizedText.astro';
+import ObjectPageScripts from '../../components/ObjectPageScripts.astro';
+import ParseObjectPage from '../../components/ParseObjectPage.astro';
+import PilotTalentPageTable from '../../components/pilot/PilotTalentPageTable.astro';
+import {
+  getParseObjects,
+  generateObjectListStaticPaths,
+} from '../../utils/parse_object';
+import { enrichPilotTalents } from '../../utils/pilot';
+import { getDefaultString } from '../../utils/localization';
+import { getStatValueChoices } from '../../utils/stat';
+import { generatePilotTalentLocalizedMetaDescriptions } from '../../utils/build_localization';
+import ObjRef from '../../components/obj_ref/ObjRef.astro';
+import { refToId } from '../../utils/object_reference';
+import '../../styles/pilots.css';
+import PilotTalentsNavBox from '../../components/nav/PilotTalentsNavBox.astro';
+import { getPilotTalentDetailBreadcrumbs } from '../../utils/breadcrumb';
+
+export async function getStaticPaths() {
+  // Load slug map to generate slug-based paths
+  const fs = await import('fs/promises');
+  const path = await import('path');
+  const projectRoot = process.cwd();
+  const slugMapPath = path.join(projectRoot, 'public', 'slug-map.json');
+  
+  let slugMap = {};
+  try {
+    const content = await fs.readFile(slugMapPath, 'utf-8');
+    slugMap = JSON.parse(content);
+  } catch (error) {
+    console.warn('Could not load slug map, falling back to ID-based paths');
+    return generateObjectListStaticPaths('PilotTalent');
+  }
+
+  // Get all pilot talents
+  const pilotTalents = getParseObjects<PilotTalent>('Objects/PilotTalent.json');
+  const paths = [];
+
+  for (const [talentId, talent] of Object.entries(pilotTalents)) {
+    // Skip talents without production_status = 'Ready' for production
+    if (import.meta.env.PROD && talent.production_status !== 'Ready') {
+      continue;
+    }
+
+    const slug = slugMap[talentId];
+    if (slug) {
+      paths.push({
+        params: { slug },
+        props: { id: talentId }
+      });
+    }
+  }
+
+  return paths;
+}
+
+const { slug } = Astro.params;
+const { id } = Astro.props;
+
+// Load pilots to enrich talent data
+const pilots = getParseObjects<Pilot>('Objects/Pilot.json');
+const pilotTalents = getParseObjects<PilotTalent>('Objects/PilotTalent.json');
+const enrichedTalents = enrichPilotTalents(pilotTalents, pilots);
+const pilotTalentTypes = getParseObjects<PilotTalentType>(
+  'Objects/PilotTalentType.json'
+);
+
+const pilotTalent = enrichedTalents[id];
+const pilotsWithThisTalent = pilotTalent.pilots_with_this_talent;
+
+// Load ModuleStats for stat replacements
+const moduleStats = getParseObjects<ModuleStat>('Objects/ModuleStat.json');
+
+// Build statValueChoices from talent.stats
+const statValueChoices = getStatValueChoices(pilotTalent.stats, moduleStats);
+
+// Extract English text as fallback
+const defaultName = getDefaultString(pilotTalent.name) || pilotTalent.id;
+
+// Generate localized meta descriptions for all supported languages
+const localizedDescriptions = generatePilotTalentLocalizedMetaDescriptions(
+  pilotTalent,
+  statValueChoices
+);
+---
+
+<ParseObjectPage
+  localizedDescriptions={localizedDescriptions}
+  headerImage={pilotTalent.image_path as string}
+  type="article"
+>
+  <LocalizedText
+    id="pilot-talent-name-title"
+    tag="title"
+    localizationKey={pilotTalent.name}
+    slot="head"
+  />
+  <Breadcrumb breadcrumbs={getPilotTalentDetailBreadcrumbs(pilotTalent)} />
+  <LocalizedText id="pilot-talent-name" tag="h1" localizationKey={pilotTalent.name} />
+
+  <Icon iconPath={pilotTalent.inventory_icon_path} altText={`${defaultName} icon`} />
+
+  {
+    pilotTalent.description && (
+      <div class="pilot-talent-description-section">
+        <StatEmbedLocalizedText
+          id="pilot-talent-desc"
+          tag="p"
+          localizationKey={pilotTalent.description}
+          statValueChoices={statValueChoices}
+        />
+      </div>
+    )
+  }
+
+  <p>Language: <span id="current-lang">en</span></p>
+  <p>
+    Talent Type:
+    {pilotTalent.pilot_talent_type_ref ? (
+      <ObjRef 
+        obj={pilotTalentTypes[refToId(pilotTalent.pilot_talent_type_ref)]} 
+        useHref={false} 
+      />
+    ) : 'Unknown'}
+  </p>
+
+  <div id="stats">stats</div>
+
+  <PilotTalentPageTable pilotTalent={pilotTalent} />
+
+  <ObjectPageScripts objectData={pilotTalent} jsFileName="pilot-talent-page.js" />
+</ParseObjectPage>
