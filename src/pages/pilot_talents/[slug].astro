@@ -37,6 +37,11 @@ const pilotTalentTypes = getParseObjects<PilotTalentType>(
 );
 
 const pilotTalent = enrichedTalents[id];
+
+if (!pilotTalent) {
+  throw new Error(`Pilot talent not found: ${id}`);
+}
+
 const _pilotsWithThisTalent = pilotTalent.pilots_with_this_talent;
 
 // Load ModuleStats for stat replacements
@@ -97,7 +102,11 @@ const localizedDescriptions = generatePilotTalentLocalizedMetaDescriptions(
 
   <div id="stats">stats</div>
 
-  <PilotTalentPageTable pilotTalent={pilotTalent} />
+  <PilotTalentPageTable 
+    pilotsWithThisTalent={pilotTalent.pilots_with_this_talent || []}
+    allPilotTalents={pilotTalents}
+    currentTalentId={id}
+  />
 
   <ObjectPageScripts objectData={pilotTalent} jsFileName="pilot-talent-page.js" />
 </ParseObjectPage>
