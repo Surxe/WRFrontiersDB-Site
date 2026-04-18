@@ -5,7 +5,8 @@ export const CHARACTERPRESET_URL = 'character_presets'; // Keep for backwards co
 
 export interface CharacterPresetModule {
   module_ref: string;
-  parent_socket_name: string | null;
+  socket_name: string;
+  parent_socket_index: number;
   level: number;
 }
 
@@ -14,7 +15,7 @@ export interface CharacterPreset extends ParseObject {
   parseObjectUrl: typeof CHARACTERPRESET_URL;
   icon?: string;
   name: LocalizationKey;
-  modules: Record<string, CharacterPresetModule>;
+  modules: CharacterPresetModule[];
   pilot_ref: string;
   is_factory_preset: boolean;
   character_type: string;

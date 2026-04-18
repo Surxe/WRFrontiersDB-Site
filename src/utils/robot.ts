@@ -46,9 +46,7 @@ export function getVirtualBots(
     if (coreModuleToBotId[moduleId]) continue;
 
     const firstPresetEntry = factoryPresets.find(([_, preset]) => {
-      return Object.values(preset.modules).some(
-        (m) => refToId(m.module_ref) === moduleId
-      );
+      return preset.modules.some((m) => refToId(m.module_ref) === moduleId);
     });
 
     if (firstPresetEntry) {
@@ -56,7 +54,7 @@ export function getVirtualBots(
       const botName = getDefaultString(preset.name) || presetId;
       const slugId = slugify(botName);
 
-      const coreModulesInPreset = Object.values(preset.modules)
+      const coreModulesInPreset = preset.modules
         .map((m) => refToId(m.module_ref))
         .filter((id) => modules[id] && isCoreModule(modules[id]));
 
@@ -86,7 +84,7 @@ export function getVirtualBots(
 
   for (const [presetId, preset] of factoryPresets) {
     let assignedBotId: string | null = null;
-    for (const m of Object.values(preset.modules)) {
+    for (const m of preset.modules) {
       const mId = refToId(m.module_ref);
       if (coreModuleToBotId[mId]) {
         assignedBotId = coreModuleToBotId[mId];
