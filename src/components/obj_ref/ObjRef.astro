@@ -33,7 +33,29 @@ const {
 // Get the page reference data (localization key, icon path, hex color)
 const objRefData = getObjRefData(obj);
 
-const pageUrl = `/${obj.parseObjectUrl}/${obj.id}`;
+// Try to get slug for modules, otherwise fall back to ID
+let urlSegment = obj.id;
+if (obj.parseObjectUrl === 'modules') {
+  // For modules, try to get the slug from the slug map
+  const fs = await import('fs/promises');
+  const path = await import('path');
+  const projectRoot = process.cwd();
+  const slugMapPath = path.join(projectRoot, 'public', 'slug-map.json');
+  
+  try {
+    const content = await fs.readFile(slugMapPath, 'utf-8');
+    const slugMap = JSON.parse(content);
+    const slug = slugMap[obj.id];
+    if (slug) {
+      urlSegment = slug;
+    }
+  } catch (error) {
+    // Fall back to ID if slug map can't be loaded
+    console.warn('Could not load slug map for ObjRef:', error);
+  }
+}
+
+const pageUrl = `/${obj.parseObjectUrl}/${urlSegment}`;
 
 // Validate hover
 if (useOnHover && !objRefData.hoverText) {

@@ -72,31 +72,7 @@ export async function getStaticPaths() {
 }
 
 const { slug } = Astro.params;
-
-// Resolve slug to module ID
-let id = slug;
-if (id && !id.includes('DA_Module_')) {
-  // If slug doesn't look like a module ID, try to resolve it
-  const fs = await import('fs/promises');
-  const path = await import('path');
-  const projectRoot = process.cwd();
-  const slugMapPath = path.join(projectRoot, 'public', 'slug-map.json');
-  
-  try {
-    const content = await fs.readFile(slugMapPath, 'utf-8');
-    const slugMap = JSON.parse(content);
-    
-    // Find the module ID that matches this slug
-    for (const [moduleId, moduleSlug] of Object.entries(slugMap)) {
-      if (moduleSlug === slug) {
-        id = moduleId;
-        break;
-      }
-    }
-  } catch (error) {
-    console.warn('Could not resolve slug to ID:', error);
-  }
-}
+const { id } = Astro.props;
 
 const module = getParseObject<Module>(id, 'Objects/Module.json');
 const allModuleRarities = getParseObjects<ModuleRarity>(
