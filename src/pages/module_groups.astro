@@ -13,7 +13,9 @@ import { getModuleGroupsBreadcrumbs } from '../utils/breadcrumb';
 const fs = await import('fs/promises');
 const path = await import('path');
 const { fileURLToPath } = await import('url');
-const projectRoot = path.dirname(fileURLToPath(import.meta.url)).replace('/src/pages', '');
+const projectRoot = path
+  .dirname(fileURLToPath(import.meta.url))
+  .replace('/src/pages', '');
 const slugMapPath = path.join(projectRoot, 'public', 'slug-map.json');
 
 let slugMap: Record<string, string> = {};
@@ -28,10 +30,10 @@ const groupIds = getAllModuleGroupIds();
 
 // Sort groups by sort_order and add slugs
 const sortedGroups = groupIds
-  .map((groupId) => ({ 
-    ...MODULE_GROUPS[groupId], 
+  .map((groupId) => ({
+    ...MODULE_GROUPS[groupId],
     id: groupId,
-    slug: slugMap[groupId] || groupId
+    slug: slugMap[groupId] || groupId,
   }))
   .sort((a, b) => (a.sort_order || 999) - (b.sort_order || 999));
 ---
@@ -50,13 +52,13 @@ const sortedGroups = groupIds
     {
       sortedGroups.map((group) => (
         <li>
-          <ObjRef 
+          <ObjRef
             obj={{
               id: group.id,
               name: group.name,
               parseObjectClass: 'ModuleGroup',
-              parseObjectUrl: 'module_groups'
-            }} 
+              parseObjectUrl: 'module_groups',
+            }}
           />
         </li>
       ))

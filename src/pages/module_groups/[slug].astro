@@ -23,21 +23,25 @@ export async function getStaticPaths() {
   try {
     const slugMapModule = await import('../../../public/slug-map.json');
     const slugMap = slugMapModule.default;
-    
+
     // Get all module group IDs and their slugs
     const groupIds = getAllModuleGroupIds();
     return groupIds.map((id) => {
       const slug = slugMap[id];
       if (!slug) {
-        throw new Error(`No slug found for module group with ID ${id}. All module groups must have a valid slug entry in the slug map.`);
+        throw new Error(
+          `No slug found for module group with ID ${id}. All module groups must have a valid slug entry in the slug map.`
+        );
       }
       return {
         params: { slug },
-        props: { id }
+        props: { id },
       };
     });
   } catch {
-    throw new Error('Failed to load slug map for module groups. Slug map must exist for build to succeed.');
+    throw new Error(
+      'Failed to load slug map for module groups. Slug map must exist for build to succeed.'
+    );
   }
 }
 

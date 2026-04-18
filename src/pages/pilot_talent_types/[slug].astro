@@ -62,30 +62,45 @@ const localizedDescriptions = generatePilotTalentTypeLocalizedMetaDescriptions(
     localizationKey={pilotTalentType.name}
     slot="head"
   />
-  <Breadcrumb breadcrumbs={getPilotTalentTypeDetailBreadcrumbs(pilotTalentType)} />
-  <LocalizedText id="pilot-talent-type-name" tag="h1" localizationKey={pilotTalentType.name} />
+  <Breadcrumb
+    breadcrumbs={getPilotTalentTypeDetailBreadcrumbs(pilotTalentType)}
+  />
+  <LocalizedText
+    id="pilot-talent-type-name"
+    tag="h1"
+    localizationKey={pilotTalentType.name}
+  />
 
-  <Icon iconPath={pilotTalentType.inventory_icon_path} altText={`${pilotTalentType.id} icon`} />
+  <Icon
+    iconPath={pilotTalentType.inventory_icon_path}
+    altText={`${pilotTalentType.id} icon`}
+  />
 
   {
     pilotTalentType.description && (
       <div class="pilot-talent-type-description-section">
-        <LocalizedText id="pilot-talent-type-desc" tag="p" localizationKey={pilotTalentType.description} />
+        <LocalizedText
+          id="pilot-talent-type-desc"
+          tag="p"
+          localizationKey={pilotTalentType.description}
+        />
       </div>
     )
   }
 
   <h3>Talents</h3>
   <div class="pilot-talent-type-talents">
-    {talentsForThisType.map((talent) => (
-      <div class="talent-item">
-        <ObjRef
-          obj={talent}
-          useOnHover={true}
-          onHoverStatChoices={getStatValueChoices(talent.stats, moduleStats)}
-        />
-      </div>
-    ))}
+    {
+      talentsForThisType.map((talent) => (
+        <div class="talent-item">
+          <ObjRef
+            obj={talent}
+            useOnHover={true}
+            onHoverStatChoices={getStatValueChoices(talent.stats, moduleStats)}
+          />
+        </div>
+      ))
+    }
   </div>
 
   <p>Language: <span id="current-lang">en</span></p>

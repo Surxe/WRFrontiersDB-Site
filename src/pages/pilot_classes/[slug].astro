@@ -46,7 +46,11 @@ const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
     slot="head"
   />
   <Breadcrumb breadcrumbs={getPilotClassDetailBreadcrumbs(pilotClass)} />
-  <LocalizedText id="pilot-class-name" tag="h1" localizationKey={pilotClass.name} />
+  <LocalizedText
+    id="pilot-class-name"
+    tag="h1"
+    localizationKey={pilotClass.name}
+  />
 
   <Icon iconPath={pilotClass.image_path} altText={`${defaultName} icon`} />
 

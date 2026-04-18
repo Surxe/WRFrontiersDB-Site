@@ -52,26 +52,41 @@ const categoryModules = Object.values(modules).filter(
     localizationKey={moduleCategory.name}
     slot="head"
   />
-  <Breadcrumb breadcrumbs={getModuleCategoryDetailBreadcrumbs(moduleCategory)} />
-  <LocalizedText id="module-category-name" tag="h1" localizationKey={moduleCategory.name} />
+  <Breadcrumb
+    breadcrumbs={getModuleCategoryDetailBreadcrumbs(moduleCategory)}
+  />
+  <LocalizedText
+    id="module-category-name"
+    tag="h1"
+    localizationKey={moduleCategory.name}
+  />
 
-  <Icon iconPath={moduleCategory.inventory_icon_path} altText={`${defaultName} icon`} />
+  <Icon
+    iconPath={moduleCategory.inventory_icon_path}
+    altText={`${defaultName} icon`}
+  />
 
   {
     moduleCategory.description && (
       <div class="module-category-description-section">
-        <LocalizedText id="module-category-desc" tag="p" localizationKey={moduleCategory.description} />
+        <LocalizedText
+          id="module-category-desc"
+          tag="p"
+          localizationKey={moduleCategory.description}
+        />
       </div>
     )
   }
 
   <h3>Modules in this Category</h3>
   <div class="module-category-modules">
-    {categoryModules.map((module) => (
-      <div class="module-item">
-        <ObjRef obj={module} />
-      </div>
-    ))}
+    {
+      categoryModules.map((module) => (
+        <div class="module-item">
+          <ObjRef obj={module} />
+        </div>
+      ))
+    }
   </div>
 
   <p>Language: <span id="current-lang">en</span></p>

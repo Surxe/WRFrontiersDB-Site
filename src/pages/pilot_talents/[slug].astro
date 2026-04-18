@@ -72,9 +72,16 @@ const localizedDescriptions = generatePilotTalentLocalizedMetaDescriptions(
     slot="head"
   />
   <Breadcrumb breadcrumbs={getPilotTalentDetailBreadcrumbs(pilotTalent)} />
-  <LocalizedText id="pilot-talent-name" tag="h1" localizationKey={pilotTalent.name} />
+  <LocalizedText
+    id="pilot-talent-name"
+    tag="h1"
+    localizationKey={pilotTalent.name}
+  />
 
-  <Icon iconPath={pilotTalent.inventory_icon_path} altText={`${defaultName} icon`} />
+  <Icon
+    iconPath={pilotTalent.inventory_icon_path}
+    altText={`${defaultName} icon`}
+  />
 
   {
     pilotTalent.description && (
@@ -92,21 +99,28 @@ const localizedDescriptions = generatePilotTalentLocalizedMetaDescriptions(
   <p>Language: <span id="current-lang">en</span></p>
   <p>
     Talent Type:
-    {pilotTalent.pilot_talent_type_ref ? (
-      <ObjRef 
-        obj={pilotTalentTypes[refToId(pilotTalent.pilot_talent_type_ref)]} 
-        useHref={false} 
-      />
-    ) : 'Unknown'}
+    {
+      pilotTalent.pilot_talent_type_ref ? (
+        <ObjRef
+          obj={pilotTalentTypes[refToId(pilotTalent.pilot_talent_type_ref)]}
+          useHref={false}
+        />
+      ) : (
+        'Unknown'
+      )
+    }
   </p>
 
   <div id="stats">stats</div>
 
-  <PilotTalentPageTable 
+  <PilotTalentPageTable
     pilotsWithThisTalent={pilotTalent.pilots_with_this_talent || []}
     allPilotTalents={pilotTalents}
     currentTalentId={id}
   />
 
-  <ObjectPageScripts objectData={pilotTalent} jsFileName="pilot-talent-page.js" />
+  <ObjectPageScripts
+    objectData={pilotTalent}
+    jsFileName="pilot-talent-page.js"
+  />
 </ParseObjectPage>

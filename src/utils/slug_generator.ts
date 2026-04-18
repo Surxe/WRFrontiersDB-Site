@@ -6,7 +6,10 @@ import type { ParseObject } from '../types/parse_object';
 import type { Module } from '../types/module';
 import type { Pilot, PilotTalent } from '../types/pilot';
 import type { LocalizationKey } from '../types/localization';
-import { getModuleGroupId, getModuleGroupSingularName } from './module_group_mapping';
+import {
+  getModuleGroupId,
+  getModuleGroupSingularName,
+} from './module_group_mapping';
 
 export interface SlugMap {
   [objectId: string]: string;
@@ -34,10 +37,18 @@ function getEnglishValue(localizationKey: LocalizationKey | string): string {
   if (typeof localizationKey === 'string') {
     return localizationKey;
   }
-  if (localizationKey && typeof localizationKey === 'object' && localizationKey.en) {
+  if (
+    localizationKey &&
+    typeof localizationKey === 'object' &&
+    localizationKey.en
+  ) {
     return localizationKey.en;
   }
-  if (localizationKey && typeof localizationKey === 'object' && localizationKey.InvariantString) {
+  if (
+    localizationKey &&
+    typeof localizationKey === 'object' &&
+    localizationKey.InvariantString
+  ) {
     return localizationKey.InvariantString;
   }
   return '';
@@ -69,18 +80,23 @@ function generatePilotTalentSlug(talent: PilotTalent): string {
  */
 function generateModuleSlug(module: Module): string {
   const moduleName = getEnglishValue(module.name || '');
-  
+
   try {
     const moduleGroup = getModuleGroupId(module.module_type_ref);
     if (!moduleGroup) {
-      throw new Error(`No module group found for type: ${module.module_type_ref}`);
+      throw new Error(
+        `No module group found for type: ${module.module_type_ref}`
+      );
     }
     const singularName = getModuleGroupSingularName(moduleGroup);
     const slug = `${toSlug(singularName)}-${toSlug(moduleName)}`;
     return slug.replace(/-+$/, ''); // Remove trailing hyphens
   } catch (error) {
     // Fallback to 'module' prefix if module group lookup fails
-    console.warn(`Could not determine module group for ${module.id}, falling back to 'module' prefix:`, error);
+    console.warn(
+      `Could not determine module group for ${module.id}, falling back to 'module' prefix:`,
+      error
+    );
     const fallbackSlug = `module-${toSlug(moduleName)}`;
     return fallbackSlug.replace(/-+$/, ''); // Remove trailing hyphens
   }
@@ -142,7 +158,9 @@ export function generateSlugForObject(object: ParseObject): string {
 /**
  * Generate slug map for all objects
  */
-export function generateSlugMap(objects: Record<string, ParseObject>[]): SlugMap {
+export function generateSlugMap(
+  objects: Record<string, ParseObject>[]
+): SlugMap {
   const slugMap: SlugMap = {};
   const collisions: Array<{ objectId: string; slug: string }> = [];
 
@@ -150,12 +168,12 @@ export function generateSlugMap(objects: Record<string, ParseObject>[]): SlugMap
     for (const [objectId, object] of Object.entries(objectRecord)) {
       try {
         const slug = generateSlugForObject(object);
-        
+
         // Check for collisions
         if (slugMap[slug]) {
           collisions.push({ objectId, slug });
         }
-        
+
         slugMap[objectId] = slug;
       } catch (error) {
         console.warn(`Failed to generate slug for ${objectId}:`, error);

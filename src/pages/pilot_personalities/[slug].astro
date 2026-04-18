@@ -49,10 +49,19 @@ const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
     localizationKey={pilotPersonality.name}
     slot="head"
   />
-  <Breadcrumb breadcrumbs={getPilotPersonalityDetailBreadcrumbs(pilotPersonality)} />
-  <LocalizedText id="pilot-personality-name" tag="h1" localizationKey={pilotPersonality.name} />
+  <Breadcrumb
+    breadcrumbs={getPilotPersonalityDetailBreadcrumbs(pilotPersonality)}
+  />
+  <LocalizedText
+    id="pilot-personality-name"
+    tag="h1"
+    localizationKey={pilotPersonality.name}
+  />
 
-  <Icon iconPath={pilotPersonality.inventory_icon_path} altText={`${defaultName} icon`} />
+  <Icon
+    iconPath={pilotPersonality.inventory_icon_path}
+    altText={`${defaultName} icon`}
+  />
 
   <p>Language: <span id="current-lang">en</span></p>
 

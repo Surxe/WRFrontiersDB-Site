@@ -20,10 +20,10 @@ const slugMap = slugMapModule.default;
 // Function to check if preset contains only production-ready modules
 function hasOnlyProductionModules(preset: any): boolean {
   if (!preset.modules) return true;
-  
+
   return Object.values(preset.modules).every((moduleInfo: any) => {
     if (!moduleInfo || !moduleInfo.module_ref) return true;
-    
+
     const moduleId = moduleInfo.module_ref.replace('OBJID_Module::', '');
     return slugMap[moduleId] !== undefined;
   });
@@ -31,8 +31,8 @@ function hasOnlyProductionModules(preset: any): boolean {
 
 // Prepare and filter presets (only non-factory/bot presets with production modules)
 const entries = prepareObjectList(presets, { prodReadyOnly: false });
-const botEntries = entries.filter(([_, preset]) => 
-  !preset.is_factory_preset && hasOnlyProductionModules(preset)
+const botEntries = entries.filter(
+  ([_, preset]) => !preset.is_factory_preset && hasOnlyProductionModules(preset)
 );
 
 // Sort presets by name

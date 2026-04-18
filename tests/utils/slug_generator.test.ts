@@ -3,7 +3,10 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { generateSlugForObject, generateSlugMap } from '../../src/utils/slug_generator';
+import {
+  generateSlugForObject,
+  generateSlugMap,
+} from '../../src/utils/slug_generator';
 import type { ParseObject } from '../../src/types/parse_object';
 import type { Pilot } from '../../src/types/pilot';
 import type { PilotTalent } from '../../src/types/pilot';
@@ -115,13 +118,13 @@ describe('slug_generator', () => {
     it('should generate slug map without collisions', () => {
       const objects = [
         {
-          'pilot1': {
+          pilot1: {
             parseObjectClass: 'Pilot',
             id: 'pilot1',
             first_name: { en: 'John' },
             last_name: { en: 'Doe' },
           } as Pilot,
-          'pilot2': {
+          pilot2: {
             parseObjectClass: 'Pilot',
             id: 'pilot2',
             first_name: { en: 'Jane' },
@@ -129,7 +132,7 @@ describe('slug_generator', () => {
           } as Pilot,
         },
         {
-          'module1': {
+          module1: {
             parseObjectClass: 'Module',
             id: 'module1',
             name: { en: 'Laser Cannon' },
@@ -143,7 +146,7 @@ describe('slug_generator', () => {
       ];
 
       const slugMap = generateSlugMap(objects);
-      
+
       expect(slugMap['pilot1']).toBe('john-doe');
       expect(slugMap['pilot2']).toBe('jane-smith');
       expect(slugMap['module1']).toBe('light-weapon-laser-cannon');
@@ -153,13 +156,13 @@ describe('slug_generator', () => {
     it('should throw error on slug collisions', () => {
       const objects = [
         {
-          'pilot1': {
+          pilot1: {
             parseObjectClass: 'Pilot',
             id: 'pilot1',
             first_name: { en: 'John' },
             last_name: { en: 'Doe' },
           } as Pilot,
-          'pilot2': {
+          pilot2: {
             parseObjectClass: 'Pilot',
             id: 'pilot2',
             first_name: { en: 'John' },
@@ -176,14 +179,14 @@ describe('slug_generator', () => {
     it('should handle empty object arrays', () => {
       const objects: Record<string, ParseObject>[] = [];
       const slugMap = generateSlugMap(objects);
-      
+
       expect(Object.keys(slugMap)).toHaveLength(0);
     });
 
     it('should handle objects with missing names', () => {
       const objects = [
         {
-          'pilot1': {
+          pilot1: {
             parseObjectClass: 'Pilot',
             id: 'pilot1',
           } as Pilot,

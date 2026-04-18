@@ -38,7 +38,7 @@ const OBJECT_TYPES = [
 
 async function buildSlugMap() {
   console.log('Building slug map...');
-  
+
   const slugMap: SlugMap = {};
   const allObjects: Record<string, any>[] = [];
 
@@ -46,7 +46,7 @@ async function buildSlugMap() {
   for (const objectType of OBJECT_TYPES) {
     try {
       const objects = getParseObjects(`Objects/${objectType}.json`);
-      
+
       // Filter for production-ready objects
       const filteredObjects: Record<string, any> = {};
       for (const [objectId, object] of Object.entries(objects)) {
@@ -62,9 +62,11 @@ async function buildSlugMap() {
           filteredObjects[objectId] = object;
         }
       }
-      
+
       allObjects.push(filteredObjects);
-      console.log(`Loaded ${Object.keys(filteredObjects).length} ${objectType} objects (${Object.keys(objects).length - Object.keys(filteredObjects).length} filtered out)`);
+      console.log(
+        `Loaded ${Object.keys(filteredObjects).length} ${objectType} objects (${Object.keys(objects).length - Object.keys(filteredObjects).length} filtered out)`
+      );
     } catch (error) {
       console.warn(`Warning: Could not load ${objectType} objects:`, error);
     }
@@ -95,7 +97,7 @@ async function buildSlugMap() {
 
   const slugMapPath = path.join(publicDir, 'slug-map.json');
   fs.writeFileSync(slugMapPath, JSON.stringify(slugMap, null, 2));
-  
+
   console.log(`Slug map written to: ${slugMapPath}`);
   console.log('Build completed successfully!');
 }
