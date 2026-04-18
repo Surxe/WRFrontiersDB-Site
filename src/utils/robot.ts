@@ -46,9 +46,7 @@ export function getVirtualBots(
     if (coreModuleToBotId[moduleId]) continue;
 
     const firstPresetEntry = factoryPresets.find(([_, preset]) => {
-      return preset.modules.some(
-        (m) => refToId(m.module_ref) === moduleId
-      );
+      return preset.modules.some((m) => refToId(m.module_ref) === moduleId);
     });
 
     if (firstPresetEntry) {

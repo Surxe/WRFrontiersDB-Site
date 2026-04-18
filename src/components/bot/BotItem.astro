@@ -1,5 +1,8 @@
 ---
-import type { CharacterPreset, CharacterPresetModule } from '../../types/character_preset';
+import type {
+  CharacterPreset,
+  CharacterPresetModule,
+} from '../../types/character_preset';
 import ObjRef from '../obj_ref/ObjRef.astro';
 import { refToId } from '../../utils/object_reference';
 import {
@@ -24,23 +27,16 @@ const { preset, modules, pilots } = Astro.props;
 // Grouping and processing logic
 function getProcessedData() {
   const modules_arr = preset.modules || [];
-  
-  // Helper to resolve parent socket name
-  function getParentSocketName(entry: CharacterPresetModule): string | null {
-    if (entry.parent_socket_index < 0 || entry.parent_socket_index >= modules_arr.length) {
-      return null;
-    }
-    return modules_arr[entry.parent_socket_index].socket_name;
-  }
 
   // Identify shoulder distinctness
-  const shoulderL = modules_arr.find(e => e.socket_name === 'Shoulder_L');
-  const shoulderR = modules_arr.find(e => e.socket_name === 'Shoulder_R');
-  const hasDifferentShoulders = shoulderL && shoulderR && shoulderL.module_ref !== shoulderR.module_ref;
+  const shoulderL = modules_arr.find((e) => e.socket_name === 'Shoulder_L');
+  const shoulderR = modules_arr.find((e) => e.socket_name === 'Shoulder_R');
+  const hasDifferentShoulders =
+    shoulderL && shoulderR && shoulderL.module_ref !== shoulderR.module_ref;
 
   // Track unique weapon IDs to decide on group name visibility
   const weaponIds = new Set<string>();
-  modules_arr.forEach(m => {
+  modules_arr.forEach((m) => {
     if (isWeaponSocket(m.socket_name)) {
       weaponIds.add(refToId(m.module_ref));
     }
@@ -63,17 +59,22 @@ function getProcessedData() {
 
     // Determine grouping key
     const isWeapon = isWeaponSocket(entry.socket_name);
-    const mGroupId = isWeapon ? getModuleGroupForWeaponSocket(entry.socket_name) : undefined;
-    
+    const mGroupId = isWeapon
+      ? getModuleGroupForWeaponSocket(entry.socket_name)
+      : undefined;
+
     // Group weapons by module_ref, but separate by group (Shoulder/Torso) if we are showing groups
-    const weaponGroupSuffix = (isWeapon && shouldShowWeaponGroups && mGroupId) ? `|${mGroupId}` : '';
-    
+    const weaponGroupSuffix =
+      isWeapon && shouldShowWeaponGroups && mGroupId ? `|${mGroupId}` : '';
+
     // Shoulders are grouped if they are the same
-    const isShoulderSlot = entry.socket_name === 'Shoulder_L' || entry.socket_name === 'Shoulder_R';
-    
-    const key = (isWeapon || isShoulderSlot) 
-      ? `${entry.module_ref}${weaponGroupSuffix}`
-      : `${entry.module_ref}|${entry.socket_name}`;
+    const isShoulderSlot =
+      entry.socket_name === 'Shoulder_L' || entry.socket_name === 'Shoulder_R';
+
+    const key =
+      isWeapon || isShoulderSlot
+        ? `${entry.module_ref}${weaponGroupSuffix}`
+        : `${entry.module_ref}|${entry.socket_name}`;
 
     if (groups.has(key)) {
       groups.get(key)!.count++;
@@ -83,13 +84,16 @@ function getProcessedData() {
   });
 
   return {
-    grouped: Array.from(groups.values()).sort((a, b) => a.firstIndex - b.firstIndex),
+    grouped: Array.from(groups.values()).sort(
+      (a, b) => a.firstIndex - b.firstIndex
+    ),
     shouldShowWeaponGroups,
-    hasDifferentShoulders
+    hasDifferentShoulders,
   };
 }
 
-const { grouped, shouldShowWeaponGroups, hasDifferentShoulders } = getProcessedData();
+const { grouped, shouldShowWeaponGroups, hasDifferentShoulders } =
+  getProcessedData();
 
 // Helper to get group name (Shoulder/Torso)
 function getModuleGroupName(groupId: string): string {
@@ -119,21 +123,29 @@ function getModuleGroupName(groupId: string): string {
       {
         grouped.map(({ module, entry, count }) => {
           const isWeapon = isWeaponSocket(entry.socket_name);
-          const isShoulderSlot = entry.socket_name === 'Shoulder_L' || entry.socket_name === 'Shoulder_R';
+          const isShoulderSlot =
+            entry.socket_name === 'Shoulder_L' ||
+            entry.socket_name === 'Shoulder_R';
 
           let socketSideLabel = undefined;
           if (isShoulderSlot && hasDifferentShoulders) {
             const sideLocaleKey = getSocketSideLocaleKey(entry.socket_name);
             if (sideLocaleKey) {
-              const localizationKey = resolveLocalizationKey(sideLocaleKey, 'Web_UI');
+              const localizationKey = resolveLocalizationKey(
+                sideLocaleKey,
+                'Web_UI'
+              );
               socketSideLabel = getDefaultString(localizationKey);
             }
           }
 
-          const moduleGroup = isWeapon ? getModuleGroupForWeaponSocket(entry.socket_name) : undefined;
-          const moduleGroupName = (isWeapon && shouldShowWeaponGroups && moduleGroup)
-            ? getModuleGroupName(moduleGroup)
+          const moduleGroup = isWeapon
+            ? getModuleGroupForWeaponSocket(entry.socket_name)
             : undefined;
+          const moduleGroupName =
+            isWeapon && shouldShowWeaponGroups && moduleGroup
+              ? getModuleGroupName(moduleGroup)
+              : undefined;
 
           return (
             <span class="module-item">
