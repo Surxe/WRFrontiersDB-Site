@@ -2,6 +2,7 @@
 import Breadcrumb from '../components/Breadcrumb.astro';
 import ParseObjectListPage from '../components/ParseObjectListPage.astro';
 import ModuleGroupsNavBox from '../components/nav/ModuleGroupsNavBox.astro';
+import ObjRef from '../components/obj_ref/ObjRef.astro';
 import {
   MODULE_GROUPS,
   getAllModuleGroupIds,
@@ -49,9 +50,14 @@ const sortedGroups = groupIds
     {
       sortedGroups.map((group) => (
         <li>
-          <a href={`/module_groups/${group.slug}`}>
-            <LocalizedText localizationKey={group.name} tag="span" />
-          </a>
+          <ObjRef 
+            obj={{
+              id: group.id,
+              name: group.name,
+              parseObjectClass: 'ModuleGroup',
+              parseObjectUrl: 'module_groups'
+            }} 
+          />
         </li>
       ))
     }
