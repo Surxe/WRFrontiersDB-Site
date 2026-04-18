@@ -1,15 +1,13 @@
 import { getCurrentLanguage, setCurrentLanguage } from './localization.js';
 
 /**
- * Initializes language selector dropdown
+ * Initializes language selector dropdown.
+ * Reads the active language from the `lang` URL query parameter and navigates
+ * to the current page with the updated param when the user picks a new language.
+ *
  * @param {string} selectorId - ID of the select element
- * @param {Function} onChange - Optional callback when language changes
  */
-export function initLanguageSelector(
-  selectorId = 'lang-selector',
-  onChange = null
-) {
-  const savedLang = getCurrentLanguage();
+export function initLanguageSelector(selectorId = 'lang-selector') {
   const selector = document.getElementById(selectorId);
 
   if (!selector) {
@@ -17,19 +15,12 @@ export function initLanguageSelector(
     return;
   }
 
-  // Set to saved language
-  selector.value = savedLang;
+  // Pre-select the option matching the current lang param
+  selector.value = getCurrentLanguage();
 
-  // Handle changes
+  // On change, navigate to same page with updated lang param
   selector.addEventListener('change', (e) => {
     const newLang = e.target.value;
     setCurrentLanguage(newLang);
-
-    if (onChange) {
-      onChange(newLang);
-    } else {
-      // Default: reload page to apply new language
-      window.location.reload();
-    }
   });
 }
