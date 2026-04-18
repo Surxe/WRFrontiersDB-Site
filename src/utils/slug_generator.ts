@@ -94,7 +94,10 @@ function generateAiBotSlug(object: ParseObject): string {
  */
 function generateDefaultSlug(object: ParseObject): string {
   const objectName = getEnglishValue(object.name || '');
-  const objectType = object.parseObjectClass.toLowerCase();
+  // Convert camelCase to kebab-case for the prefix
+  const objectType = object.parseObjectClass
+    .replace(/([a-z])([A-Z])/g, '$1-$2')
+    .toLowerCase();
   return `${objectType}-${toSlug(objectName)}`;
 }
 

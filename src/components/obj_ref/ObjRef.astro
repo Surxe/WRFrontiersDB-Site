@@ -33,10 +33,21 @@ const {
 // Get the page reference data (localization key, icon path, hex color)
 const objRefData = getObjRefData(obj);
 
-// Try to get slug for modules, otherwise fall back to ID
+// Try to get slug for objects that have slugs, otherwise fall back to ID
 let urlSegment = obj.id;
-if (obj.parseObjectUrl === 'modules') {
-  // For modules, try to get the slug from the slug map
+const slugableObjectTypes = [
+  'modules',
+  'pilots', 
+  'pilot_talents',
+  'pilot_classes',
+  'pilot_personalities', 
+  'pilot_talent_types',
+  'character_presets',
+  'module_categories'
+];
+
+if (slugableObjectTypes.includes(obj.parseObjectUrl)) {
+  // For objects with slugs, try to get the slug from the slug map
   const fs = await import('fs/promises');
   const path = await import('path');
   const projectRoot = process.cwd();
@@ -48,8 +59,18 @@ if (obj.parseObjectUrl === 'modules') {
     const slug = slugMap[obj.id];
     if (slug) {
       urlSegment = slug;
+    } else {
+      // Raise error if slug not found for object type that should have slugs
+      throw new Error(
+        `Slug not found for ${obj.parseObjectUrl} object with ID ${obj.id}. ` +
+        `This object type should have a slug in the slug map.`
+      );
     }
   } catch (error) {
+    // Re-throw the error if it's our slug-not-found error
+    if (error.message.includes('Slug not found')) {
+      throw error;
+    }
     // Fall back to ID if slug map can't be loaded
     console.warn('Could not load slug map for ObjRef:', error);
   }
