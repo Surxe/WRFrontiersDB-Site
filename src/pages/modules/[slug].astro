@@ -34,10 +34,69 @@ import type { CharacterPreset } from '../../types/character_preset';
 import type { Pilot } from '../../types/pilot';
 
 export async function getStaticPaths() {
-  return generateObjectListStaticPaths('Module', true);
+  // Load slug map to generate slug-based paths
+  const fs = await import('fs/promises');
+  const path = await import('path');
+  const projectRoot = process.cwd();
+  const slugMapPath = path.join(projectRoot, 'public', 'slug-map.json');
+  
+  let slugMap = {};
+  try {
+    const content = await fs.readFile(slugMapPath, 'utf-8');
+    slugMap = JSON.parse(content);
+  } catch (error) {
+    console.warn('Could not load slug map, falling back to ID-based paths');
+    return generateObjectListStaticPaths('Module', true);
+  }
+
+  // Get all modules
+  const modules = getParseObjects<Module>('Objects/Module.json');
+  const paths = [];
+
+  for (const [moduleId, module] of Object.entries(modules)) {
+    // Skip modules without production_status = 'Ready' for production
+    if (import.meta.env.PROD && module.production_status !== 'Ready') {
+      continue;
+    }
+
+    const slug = slugMap[moduleId];
+    if (slug) {
+      paths.push({
+        params: { slug },
+        props: { id: moduleId }
+      });
+    }
+  }
+
+  return paths;
 }
 
-const { id } = Astro.params;
+const { slug } = Astro.params;
+
+// Resolve slug to module ID
+let id = slug;
+if (id && !id.includes('DA_Module_')) {
+  // If slug doesn't look like a module ID, try to resolve it
+  const fs = await import('fs/promises');
+  const path = await import('path');
+  const projectRoot = process.cwd();
+  const slugMapPath = path.join(projectRoot, 'public', 'slug-map.json');
+  
+  try {
+    const content = await fs.readFile(slugMapPath, 'utf-8');
+    const slugMap = JSON.parse(content);
+    
+    // Find the module ID that matches this slug
+    for (const [moduleId, moduleSlug] of Object.entries(slugMap)) {
+      if (moduleSlug === slug) {
+        id = moduleId;
+        break;
+      }
+    }
+  } catch (error) {
+    console.warn('Could not resolve slug to ID:', error);
+  }
+}
 
 const module = getParseObject<Module>(id, 'Objects/Module.json');
 const allModuleRarities = getParseObjects<ModuleRarity>(
