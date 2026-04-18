@@ -22,7 +22,8 @@ export async function getStaticPaths() {
   // Load slug map to get module group slugs
   const fs = await import('fs/promises');
   const path = await import('path');
-  const projectRoot = process.cwd();
+  const { fileURLToPath } = await import('url');
+  const projectRoot = path.dirname(fileURLToPath(import.meta.url)).replace('/src/pages/module_groups', '');
   const slugMapPath = path.join(projectRoot, 'public', 'slug-map.json');
   
   try {
@@ -32,22 +33,23 @@ export async function getStaticPaths() {
     // Get all module group IDs and their slugs
     const groupIds = getAllModuleGroupIds();
     return groupIds.map((id) => {
-      const slug = slugMap[id];
-      if (!slug) {
-        throw new Error(`No slug found for module group: ${id}`);
-      }
+      const slug = slugMap[id] || id; // Fall back to ID if no slug found
       return {
         params: { slug },
         props: { id }
       };
     });
-  } catch (error) {
-    console.error('Could not load slug map for module groups:', error);
-    throw new Error('Failed to generate module group slug paths');
+  } catch {
+    // If slug map doesn't exist, fall back to ID-based paths
+    const groupIds = getAllModuleGroupIds();
+    return groupIds.map((id) => ({
+      params: { slug: id },
+      props: { id }
+    }));
   }
 }
 
-const { slug } = Astro.params;
+const { slug: _slug } = Astro.params;
 const { id } = Astro.props;
 
 const group = MODULE_GROUPS[id as keyof typeof MODULE_GROUPS];

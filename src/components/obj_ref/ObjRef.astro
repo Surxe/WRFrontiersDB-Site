@@ -51,7 +51,8 @@ if (slugableObjectTypes.includes(obj.parseObjectUrl)) {
   // For objects with slugs, try to get the slug from the slug map
   const fs = await import('fs/promises');
   const path = await import('path');
-  const projectRoot = process.cwd();
+  const { fileURLToPath } = await import('url');
+  const projectRoot = path.dirname(fileURLToPath(import.meta.url)).replace('/src/components/obj_ref', '');
   const slugMapPath = path.join(projectRoot, 'public', 'slug-map.json');
   
   try {
@@ -62,14 +63,11 @@ if (slugableObjectTypes.includes(obj.parseObjectUrl)) {
       urlSegment = slug;
     } else {
       // Fall back to ID if slug not found (object might not be production-ready)
-      console.warn(
-        `Slug not found for ${obj.parseObjectUrl} object with ID ${obj.id}. ` +
-        `Falling back to ID-based URL. Object might not be production-ready.`
-      );
+      // Slug not found, falling back to ID-based URL (object might not be production-ready)
     }
-  } catch (error) {
+  } catch {
     // Fall back to ID if slug map can't be loaded
-    console.warn('Could not load slug map for ObjRef:', error);
+    // Could not load slug map for ObjRef, falling back to ID-based URL
   }
 }
 

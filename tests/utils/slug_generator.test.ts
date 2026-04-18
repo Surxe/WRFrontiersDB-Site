@@ -2,7 +2,7 @@
  * Tests for slug generation utilities
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { generateSlugForObject, generateSlugMap } from '../../src/utils/slug_generator';
 import type { ParseObject } from '../../src/types/parse_object';
 import type { Pilot } from '../../src/types/pilot';

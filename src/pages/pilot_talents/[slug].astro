@@ -19,14 +19,13 @@ import { generatePilotTalentLocalizedMetaDescriptions } from '../../utils/build_
 import ObjRef from '../../components/obj_ref/ObjRef.astro';
 import { refToId } from '../../utils/object_reference';
 import '../../styles/pilots.css';
-import PilotTalentsNavBox from '../../components/nav/PilotTalentsNavBox.astro';
 import { getPilotTalentDetailBreadcrumbs } from '../../utils/breadcrumb';
 
 export async function getStaticPaths() {
   return generateSlugBasedStaticPaths('PilotTalent');
 }
 
-const { slug } = Astro.params;
+const { slug: _slug } = Astro.params;
 const { id } = Astro.props;
 
 // Load pilots to enrich talent data
@@ -38,7 +37,7 @@ const pilotTalentTypes = getParseObjects<PilotTalentType>(
 );
 
 const pilotTalent = enrichedTalents[id];
-const pilotsWithThisTalent = pilotTalent.pilots_with_this_talent;
+const _pilotsWithThisTalent = pilotTalent.pilots_with_this_talent;
 
 // Load ModuleStats for stat replacements
 const moduleStats = getParseObjects<ModuleStat>('Objects/ModuleStat.json');

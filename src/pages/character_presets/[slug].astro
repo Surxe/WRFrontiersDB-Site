@@ -16,7 +16,7 @@ export async function getStaticPaths() {
   return generateSlugBasedStaticPaths('CharacterPreset');
 }
 
-const { slug } = Astro.params;
+const { slug: _slug } = Astro.params;
 const { id } = Astro.props;
 
 const preset = getParseObject(

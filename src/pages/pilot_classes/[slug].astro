@@ -7,7 +7,6 @@ import ObjectPageScripts from '../../components/ObjectPageScripts.astro';
 import ParseObjectPage from '../../components/ParseObjectPage.astro';
 import {
   getParseObject,
-  getParseObjects,
   generateSlugBasedStaticPaths,
 } from '../../utils/parse_object';
 import { getDefaultString } from '../../utils/localization';
@@ -19,7 +18,7 @@ export async function getStaticPaths() {
   return generateSlugBasedStaticPaths('PilotClass');
 }
 
-const { slug } = Astro.params;
+const { slug: _slug } = Astro.params;
 const { id } = Astro.props;
 
 const pilotClass = getParseObject<PilotClass>(id, 'Objects/PilotClass.json');
