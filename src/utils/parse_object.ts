@@ -223,8 +223,7 @@ export function generateSlugBasedStaticPaths(
     | 'PilotClass'
     | 'PilotPersonality'
     | 'Rarity'
-    | 'CharacterPreset',
-  prodReadyOnly: boolean = false
+    | 'CharacterPreset'
 ): Array<{ params: { slug: string }; props: { id: string } }> {
   // Load slug map to generate slug-based paths
   const slugMapPath = path.join(process.cwd(), 'public', 'slug-map.json');
@@ -246,19 +245,7 @@ export function generateSlugBasedStaticPaths(
     }
 
     const allObjects = readJsonFile(objectPath) as Record<string, ParseObject>;
-    let objectIds = Object.keys(allObjects);
-
-    // Apply production filtering if needed
-    if (prodReadyOnly) {
-      objectIds = objectIds.filter((id) => {
-        const obj = allObjects[id];
-        return (
-          obj.production_status === 'Ready' &&
-          obj.name != null &&
-          obj.name !== ''
-        );
-      });
-    }
+    const objectIds = Object.keys(allObjects);
 
     // Generate slug-based paths
     const paths = [];
@@ -278,7 +265,7 @@ export function generateSlugBasedStaticPaths(
   } catch (error) {
     console.warn(`Could not load slug map for ${objectType}, falling back to ID-based paths:`, error);
     // Fallback to ID-based paths
-    return generateObjectListStaticPaths(objectType, prodReadyOnly).map(({ params }) => ({
+    return generateObjectListStaticPaths(objectType).map(({ params }) => ({
       params: { slug: params.id },
       props: { id: params.id }
     }));

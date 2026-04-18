@@ -16,7 +16,7 @@ import { generateSimpleLocalizedMetaDescriptions } from '../../utils/build_local
 import PilotPersonalitiesNavBox from '../../components/nav/PilotPersonalitiesNavBox.astro';
 
 export async function getStaticPaths() {
-  return generateSlugBasedStaticPaths('PilotPersonality', import.meta.env.PROD);
+  return generateSlugBasedStaticPaths('PilotPersonality');
 }
 
 const { slug } = Astro.params;

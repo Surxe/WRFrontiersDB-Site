@@ -22,7 +22,7 @@ import { getPilotTalentTypeDetailBreadcrumbs } from '../../utils/breadcrumb';
 import { refToId } from '../../utils/object_reference';
 
 export async function getStaticPaths() {
-  return generateSlugBasedStaticPaths('PilotTalentType', import.meta.env.PROD);
+  return generateSlugBasedStaticPaths('PilotTalentType');
 }
 
 const { slug } = Astro.params;

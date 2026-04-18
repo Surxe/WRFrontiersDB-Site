@@ -46,8 +46,25 @@ async function buildSlugMap() {
   for (const objectType of OBJECT_TYPES) {
     try {
       const objects = getParseObjects(`Objects/${objectType}.json`);
-      allObjects.push(objects);
-      console.log(`Loaded ${Object.keys(objects).length} ${objectType} objects`);
+      
+      // Filter for production-ready objects
+      const filteredObjects: Record<string, any> = {};
+      for (const [objectId, object] of Object.entries(objects)) {
+        // Different filtering logic for different object types
+        if (objectType === 'Module') {
+          // Modules: Only include if production_status === 'Ready'
+          const productionStatus = (object as any).production_status;
+          if (productionStatus === 'Ready') {
+            filteredObjects[objectId] = object;
+          }
+        } else {
+          // Other object types: Include all (they don't have production_status)
+          filteredObjects[objectId] = object;
+        }
+      }
+      
+      allObjects.push(filteredObjects);
+      console.log(`Loaded ${Object.keys(filteredObjects).length} ${objectType} objects (${Object.keys(objects).length - Object.keys(filteredObjects).length} filtered out)`);
     } catch (error) {
       console.warn(`Warning: Could not load ${objectType} objects:`, error);
     }

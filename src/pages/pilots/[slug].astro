@@ -30,7 +30,7 @@ import { PILOT_TYPE_LEGENDARY_REF } from '../../utils/constants';
 import { getPilotDetailBreadcrumbs } from '../../utils/breadcrumb';
 
 export async function getStaticPaths() {
-  return generateSlugBasedStaticPaths('Pilot', import.meta.env.PROD);
+  return generateSlugBasedStaticPaths('Pilot');
 }
 
 const { slug } = Astro.params;

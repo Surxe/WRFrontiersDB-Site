@@ -16,7 +16,7 @@ import PilotClassesNavBox from '../../components/nav/PilotClassesNavBox.astro';
 import { getPilotClassDetailBreadcrumbs } from '../../utils/breadcrumb';
 
 export async function getStaticPaths() {
-  return generateSlugBasedStaticPaths('PilotClass', import.meta.env.PROD);
+  return generateSlugBasedStaticPaths('PilotClass');
 }
 
 const { slug } = Astro.params;

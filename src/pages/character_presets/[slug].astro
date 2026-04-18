@@ -13,7 +13,7 @@ import { getDefaultString } from '../../utils/localization';
 import type { CharacterPreset } from '../../types/character_preset';
 
 export async function getStaticPaths() {
-  return generateSlugBasedStaticPaths('CharacterPreset', import.meta.env.PROD);
+  return generateSlugBasedStaticPaths('CharacterPreset');
 }
 
 const { slug } = Astro.params;

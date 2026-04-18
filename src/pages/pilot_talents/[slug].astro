@@ -23,7 +23,7 @@ import PilotTalentsNavBox from '../../components/nav/PilotTalentsNavBox.astro';
 import { getPilotTalentDetailBreadcrumbs } from '../../utils/breadcrumb';
 
 export async function getStaticPaths() {
-  return generateSlugBasedStaticPaths('PilotTalent', import.meta.env.PROD);
+  return generateSlugBasedStaticPaths('PilotTalent');
 }
 
 const { slug } = Astro.params;

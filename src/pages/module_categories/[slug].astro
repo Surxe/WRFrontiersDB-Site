@@ -15,7 +15,7 @@ import { getModuleCategoryDetailBreadcrumbs } from '../../utils/breadcrumb';
 import ObjRef from '../../components/obj_ref/ObjRef.astro';
 
 export async function getStaticPaths() {
-  return generateSlugBasedStaticPaths('ModuleCategory', import.meta.env.PROD);
+  return generateSlugBasedStaticPaths('ModuleCategory');
 }
 
 const { slug } = Astro.params;
