@@ -7,7 +7,7 @@ import ObjectPageScripts from '../../components/ObjectPageScripts.astro';
 import ParseObjectPage from '../../components/ParseObjectPage.astro';
 import {
   getParseObject,
-  generateObjectListStaticPaths,
+  generateSlugBasedStaticPaths,
   getParseObjects,
 } from '../../utils/parse_object';
 import { getDefaultString } from '../../utils/localization';
@@ -15,41 +15,7 @@ import { getModuleCategoryDetailBreadcrumbs } from '../../utils/breadcrumb';
 import ObjRef from '../../components/obj_ref/ObjRef.astro';
 
 export async function getStaticPaths() {
-  // Load slug map to generate slug-based paths
-  const fs = await import('fs/promises');
-  const path = await import('path');
-  const projectRoot = process.cwd();
-  const slugMapPath = path.join(projectRoot, 'public', 'slug-map.json');
-  
-  let slugMap = {};
-  try {
-    const content = await fs.readFile(slugMapPath, 'utf-8');
-    slugMap = JSON.parse(content);
-  } catch (error) {
-    console.warn('Could not load slug map, falling back to ID-based paths');
-    return generateObjectListStaticPaths('ModuleCategory');
-  }
-
-  // Get all module categories
-  const categories = getParseObjects<ModuleCategory>('Objects/ModuleCategory.json');
-  const paths = [];
-
-  for (const [categoryId, category] of Object.entries(categories)) {
-    // Skip categories without production_status = 'Ready' for production
-    if (import.meta.env.PROD && category.production_status !== 'Ready') {
-      continue;
-    }
-
-    const slug = slugMap[categoryId];
-    if (slug) {
-      paths.push({
-        params: { slug },
-        props: { id: categoryId }
-      });
-    }
-  }
-
-  return paths;
+  return generateSlugBasedStaticPaths('ModuleCategory', import.meta.env.PROD);
 }
 
 const { slug } = Astro.params;

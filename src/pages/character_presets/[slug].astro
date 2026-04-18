@@ -6,48 +6,14 @@ import ObjectPageScripts from '../../components/ObjectPageScripts.astro';
 import {
   getParseObject,
   getParseObjects,
-  generateObjectListStaticPaths,
+  generateSlugBasedStaticPaths,
 } from '../../utils/parse_object';
 import { getCharacterPresetDetailBreadcrumbs } from '../../utils/breadcrumb';
 import { getDefaultString } from '../../utils/localization';
 import type { CharacterPreset } from '../../types/character_preset';
 
 export async function getStaticPaths() {
-  // Load slug map to generate slug-based paths
-  const fs = await import('fs/promises');
-  const path = await import('path');
-  const projectRoot = process.cwd();
-  const slugMapPath = path.join(projectRoot, 'public', 'slug-map.json');
-  
-  let slugMap = {};
-  try {
-    const content = await fs.readFile(slugMapPath, 'utf-8');
-    slugMap = JSON.parse(content);
-  } catch (error) {
-    console.warn('Could not load slug map, falling back to ID-based paths');
-    return generateObjectListStaticPaths('CharacterPreset');
-  }
-
-  // Get all character presets
-  const presets = getParseObjects<CharacterPreset>('Objects/CharacterPreset.json');
-  const paths = [];
-
-  for (const [presetId, preset] of Object.entries(presets)) {
-    // Skip presets without production_status = 'Ready' for production
-    if (import.meta.env.PROD && preset.production_status !== 'Ready') {
-      continue;
-    }
-
-    const slug = slugMap[presetId];
-    if (slug) {
-      paths.push({
-        params: { slug },
-        props: { id: presetId }
-      });
-    }
-  }
-
-  return paths;
+  return generateSlugBasedStaticPaths('CharacterPreset', import.meta.env.PROD);
 }
 
 const { slug } = Astro.params;

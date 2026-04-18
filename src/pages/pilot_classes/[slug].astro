@@ -8,7 +8,7 @@ import ParseObjectPage from '../../components/ParseObjectPage.astro';
 import {
   getParseObject,
   getParseObjects,
-  generateObjectListStaticPaths,
+  generateSlugBasedStaticPaths,
 } from '../../utils/parse_object';
 import { getDefaultString } from '../../utils/localization';
 import { generateSimpleLocalizedMetaDescriptions } from '../../utils/build_localization';
@@ -16,41 +16,7 @@ import PilotClassesNavBox from '../../components/nav/PilotClassesNavBox.astro';
 import { getPilotClassDetailBreadcrumbs } from '../../utils/breadcrumb';
 
 export async function getStaticPaths() {
-  // Load slug map to generate slug-based paths
-  const fs = await import('fs/promises');
-  const path = await import('path');
-  const projectRoot = process.cwd();
-  const slugMapPath = path.join(projectRoot, 'public', 'slug-map.json');
-  
-  let slugMap = {};
-  try {
-    const content = await fs.readFile(slugMapPath, 'utf-8');
-    slugMap = JSON.parse(content);
-  } catch (error) {
-    console.warn('Could not load slug map, falling back to ID-based paths');
-    return generateObjectListStaticPaths('PilotClass');
-  }
-
-  // Get all pilot classes
-  const pilotClasses = getParseObjects<PilotClass>('Objects/PilotClass.json');
-  const paths = [];
-
-  for (const [classId, pilotClass] of Object.entries(pilotClasses)) {
-    // Skip classes without production_status = 'Ready' for production
-    if (import.meta.env.PROD && pilotClass.production_status !== 'Ready') {
-      continue;
-    }
-
-    const slug = slugMap[classId];
-    if (slug) {
-      paths.push({
-        params: { slug },
-        props: { id: classId }
-      });
-    }
-  }
-
-  return paths;
+  return generateSlugBasedStaticPaths('PilotClass', import.meta.env.PROD);
 }
 
 const { slug } = Astro.params;

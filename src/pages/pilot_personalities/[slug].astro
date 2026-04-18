@@ -8,7 +8,7 @@ import ParseObjectPage from '../../components/ParseObjectPage.astro';
 import {
   getParseObject,
   getParseObjects,
-  generateObjectListStaticPaths,
+  generateSlugBasedStaticPaths,
 } from '../../utils/parse_object';
 import { getDefaultString } from '../../utils/localization';
 import { getPilotPersonalityDetailBreadcrumbs } from '../../utils/breadcrumb';
@@ -16,41 +16,7 @@ import { generateSimpleLocalizedMetaDescriptions } from '../../utils/build_local
 import PilotPersonalitiesNavBox from '../../components/nav/PilotPersonalitiesNavBox.astro';
 
 export async function getStaticPaths() {
-  // Load slug map to generate slug-based paths
-  const fs = await import('fs/promises');
-  const path = await import('path');
-  const projectRoot = process.cwd();
-  const slugMapPath = path.join(projectRoot, 'public', 'slug-map.json');
-  
-  let slugMap = {};
-  try {
-    const content = await fs.readFile(slugMapPath, 'utf-8');
-    slugMap = JSON.parse(content);
-  } catch (error) {
-    console.warn('Could not load slug map, falling back to ID-based paths');
-    return generateObjectListStaticPaths('PilotPersonality');
-  }
-
-  // Get all pilot personalities
-  const personalities = getParseObjects<PilotPersonality>('Objects/PilotPersonality.json');
-  const paths = [];
-
-  for (const [personalityId, personality] of Object.entries(personalities)) {
-    // Skip personalities without production_status = 'Ready' for production
-    if (import.meta.env.PROD && personality.production_status !== 'Ready') {
-      continue;
-    }
-
-    const slug = slugMap[personalityId];
-    if (slug) {
-      paths.push({
-        params: { slug },
-        props: { id: personalityId }
-      });
-    }
-  }
-
-  return paths;
+  return generateSlugBasedStaticPaths('PilotPersonality', import.meta.env.PROD);
 }
 
 const { slug } = Astro.params;

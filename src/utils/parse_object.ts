@@ -211,3 +211,76 @@ export function generateObjectListStaticPaths(
   // Fallback: return empty array if data file doesn't exist
   return [];
 }
+
+// Generate slug-based static paths for object detail pages
+export function generateSlugBasedStaticPaths(
+  objectType:
+    | 'Module'
+    | 'ModuleCategory'
+    | 'Pilot'
+    | 'PilotTalent'
+    | 'PilotTalentType'
+    | 'PilotClass'
+    | 'PilotPersonality'
+    | 'Rarity'
+    | 'CharacterPreset',
+  prodReadyOnly: boolean = false
+): Array<{ params: { slug: string }; props: { id: string } }> {
+  // Load slug map to generate slug-based paths
+  const slugMapPath = path.join(process.cwd(), 'public', 'slug-map.json');
+  
+  try {
+    const slugMapContent = fs.readFileSync(slugMapPath, 'utf-8');
+    const slugMap = JSON.parse(slugMapContent);
+    
+    // Load objects to filter and get production-ready ones
+    const objectPath = path.join(
+      process.cwd(),
+      'WRFrontiersDB-Data/current',
+      `Objects/${objectType}.json`
+    );
+
+    if (!fs.existsSync(objectPath)) {
+      console.warn(`Object file not found: ${objectPath}`);
+      return [];
+    }
+
+    const allObjects = readJsonFile(objectPath) as Record<string, ParseObject>;
+    let objectIds = Object.keys(allObjects);
+
+    // Apply production filtering if needed
+    if (prodReadyOnly) {
+      objectIds = objectIds.filter((id) => {
+        const obj = allObjects[id];
+        return (
+          obj.production_status === 'Ready' &&
+          obj.name != null &&
+          obj.name !== ''
+        );
+      });
+    }
+
+    // Generate slug-based paths
+    const paths = [];
+    for (const objectId of objectIds) {
+      const slug = slugMap[objectId];
+      if (slug) {
+        paths.push({
+          params: { slug },
+          props: { id: objectId }
+        });
+      } else {
+        console.warn(`No slug found for ${objectType} object: ${objectId}`);
+      }
+    }
+
+    return paths;
+  } catch (error) {
+    console.warn(`Could not load slug map for ${objectType}, falling back to ID-based paths:`, error);
+    // Fallback to ID-based paths
+    return generateObjectListStaticPaths(objectType, prodReadyOnly).map(({ params }) => ({
+      params: { slug: params.id },
+      props: { id: params.id }
+    }));
+  }
+}
