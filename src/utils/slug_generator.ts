@@ -45,21 +45,21 @@ function getEnglishValue(localizationKey: LocalizationKey | string): string {
 
 /**
  * Generate slug for a pilot object
- * Format: pilot-firstname.en-lastname.en
+ * Format: firstname.en-lastname.en
  */
 function generatePilotSlug(pilot: Pilot): string {
   const firstName = getEnglishValue(pilot.first_name || '');
   const lastName = getEnglishValue(pilot.last_name || '');
-  return `pilot-${toSlug(firstName)}-${toSlug(lastName)}`;
+  return `${toSlug(firstName)}-${toSlug(lastName)}`;
 }
 
 /**
  * Generate slug for a pilot talent object
- * Format: pilot-talent-pilottalentname.en
+ * Format: pilottalentname.en
  */
 function generatePilotTalentSlug(talent: PilotTalent): string {
   const talentName = getEnglishValue(talent.name || '');
-  return `pilot-talent-${toSlug(talentName)}`;
+  return `${toSlug(talentName)}`;
 }
 
 /**
@@ -85,33 +85,29 @@ function generateModuleSlug(module: Module): string {
 
 /**
  * Generate slug for factory bot objects
- * Format: factory-bot-factorybotname.en
+ * Format: factorybotname.en
  */
 function generateFactoryBotSlug(object: ParseObject): string {
   const objectName = getEnglishValue(object.name || '');
-  return `factory-bot-${toSlug(objectName)}`;
+  return `${toSlug(objectName)}`;
 }
 
 /**
  * Generate slug for AI bot objects
- * Format: ai-bot-aibotname.en
+ * Format: aibotname.en
  */
 function generateAiBotSlug(object: ParseObject): string {
   const objectName = getEnglishValue(object.name || '');
-  return `ai-bot-${toSlug(objectName)}`;
+  return `${toSlug(objectName)}`;
 }
 
 /**
  * Generate slug for all other objects
- * Format: objecttype-objectname.en
+ * Format: objectname.en
  */
 function generateDefaultSlug(object: ParseObject): string {
   const objectName = getEnglishValue(object.name || '');
-  // Convert camelCase to kebab-case for the prefix
-  const objectType = object.parseObjectClass
-    .replace(/([a-z])([A-Z])/g, '$1-$2')
-    .toLowerCase();
-  return `${objectType}-${toSlug(objectName)}`;
+  return `${toSlug(objectName)}`;
 }
 
 /**
