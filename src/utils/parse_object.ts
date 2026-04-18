@@ -250,24 +250,26 @@ export function generateSlugBasedStaticPaths(
     // Generate slug-based paths
     const paths = [];
     for (const objectId of objectIds) {
-      const slug = slugMap[objectId];
-      if (slug) {
-        paths.push({
-          params: { slug },
-          props: { id: objectId }
-        });
-      } else {
-        console.warn(`No slug found for ${objectType} object: ${objectId}`);
+      // For modules, only include production-ready ones
+      if (objectType === 'Module') {
+        const module = allObjects[objectId] as any;
+        if (module.production_status !== 'Ready') {
+          continue;
+        }
       }
+      
+      const slug = slugMap[objectId];
+      if (!slug) {
+        throw new Error(`No slug found for ${objectType} object with ID ${objectId}. All objects must have a valid slug entry in the slug map.`);
+      }
+      paths.push({
+        params: { slug },
+        props: { id: objectId }
+      });
     }
 
     return paths;
   } catch (error) {
-    console.warn(`Could not load slug map for ${objectType}, falling back to ID-based paths:`, error);
-    // Fallback to ID-based paths
-    return generateObjectListStaticPaths(objectType).map(({ params }) => ({
-      params: { slug: params.id },
-      props: { id: params.id }
-    }));
+    throw new Error(`Could not load slug map for ${objectType}. Slug map must exist for build to succeed: ${error}`);
   }
 }
