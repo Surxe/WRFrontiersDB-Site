@@ -85,18 +85,14 @@ const baseUrl = import.meta.env.BASE_URL;
     <!--
       Inline script: validate `lang` query param and redirect if missing/invalid.
       Runs synchronously before page content renders to avoid a flash of wrong language.
-      Also migrates old localStorage value on first visit.
     -->
     <script define:vars={{ validLangs }}>
       (function () {
         var params = new URLSearchParams(window.location.search);
         var lang = params.get('lang');
         if (!lang || !validLangs.includes(lang)) {
-          // Migrate from old localStorage if present and valid
-          var saved = localStorage.getItem('selectedLang');
-          var target = saved && validLangs.includes(saved) ? saved : 'en';
           var url = new URL(window.location.href);
-          url.searchParams.set('lang', target);
+          url.searchParams.set('lang', 'en');
           window.location.replace(url.toString());
         } else {
           // Set the html lang attribute now (before JS modules load)

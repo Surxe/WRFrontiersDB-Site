@@ -96,15 +96,12 @@ export function getLocalizedText(locData, namespace, key, fallback = false) {
 
 /**
  * Gets current language from the `lang` URL query parameter.
- * Falls back to any previously saved localStorage value, then 'en'.
+ * Defaults to 'en'.
  * @returns {string} Current language code
  */
 export function getCurrentLanguage() {
   const param = new URLSearchParams(window.location.search).get('lang');
-  if (param) return param;
-  // Migrate from old localStorage value if present
-  const saved = localStorage.getItem('selectedLang');
-  return saved || 'en';
+  return param || 'en';
 }
 
 /**
