@@ -6,8 +6,6 @@ import '../styles/page-header.css';
 // Valid language codes — passed to the inline redirect script via define:vars
 const validLangs = Object.keys(langs);
 
-
-
 export interface Props {
   title?: string;
   description?: string;
@@ -147,9 +145,7 @@ const baseUrl = import.meta.env.BASE_URL;
     <select id="lang-selector">
       {
         Object.entries(langs).map(([code, names]) => (
-          <option value={code}>
-            {(names as any)[code]}
-          </option>
+          <option value={code}>{(names as any)[code]}</option>
         ))
       }
     </select>
@@ -185,7 +181,14 @@ const baseUrl = import.meta.env.BASE_URL;
         document.querySelectorAll('a[href]').forEach((a) => {
           const href = a.getAttribute('href');
           // Only touch internal links (starts with / or is relative, not external)
-          if (!href || href.startsWith('http') || href.startsWith('//') || href.startsWith('#') || href.startsWith('mailto:')) return;
+          if (
+            !href ||
+            href.startsWith('http') ||
+            href.startsWith('//') ||
+            href.startsWith('#') ||
+            href.startsWith('mailto:')
+          )
+            return;
           try {
             const url = new URL(href, window.location.origin);
             url.searchParams.set('lang', lang);

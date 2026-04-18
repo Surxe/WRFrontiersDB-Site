@@ -132,7 +132,10 @@ export function formatStatValueWithSeparator(
       unitName.Key
     ) {
       localizedUnit =
-        unitName.InvariantString || (locData[unitName.TableNamespace]?.[unitName.Key] || unitName.en) || '';
+        unitName.InvariantString ||
+        locData[unitName.TableNamespace]?.[unitName.Key] ||
+        unitName.en ||
+        '';
     } else if (typeof unitName === 'string') {
       localizedUnit = unitName;
     }

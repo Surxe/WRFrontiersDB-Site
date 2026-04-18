@@ -54,7 +54,10 @@ export function formatStatValue(
     ) {
       // Handle LocalizationKey object
       localizedUnit =
-        unitName.InvariantString || (locData[unitName.TableNamespace]?.[unitName.Key] || unitName.en) || '';
+        unitName.InvariantString ||
+        locData[unitName.TableNamespace]?.[unitName.Key] ||
+        unitName.en ||
+        '';
     } else if (typeof unitName === 'string') {
       // Handle plain string
       localizedUnit = unitName;
