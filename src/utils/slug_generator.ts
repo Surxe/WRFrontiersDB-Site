@@ -23,8 +23,8 @@ function toSlug(str: string): string {
   return str
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .replace(/-+/g, '-');
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '');
 }
 
 /**
@@ -50,7 +50,8 @@ function getEnglishValue(localizationKey: LocalizationKey | string): string {
 function generatePilotSlug(pilot: Pilot): string {
   const firstName = getEnglishValue(pilot.first_name || '');
   const lastName = getEnglishValue(pilot.last_name || '');
-  return `${toSlug(firstName)}-${toSlug(lastName)}`;
+  const slug = `${toSlug(firstName)}-${toSlug(lastName)}`;
+  return slug.replace(/-+$/, ''); // Remove trailing hyphens
 }
 
 /**
@@ -75,11 +76,13 @@ function generateModuleSlug(module: Module): string {
       throw new Error(`No module group found for type: ${module.module_type_ref}`);
     }
     const singularName = getModuleGroupSingularName(moduleGroup);
-    return `${toSlug(singularName)}-${toSlug(moduleName)}`;
+    const slug = `${toSlug(singularName)}-${toSlug(moduleName)}`;
+    return slug.replace(/-+$/, ''); // Remove trailing hyphens
   } catch (error) {
     // Fallback to 'module' prefix if module group lookup fails
     console.warn(`Could not determine module group for ${module.id}, falling back to 'module' prefix:`, error);
-    return `module-${toSlug(moduleName)}`;
+    const fallbackSlug = `module-${toSlug(moduleName)}`;
+    return fallbackSlug.replace(/-+$/, ''); // Remove trailing hyphens
   }
 }
 
