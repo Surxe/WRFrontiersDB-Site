@@ -6,6 +6,7 @@ import type { ParseObject } from '../types/parse_object';
 import type { Module } from '../types/module';
 import type { Pilot, PilotTalent } from '../types/pilot';
 import type { LocalizationKey } from '../types/localization';
+import { getModuleGroupId, getModuleGroupSingularName } from './module_group_mapping';
 
 export interface SlugMap {
   [objectId: string]: string;
@@ -63,11 +64,23 @@ function generatePilotTalentSlug(talent: PilotTalent): string {
 
 /**
  * Generate slug for a module object
- * Format: module-modulename.en
+ * Format: modulecategory.en.singular-modulename.en
  */
 function generateModuleSlug(module: Module): string {
   const moduleName = getEnglishValue(module.name || '');
-  return `module-${toSlug(moduleName)}`;
+  
+  try {
+    const moduleGroup = getModuleGroupId(module.module_type_ref);
+    if (!moduleGroup) {
+      throw new Error(`No module group found for type: ${module.module_type_ref}`);
+    }
+    const singularName = getModuleGroupSingularName(moduleGroup);
+    return `${toSlug(singularName)}-${toSlug(moduleName)}`;
+  } catch (error) {
+    // Fallback to 'module' prefix if module group lookup fails
+    console.warn(`Could not determine module group for ${module.id}, falling back to 'module' prefix:`, error);
+    return `module-${toSlug(moduleName)}`;
+  }
 }
 
 /**

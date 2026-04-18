@@ -29,6 +29,11 @@ export const MODULE_GROUPS = {
       TableNamespace: 'ModuleGroups',
       en: 'Titan Torsos',
     },
+    singular_name: {
+      Key: 'GRP_TitanTorsos_Singular_Name',
+      TableNamespace: 'ModuleGroups',
+      en: 'Titan Torso',
+    },
   },
   'non-titan-torsos': {
     id: 'non-titan-torsos',
@@ -38,12 +43,22 @@ export const MODULE_GROUPS = {
       TableNamespace: 'ModuleGroups',
       en: 'Torsos',
     },
+    singular_name: {
+      Key: 'GRP_Torsos_Singular_Name',
+      TableNamespace: 'ModuleGroups',
+      en: 'Torso',
+    },
   },
   'titan-chassis': {
     id: 'titan-chassis',
     sort_order: 3,
     name: {
       Key: 'GRP_TitanChassis_Name',
+      TableNamespace: 'ModuleGroups',
+      en: 'Titan Chassis',
+    },
+    singular_name: {
+      Key: 'GRP_TitanChassis_Singular_Name',
       TableNamespace: 'ModuleGroups',
       en: 'Titan Chassis',
     },
@@ -56,6 +71,11 @@ export const MODULE_GROUPS = {
       TableNamespace: 'ModuleGroups',
       en: 'Chassis',
     },
+    singular_name: {
+      Key: 'GRP_Chassis_Singular_Name',
+      TableNamespace: 'ModuleGroups',
+      en: 'Chassis',
+    },
   },
   'titan-shoulder': {
     id: 'titan-shoulder',
@@ -64,6 +84,11 @@ export const MODULE_GROUPS = {
       Key: 'GRP_TitanShoulders_Name',
       TableNamespace: 'ModuleGroups',
       en: 'Titan Shoulders',
+    },
+    singular_name: {
+      Key: 'GRP_TitanShoulders_Singular_Name',
+      TableNamespace: 'ModuleGroups',
+      en: 'Titan Shoulder',
     },
   },
   'non-titan-shoulder': {
@@ -74,6 +99,11 @@ export const MODULE_GROUPS = {
       TableNamespace: 'ModuleGroups',
       en: 'Shoulders',
     },
+    singular_name: {
+      Key: 'GRP_Shoulders_Singular_Name',
+      TableNamespace: 'ModuleGroups',
+      en: 'Shoulder',
+    },
   },
   'light-weapon': {
     id: 'light-weapon',
@@ -82,6 +112,11 @@ export const MODULE_GROUPS = {
       Key: 'GRP_LightWeapons_Name',
       TableNamespace: 'ModuleGroups',
       en: 'Light Weapons',
+    },
+    singular_name: {
+      Key: 'GRP_LightWeapons_Singular_Name',
+      TableNamespace: 'ModuleGroups',
+      en: 'Light Weapon',
     },
   },
   'heavy-weapon': {
@@ -92,6 +127,11 @@ export const MODULE_GROUPS = {
       TableNamespace: 'ModuleGroups',
       en: 'Heavy Weapons',
     },
+    singular_name: {
+      Key: 'GRP_HeavyWeapons_Singular_Name',
+      TableNamespace: 'ModuleGroups',
+      en: 'Heavy Weapon',
+    },
   },
   'titan-weapon': {
     id: 'titan-weapon',
@@ -100,6 +140,11 @@ export const MODULE_GROUPS = {
       Key: 'GRP_TitanWeapons_Name',
       TableNamespace: 'ModuleGroups',
       en: 'Titan Weapons',
+    },
+    singular_name: {
+      Key: 'GRP_TitanWeapons_Singular_Name',
+      TableNamespace: 'ModuleGroups',
+      en: 'Titan Weapon',
     },
   },
   'supply-gear': {
@@ -110,12 +155,22 @@ export const MODULE_GROUPS = {
       TableNamespace: 'ModuleGroups',
       en: 'Supply Gear',
     },
+    singular_name: {
+      Key: 'GRP_SupplyGear_Singular_Name',
+      TableNamespace: 'ModuleGroups',
+      en: 'Supply Gear',
+    },
   },
   'cycle-gear': {
     id: 'cycle-gear',
     sort_order: 11,
     name: {
       Key: 'GRP_CycleGear_Name',
+      TableNamespace: 'ModuleGroups',
+      en: 'Cycle Gear',
+    },
+    singular_name: {
+      Key: 'GRP_CycleGear_Singular_Name',
       TableNamespace: 'ModuleGroups',
       en: 'Cycle Gear',
     },
@@ -239,6 +294,19 @@ export function getAllModuleGroupIdsSorted(): ModuleGroupId[] {
   return Object.entries(MODULE_GROUPS)
     .sort(([, a], [, b]) => a.sort_order - b.sort_order)
     .map(([id]) => id as ModuleGroupId);
+}
+
+/**
+ * Get the singular English name for a module group
+ * @param groupId - The module group ID
+ * @returns The singular English name
+ */
+export function getModuleGroupSingularName(groupId: ModuleGroupId): string {
+  const group = MODULE_GROUPS[groupId];
+  if (!group?.singular_name?.en) {
+    throw new Error(`No singular name found for module group: ${groupId}`);
+  }
+  return group.singular_name.en;
 }
 
 /**
