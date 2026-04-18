@@ -13,9 +13,27 @@ const presets = getParseObjects('Objects/CharacterPreset.json');
 const modules = getParseObjects('Objects/Module.json');
 const pilots = getParseObjects('Objects/Pilot.json');
 
-// Prepare and filter presets (only non-factory/bot presets)
+// Load slug map to check for production-ready modules
+const slugMapModule = await import('../../public/slug-map.json');
+const slugMap = slugMapModule.default;
+
+// Function to check if preset contains only production-ready modules
+function hasOnlyProductionModules(preset: any): boolean {
+  if (!preset.modules) return true;
+  
+  return Object.values(preset.modules).every((moduleInfo: any) => {
+    if (!moduleInfo || !moduleInfo.module_ref) return true;
+    
+    const moduleId = moduleInfo.module_ref.replace('OBJID_Module::', '');
+    return slugMap[moduleId] !== undefined;
+  });
+}
+
+// Prepare and filter presets (only non-factory/bot presets with production modules)
 const entries = prepareObjectList(presets, { prodReadyOnly: false });
-const botEntries = entries.filter(([_, preset]) => !preset.is_factory_preset);
+const botEntries = entries.filter(([_, preset]) => 
+  !preset.is_factory_preset && hasOnlyProductionModules(preset)
+);
 
 // Sort presets by name
 const sortedPresets = botEntries.sort(([_a, a], [_b, b]) => {

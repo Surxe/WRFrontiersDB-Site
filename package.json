@@ -7,6 +7,7 @@
     "build": "astro build",
     "build:custom-domain": "CUSTOM_DOMAIN=true astro build",
     "build:github-pages": "astro build",
+    "build:slugs": "tsx scripts/build-slugs.ts",
     "preview": "astro preview",
     "astro": "astro",
     "lint": "eslint . --ext .js,.ts,.astro --max-warnings 0",
@@ -27,6 +28,7 @@
     "eslint-plugin-astro": "^1.5.0",
     "prettier": "^3.7.4",
     "prettier-plugin-astro": "^0.14.1",
+    "tsx": "^4.7.0",
     "vitest": "^4.0.16"
   }
 }

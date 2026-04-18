@@ -12,6 +12,7 @@ import {
   getParseObject,
   getParseObjects,
   generateObjectListStaticPaths,
+  generateSlugBasedStaticPaths,
 } from '../../utils/parse_object';
 import { getDefaultString } from '../../utils/localization';
 import { generateSimpleLocalizedMetaDescriptions } from '../../utils/build_localization';
@@ -34,10 +35,11 @@ import type { CharacterPreset } from '../../types/character_preset';
 import type { Pilot } from '../../types/pilot';
 
 export async function getStaticPaths() {
-  return generateObjectListStaticPaths('Module', true);
+  return generateSlugBasedStaticPaths('Module');
 }
 
-const { id } = Astro.params;
+const { slug: _slug } = Astro.params;
+const { id } = Astro.props;
 
 const module = getParseObject<Module>(id, 'Objects/Module.json');
 const allModuleRarities = getParseObjects<ModuleRarity>(

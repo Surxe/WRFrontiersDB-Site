@@ -7,7 +7,7 @@ import ObjectPageScripts from '../../components/ObjectPageScripts.astro';
 import ParseObjectPage from '../../components/ParseObjectPage.astro';
 import {
   getParseObject,
-  generateObjectListStaticPaths,
+  generateSlugBasedStaticPaths,
 } from '../../utils/parse_object';
 import { getDefaultString } from '../../utils/localization';
 import { getPilotPersonalityDetailBreadcrumbs } from '../../utils/breadcrumb';
@@ -15,10 +15,11 @@ import { generateSimpleLocalizedMetaDescriptions } from '../../utils/build_local
 import PilotPersonalitiesNavBox from '../../components/nav/PilotPersonalitiesNavBox.astro';
 
 export async function getStaticPaths() {
-  return generateObjectListStaticPaths('PilotPersonality');
+  return generateSlugBasedStaticPaths('PilotPersonality');
 }
 
-const { id } = Astro.params;
+const { slug: _slug } = Astro.params;
+const { id } = Astro.props;
 
 const pilotPersonality = getParseObject<PilotPersonality>(
   id,
@@ -39,7 +40,7 @@ const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
 
 <ParseObjectPage
   localizedDescriptions={localizedDescriptions}
-  headerImage="/images/T_Trait_Madman.png"
+  headerImage={pilotPersonality.image_path}
   type="article"
 >
   <LocalizedText
@@ -48,20 +49,14 @@ const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
     localizationKey={pilotPersonality.name}
     slot="head"
   />
-  <Breadcrumb
-    breadcrumbs={getPilotPersonalityDetailBreadcrumbs(pilotPersonality)}
-  />
-  <LocalizedText
-    id="pilot-personality-name"
-    tag="h1"
-    localizationKey={pilotPersonality.name}
-  />
+  <Breadcrumb breadcrumbs={getPilotPersonalityDetailBreadcrumbs(pilotPersonality)} />
+  <LocalizedText id="pilot-personality-name" tag="h1" localizationKey={pilotPersonality.name} />
 
-  <Icon iconPath={pilotPersonality.icon_path} altText={`${defaultName} icon`} />
+  <Icon iconPath={pilotPersonality.inventory_icon_path} altText={`${defaultName} icon`} />
 
   <p>Language: <span id="current-lang">en</span></p>
 
-  <PilotPersonalitiesNavBox />
+  <PilotPersonalitiesNavBox currentPersonality={pilotPersonality} />
 
   <ObjectPageScripts objectData={pilotPersonality} />
 </ParseObjectPage>

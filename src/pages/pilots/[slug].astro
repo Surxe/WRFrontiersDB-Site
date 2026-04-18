@@ -16,7 +16,7 @@ import ParseObjectPage from '../../components/ParseObjectPage.astro';
 import {
   getParseObjects,
   getParseObject,
-  generateObjectListStaticPaths,
+  generateSlugBasedStaticPaths,
 } from '../../utils/parse_object';
 import { getDefaultString } from '../../utils/localization';
 import { getStatValueChoices } from '../../utils/stat';
@@ -30,10 +30,11 @@ import { PILOT_TYPE_LEGENDARY_REF } from '../../utils/constants';
 import { getPilotDetailBreadcrumbs } from '../../utils/breadcrumb';
 
 export async function getStaticPaths() {
-  return generateObjectListStaticPaths('Pilot');
+  return generateSlugBasedStaticPaths('Pilot');
 }
 
-const { id } = Astro.params;
+const { slug: _slug } = Astro.params;
+const { id } = Astro.props;
 
 const pilot = getParseObject<Pilot>(id, 'Objects/Pilot.json');
 const pilotTalents = getParseObjects<PilotTalent>('Objects/PilotTalent.json');

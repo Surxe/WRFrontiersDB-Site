@@ -19,13 +19,30 @@ import ObjRef from '../../components/obj_ref/ObjRef.astro';
 import { getDefaultString } from '../../utils/localization';
 
 export async function getStaticPaths() {
-  const groupIds = getAllModuleGroupIds();
-  return groupIds.map((id) => ({
-    params: { id },
-  }));
+  // Load slug map to generate slug-based paths
+  try {
+    const slugMapModule = await import('../../../public/slug-map.json');
+    const slugMap = slugMapModule.default;
+    
+    // Get all module group IDs and their slugs
+    const groupIds = getAllModuleGroupIds();
+    return groupIds.map((id) => {
+      const slug = slugMap[id];
+      if (!slug) {
+        throw new Error(`No slug found for module group with ID ${id}. All module groups must have a valid slug entry in the slug map.`);
+      }
+      return {
+        params: { slug },
+        props: { id }
+      };
+    });
+  } catch {
+    throw new Error('Failed to load slug map for module groups. Slug map must exist for build to succeed.');
+  }
 }
 
-const { id } = Astro.params;
+const { slug: _slug } = Astro.params;
+const { id } = Astro.props;
 
 const group = MODULE_GROUPS[id as keyof typeof MODULE_GROUPS];
 

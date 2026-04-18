@@ -6,17 +6,18 @@ import ObjectPageScripts from '../../components/ObjectPageScripts.astro';
 import {
   getParseObject,
   getParseObjects,
-  generateObjectListStaticPaths,
+  generateSlugBasedStaticPaths,
 } from '../../utils/parse_object';
 import { getCharacterPresetDetailBreadcrumbs } from '../../utils/breadcrumb';
 import { getDefaultString } from '../../utils/localization';
 import type { CharacterPreset } from '../../types/character_preset';
 
 export async function getStaticPaths() {
-  return generateObjectListStaticPaths('CharacterPreset');
+  return generateSlugBasedStaticPaths('CharacterPreset');
 }
 
-const { id } = Astro.params;
+const { slug: _slug } = Astro.params;
+const { id } = Astro.props;
 
 const preset = getParseObject(
   id,
@@ -38,22 +39,19 @@ const modules = getParseObjects('Objects/Module.json');
       <div class="character-preset-detail">
         <h1>{getDefaultString(preset.name) || preset.id}</h1>
 
-        <BotItem preset={preset} modules={modules} pilots={pilots} />
+        <BotItem
+          preset={preset}
+          modules={modules}
+          pilots={pilots}
+        />
       </div>
     ) : (
-      <div>
+      <div class="character-preset-not-found">
         <h1>Character Preset Not Found</h1>
-        <p>The character preset with ID "{id}" was not found.</p>
+        <p>The character preset with ID {id} was not found.</p>
       </div>
     )
   }
 
   <ObjectPageScripts objectData={preset} />
 </ParseObjectListPage>
-
-<style>
-  .character-preset-detail {
-    max-width: 800px;
-    margin: 0 auto;
-  }
-</style>

@@ -211,3 +211,65 @@ export function generateObjectListStaticPaths(
   // Fallback: return empty array if data file doesn't exist
   return [];
 }
+
+// Generate slug-based static paths for object detail pages
+export function generateSlugBasedStaticPaths(
+  objectType:
+    | 'Module'
+    | 'ModuleCategory'
+    | 'Pilot'
+    | 'PilotTalent'
+    | 'PilotTalentType'
+    | 'PilotClass'
+    | 'PilotPersonality'
+    | 'Rarity'
+    | 'CharacterPreset'
+): Array<{ params: { slug: string }; props: { id: string } }> {
+  // Load slug map to generate slug-based paths
+  const slugMapPath = path.join(process.cwd(), 'public', 'slug-map.json');
+  
+  try {
+    const slugMapContent = fs.readFileSync(slugMapPath, 'utf-8');
+    const slugMap = JSON.parse(slugMapContent);
+    
+    // Load objects to filter and get production-ready ones
+    const objectPath = path.join(
+      process.cwd(),
+      'WRFrontiersDB-Data/current',
+      `Objects/${objectType}.json`
+    );
+
+    if (!fs.existsSync(objectPath)) {
+      console.warn(`Object file not found: ${objectPath}`);
+      return [];
+    }
+
+    const allObjects = readJsonFile(objectPath) as Record<string, ParseObject>;
+    const objectIds = Object.keys(allObjects);
+
+    // Generate slug-based paths
+    const paths = [];
+    for (const objectId of objectIds) {
+      // For modules, only include production-ready ones
+      if (objectType === 'Module') {
+        const module = allObjects[objectId] as any;
+        if (module.production_status !== 'Ready') {
+          continue;
+        }
+      }
+      
+      const slug = slugMap[objectId];
+      if (!slug) {
+        throw new Error(`No slug found for ${objectType} object with ID ${objectId}. All objects must have a valid slug entry in the slug map.`);
+      }
+      paths.push({
+        params: { slug },
+        props: { id: objectId }
+      });
+    }
+
+    return paths;
+  } catch (error) {
+    throw new Error(`Could not load slug map for ${objectType}. Slug map must exist for build to succeed: ${error}`);
+  }
+}

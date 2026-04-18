@@ -7,7 +7,7 @@ import ObjectPageScripts from '../../components/ObjectPageScripts.astro';
 import ParseObjectPage from '../../components/ParseObjectPage.astro';
 import {
   getParseObject,
-  generateObjectListStaticPaths,
+  generateSlugBasedStaticPaths,
 } from '../../utils/parse_object';
 import { getDefaultString } from '../../utils/localization';
 import { generateSimpleLocalizedMetaDescriptions } from '../../utils/build_localization';
@@ -15,10 +15,11 @@ import PilotClassesNavBox from '../../components/nav/PilotClassesNavBox.astro';
 import { getPilotClassDetailBreadcrumbs } from '../../utils/breadcrumb';
 
 export async function getStaticPaths() {
-  return generateObjectListStaticPaths('PilotClass');
+  return generateSlugBasedStaticPaths('PilotClass');
 }
 
-const { id } = Astro.params;
+const { slug: _slug } = Astro.params;
+const { id } = Astro.props;
 
 const pilotClass = getParseObject<PilotClass>(id, 'Objects/PilotClass.json');
 
@@ -45,21 +46,13 @@ const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
     slot="head"
   />
   <Breadcrumb breadcrumbs={getPilotClassDetailBreadcrumbs(pilotClass)} />
-  <LocalizedText
-    id="pilot-class-name"
-    tag="h1"
-    localizationKey={pilotClass.name}
-  />
+  <LocalizedText id="pilot-class-name" tag="h1" localizationKey={pilotClass.name} />
 
-  <Icon
-    iconPath={pilotClass.badge.image_path}
-    altText={`${defaultName} icon`}
-    color={pilotClass.badge.hex}
-  />
+  <Icon iconPath={pilotClass.image_path} altText={`${defaultName} icon`} />
 
   <p>Language: <span id="current-lang">en</span></p>
 
-  <PilotClassesNavBox />
+  <PilotClassesNavBox currentClass={pilotClass} />
 
   <ObjectPageScripts objectData={pilotClass} />
 </ParseObjectPage>

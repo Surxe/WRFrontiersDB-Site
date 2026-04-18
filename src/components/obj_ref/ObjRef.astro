@@ -33,7 +33,38 @@ const {
 // Get the page reference data (localization key, icon path, hex color)
 const objRefData = getObjRefData(obj);
 
-const pageUrl = `/${obj.parseObjectUrl}/${obj.id}`;
+// Try to get slug for objects that have slugs, otherwise fall back to ID
+let urlSegment = obj.id;
+const slugableObjectTypes = [
+  'modules',
+  'pilots', 
+  'pilot_talents',
+  'pilot_classes',
+  'pilot_personalities', 
+  'pilot_talent_types',
+  'character_presets',
+  'module_categories',
+  'module_groups'
+];
+
+if (slugableObjectTypes.includes(obj.parseObjectUrl)) {
+  // Import slug map as JSON module
+  try {
+    const slugMapModule = await import('../../../public/slug-map.json');
+    const slugMap = slugMapModule.default;
+    const slug = slugMap[obj.id];
+    
+    if (!slug) {
+      throw new Error(`No slug found for ${obj.parseObjectUrl} object with ID ${obj.id}. All objects with slugs must have a valid slug entry in the slug map.`);
+    }
+    
+    urlSegment = slug;
+  } catch (error) {
+    throw new Error(`Failed to load slug map. Slug map must exist at public/slug-map.json for build to succeed: ${error}`);
+  }
+}
+
+const pageUrl = `/${obj.parseObjectUrl}/${urlSegment}`;
 
 // Validate hover
 if (useOnHover && !objRefData.hoverText) {
