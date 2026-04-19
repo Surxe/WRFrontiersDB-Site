@@ -10,6 +10,7 @@
 6. **Create detail page**: `src/pages/{parseObject}s/[id].astro` with `getStaticPaths()`
 7. **Call** `generateObjectListStaticPaths("{parseObject}")`
 8. **Add link** to homepage ([index.astro](../../src/pages/index.astro))
+9. **Rebuild slugs**: `npm run build:slugs`
 
 ## Working with Icons/Textures
 
