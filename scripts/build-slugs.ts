@@ -51,7 +51,9 @@ async function buildSlugMap() {
       // Filter for production-ready objects
       const filteredObjects: Record<string, ParseObject> = {};
       for (const [objectId, object] of Object.entries(objects)) {
-        // Different filtering logic for different object types
+        // IMPORTANT: production_status logic:
+        // - Modules: Only include if production_status === 'Ready' (missing = not ready)
+        // - Other object types: Always include (never have production_status attribute)
         if (objectType === 'Module') {
           // Modules: Only include if production_status === 'Ready'
           const productionStatus = (object as { production_status?: string })

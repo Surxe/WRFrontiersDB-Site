@@ -5,10 +5,8 @@ import * as moduleTypes from '../types/module';
 import * as pilotTypes from '../types/pilot';
 import * as rarityTypes from '../types/rarity';
 import * as characterPresetTypes from '../types/character_preset';
-import {
-  generateTitanShoulderSlugMap,
-  isTitanShoulder,
-} from './titan_shoulder_slugs';
+
+// import { generateSlugForObject } from './slug_generator';
 
 // Merge all exported constants from type modules
 const allTypeExports = {
@@ -140,14 +138,14 @@ export async function generateObjectStaticPaths(
   if (fs.existsSync(objectsPath)) {
     const allObjects = readJsonFile(objectsPath) as Record<string, ParseObject>;
 
-    for (const [objectId, obj] of Object.entries(allObjects)) {
+    for (const [objectId, object] of Object.entries(allObjects)) {
       // Skip production filtering if needed
       if (
         prodReadyOnly &&
-        (!obj.production_status ||
-          obj.production_status !== 'Ready' ||
-          !obj.name ||
-          obj.name === '')
+        (!object.production_status ||
+          object.production_status !== 'Ready' ||
+          !object.name ||
+          object.name === '')
       ) {
         continue;
       }
@@ -236,7 +234,7 @@ export function generateSlugBasedStaticPaths(
     const slugMapContent = fs.readFileSync(slugMapPath, 'utf-8');
     const slugMap = JSON.parse(slugMapContent);
 
-    // Load objects to filter and get production-ready ones
+    // Load objects and generate slug-based paths
     const objectPath = path.join(
       process.cwd(),
       'WRFrontiersDB-Data/current',
@@ -249,35 +247,21 @@ export function generateSlugBasedStaticPaths(
     }
 
     const allObjects = readJsonFile(objectPath) as Record<string, ParseObject>;
-    const objectIds = Object.keys(allObjects);
 
-    // Generate slug-based paths
+    // Generate slug-based paths for production-ready objects only
     const paths = [];
-    for (const objectId of objectIds) {
-      // For modules, only include production-ready ones
-      if (objectType === 'Module') {
-        const module = allObjects[objectId] as ParseObject & {
-          production_status?: string;
-        };
-        if (module.production_status !== 'Ready') {
-          continue;
-        }
+    for (const [objectId, object] of Object.entries(allObjects)) {
+      // Skip objects that are not production ready
+      if (!object.production_status || object.production_status !== 'Ready') {
+        continue;
       }
 
+      // Use original slug map logic for static path generation
       let slug = slugMap[objectId];
-
-      // Enhanced slug generation for titan shoulders
-      if (objectType === 'Module' && isTitanShoulder(objectId)) {
-        const titanShoulderSlugs = generateTitanShoulderSlugMap();
-        const enhancedSlug = titanShoulderSlugs[objectId];
-        if (enhancedSlug) {
-          slug = enhancedSlug;
-        }
-      }
 
       if (!slug) {
         throw new Error(
-          `No slug found for ${objectType} object with ID ${objectId}. All objects must have a valid slug entry in the slug map.`
+          `No slug found for ${objectType} object with ID ${objectId}. All production objects must have a valid slug entry in the slug map.`
         );
       }
       paths.push({
@@ -292,4 +276,44 @@ export function generateSlugBasedStaticPaths(
       `Could not load slug map for ${objectType}. Slug map must exist for build to succeed: ${error}`
     );
   }
+}
+
+/**
+ * Get all parse objects from all object types, grouped by object type
+ * @returns Object containing all parse objects keyed by object type
+ */
+export function getAllParseObjects(): Record<
+  string,
+  Record<string, ParseObject>
+> {
+  const objectsPath = path.join(
+    process.cwd(),
+    'WRFrontiersDB-Data/current/Objects'
+  );
+  const allObjects: Record<string, Record<string, ParseObject>> = {};
+
+  try {
+    if (fs.existsSync(objectsPath)) {
+      const files = fs.readdirSync(objectsPath);
+
+      // Filter for JSON files and extract object type from filename
+      const objectFiles = files.filter((file) => file.endsWith('.json'));
+
+      for (const file of objectFiles) {
+        const objectType = file.replace('.json', '');
+
+        try {
+          const objects = getParseObjects<ParseObject>(`Objects/${file}`);
+          allObjects[objectType] = objects;
+        } catch (error) {
+          console.warn(`Could not load ${objectType} objects:`, error);
+          allObjects[objectType] = {};
+        }
+      }
+    }
+  } catch (error) {
+    console.warn('Could not read Objects directory:', error);
+  }
+
+  return allObjects;
 }

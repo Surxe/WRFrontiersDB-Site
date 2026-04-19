@@ -24,11 +24,19 @@ npm run dev
 
 The build scripts set the `CUSTOM_DOMAIN` environment variable which configures the base path in astro.config.mjs.
 
-## Simplified Architecture
+## Slug Management
 
-This site now supports only the latest game version, which significantly reduces build complexity and improves performance:
+### Rebuilding Slugs
 
-- **No version routing**: URLs are simplified to `/{parseObject}/{id}`
-- **Fewer static paths**: Only generates pages for latest version objects
-- **Faster builds**: Eliminates version fallback logic and summary file processing
-- **Cleaner URLs**: Direct access to object pages without version segments
+After modifying slug generation logic or adding new object types, rebuild the slug map:
+
+```bash
+npm run build:slugs
+```
+
+This updates `public/slug-map.json`
+
+**When to rebuild slugs:**
+
+- Adding new object types to the site
+- Modifying slug generation logic
