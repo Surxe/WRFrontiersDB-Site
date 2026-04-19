@@ -5,12 +5,8 @@ import * as moduleTypes from '../types/module';
 import * as pilotTypes from '../types/pilot';
 import * as rarityTypes from '../types/rarity';
 import * as characterPresetTypes from '../types/character_preset';
-import { getModuleGroupId as _getModuleGroupId } from './module_group_mapping';
-import {
-  generateTitanShoulderSlugMap,
-  isTitanShoulder,
-} from './titan_shoulder_slugs';
-import { camelToKebab } from './slug_generator';
+
+import { generateSlugForObject } from './slug_generator';
 
 // Merge all exported constants from type modules
 const allTypeExports = {
@@ -238,7 +234,7 @@ export function generateSlugBasedStaticPaths(
     const slugMapContent = fs.readFileSync(slugMapPath, 'utf-8');
     const slugMap = JSON.parse(slugMapContent);
 
-    // Load objects to filter and get production-ready ones
+    // Load objects and generate slug-based paths
     const objectPath = path.join(
       process.cwd(),
       'WRFrontiersDB-Data/current',
@@ -255,49 +251,9 @@ export function generateSlugBasedStaticPaths(
 
     // Generate slug-based paths
     const paths = [];
-    for (const objectId of objectIds) {
-      /**
-       * Production status logic:
-       * - Modules: Only include if production_status === 'Ready' (missing = not ready)
-       * - Other object types: Always include (never have production_status attribute)
-       */
-      if (objectType === 'Module') {
-        const module = allObjects[objectId] as ParseObject & {
-          production_status?: string;
-        };
-        if (module.production_status !== 'Ready') {
-          continue;
-        }
-      }
-
+    for (const [objectId, object] of Object.entries(allObjects)) {
+      // Use original slug map logic for static path generation
       let slug = slugMap[objectId];
-
-      // Enhanced slug generation for titan shoulders
-      if (objectType === 'Module' && isTitanShoulder(objectId)) {
-        const titanShoulderSlugs = generateTitanShoulderSlugMap();
-        const enhancedSlug = titanShoulderSlugs[objectId];
-        if (enhancedSlug) {
-          slug = enhancedSlug;
-        }
-      }
-
-      // Enhanced slug generation for character presets
-      if (objectType === 'CharacterPreset') {
-        const preset = allObjects[objectId];
-        if (preset) {
-          // Use ID-based approach for AI presets (explicitly non-factory presets only)
-          if (preset.is_factory_preset === false) {
-            // Convert ID to slug: DA_Preset_... -> ... and replace _ with -
-            let idSlug = objectId.replace('DA_Preset_', '').replace(/_/g, '-');
-            // Strip trailing .0, .1, .2 etc.
-            idSlug = idSlug.replace(/\.\d+$/, '');
-            // Convert camelCase to kebab-case
-            idSlug = camelToKebab(idSlug);
-            slug = idSlug;
-          }
-          // Factory presets (is_factory_preset === true OR undefined) keep using name.en
-        }
-      }
 
       if (!slug) {
         throw new Error(

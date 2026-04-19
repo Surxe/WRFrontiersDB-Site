@@ -4,6 +4,8 @@ import type { EnrichedModule } from './module_group_mapping';
 import { isCoreModule } from './core_modules';
 import { refToId } from './object_reference';
 import { getDefaultString } from './localization';
+import { slugify } from './slug_base';
+
 
 export interface VirtualBot {
   id: string; // slugified bot ID for URLs (e.g. "ares")
@@ -13,16 +15,7 @@ export interface VirtualBot {
   factory_presets: string[]; // preset IDs
 }
 
-export function slugify(text: string): string {
-  return text
-    .toString()
-    .toLowerCase()
-    .replace(/\s+/g, '-') // Replace spaces with -
-    .replace(/[^\w-]+/g, '') // Remove all non-word chars
-    .replace(/-+/g, '-') // Replace multiple - with single -
-    .replace(/^-+/, '') // Trim - from start of text
-    .replace(/-+$/, ''); // Trim - from end of text
-}
+
 
 export function getVirtualBots(
   modules: Record<string, Module>,
