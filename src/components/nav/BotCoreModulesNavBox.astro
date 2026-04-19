@@ -1,0 +1,44 @@
+---
+import BaseNavBox from './BaseNavBox.astro';
+import { getParseObjects } from '../../utils/parse_object';
+import { enrichModulesWithBotIds } from '../../utils/robot';
+import { prepareObjectList } from '../../utils/list';
+import type { Module } from '../../types/module';
+import type { CharacterPreset } from '../../types/character_preset';
+
+interface Props {
+  botId: string;
+  currentModuleId: string;
+}
+
+const { botId, currentModuleId } = Astro.props;
+
+// Load modules and presets
+const modules = getParseObjects<Module>('Objects/Module.json');
+const presets = getParseObjects<CharacterPreset>('Objects/CharacterPreset.json');
+
+// Enrich modules with bot IDs
+const enrichedModules = enrichModulesWithBotIds(modules, presets);
+
+// Filter modules that belong to the same bot and are production-ready
+const botModules = Object.entries(enrichedModules).filter(
+  ([moduleId, module]) => module.bot_id === botId && moduleId !== currentModuleId
+);
+
+// Use prepareObjectList to filter production-ready modules
+const filteredModules = prepareObjectList(Object.fromEntries(botModules), {
+  prodReadyOnly: true,
+}).sort(([_a, a], [_b, b]) => {
+  // Sort by module name
+  const nameA = a.name?.Key || a.id;
+  const nameB = b.name?.Key || b.id;
+  return nameA.localeCompare(nameB);
+});
+
+// Get bot name for title
+const botName = botId.charAt(0).toUpperCase() + botId.slice(1).replace(/-/g, ' ');
+---
+
+{filteredModules.length > 0 && (
+  <BaseNavBox title={`${botName} Core Modules`} objects={filteredModules} />
+)}

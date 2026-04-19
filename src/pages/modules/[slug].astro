@@ -28,7 +28,9 @@ import ModulesNavBox from '../../components/nav/ModulesNavBox.astro';
 import { getModuleGroupId } from '../../utils/module_group_mapping';
 import { getModuleDetailBreadcrumbs } from '../../utils/breadcrumb';
 import { isCoreModule } from '../../utils/core_modules';
+import { enrichModulesWithBotIds } from '../../utils/robot';
 import BotsList from '../../components/bot/BotsList.astro';
+import BotCoreModulesNavBox from '../../components/nav/BotCoreModulesNavBox.astro';
 import { refToId } from '../../utils/object_reference';
 import type { CharacterPreset } from '../../types/character_preset';
 import type { Pilot } from '../../types/pilot';
@@ -116,6 +118,24 @@ if (isCore) {
     return nameA.localeCompare(nameB);
   });
 }
+
+// Get enriched modules with bot IDs for core modules
+let enrichedModule: any = null;
+let botCoreModulesNavBox: any = null;
+
+if (isCore) {
+  const allPresets = getParseObjects<CharacterPreset>(
+    'Objects/CharacterPreset.json'
+  );
+  const allModules = getParseObjects<Module>('Objects/Module.json');
+  
+  const enrichedModules = enrichModulesWithBotIds(allModules, allPresets);
+  enrichedModule = enrichedModules[module.id];
+  
+  if (enrichedModule?.bot_id) {
+    botCoreModulesNavBox = enrichedModule.bot_id;
+  }
+}
 ---
 
 <ParseObjectPage
@@ -191,6 +211,17 @@ if (isCore) {
       <section style="margin-top: 2rem;">
         <h2>Related Modules</h2>
         <ModulesNavBox moduleGroupId={moduleGroupId} />
+      </section>
+    )
+  }
+
+  {
+    botCoreModulesNavBox && (
+      <section style="margin-top: 2rem;">
+        <BotCoreModulesNavBox 
+          botId={botCoreModulesNavBox} 
+          currentModuleId={module.id} 
+        />
       </section>
     )
   }
