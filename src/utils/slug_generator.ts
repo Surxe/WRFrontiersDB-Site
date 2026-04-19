@@ -6,6 +6,7 @@ import type { ParseObject } from '../types/parse_object';
 import type { Module } from '../types/module';
 import type { Pilot, PilotTalent } from '../types/pilot';
 import type { CharacterPreset } from '../types/character_preset';
+import type { LocalizationKey } from '../types/localization';
 import {
   getModuleGroupId,
   getModuleGroupSingularName,
@@ -59,7 +60,7 @@ function getShoulderSideFromPreset(
  */
 function generatePilotSlug(pilot: Pilot): string {
   const firstName = getDefaultString(pilot.first_name) || '';
-  const lastName = getDefaultString(pilot.last_name) || '';
+  const lastName = getDefaultString(pilot.last_name || pilot.second_name) || '';
   const slug = `${toSlug(firstName)}-${toSlug(lastName)}`;
   return slug.replace(/-+$/, '');
 }
@@ -107,7 +108,7 @@ function generateModuleSlug(module: Module, context?: SlugContext): string {
     const singularName = getModuleGroupSingularName(moduleGroup);
     const slug = `${toSlug(singularName)}-${toSlug(moduleName)}`;
     return slug.replace(/-+$/, '');
-  } catch (error) {
+  } catch {
     const fallbackSlug = `module-${toSlug(moduleName)}`;
     return fallbackSlug.replace(/-+$/, '');
   }
@@ -118,7 +119,7 @@ function generateModuleSlug(module: Module, context?: SlugContext): string {
  * Requirement: factory presets are 1:1 of the name.en
  */
 function generateFactoryBotSlug(object: ParseObject): string {
-  const objectName = getDefaultString(object.name as any) || '';
+  const objectName = getDefaultString(object.name as LocalizationKey) || '';
   return toSlug(objectName);
 }
 
@@ -146,7 +147,7 @@ function generateCharacterPresetSlug(object: CharacterPreset): string {
  * Generate slug for all other objects
  */
 function generateDefaultSlug(object: ParseObject): string {
-  const objectName = getDefaultString(object.name as any) || '';
+  const objectName = getDefaultString(object.name as LocalizationKey) || '';
   return toSlug(objectName);
 }
 
@@ -157,7 +158,8 @@ export function generateSlugForObject(
   object: ParseObject,
   context?: SlugContext
 ): string {
-  switch (object.parseObjectClass) {
+  const objectType = object.parseObjectClass;
+  switch (objectType) {
     case 'Pilot':
       return generatePilotSlug(object as Pilot);
     case 'PilotTalent':
@@ -182,7 +184,7 @@ export function generateSlugMap(
   objectRecords: Record<string, ParseObject>[]
 ): SlugMap {
   const slugMap: SlugMap = {};
-  const collisions: Array<{ objectId: string; slug: string }> = [];
+  // const collisions: Array<{ objectId: string; slug: string }> = [];
 
   // Create context for cross-object lookups (e.g. for shoulders)
   const allObjectsById: Record<string, ParseObject> = {};

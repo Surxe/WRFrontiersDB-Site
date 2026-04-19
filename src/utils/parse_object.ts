@@ -6,7 +6,7 @@ import * as pilotTypes from '../types/pilot';
 import * as rarityTypes from '../types/rarity';
 import * as characterPresetTypes from '../types/character_preset';
 
-import { generateSlugForObject } from './slug_generator';
+// import { generateSlugForObject } from './slug_generator';
 
 // Merge all exported constants from type modules
 const allTypeExports = {
@@ -247,17 +247,22 @@ export function generateSlugBasedStaticPaths(
     }
 
     const allObjects = readJsonFile(objectPath) as Record<string, ParseObject>;
-    const objectIds = Object.keys(allObjects);
+    // const objectIds = Object.keys(allObjects);
 
-    // Generate slug-based paths
+    // Generate slug-based paths for production-ready objects only
     const paths = [];
     for (const [objectId, object] of Object.entries(allObjects)) {
+      // Skip objects that are not production ready
+      if (!object.production_status || object.production_status !== 'Ready') {
+        continue;
+      }
+
       // Use original slug map logic for static path generation
       let slug = slugMap[objectId];
 
       if (!slug) {
         throw new Error(
-          `No slug found for ${objectType} object with ID ${objectId}. All objects must have a valid slug entry in the slug map.`
+          `No slug found for ${objectType} object with ID ${objectId}. All production objects must have a valid slug entry in the slug map.`
         );
       }
       paths.push({

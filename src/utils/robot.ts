@@ -6,7 +6,6 @@ import { refToId } from './object_reference';
 import { getDefaultString } from './localization';
 import { slugify } from './slug_base';
 
-
 export interface VirtualBot {
   id: string; // slugified bot ID for URLs (e.g. "ares")
   name: string; // english name (e.g. "Ares")
@@ -14,8 +13,6 @@ export interface VirtualBot {
   core_modules: string[]; // module IDs
   factory_presets: string[]; // preset IDs
 }
-
-
 
 export function getVirtualBots(
   modules: Record<string, Module>,
