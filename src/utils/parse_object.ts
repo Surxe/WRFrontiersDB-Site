@@ -5,6 +5,7 @@ import * as moduleTypes from '../types/module';
 import * as pilotTypes from '../types/pilot';
 import * as rarityTypes from '../types/rarity';
 import * as characterPresetTypes from '../types/character_preset';
+import { generateTitanShoulderSlugMap, isTitanShoulder } from './titan_shoulder_slugs';
 
 // Merge all exported constants from type modules
 const allTypeExports = {
@@ -258,7 +259,17 @@ export function generateSlugBasedStaticPaths(
         }
       }
 
-      const slug = slugMap[objectId];
+      let slug = slugMap[objectId];
+      
+      // Enhanced slug generation for titan shoulders
+      if (objectType === 'Module' && isTitanShoulder(objectId)) {
+        const titanShoulderSlugs = generateTitanShoulderSlugMap();
+        const enhancedSlug = titanShoulderSlugs[objectId];
+        if (enhancedSlug) {
+          slug = enhancedSlug;
+        }
+      }
+      
       if (!slug) {
         throw new Error(
           `No slug found for ${objectType} object with ID ${objectId}. All objects must have a valid slug entry in the slug map.`
