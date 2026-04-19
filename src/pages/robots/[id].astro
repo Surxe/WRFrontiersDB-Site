@@ -3,7 +3,7 @@ import Breadcrumb from '../../components/Breadcrumb.astro';
 import ParseObjectPage from '../../components/ParseObjectPage.astro';
 import ObjRef from '../../components/obj_ref/ObjRef.astro';
 import { getParseObjects } from '../../utils/parse_object';
-import { getVirtualBots } from '../../utils/robot';
+import { getAllVirtualBots, getVirtualBotById } from '../../utils/bot_modules';
 import type { CharacterPreset } from '../../types/character_preset';
 import type { Module } from '../../types/module';
 
@@ -12,7 +12,7 @@ export async function getStaticPaths() {
     'Objects/CharacterPreset.json'
   );
   const modules = getParseObjects<Module>('Objects/Module.json');
-  const virtualBotsMap = getVirtualBots(modules, presets);
+  const virtualBotsMap = getAllVirtualBots(modules, presets);
 
   return Object.keys(virtualBotsMap).map((id) => ({
     params: { id },
@@ -25,8 +25,7 @@ const presets = getParseObjects<CharacterPreset>(
 );
 const modules = getParseObjects<Module>('Objects/Module.json');
 
-const virtualBotsMap = getVirtualBots(modules, presets);
-const bot = virtualBotsMap[id as string];
+const bot = getVirtualBotById(id as string, modules, presets);
 
 if (!bot) {
   throw new Error(`Bot with id ${id} not found.`);

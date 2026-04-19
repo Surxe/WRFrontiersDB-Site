@@ -18,6 +18,7 @@ const projectRoot = path.join(__dirname, '..');
 import { getParseObjects } from '../src/utils/parse_object.js';
 import { generateSlugMap, type SlugMap } from '../src/utils/slug_generator.js';
 import { MODULE_GROUPS } from '../src/utils/module_group_mapping.js';
+import type { ParseObject } from '../src/types/parse_object.js';
 
 // Object types to generate slugs for
 const OBJECT_TYPES = [
@@ -37,10 +38,10 @@ const OBJECT_TYPES = [
 ];
 
 async function buildSlugMap() {
-  console.log('Building slug map...');
+  console.warn('Building slug map...');
 
   const slugMap: SlugMap = {};
-  const allObjects: Record<string, any>[] = [];
+  const allObjects: Record<string, ParseObject>[] = [];
 
   // Load all object types
   for (const objectType of OBJECT_TYPES) {
@@ -48,12 +49,13 @@ async function buildSlugMap() {
       const objects = getParseObjects(`Objects/${objectType}.json`);
 
       // Filter for production-ready objects
-      const filteredObjects: Record<string, any> = {};
+      const filteredObjects: Record<string, ParseObject> = {};
       for (const [objectId, object] of Object.entries(objects)) {
         // Different filtering logic for different object types
         if (objectType === 'Module') {
           // Modules: Only include if production_status === 'Ready'
-          const productionStatus = (object as any).production_status;
+          const productionStatus = (object as { production_status?: string })
+            .production_status;
           if (productionStatus === 'Ready') {
             filteredObjects[objectId] = object;
           }
@@ -64,7 +66,7 @@ async function buildSlugMap() {
       }
 
       allObjects.push(filteredObjects);
-      console.log(
+      console.warn(
         `Loaded ${Object.keys(filteredObjects).length} ${objectType} objects (${Object.keys(objects).length - Object.keys(filteredObjects).length} filtered out)`
       );
     } catch (error) {
@@ -76,7 +78,7 @@ async function buildSlugMap() {
   try {
     const generatedMap = generateSlugMap(allObjects);
     Object.assign(slugMap, generatedMap);
-    console.log(`Generated ${Object.keys(slugMap).length} slugs`);
+    console.warn(`Generated ${Object.keys(slugMap).length} slugs`);
   } catch (error) {
     console.error('Error generating slug map:', error);
     process.exit(1);
@@ -87,7 +89,7 @@ async function buildSlugMap() {
     const slug = groupData.name.en.toLowerCase().replace(/\s+/g, '-');
     slugMap[groupId] = slug;
   }
-  console.log(`Added ${Object.keys(MODULE_GROUPS).length} module group slugs`);
+  console.warn(`Added ${Object.keys(MODULE_GROUPS).length} module group slugs`);
 
   // Write slug map to public directory
   const publicDir = path.join(projectRoot, 'public');
@@ -98,8 +100,8 @@ async function buildSlugMap() {
   const slugMapPath = path.join(publicDir, 'slug-map.json');
   fs.writeFileSync(slugMapPath, JSON.stringify(slugMap, null, 2));
 
-  console.log(`Slug map written to: ${slugMapPath}`);
-  console.log('Build completed successfully!');
+  console.warn(`Slug map written to: ${slugMapPath}`);
+  console.warn('Build completed successfully!');
 }
 
 // Run the build
