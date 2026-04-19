@@ -138,14 +138,14 @@ export async function generateObjectStaticPaths(
   if (fs.existsSync(objectsPath)) {
     const allObjects = readJsonFile(objectsPath) as Record<string, ParseObject>;
 
-    for (const [objectId, obj] of Object.entries(allObjects)) {
+    for (const [objectId, object] of Object.entries(allObjects)) {
       // Skip production filtering if needed
       if (
         prodReadyOnly &&
-        (!obj.production_status ||
-          obj.production_status !== 'Ready' ||
-          !obj.name ||
-          obj.name === '')
+        (!object.production_status ||
+          object.production_status !== 'Ready' ||
+          !object.name ||
+          object.name === '')
       ) {
         continue;
       }
@@ -247,7 +247,6 @@ export function generateSlugBasedStaticPaths(
     }
 
     const allObjects = readJsonFile(objectPath) as Record<string, ParseObject>;
-    // const objectIds = Object.keys(allObjects);
 
     // Generate slug-based paths for production-ready objects only
     const paths = [];
