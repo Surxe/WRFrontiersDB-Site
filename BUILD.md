@@ -27,6 +27,7 @@ The build scripts set the `CUSTOM_DOMAIN` environment variable which configures 
 ## Slug Management
 
 ### Rebuilding Slugs
+
 After modifying slug generation logic or adding new object types, rebuild the slug map:
 
 ```bash
@@ -36,5 +37,6 @@ npm run build:slugs
 This updates `public/slug-map.json`
 
 **When to rebuild slugs:**
+
 - Adding new object types to the site
 - Modifying slug generation logic

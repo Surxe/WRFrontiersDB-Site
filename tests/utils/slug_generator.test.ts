@@ -153,7 +153,6 @@ describe('slug_generator', () => {
       expect(Object.keys(slugMap)).toHaveLength(3);
     });
 
-    
     it('should handle empty object arrays', () => {
       const objects: Record<string, ParseObject>[] = [];
       const slugMap = generateSlugMap(objects);

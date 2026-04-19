@@ -39,15 +39,17 @@ function toSlug(str: string): string {
  * - TitanPro-Alpha -> titan-pro-alpha
  */
 export function camelToKebab(str: string): string {
-  return str
-    .replace(/^(bot|devbot)-/i, '')  // Strip bot/devbot prefix
-    .replace(/([a-z])([A-Z])/g, '$1-$2')  // Add hyphens before capitals
-    .toLowerCase()
-    // Map abbreviated difficulty levels to full words
-    .replace(/\badv\b/g, 'advanced')
-    .replace(/\bbegin\b/g, 'beginner')
-    .replace(/\binterm\b/g, 'intermediate')
-    .replace(/\bpro\b/g, 'pro');  // Keep 'pro' as is (already full word)
+  return (
+    str
+      .replace(/^(bot|devbot)-/i, '') // Strip bot/devbot prefix
+      .replace(/([a-z])([A-Z])/g, '$1-$2') // Add hyphens before capitals
+      .toLowerCase()
+      // Map abbreviated difficulty levels to full words
+      .replace(/\badv\b/g, 'advanced')
+      .replace(/\bbegin\b/g, 'beginner')
+      .replace(/\binterm\b/g, 'intermediate')
+      .replace(/\bpro\b/g, 'pro')
+  ); // Keep 'pro' as is (already full word)
 }
 
 /**
@@ -154,21 +156,21 @@ function generateDefaultSlug(object: ParseObject): string {
  */
 function generateCharacterPresetSlug(object: ParseObject): string {
   const baseSlug = generateDefaultSlug(object);
-  
+
   // Extract level from object ID and append to slug
   const levelMap: Record<string, string> = {
-    'Begin': 'beginner',
-    'Interm': 'intermediate', 
-    'Adv': 'advanced',
-    'Pro': 'pro'
+    Begin: 'beginner',
+    Interm: 'intermediate',
+    Adv: 'advanced',
+    Pro: 'pro',
   };
-  
+
   for (const [key, value] of Object.entries(levelMap)) {
     if (object.id.includes(key)) {
       return `${baseSlug}-${value}`;
     }
   }
-  
+
   return baseSlug;
 }
 

@@ -28,11 +28,12 @@ describe('slug_collision', () => {
     });
 
     // Check for collisions within each object type
-    const collisions: Array<{ type: string; slug: string; objects: string[] }> = [];
+    const collisions: Array<{ type: string; slug: string; objects: string[] }> =
+      [];
 
     Object.entries(slugsByType).forEach(([objectType, slugs]) => {
       const slugCounts: Record<string, string[]> = {};
-      
+
       Object.entries(slugs).forEach(([objectId, slug]) => {
         if (!slugCounts[slug]) {
           slugCounts[slug] = [];
@@ -46,7 +47,7 @@ describe('slug_collision', () => {
           collisions.push({
             type: objectType,
             slug: slug as string,
-            objects: objectIds
+            objects: objectIds,
           });
         }
       });
@@ -54,11 +55,16 @@ describe('slug_collision', () => {
 
     // Error on all collisions within the same object type
     if (collisions.length > 0) {
-      const collisionReport = collisions.map(c => 
-        `${c.type}: "${c.slug}" used by ${c.objects.length} objects: ${c.objects.slice(0, 3).join(', ')}${c.objects.length > 3 ? '...' : ''}`
-      ).join('\n');
-      
-      throw new Error(`Slug collisions detected within object types:\n${collisionReport}`);
+      const collisionReport = collisions
+        .map(
+          (c) =>
+            `${c.type}: "${c.slug}" used by ${c.objects.length} objects: ${c.objects.slice(0, 3).join(', ')}${c.objects.length > 3 ? '...' : ''}`
+        )
+        .join('\n');
+
+      throw new Error(
+        `Slug collisions detected within object types:\n${collisionReport}`
+      );
     }
 
     // Verify titan shoulder enhancement worked
@@ -67,8 +73,12 @@ describe('slug_collision', () => {
       .map(([id, slug]) => ({ id, slug: slug as string }));
 
     // Should have distinct left/right slugs
-    const leftShoulders = titanShoulderSlugs.filter(({ slug }) => slug.includes('left'));
-    const rightShoulders = titanShoulderSlugs.filter(({ slug }) => slug.includes('right'));
+    const leftShoulders = titanShoulderSlugs.filter(({ slug }) =>
+      slug.includes('left')
+    );
+    const rightShoulders = titanShoulderSlugs.filter(({ slug }) =>
+      slug.includes('right')
+    );
 
     expect(leftShoulders.length).toBeGreaterThan(0);
     expect(rightShoulders.length).toBeGreaterThan(0);
@@ -79,8 +89,9 @@ describe('slug_collision', () => {
       titanSlugCounts[slug] = (titanSlugCounts[slug] || 0) + 1;
     });
 
-    const titanCollisions = Object.entries(titanSlugCounts)
-      .filter(([_, count]) => count > 1);
+    const titanCollisions = Object.entries(titanSlugCounts).filter(
+      ([_, count]) => count > 1
+    );
 
     expect(titanCollisions).toHaveLength(0);
   });

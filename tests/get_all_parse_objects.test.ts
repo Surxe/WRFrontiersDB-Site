@@ -14,7 +14,7 @@ describe('getAllParseObjects', () => {
     expect(objectTypes.length).toBeGreaterThan(0);
 
     // Check that each object type has the correct structure
-    objectTypes.forEach(type => {
+    objectTypes.forEach((type) => {
       expect(typeof allObjects[type]).toBe('object');
       expect(Array.isArray(Object.keys(allObjects[type]))).toBe(true);
     });
@@ -49,10 +49,12 @@ describe('getAllParseObjects', () => {
 
     // Should return the same structure and data
     expect(Object.keys(allObjects1)).toEqual(Object.keys(allObjects2));
-    
+
     // Check that counts are consistent
-    Object.keys(allObjects1).forEach(type => {
-      expect(Object.keys(allObjects1[type]).length).toBe(Object.keys(allObjects2[type]).length);
+    Object.keys(allObjects1).forEach((type) => {
+      expect(Object.keys(allObjects1[type]).length).toBe(
+        Object.keys(allObjects2[type]).length
+      );
     });
   });
 });

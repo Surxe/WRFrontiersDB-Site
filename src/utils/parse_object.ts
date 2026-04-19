@@ -5,8 +5,11 @@ import * as moduleTypes from '../types/module';
 import * as pilotTypes from '../types/pilot';
 import * as rarityTypes from '../types/rarity';
 import * as characterPresetTypes from '../types/character_preset';
-import { getModuleGroupId } from './module_group_mapping';
-import { generateTitanShoulderSlugMap, isTitanShoulder } from './titan_shoulder_slugs';
+import { getModuleGroupId as _getModuleGroupId } from './module_group_mapping';
+import {
+  generateTitanShoulderSlugMap,
+  isTitanShoulder,
+} from './titan_shoulder_slugs';
 import { camelToKebab } from './slug_generator';
 
 // Merge all exported constants from type modules
@@ -253,7 +256,11 @@ export function generateSlugBasedStaticPaths(
     // Generate slug-based paths
     const paths = [];
     for (const objectId of objectIds) {
-      // For modules, only include production-ready ones
+      /**
+       * Production status logic:
+       * - Modules: Only include if production_status === 'Ready' (missing = not ready)
+       * - Other object types: Always include (never have production_status attribute)
+       */
       if (objectType === 'Module') {
         const module = allObjects[objectId] as ParseObject & {
           production_status?: string;
@@ -273,7 +280,7 @@ export function generateSlugBasedStaticPaths(
           slug = enhancedSlug;
         }
       }
-      
+
       // Enhanced slug generation for character presets
       if (objectType === 'CharacterPreset') {
         const preset = allObjects[objectId];
@@ -315,20 +322,26 @@ export function generateSlugBasedStaticPaths(
  * Get all parse objects from all object types, grouped by object type
  * @returns Object containing all parse objects keyed by object type
  */
-export function getAllParseObjects(): Record<string, Record<string, ParseObject>> {
-  const objectsPath = path.join(process.cwd(), 'WRFrontiersDB-Data/current/Objects');
+export function getAllParseObjects(): Record<
+  string,
+  Record<string, ParseObject>
+> {
+  const objectsPath = path.join(
+    process.cwd(),
+    'WRFrontiersDB-Data/current/Objects'
+  );
   const allObjects: Record<string, Record<string, ParseObject>> = {};
 
   try {
     if (fs.existsSync(objectsPath)) {
       const files = fs.readdirSync(objectsPath);
-      
+
       // Filter for JSON files and extract object type from filename
-      const objectFiles = files.filter(file => file.endsWith('.json'));
-      
+      const objectFiles = files.filter((file) => file.endsWith('.json'));
+
       for (const file of objectFiles) {
         const objectType = file.replace('.json', '');
-        
+
         try {
           const objects = getParseObjects<ParseObject>(`Objects/${file}`);
           allObjects[objectType] = objects;
