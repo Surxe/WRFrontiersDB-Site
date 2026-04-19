@@ -274,6 +274,22 @@ export function generateSlugBasedStaticPaths(
           slug = enhancedSlug;
         }
       }
+      
+      // Enhanced slug generation for character presets
+      if (objectType === 'CharacterPreset') {
+        const preset = allObjects[objectId];
+        if (preset) {
+          // Use ID-based approach for AI presets (explicitly non-factory presets only)
+          if (preset.is_factory_preset === false) {
+            // Convert ID to slug: DA_Preset_... -> ... and replace _ with -
+            let idSlug = objectId.replace('DA_Preset_', '').replace(/_/g, '-');
+            // Strip trailing .0, .1, .2 etc.
+            idSlug = idSlug.replace(/\.\d+$/, '');
+            slug = idSlug;
+          }
+          // Factory presets (is_factory_preset === true OR undefined) keep using name.en
+        }
+      }
 
       if (!slug) {
         throw new Error(

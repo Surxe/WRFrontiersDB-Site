@@ -130,6 +130,29 @@ function generateDefaultSlug(object: ParseObject): string {
 }
 
 /**
+ * Generate slug for CharacterPreset with level enhancement
+ */
+function generateCharacterPresetSlug(object: ParseObject): string {
+  const baseSlug = generateDefaultSlug(object);
+  
+  // Extract level from object ID and append to slug
+  const levelMap: Record<string, string> = {
+    'Begin': 'beginner',
+    'Interm': 'intermediate', 
+    'Adv': 'advanced',
+    'Pro': 'pro'
+  };
+  
+  for (const [key, value] of Object.entries(levelMap)) {
+    if (object.id.includes(key)) {
+      return `${baseSlug}-${value}`;
+    }
+  }
+  
+  return baseSlug;
+}
+
+/**
  * Generate slug for any parse object based on its type
  */
 export function generateSlugForObject(object: ParseObject): string {
@@ -148,6 +171,9 @@ export function generateSlugForObject(object: ParseObject): string {
     }
     case 'AIBot': {
       return generateAiBotSlug(object);
+    }
+    case 'CharacterPreset': {
+      return generateCharacterPresetSlug(object);
     }
     default: {
       return generateDefaultSlug(object);
