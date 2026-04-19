@@ -1,6 +1,6 @@
 /**
  * Bot Modules Utility
- * 
+ *
  * Shared utilities for working with bot core modules across different pages.
  */
 
@@ -11,19 +11,19 @@ import type { CharacterPreset } from '../types/character_preset';
 
 /**
  * Virtual Bot Interface
- * 
+ *
  * A VirtualBot represents a generic robot platform that groups together:
  * - All factory presets that belong to the same base robot (e.g., "Ares" platform)
  * - The core modules that define that robot's foundation
- * 
+ *
  * This is NOT a specific CharacterPreset, but rather an abstraction that
  * groups all variants of a robot under one platform name.
- * 
+ *
  * Example:
  * - VirtualBot "ares" groups all "Ares" factory presets
  * - Contains core modules: Ares Torso, Ares Legs, etc.
  * - Links to all factory presets that use these core modules
- * 
+ *
  * This allows users to browse robots by their platform rather than
  * individual preset variants.
  */
@@ -51,19 +51,19 @@ export function getBotCoreModules(
 ): Module[] {
   const virtualBotsMap = getVirtualBots(modules, presets);
   const bot = virtualBotsMap[botId];
-  
+
   if (!bot) {
     return [];
   }
 
-  const coreModuleIds = bot.core_modules.filter(id => id !== excludeModuleId);
+  const coreModuleIds = bot.core_modules.filter((id) => id !== excludeModuleId);
   const coreModules = coreModuleIds
-    .map(id => modules[id])
+    .map((id) => modules[id])
     .filter(Boolean) as Module[];
 
   // Filter production-ready modules
   const filteredModuleEntries = prepareObjectList(
-    Object.fromEntries(coreModules.map(m => [m.id, m])),
+    Object.fromEntries(coreModules.map((m) => [m.id, m])),
     { prodReadyOnly: true }
   );
 

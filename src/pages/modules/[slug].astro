@@ -128,10 +128,10 @@ if (isCore) {
     'Objects/CharacterPreset.json'
   );
   const allModules = getParseObjects<Module>('Objects/Module.json');
-  
+
   const enrichedModules = enrichModulesWithBotIds(allModules, allPresets);
   enrichedModule = enrichedModules[module.id];
-  
+
   if (enrichedModule?.bot_id) {
     botCoreModulesNavBox = enrichedModule.bot_id;
   }
@@ -218,9 +218,9 @@ if (isCore) {
   {
     botCoreModulesNavBox && (
       <section style="margin-top: 2rem;">
-        <BotCoreModulesNavBox 
-          botId={botCoreModulesNavBox} 
-          currentModuleId={module.id} 
+        <BotCoreModulesNavBox
+          botId={botCoreModulesNavBox}
+          currentModuleId={module.id}
         />
       </section>
     )

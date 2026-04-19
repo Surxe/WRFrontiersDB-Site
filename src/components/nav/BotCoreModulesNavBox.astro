@@ -14,15 +14,28 @@ const { botId, currentModuleId } = Astro.props;
 
 // Load modules and presets
 const modules = getParseObjects<Module>('Objects/Module.json');
-const presets = getParseObjects<CharacterPreset>('Objects/CharacterPreset.json');
+const presets = getParseObjects<CharacterPreset>(
+  'Objects/CharacterPreset.json'
+);
 
 // Get core modules for this bot (excluding current module)
-const botCoreModules = getBotCoreModules(botId, modules, presets, currentModuleId);
+const botCoreModules = getBotCoreModules(
+  botId,
+  modules,
+  presets,
+  currentModuleId
+);
 
 // Get bot name for title
-const botName = botId.charAt(0).toUpperCase() + botId.slice(1).replace(/-/g, ' ');
+const botName =
+  botId.charAt(0).toUpperCase() + botId.slice(1).replace(/-/g, ' ');
 ---
 
-{botCoreModules.length > 0 && (
-  <BaseNavBox title={`${botName} Core Modules`} objects={botCoreModules.map(m => [m.id, m])} />
-)}
+{
+  botCoreModules.length > 0 && (
+    <BaseNavBox
+      title={`${botName} Core Modules`}
+      objects={botCoreModules.map((m) => [m.id, m])}
+    />
+  )
+}
