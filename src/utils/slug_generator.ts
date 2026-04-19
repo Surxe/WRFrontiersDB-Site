@@ -31,13 +31,15 @@ function toSlug(str: string): string {
 }
 
 /**
- * Convert camelCase/PascalCase to kebab-case
- * - BotAdv-CeresBisector -> bot-adv-ceres-bisector
+ * Convert camelCase/PascalCase to kebab-case and strip bot/devbot prefixes
+ * - BotAdv-CeresBisector -> adv-ceres-bisector
+ * - DevbotAnansi -> anansi
  * - TitanPro-Alpha -> titan-pro-alpha
  */
 export function camelToKebab(str: string): string {
   return str
-    .replace(/([a-z])([A-Z])/g, '$1-$2')
+    .replace(/^(bot|devbot)-/i, '')  // Strip bot/devbot prefix
+    .replace(/([a-z])([A-Z])/g, '$1-$2')  // Add hyphens before capitals
     .toLowerCase();
 }
 
