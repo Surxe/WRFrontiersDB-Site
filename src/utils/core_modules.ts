@@ -4,9 +4,23 @@ import { refToId } from './object_reference';
 import { CORE_MODULE_CATEGORIES } from './constants';
 import type { ParseObject } from '../types/parse_object';
 
-// Cache module types and categories at module level for efficiency
-const MODULE_TYPES = getParseObjects('Objects/ModuleType.json');
-const MODULE_CATEGORIES = getParseObjects('Objects/ModuleCategory.json');
+// Cache module types and categories for efficiency
+let moduleTypesCache: Record<string, ParseObject> | null = null;
+let moduleCategoriesCache: Record<string, ParseObject> | null = null;
+
+function getModuleTypes() {
+  if (!moduleTypesCache) {
+    moduleTypesCache = getParseObjects('Objects/ModuleType.json');
+  }
+  return moduleTypesCache;
+}
+
+function getModuleCategories() {
+  if (!moduleCategoriesCache) {
+    moduleCategoriesCache = getParseObjects('Objects/ModuleCategory.json');
+  }
+  return moduleCategoriesCache;
+}
 
 /**
  * Checks if a module is a core module (Chassis, Torso, or Shoulder)
@@ -17,7 +31,7 @@ export function isCoreModule(module: ParseObject): boolean {
   // Use object resolver to get the module type
   const moduleType = resolveObjectRef(
     module.module_type_ref as string,
-    MODULE_TYPES
+    getModuleTypes()
   );
   if (!moduleType?.module_category_ref) return false;
 
@@ -36,7 +50,7 @@ export function getCoreModuleCategory(module: ParseObject): ParseObject | null {
   // Use object resolver to get the module type
   const moduleType = resolveObjectRef(
     module.module_type_ref as string,
-    MODULE_TYPES
+    getModuleTypes()
   );
   if (!moduleType?.module_category_ref) return null;
 
@@ -44,7 +58,7 @@ export function getCoreModuleCategory(module: ParseObject): ParseObject | null {
   return (
     resolveObjectRef(
       moduleType.module_category_ref as string,
-      MODULE_CATEGORIES
+      getModuleCategories()
     ) || null
   );
 }

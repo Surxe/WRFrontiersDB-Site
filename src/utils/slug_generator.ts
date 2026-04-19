@@ -14,6 +14,9 @@ import { getDefaultString } from './localization';
 import { toSlug, camelToKebab } from './slug_base';
 import { refToId } from './object_reference';
 
+import { enrichModulesWithBotIds } from './robot';
+import type { EnrichedModule } from './module_group_mapping';
+
 export interface SlugMap {
   [objectId: string]: string;
 }
@@ -21,44 +24,10 @@ export interface SlugMap {
 export interface SlugContext {
   allModules?: Record<string, Module>;
   allPresets?: Record<string, CharacterPreset>;
+  enrichedModules?: Record<string, EnrichedModule>;
 }
 
 // --- Internal Helpers ---
-
-/**
- * Check if a module is a titan shoulder (left or right)
- */
-function isTitanShoulder(moduleId: string): boolean {
-  return (
-    (moduleId.includes('ShoulderL') || moduleId.includes('ShoulderR')) &&
-    (moduleId.includes('Alpha') ||
-      moduleId.includes('Grim') ||
-      moduleId.includes('Matriarch') ||
-      moduleId.includes('Norna') ||
-      moduleId.includes('Spire'))
-  );
-}
-
-/**
- * Extract titan name from module ID
- */
-function extractTitanName(moduleId: string): string {
-  const titanMap: Record<string, string> = {
-    Alpha: 'alpha',
-    Grim: 'grim',
-    Matriarch: 'matriarch',
-    Norna: 'norna',
-    Spire: 'volta', // Spire maps to Volta in localization
-  };
-
-  for (const [key, value] of Object.entries(titanMap)) {
-    if (moduleId.includes(key)) {
-      return value;
-    }
-  }
-
-  return 'unknown';
-}
 
 /**
  * Get shoulder side from character preset module array using socket_name
@@ -109,12 +78,20 @@ function generatePilotTalentSlug(talent: PilotTalent): string {
  * Format: [titan-shoulder-side-titanname] OR [modulecategory-modulename]
  */
 function generateModuleSlug(module: Module, context?: SlugContext): string {
+  const groupId = getModuleGroupId(module.module_type_ref);
+
   // Requirement: uses Left, Right for shoulders
-  if (context?.allPresets && isTitanShoulder(module.id)) {
+  if (
+    groupId === 'titan-shoulder' &&
+    context?.allPresets &&
+    context?.enrichedModules
+  ) {
     const side = getShoulderSideFromPreset(module.id, context.allPresets);
     if (side) {
-      const titanName = extractTitanName(module.id);
-      return `titan-shoulder-${side}-${titanName}`;
+      const botId = context.enrichedModules[module.id]?.bot_id;
+      if (botId) {
+        return `titan-shoulder-${side}-${botId}`;
+      }
     }
   }
 
@@ -213,9 +190,14 @@ export function generateSlugMap(
     Object.assign(allObjectsById, record);
   }
 
+  const allModules = allObjectsById as Record<string, Module>;
+  const allPresets = allObjectsById as Record<string, CharacterPreset>;
+  const enrichedModules = enrichModulesWithBotIds(allModules, allPresets);
+
   const context: SlugContext = {
-    allModules: allObjectsById as Record<string, Module>,
-    allPresets: allObjectsById as Record<string, CharacterPreset>,
+    allModules,
+    allPresets,
+    enrichedModules,
   };
 
   for (const objectRecord of objectRecords) {
