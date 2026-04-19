@@ -4,7 +4,7 @@ import ParseObjectListPage from '../components/ParseObjectListPage.astro';
 import BotsNavBox from '../components/nav/BotsNavBox.astro';
 import ObjRef from '../components/obj_ref/ObjRef.astro';
 import { getParseObjects } from '../utils/parse_object';
-import { getVirtualBots } from '../utils/robot';
+import { getAllVirtualBots } from '../utils/bot_modules';
 import type { CharacterPreset } from '../types/character_preset';
 import type { Module } from '../types/module';
 
@@ -13,7 +13,7 @@ const presets = getParseObjects<CharacterPreset>(
 );
 const modules = getParseObjects<Module>('Objects/Module.json');
 
-const virtualBotsMap = getVirtualBots(modules, presets);
+const virtualBotsMap = getAllVirtualBots(modules, presets);
 const bots = Object.values(virtualBotsMap);
 
 // Group by Mech/Titan
