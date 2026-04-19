@@ -5,10 +5,9 @@ import * as moduleTypes from '../types/module';
 import * as pilotTypes from '../types/pilot';
 import * as rarityTypes from '../types/rarity';
 import * as characterPresetTypes from '../types/character_preset';
-import {
-  generateTitanShoulderSlugMap,
-  isTitanShoulder,
-} from './titan_shoulder_slugs';
+import { getModuleGroupId } from './module_group_mapping';
+import { generateTitanShoulderSlugMap, isTitanShoulder } from './titan_shoulder_slugs';
+import { camelToKebab } from './slug_generator';
 
 // Merge all exported constants from type modules
 const allTypeExports = {
@@ -285,6 +284,8 @@ export function generateSlugBasedStaticPaths(
             let idSlug = objectId.replace('DA_Preset_', '').replace(/_/g, '-');
             // Strip trailing .0, .1, .2 etc.
             idSlug = idSlug.replace(/\.\d+$/, '');
+            // Convert camelCase to kebab-case
+            idSlug = camelToKebab(idSlug);
             slug = idSlug;
           }
           // Factory presets (is_factory_preset === true OR undefined) keep using name.en

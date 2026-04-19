@@ -31,6 +31,17 @@ function toSlug(str: string): string {
 }
 
 /**
+ * Convert camelCase/PascalCase to kebab-case
+ * - BotAdv-CeresBisector -> bot-adv-ceres-bisector
+ * - TitanPro-Alpha -> titan-pro-alpha
+ */
+export function camelToKebab(str: string): string {
+  return str
+    .replace(/([a-z])([A-Z])/g, '$1-$2')
+    .toLowerCase();
+}
+
+/**
  * Get English localization value from a localization key
  */
 function getEnglishValue(localizationKey: LocalizationKey | string): string {
@@ -130,7 +141,7 @@ function generateDefaultSlug(object: ParseObject): string {
 }
 
 /**
- * Generate slug for CharacterPreset with level enhancement
+ * Generate slug for CharacterPreset with camelCase to kebab-case conversion
  */
 function generateCharacterPresetSlug(object: ParseObject): string {
   const baseSlug = generateDefaultSlug(object);
