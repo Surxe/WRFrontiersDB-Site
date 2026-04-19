@@ -293,3 +293,37 @@ export function generateSlugBasedStaticPaths(
     );
   }
 }
+
+/**
+ * Get all parse objects from all object types, grouped by object type
+ * @returns Object containing all parse objects keyed by object type
+ */
+export function getAllParseObjects(): Record<string, Record<string, ParseObject>> {
+  const objectsPath = path.join(process.cwd(), 'WRFrontiersDB-Data/current/Objects');
+  const allObjects: Record<string, Record<string, ParseObject>> = {};
+
+  try {
+    if (fs.existsSync(objectsPath)) {
+      const files = fs.readdirSync(objectsPath);
+      
+      // Filter for JSON files and extract object type from filename
+      const objectFiles = files.filter(file => file.endsWith('.json'));
+      
+      for (const file of objectFiles) {
+        const objectType = file.replace('.json', '');
+        
+        try {
+          const objects = getParseObjects<ParseObject>(`Objects/${file}`);
+          allObjects[objectType] = objects;
+        } catch (error) {
+          console.warn(`Could not load ${objectType} objects:`, error);
+          allObjects[objectType] = {};
+        }
+      }
+    }
+  } catch (error) {
+    console.warn('Could not read Objects directory:', error);
+  }
+
+  return allObjects;
+}

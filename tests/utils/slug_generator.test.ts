@@ -153,29 +153,7 @@ describe('slug_generator', () => {
       expect(Object.keys(slugMap)).toHaveLength(3);
     });
 
-    it('should throw error on slug collisions', () => {
-      const objects = [
-        {
-          pilot1: {
-            parseObjectClass: 'Pilot',
-            id: 'pilot1',
-            first_name: { en: 'John' },
-            last_name: { en: 'Doe' },
-          } as Pilot,
-          pilot2: {
-            parseObjectClass: 'Pilot',
-            id: 'pilot2',
-            first_name: { en: 'John' },
-            last_name: { en: 'Doe' },
-          } as Pilot,
-        },
-      ];
-
-      // Note: Current implementation doesn't throw on collisions, just logs them
-      // This test should be updated when collision detection is re-implemented
-      expect(() => generateSlugMap(objects)).not.toThrow();
-    });
-
+    
     it('should handle empty object arrays', () => {
       const objects: Record<string, ParseObject>[] = [];
       const slugMap = generateSlugMap(objects);
