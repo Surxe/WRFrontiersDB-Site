@@ -32,15 +32,22 @@ function toSlug(str: string): string {
 
 /**
  * Convert camelCase/PascalCase to kebab-case and strip bot/devbot prefixes
- * - BotAdv-CeresBisector -> adv-ceres-bisector
- * - DevbotAnansi -> anansi
+ * Map abbreviated difficulty levels to full words
+ * - BotAdv-CeresBisector -> advanced-ceres-bisector
+ * - BotBegin-Fenrir -> beginner-fenrir
+ * - BotInterm-Ares -> intermediate-ares
  * - TitanPro-Alpha -> titan-pro-alpha
  */
 export function camelToKebab(str: string): string {
   return str
     .replace(/^(bot|devbot)-/i, '')  // Strip bot/devbot prefix
     .replace(/([a-z])([A-Z])/g, '$1-$2')  // Add hyphens before capitals
-    .toLowerCase();
+    .toLowerCase()
+    // Map abbreviated difficulty levels to full words
+    .replace(/\badv\b/g, 'advanced')
+    .replace(/\bbegin\b/g, 'beginner')
+    .replace(/\binterm\b/g, 'intermediate')
+    .replace(/\bpro\b/g, 'pro');  // Keep 'pro' as is (already full word)
 }
 
 /**
