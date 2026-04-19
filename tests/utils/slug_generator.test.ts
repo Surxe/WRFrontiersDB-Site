@@ -11,6 +11,7 @@ import type { ParseObject } from '../../src/types/parse_object';
 import type { Pilot } from '../../src/types/pilot';
 import type { PilotTalent } from '../../src/types/pilot';
 import type { Module } from '../../src/types/module';
+import type { CharacterPreset } from '../../src/types/character_preset';
 
 describe('slug_generator', () => {
   describe('generateSlugForObject', () => {
@@ -54,22 +55,24 @@ describe('slug_generator', () => {
     });
 
     it('should generate AI bot slugs correctly', () => {
-      const aiBot: ParseObject = {
-        parseObjectClass: 'AIBot',
-        id: 'test_ai_bot.1',
+      const aiBot: CharacterPreset = {
+        parseObjectClass: 'CharacterPreset',
+        id: 'DA_Preset_Guardian.0',
         name: { en: 'Guardian' },
-      } as ParseObject;
+        is_factory_preset: false,
+      } as CharacterPreset;
 
       const slug = generateSlugForObject(aiBot);
       expect(slug).toBe('guardian');
     });
 
     it('should generate factory bot slugs correctly', () => {
-      const factoryBot: ParseObject = {
-        parseObjectClass: 'FactoryBot',
+      const factoryBot: CharacterPreset = {
+        parseObjectClass: 'CharacterPreset',
         id: 'test_factory_bot.1',
         name: { en: 'Assembler' },
-      } as ParseObject;
+        is_factory_preset: true,
+      } as CharacterPreset;
 
       const slug = generateSlugForObject(factoryBot);
       expect(slug).toBe('assembler');
