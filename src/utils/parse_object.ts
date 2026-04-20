@@ -97,7 +97,8 @@ export function getParseObject<T = ParseObject>(
  * Checks if an object is production ready
  * @param objectId - The object ID to check
  * @param parseObjectPath - Path to the object file (e.g., 'Objects/Module.json')
- * @returns true if the object exists and has production_status === 'Ready', false otherwise
+ * @returns true if the object exists and meets production criteria, false otherwise
+ * Note: Only Modules require production_status === 'Ready'. All other parse object classes are always production ready.
  */
 export function isObjectProductionReady(
   objectId: string,
@@ -115,8 +116,21 @@ export function isObjectProductionReady(
     }
 
     const objects = readJsonFile(objectPath) as Record<string, ParseObject>;
+    // Extract object type from path to determine production criteria
+    const isModule = parseObjectPath.includes('Module.json');
     const obj = objects[objectId];
-    return obj && obj.production_status === 'Ready';
+    
+    if (!obj) {
+      return false;
+    }
+    
+    // Only Modules require production_status === 'Ready'
+    if (isModule) {
+      return obj.production_status === 'Ready';
+    }
+    
+    // All other parse object classes are always production ready
+    return true;
   } catch {
     return false;
   }
@@ -142,6 +156,7 @@ export async function generateObjectStaticPaths(
       // Skip production filtering if needed
       if (
         prodReadyOnly &&
+        parseObjectPath.includes('Module.json') &&
         (!object.production_status ||
           object.production_status !== 'Ready' ||
           !object.name ||
@@ -189,15 +204,20 @@ export function generateObjectListStaticPaths(
       >;
       let objectIds = Object.keys(allObjects);
 
-      // Apply production filtering if needed
+      // Apply production filtering only to Modules
       if (prodReadyOnly) {
+        const isModule = objectPath.includes('Module.json');
         objectIds = objectIds.filter((id) => {
           const obj = allObjects[id];
-          return (
-            obj.production_status === 'Ready' &&
-            obj.name != null &&
-            obj.name !== ''
-          );
+          if (isModule) {
+            return (
+              obj.production_status === 'Ready' &&
+              obj.name != null &&
+              obj.name !== ''
+            );
+          }
+          // All other parse object classes are always production ready
+          return obj.name != null && obj.name !== '';
         });
       }
 
@@ -251,8 +271,9 @@ export function generateSlugBasedStaticPaths(
     // Generate slug-based paths for production-ready objects only
     const paths = [];
     for (const [objectId, object] of Object.entries(allObjects)) {
-      // Skip objects that are not production ready
-      if (!object.production_status || object.production_status !== 'Ready') {
+      // Apply production status filtering only to Modules
+      // All other parse object classes are always production ready
+      if (objectType === 'Module' && (!object.production_status || object.production_status !== 'Ready')) {
         continue;
       }
 
