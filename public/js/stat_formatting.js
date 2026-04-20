@@ -7,7 +7,7 @@
 import {
   formatNumberWithSeparator,
   getCurrentSeparator,
-} from './number-formatting.js';
+} from './number_formatting.js';
 
 /**
  * Formats a stat value using pattern, unit name, and decimal places

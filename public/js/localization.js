@@ -8,7 +8,7 @@ import {
   formatStatValue as _formatStatValue,
   replaceStatPlaceholdersFromChoiceMap,
 } from './stat_formatting.js';
-import { updateNumberElements } from './number-formatting.js';
+import { updateNumberElements } from './number_formatting.js';
 
 /**
  * Removes color markup patterns from text
