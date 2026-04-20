@@ -26,7 +26,7 @@ export function initializeSlugMap(map: SlugMap): void {
 async function loadSlugMap(): Promise<SlugMap> {
   if (typeof window !== 'undefined' && Object.keys(slugMap).length === 0) {
     try {
-      const response = await globalThis.fetch('/slug-map.json');
+      const response = await globalThis.fetch('/slug_map.json');
       const map = await response.json();
       slugMap = map;
 

@@ -18,7 +18,7 @@ export function createTableSwitcher(config) {
     tableTypes,
     buttonLabels,
     activeTable,
-    containerClass = 'table-switcher',
+    containerClass = 'table_switcher',
     buttonClass = 'switcher-btn',
   } = config;
 
@@ -147,7 +147,7 @@ export function setupTableSwitching(config) {
     tableTypes,
     buttonLabels,
     activeTable,
-    containerClass: cssClasses.container || 'table-switcher',
+    containerClass: cssClasses.container || 'table_switcher',
     buttonClass: cssClasses.button || 'switcher-btn',
   });
 

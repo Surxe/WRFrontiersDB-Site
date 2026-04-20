@@ -34,7 +34,7 @@ After modifying slug generation logic or adding new object types, rebuild the sl
 npm run build:slugs
 ```
 
-This updates `public/slug-map.json`
+This updates `public/slug_map.json`
 
 **When to rebuild slugs:**
 

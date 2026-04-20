@@ -16,7 +16,7 @@ const { fileURLToPath } = await import('url');
 const projectRoot = path
   .dirname(fileURLToPath(import.meta.url))
   .replace('/src/pages', '');
-const slugMapPath = path.join(projectRoot, 'public', 'slug-map.json');
+const slugMapPath = path.join(projectRoot, 'public', 'slug_map.json');
 
 let slugMap: Record<string, string> = {};
 try {

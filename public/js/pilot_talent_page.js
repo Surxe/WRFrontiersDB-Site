@@ -8,7 +8,7 @@ import {
   createTableSwitcher,
   initializeTableSwitching,
   showTable,
-} from './table-switcher.js';
+} from './table_switcher.js';
 
 /**
  * Initialize pilot talent page table switching
@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', function () {
     activeTable,
     insertBefore: firstTable,
     cssClasses: {
-      container: 'table-switcher pilot-talent-switcher',
+      container: 'table_switcher pilot-talent-switcher',
       button: 'switcher-btn',
     },
   });

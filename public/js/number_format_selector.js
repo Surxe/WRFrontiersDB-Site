@@ -2,7 +2,7 @@ import {
   getCurrentSeparator,
   setCurrentSeparator,
   updateNumberElements,
-} from './number-formatting.js';
+} from './number_formatting.js';
 
 /**
  * Initializes number format selector dropdown
