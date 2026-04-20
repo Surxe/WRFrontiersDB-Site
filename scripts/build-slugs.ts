@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Build script to generate slug-map.json
+ * Build script to generate slug_map.json
  * Usage: npm run build:slugs
  */
 
@@ -99,7 +99,7 @@ async function buildSlugMap() {
     fs.mkdirSync(publicDir, { recursive: true });
   }
 
-  const slugMapPath = path.join(publicDir, 'slug-map.json');
+  const slugMapPath = path.join(publicDir, 'slug_map.json');
   fs.writeFileSync(slugMapPath, JSON.stringify(slugMap, null, 2));
 
   console.warn(`Slug map written to: ${slugMapPath}`);

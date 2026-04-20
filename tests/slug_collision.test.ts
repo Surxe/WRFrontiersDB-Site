@@ -12,7 +12,7 @@ describe('slug_collision', () => {
     const allObjects = getAllParseObjects();
 
     // Load slug map
-    const slugMap = JSON.parse(fs.readFileSync('public/slug-map.json', 'utf8'));
+    const slugMap = JSON.parse(fs.readFileSync('public/slug_map.json', 'utf8'));
 
     // Group slugs by object type dynamically using all keys from getAllParseObjects
     const slugsByType: Record<string, Record<string, string>> = {};

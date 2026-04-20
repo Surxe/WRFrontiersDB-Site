@@ -21,7 +21,7 @@ import { getDefaultString } from '../../utils/localization';
 export async function getStaticPaths() {
   // Load slug map to generate slug-based paths
   try {
-    const slugMapModule = await import('../../../public/slug-map.json');
+    const slugMapModule = await import('../../../public/slug_map.json');
     const slugMap = slugMapModule.default;
 
     // Get all module group IDs and their slugs

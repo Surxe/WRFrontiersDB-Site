@@ -58,7 +58,7 @@ if (slugableObjectTypes.includes(obj.parseObjectUrl || '')) {
   } else {
     // Import slug map as JSON module
     try {
-      const slugMapModule = await import('../../../public/slug-map.json');
+      const slugMapModule = await import('../../../public/slug_map.json');
       const slugMap = slugMapModule.default;
       const slug = slugMap[obj.id as keyof typeof slugMap];
 
@@ -71,7 +71,7 @@ if (slugableObjectTypes.includes(obj.parseObjectUrl || '')) {
       urlSegment = slug;
     } catch (error) {
       throw new Error(
-        `Failed to load slug map. Slug map must exist at public/slug-map.json for build to succeed: ${error}`
+        `Failed to load slug map. Slug map must exist at public/slug_map.json for build to succeed: ${error}`
       );
     }
   }

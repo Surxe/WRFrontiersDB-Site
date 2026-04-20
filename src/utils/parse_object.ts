@@ -248,7 +248,7 @@ export function generateSlugBasedStaticPaths(
     | 'CharacterPreset'
 ): Array<{ params: { slug: string }; props: { id: string } }> {
   // Load slug map to generate slug-based paths
-  const slugMapPath = path.join(process.cwd(), 'public', 'slug-map.json');
+  const slugMapPath = path.join(process.cwd(), 'public', 'slug_map.json');
 
   try {
     const slugMapContent = fs.readFileSync(slugMapPath, 'utf-8');

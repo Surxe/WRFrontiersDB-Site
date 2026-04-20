@@ -14,7 +14,7 @@ const modules = getParseObjects('Objects/Module.json');
 const pilots = getParseObjects('Objects/Pilot.json');
 
 // Load slug map to check for production-ready modules
-const slugMapModule = await import('../../public/slug-map.json');
+const slugMapModule = await import('../../public/slug_map.json');
 const slugMap = slugMapModule.default;
 
 // Function to check if preset contains only production-ready modules
