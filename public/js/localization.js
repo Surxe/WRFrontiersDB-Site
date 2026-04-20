@@ -7,7 +7,7 @@
 import {
   formatStatValue as _formatStatValue,
   replaceStatPlaceholdersFromChoiceMap,
-} from './stat-formatting.js';
+} from './stat_formatting.js';
 import { updateNumberElements } from './number-formatting.js';
 
 /**

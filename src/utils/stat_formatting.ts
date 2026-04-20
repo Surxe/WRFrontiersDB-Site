@@ -7,7 +7,7 @@ import { getDefaultString } from './localization';
 import {
   formatStatValue,
   replaceStatPlaceholdersFromChoiceMap,
-} from '../../public/js/stat-formatting.js';
+} from '../../public/js/stat_formatting.js';
 
 // Re-export the imported functions for TypeScript compatibility
 export { formatStatValue, replaceStatPlaceholdersFromChoiceMap };
