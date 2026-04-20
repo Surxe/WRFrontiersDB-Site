@@ -19,7 +19,7 @@ Static Astro site displaying War Robots Frontiers game data from WRFrontiersDB-D
 
 **Always follow these rules**:
 
-1. **Production filtering**: Only objects with `production_status === 'Ready'` appear in production lists
+1. **Production filtering**: Only objects that support `production_status` attribute and have it set to `'Ready'` appear in production lists
 2. **No TypeScript in public/js**: Client-side scripts must be plain JavaScript with JSDoc
 3. **Localization is version-specific**: Each game version has its own localization files
 4. **Tests go in tests/ directory**: Never place test files next to source files

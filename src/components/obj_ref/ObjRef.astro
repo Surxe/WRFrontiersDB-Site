@@ -3,7 +3,7 @@ import ObjRefIconText from './ObjRefIconText.astro';
 import ObjRefHover from './ObjRefHover.astro';
 import { getObjRefData } from '../../utils/obj_ref';
 import type { ParseObject } from '../../types/parse_object';
-import type { StatValueChoices } from '../StatEmbedLocalizedText.astro';
+import type { StatValueChoices } from '../../types/stat';
 import '../../styles/ObjRef.css';
 
 // Always color background if the objRefData supports it
@@ -27,8 +27,11 @@ const {
   showIcon = true,
   useOnHover = false,
   onHoverStatChoices,
-  useHref = true,
+  useHref: initialUseHref = true,
 } = Astro.props;
+
+// Determine if we should use href based on production status for modules
+let useHref = initialUseHref;
 
 // Get the page reference data (localization key, icon path, hex color)
 const objRefData = getObjRefData(obj);
@@ -47,24 +50,30 @@ const slugableObjectTypes = [
   'module_groups',
 ];
 
-if (slugableObjectTypes.includes(obj.parseObjectUrl)) {
-  // Import slug map as JSON module
-  try {
-    const slugMapModule = await import('../../../public/slug-map.json');
-    const slugMap = slugMapModule.default;
-    const slug = slugMap[obj.id];
+if (slugableObjectTypes.includes(obj.parseObjectUrl || '')) {
+  // For modules, only require slugs for production-ready modules
+  if (obj.parseObjectClass === 'Module' && obj.production_status !== 'Ready') {
+    // Non-production modules don't get links
+    useHref = false;
+  } else {
+    // Import slug map as JSON module
+    try {
+      const slugMapModule = await import('../../../public/slug-map.json');
+      const slugMap = slugMapModule.default;
+      const slug = slugMap[obj.id as keyof typeof slugMap];
 
-    if (!slug) {
+      if (!slug) {
+        throw new Error(
+          `No slug found for ${obj.parseObjectUrl} object with ID ${obj.id}. All production ${obj.parseObjectClass} objects must have a valid slug entry in the slug map.`
+        );
+      }
+
+      urlSegment = slug;
+    } catch (error) {
       throw new Error(
-        `No slug found for ${obj.parseObjectUrl} object with ID ${obj.id}. All objects with slugs must have a valid slug entry in the slug map.`
+        `Failed to load slug map. Slug map must exist at public/slug-map.json for build to succeed: ${error}`
       );
     }
-
-    urlSegment = slug;
-  } catch (error) {
-    throw new Error(
-      `Failed to load slug map. Slug map must exist at public/slug-map.json for build to succeed: ${error}`
-    );
   }
 }
 
