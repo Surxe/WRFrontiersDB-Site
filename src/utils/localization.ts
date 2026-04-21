@@ -18,6 +18,30 @@ export function getDefaultString(
 }
 
 /**
+ * Localizes a single LocalizationKey or an array of them into a single string.
+ * Multiple keys are joined with a space.
+ */
+export function localizeText(
+  text: LocalizationKey | LocalizationKey[] | undefined,
+  lang: string
+): string {
+  if (!text) return '';
+  const locData = loadLocalizationData(lang);
+  const elements = Array.isArray(text) ? text : [text];
+
+  return elements
+    .map((key) => {
+      if (!key) return '';
+      if (key.InvariantString) return key.InvariantString;
+      if (key.Key && key.TableNamespace && locData?.[key.TableNamespace]) {
+        return locData[key.TableNamespace][key.Key] || key.en || '';
+      }
+      return key.en || '';
+    })
+    .join(' ');
+}
+
+/**
  * Resolves a raw localization string key to a full LocalizationKey object.
  * If namespace is provided, it directly looks up the key in that namespace.
  * If omitted, it searches all namespaces but throws an error if the key exists in multiple namespaces.

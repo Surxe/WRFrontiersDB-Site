@@ -2,12 +2,14 @@
 import langs from '../../public/langs.json';
 import { URL } from 'node:url';
 import '../styles/page_header.css';
+import { localizeText } from '../utils/localization';
+import type { LocalizationKey } from '../types/localization';
 
 // Valid language codes — passed to the inline redirect script via define:vars
 const validLangs = Object.keys(langs);
 
 export interface Props {
-  title?: string;
+  title?: string | LocalizationKey | LocalizationKey[];
   description?: string;
   localizedDescriptions?: { lang: string; description: string }[];
   metaImage?: string;
@@ -17,7 +19,7 @@ export interface Props {
 }
 
 const {
-  title,
+  title: rawTitle,
   description,
   localizedDescriptions,
   metaImage,
@@ -25,6 +27,11 @@ const {
   type = 'website',
   headerImage,
 } = Astro.props;
+
+// Determine language from URL for title resolution
+const lang = Astro.url.searchParams.get('lang') || 'en';
+const title =
+  typeof rawTitle === 'string' ? rawTitle : localizeText(rawTitle, lang);
 
 // Generate absolute URLs
 const siteUrl =
