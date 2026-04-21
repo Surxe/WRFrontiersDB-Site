@@ -1,5 +1,5 @@
 ---
-import type { Module, ModuleRarity } from '../../types/module';
+import type { Module, ModuleRarity, ModuleStatsTable } from '../../types/module';
 import type { CharacterModule } from '../../types/character_module';
 import type { Ability } from '../../types/ability';
 import type { Rarity } from '../../types/rarity';
@@ -60,7 +60,14 @@ const moduleGroupId = getModuleGroupId(module.module_type_ref);
 
 // Get stat choices for leveled descriptions
 const allModuleStats = getParseObjects<ModuleStat>('Objects/ModuleStat.json');
-const statValueChoices = getModuleStatValueChoices(module, allModuleStats);
+const allModuleStatsTables = getParseObjects<ModuleStatsTable>('Objects/ModuleStatsTable.json');
+
+const statValueChoices = getModuleStatValueChoices(
+  module, 
+  allModuleStats,
+  allModuleStatsTables,
+  getDefaultString(module.description)
+);
 
 // Get ability-linked descriptions
 const allCharacterModules = getParseObjects<CharacterModule>(
@@ -71,7 +78,8 @@ const abilityStats = getModuleAbilityStats(
   module,
   allCharacterModules,
   allAbilities,
-  allModuleStats
+  allModuleStats,
+  allModuleStatsTables
 );
 
 const maxLevel = module.module_scalars?.levels?.variables?.length || 0;
@@ -154,8 +162,7 @@ if (isCore) {
 
   <Icon iconPath={module.inventory_icon_path} altText={`${defaultName} icon`} />
 
-  <!-- Direct descriiption block - shown if no abilities or abilities without scalars -->
-  Direct description block (DEBUG)
+  <!-- Direct description block - shown if no abilities or abilities without scalars -->
   {
     module.description && !(abilityStats.length > 0 && module.abilities_scalars) && (
       <div class="module-description-section">
@@ -172,7 +179,6 @@ if (isCore) {
   }
 
   <!-- Abilities block - shown if abilities with scalars -->
-  Abilities block (DEBUG)
   {
     abilityStats.length > 0 && module.abilities_scalars && (
       <div class="module-abilities-section">

@@ -1,4 +1,4 @@
-import type { Module, ModuleStat } from '../types/module';
+import type { Module, ModuleStat, ModuleStatsTable } from '../types/module';
 import type { StatValueChoices } from '../types/stat';
 import type { CharacterModule } from '../types/character_module';
 import type { Ability } from '../types/ability';
@@ -85,63 +85,59 @@ export function scaleStatValue(
  */
 export function getModuleStatValueChoices(
   module: Module,
-  moduleStats: Record<string, ModuleStat>
+  moduleStats: Record<string, ModuleStat>,
+  moduleStatsTables: Record<string, ModuleStatsTable>,
+  descriptionString?: string
 ): StatValueChoices {
   const statValueChoices: StatValueChoices = {};
 
   const scalars = module.module_scalars;
-  if (!scalars || !scalars.levels || !scalars.levels.variables) {
+  if (!scalars || !scalars.levels || !scalars.levels.variables || scalars.levels.variables.length === 0) {
     return statValueChoices;
   }
 
-  const primaryStat = scalars.primary_stat_ref
-    ? resolveObjectRef(scalars.primary_stat_ref, moduleStats)
-    : undefined;
-  const secondaryStat = scalars.secondary_stat_ref
-    ? resolveObjectRef(scalars.secondary_stat_ref, moduleStats)
-    : undefined;
-
   const variables = scalars.levels.variables;
+  const table = module.module_stats_table_ref
+    ? resolveObjectRef(module.module_stats_table_ref, moduleStatsTables)
+    : undefined;
 
-  if (primaryStat) {
-    const statId = primaryStat.short_key;
-    statValueChoices[statId] = {
-      ...getStatMetadata(primaryStat),
-      choices: {},
-    };
+  const statsMapping: Record<string, ModuleStat | undefined> = {
+    PrimaryParameter: scalars.primary_stat_ref ? resolveObjectRef(scalars.primary_stat_ref, moduleStats) : undefined,
+    SecondaryParameter: scalars.secondary_stat_ref ? resolveObjectRef(scalars.secondary_stat_ref, moduleStats) : undefined
+  };
 
-    variables.forEach((variable, index) => {
-      const value = variable.PrimaryParameter as number | undefined;
-      if (value !== undefined) {
-        // Module leveled variables are already scaled in the data
-        statValueChoices[statId].choices[index] = scaleStatValue(
-          primaryStat,
-          value,
-          false
-        );
+  if (table) {
+    Object.keys(variables[0]).forEach(key => {
+      if (key !== 'PrimaryParameter' && key !== 'SecondaryParameter' && key !== 'upgrade_cost_ref' && key !== 'scrap_rewards_refs' && table.stats_refs[key]) {
+        statsMapping[key] = resolveObjectRef(table.stats_refs[key], moduleStats);
       }
     });
   }
 
-  if (secondaryStat) {
-    const statId = secondaryStat.short_key;
-    statValueChoices[statId] = {
-      ...getStatMetadata(secondaryStat),
+  Object.entries(statsMapping).forEach(([key, statObject]) => {
+    if (!statObject) return;
+    const shortKey = statObject.short_key;
+
+    if (descriptionString && !descriptionString.includes(`{${shortKey}}`)) {
+      return;
+    }
+
+    statValueChoices[shortKey] = {
+      ...getStatMetadata(statObject),
       choices: {},
     };
 
     variables.forEach((variable, index) => {
-      const value = variable.SecondaryParameter as number | undefined;
+      const value = variable[key] as number | undefined;
       if (value !== undefined) {
-        // Module leveled variables are already scaled in the data
-        statValueChoices[statId].choices[index] = scaleStatValue(
-          secondaryStat,
-          value,
-          false
-        );
+        statValueChoices[shortKey].choices[index] = scaleStatValue(statObject, value, false);
       }
     });
-  }
+
+    if (Object.keys(statValueChoices[shortKey].choices).length === 0) {
+      delete statValueChoices[shortKey];
+    }
+  });
 
   return statValueChoices;
 }
@@ -164,7 +160,8 @@ export function getModuleAbilityStats(
   module: Module,
   characterModules: Record<string, CharacterModule>,
   abilities: Record<string, Ability>,
-  moduleStats: Record<string, ModuleStat>
+  moduleStats: Record<string, ModuleStat>,
+  moduleStatsTables: Record<string, ModuleStatsTable>
 ): ModuleAbilityRenderData[] {
   const result: ModuleAbilityRenderData[] = [];
 
@@ -176,67 +173,62 @@ export function getModuleAbilityStats(
   if (!charModule || !charModule.abilities_refs) return result;
 
   const abilitiesScalars = module.abilities_scalars;
+  
+  const table = module.module_stats_table_ref
+    ? resolveObjectRef(module.module_stats_table_ref, moduleStatsTables)
+    : undefined;
 
   charModule.abilities_refs.forEach((abilityRef, index) => {
     const ability = resolveObjectRef(abilityRef, abilities);
     if (!ability) return;
 
     const statValueChoices: StatValueChoices = {};
+    const descriptionString = getDefaultString(ability.description);
 
     if (abilitiesScalars && abilitiesScalars[index]) {
       const scalar = abilitiesScalars[index];
       const levels = scalar.levels;
 
-      if (levels && levels.variables) {
-        const primaryStatRef = scalar.primary_stat_ref;
-        const secondaryStatRef = scalar.secondary_stat_ref;
-
-        const primaryStat = primaryStatRef
-          ? resolveObjectRef(primaryStatRef, moduleStats)
-          : undefined;
-        const secondaryStat = secondaryStatRef
-          ? resolveObjectRef(secondaryStatRef, moduleStats)
-          : undefined;
-
+      if (levels && levels.variables && levels.variables.length > 0) {
         const variables = levels.variables;
 
-        if (primaryStat) {
-          const statId = primaryStat.short_key;
-          statValueChoices[statId] = {
-            ...getStatMetadata(primaryStat),
-            choices: {},
-          };
+        const statsMapping: Record<string, ModuleStat | undefined> = {
+          PrimaryParameter: scalar.primary_stat_ref ? resolveObjectRef(scalar.primary_stat_ref, moduleStats) : undefined,
+          SecondaryParameter: scalar.secondary_stat_ref ? resolveObjectRef(scalar.secondary_stat_ref, moduleStats) : undefined
+        };
 
-          variables.forEach((variable, vIndex) => {
-            const value = variable.PrimaryParameter as number | undefined;
-            if (value !== undefined) {
-              statValueChoices[statId].choices[vIndex] = scaleStatValue(
-                primaryStat,
-                value,
-                false
-              );
+        if (table) {
+          Object.keys(variables[0]).forEach(key => {
+            if (key !== 'PrimaryParameter' && key !== 'SecondaryParameter' && key !== 'upgrade_cost_ref' && key !== 'scrap_rewards_refs' && table.stats_refs[key]) {
+              statsMapping[key] = resolveObjectRef(table.stats_refs[key], moduleStats);
             }
           });
         }
 
-        if (secondaryStat) {
-          const statId = secondaryStat.short_key;
-          statValueChoices[statId] = {
-            ...getStatMetadata(secondaryStat),
+        Object.entries(statsMapping).forEach(([key, statObject]) => {
+          if (!statObject) return;
+          const shortKey = statObject.short_key;
+
+          if (descriptionString && !descriptionString.includes(`{${shortKey}}`)) {
+            return;
+          }
+
+          statValueChoices[shortKey] = {
+            ...getStatMetadata(statObject),
             choices: {},
           };
 
           variables.forEach((variable, vIndex) => {
-            const value = variable.SecondaryParameter as number | undefined;
+            const value = variable[key] as number | undefined;
             if (value !== undefined) {
-              statValueChoices[statId].choices[vIndex] = scaleStatValue(
-                secondaryStat,
-                value,
-                false
-              );
+              statValueChoices[shortKey].choices[vIndex] = scaleStatValue(statObject, value, false);
             }
           });
-        }
+
+          if (Object.keys(statValueChoices[shortKey].choices).length === 0) {
+            delete statValueChoices[shortKey];
+          }
+        });
       }
     }
 
