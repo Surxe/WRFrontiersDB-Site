@@ -92,7 +92,12 @@ export function getModuleStatValueChoices(
   const statValueChoices: StatValueChoices = {};
 
   const scalars = module.module_scalars;
-  if (!scalars || !scalars.levels || !scalars.levels.variables || scalars.levels.variables.length === 0) {
+  if (
+    !scalars ||
+    !scalars.levels ||
+    !scalars.levels.variables ||
+    scalars.levels.variables.length === 0
+  ) {
     return statValueChoices;
   }
 
@@ -102,14 +107,27 @@ export function getModuleStatValueChoices(
     : undefined;
 
   const statsMapping: Record<string, ModuleStat | undefined> = {
-    PrimaryParameter: scalars.primary_stat_ref ? resolveObjectRef(scalars.primary_stat_ref, moduleStats) : undefined,
-    SecondaryParameter: scalars.secondary_stat_ref ? resolveObjectRef(scalars.secondary_stat_ref, moduleStats) : undefined
+    PrimaryParameter: scalars.primary_stat_ref
+      ? resolveObjectRef(scalars.primary_stat_ref, moduleStats)
+      : undefined,
+    SecondaryParameter: scalars.secondary_stat_ref
+      ? resolveObjectRef(scalars.secondary_stat_ref, moduleStats)
+      : undefined,
   };
 
   if (table) {
-    Object.keys(variables[0]).forEach(key => {
-      if (key !== 'PrimaryParameter' && key !== 'SecondaryParameter' && key !== 'upgrade_cost_ref' && key !== 'scrap_rewards_refs' && table.stats_refs[key]) {
-        statsMapping[key] = resolveObjectRef(table.stats_refs[key], moduleStats);
+    Object.keys(variables[0]).forEach((key) => {
+      if (
+        key !== 'PrimaryParameter' &&
+        key !== 'SecondaryParameter' &&
+        key !== 'upgrade_cost_ref' &&
+        key !== 'scrap_rewards_refs' &&
+        table.stats_refs[key]
+      ) {
+        statsMapping[key] = resolveObjectRef(
+          table.stats_refs[key],
+          moduleStats
+        );
       }
     });
   }
@@ -130,7 +148,11 @@ export function getModuleStatValueChoices(
     variables.forEach((variable, index) => {
       const value = variable[key] as number | undefined;
       if (value !== undefined) {
-        statValueChoices[shortKey].choices[index] = scaleStatValue(statObject, value, false);
+        statValueChoices[shortKey].choices[index] = scaleStatValue(
+          statObject,
+          value,
+          false
+        );
       }
     });
 
@@ -173,7 +195,7 @@ export function getModuleAbilityStats(
   if (!charModule || !charModule.abilities_refs) return result;
 
   const abilitiesScalars = module.abilities_scalars;
-  
+
   const table = module.module_stats_table_ref
     ? resolveObjectRef(module.module_stats_table_ref, moduleStatsTables)
     : undefined;
@@ -193,14 +215,27 @@ export function getModuleAbilityStats(
         const variables = levels.variables;
 
         const statsMapping: Record<string, ModuleStat | undefined> = {
-          PrimaryParameter: scalar.primary_stat_ref ? resolveObjectRef(scalar.primary_stat_ref, moduleStats) : undefined,
-          SecondaryParameter: scalar.secondary_stat_ref ? resolveObjectRef(scalar.secondary_stat_ref, moduleStats) : undefined
+          PrimaryParameter: scalar.primary_stat_ref
+            ? resolveObjectRef(scalar.primary_stat_ref, moduleStats)
+            : undefined,
+          SecondaryParameter: scalar.secondary_stat_ref
+            ? resolveObjectRef(scalar.secondary_stat_ref, moduleStats)
+            : undefined,
         };
 
         if (table) {
-          Object.keys(variables[0]).forEach(key => {
-            if (key !== 'PrimaryParameter' && key !== 'SecondaryParameter' && key !== 'upgrade_cost_ref' && key !== 'scrap_rewards_refs' && table.stats_refs[key]) {
-              statsMapping[key] = resolveObjectRef(table.stats_refs[key], moduleStats);
+          Object.keys(variables[0]).forEach((key) => {
+            if (
+              key !== 'PrimaryParameter' &&
+              key !== 'SecondaryParameter' &&
+              key !== 'upgrade_cost_ref' &&
+              key !== 'scrap_rewards_refs' &&
+              table.stats_refs[key]
+            ) {
+              statsMapping[key] = resolveObjectRef(
+                table.stats_refs[key],
+                moduleStats
+              );
             }
           });
         }
@@ -209,7 +244,10 @@ export function getModuleAbilityStats(
           if (!statObject) return;
           const shortKey = statObject.short_key;
 
-          if (descriptionString && !descriptionString.includes(`{${shortKey}}`)) {
+          if (
+            descriptionString &&
+            !descriptionString.includes(`{${shortKey}}`)
+          ) {
             return;
           }
 
@@ -221,7 +259,11 @@ export function getModuleAbilityStats(
           variables.forEach((variable, vIndex) => {
             const value = variable[key] as number | undefined;
             if (value !== undefined) {
-              statValueChoices[shortKey].choices[vIndex] = scaleStatValue(statObject, value, false);
+              statValueChoices[shortKey].choices[vIndex] = scaleStatValue(
+                statObject,
+                value,
+                false
+              );
             }
           });
 

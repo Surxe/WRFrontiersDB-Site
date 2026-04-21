@@ -1,5 +1,9 @@
 ---
-import type { Module, ModuleRarity, ModuleStatsTable } from '../../types/module';
+import type {
+  Module,
+  ModuleRarity,
+  ModuleStatsTable,
+} from '../../types/module';
 import type { CharacterModule } from '../../types/character_module';
 import type { Ability } from '../../types/ability';
 import type { Rarity } from '../../types/rarity';
@@ -60,10 +64,12 @@ const moduleGroupId = getModuleGroupId(module.module_type_ref);
 
 // Get stat choices for leveled descriptions
 const allModuleStats = getParseObjects<ModuleStat>('Objects/ModuleStat.json');
-const allModuleStatsTables = getParseObjects<ModuleStatsTable>('Objects/ModuleStatsTable.json');
+const allModuleStatsTables = getParseObjects<ModuleStatsTable>(
+  'Objects/ModuleStatsTable.json'
+);
 
 const statValueChoices = getModuleStatValueChoices(
-  module, 
+  module,
   allModuleStats,
   allModuleStatsTables,
   getDefaultString(module.description)
@@ -164,18 +170,19 @@ if (isCore) {
 
   <!-- Direct description block - shown if no abilities or abilities without scalars -->
   {
-    module.description && !(abilityStats.length > 0 && module.abilities_scalars) && (
-      <div class="module-description-section">
-        <StatEmbedLocalizedText
-          id="module-desc"
-          tag="p"
-          localizationKey={module.description}
-          statValueChoices={statValueChoices}
-        />
+    module.description &&
+      !(abilityStats.length > 0 && module.abilities_scalars) && (
+        <div class="module-description-section">
+          <StatEmbedLocalizedText
+            id="module-desc"
+            tag="p"
+            localizationKey={module.description}
+            statValueChoices={statValueChoices}
+          />
 
-        {maxLevel > 0 && <LevelSwitcher maxLevel={maxLevel} />}
-      </div>
-    )
+          {maxLevel > 0 && <LevelSwitcher maxLevel={maxLevel} />}
+        </div>
+      )
   }
 
   <!-- Abilities block - shown if abilities with scalars -->

@@ -12,7 +12,6 @@
 export function toSlug(str: string): string {
   return str
     .toLowerCase()
-    .replace(/'/g, '') // Remove apostrophes first
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/-+/g, '-')
     .replace(/^-+|-+$/g, '');
