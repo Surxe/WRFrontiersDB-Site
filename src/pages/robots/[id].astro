@@ -6,6 +6,8 @@ import { getParseObjects } from '../../utils/parse_object';
 import { getAllVirtualBots, getVirtualBotById } from '../../utils/bot_modules';
 import type { CharacterPreset } from '../../types/character_preset';
 import type { Module } from '../../types/module';
+import { getObjRefData } from '../../utils/obj_ref';
+import TextElements from '../../components/obj_ref/TextElements.astro';
 
 export async function getStaticPaths() {
   const presets = getParseObjects<CharacterPreset>(
@@ -40,20 +42,32 @@ export function getRobotDetailBreadcrumbs(botName: string) {
 }
 ---
 
+const localizedDescriptions = [
+  {
+    lang: 'en',
+    description: `View all details for ${bot.name} in War Robots Frontiers.`,
+  },
+];
+
+const objRefData = getObjRefData(bot as any);
+---
+
 <ParseObjectPage
-  localizedDescriptions={[
-    {
-      lang: 'en',
-      text: `View all details for ${bot.name} in War Robots Frontiers.`,
-    },
-  ]}
+  title={[objRefData.text as any, { InvariantString: '- Robot Platform' }]}
+  localizedDescriptions={localizedDescriptions}
   headerImage="/images/T_UnLockPilots.png"
+  type="article"
 >
-  <title slot="head">{bot.name} - Robots</title>
 
   <Breadcrumb breadcrumbs={getRobotDetailBreadcrumbs(bot.name)} />
 
-  <h1>{bot.name}</h1>
+  <h1 id="robot-name">
+    <TextElements
+      textElements={Array.isArray(objRefData.text)
+        ? (objRefData.text as any)
+        : [objRefData.text as any]}
+    />
+  </h1>
   <p><strong>Type:</strong> {bot.character_type}</p>
 
   <section style="margin-top: 2rem;">

@@ -12,6 +12,7 @@ import type { CharacterPreset } from '../types/character_preset';
 import type { ParseObject } from '../types/parse_object';
 import { isCoreModule, getCoreModuleCategory } from './core_modules';
 import { getModuleGroupId, MODULE_GROUPS } from './module_group_mapping';
+import type { VirtualBot } from './robot';
 
 // Define ModuleGroup interface for obj_ref support
 interface ModuleGroup {
@@ -164,6 +165,13 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
       return {
         text: obj.name as LocalizationKey,
         iconPath: undefined,
+      };
+    }
+    case 'VirtualBot': {
+      const virtualBot = obj as unknown as VirtualBot;
+      return {
+        text: { InvariantString: virtualBot.name },
+        iconPath: '/images/T_UnLockPilots.png', // Default icon for bots
       };
     }
     default:

@@ -7,6 +7,8 @@ import { getDefaultString } from './localization';
 import { slugify } from './slug_base';
 
 export interface VirtualBot {
+  parseObjectClass: 'VirtualBot';
+  parseObjectUrl: 'robots';
   id: string; // slugified bot ID for URLs (e.g. "ares")
   name: string; // english name (e.g. "Ares")
   character_type: string;
@@ -56,6 +58,8 @@ export function getVirtualBots(
 
       if (!bots[slugId]) {
         bots[slugId] = {
+          parseObjectClass: 'VirtualBot',
+          parseObjectUrl: 'robots',
           id: slugId,
           name: botName,
           character_type: preset.character_type || 'Unknown',

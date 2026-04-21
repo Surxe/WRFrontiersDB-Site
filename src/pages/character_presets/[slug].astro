@@ -10,6 +10,8 @@ import {
 } from '../../utils/parse_object';
 import { getCharacterPresetDetailBreadcrumbs } from '../../utils/breadcrumb';
 import { getDefaultString } from '../../utils/localization';
+import { getObjRefData } from '../../utils/obj_ref';
+import TextElements from '../../components/obj_ref/TextElements.astro';
 import type { CharacterPreset } from '../../types/character_preset';
 
 export async function getStaticPaths() {
@@ -25,10 +27,12 @@ const preset = getParseObject(
 ) as CharacterPreset;
 const pilots = getParseObjects('Objects/Pilot.json');
 const modules = getParseObjects('Objects/Module.json');
+
+const objRefData = preset ? getObjRefData(preset) : null;
 ---
 
 <ParseObjectListPage
-  title={getDefaultString(preset?.name) || preset?.id || 'Character Preset'}
+  title={objRefData ? [objRefData.text as any, { InvariantString: '- Factory Preset' }] : 'Character Preset'}
   description={`View details for character preset ${getDefaultString(preset?.name) || preset?.id} from War Robots Frontiers`}
   headerImage="/images/T_UnLockPilots.png"
 >
@@ -37,7 +41,13 @@ const modules = getParseObjects('Objects/Module.json');
   {
     preset ? (
       <div class="character-preset-detail">
-        <h1>{getDefaultString(preset.name) || preset.id}</h1>
+        <h1>
+          <TextElements
+            textElements={Array.isArray(objRefData!.text)
+              ? (objRefData!.text as any)
+              : [objRefData!.text as any]}
+          />
+        </h1>
 
         <BotItem preset={preset} modules={modules} pilots={pilots} />
       </div>

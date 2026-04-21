@@ -17,6 +17,8 @@ import { prepareObjectList } from '../../utils/list';
 import type { ModuleType, Module, ModuleCategory } from '../../types/module';
 import ObjRef from '../../components/obj_ref/ObjRef.astro';
 import { getDefaultString } from '../../utils/localization';
+import { getObjRefData } from '../../utils/obj_ref';
+import TextElements from '../../components/obj_ref/TextElements.astro';
 
 export async function getStaticPaths() {
   // Load slug map to generate slug-based paths
@@ -111,16 +113,24 @@ const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
   },
   getDefaultString(group.name) || id
 );
+
+const objRefData = getObjRefData(group as any); // ModuleGroup is supported in getObjRefData
 ---
 
 <ParseObjectPage
-  title={`${getDefaultString(group.name)} - Module Group`}
+  title={[objRefData.text as any, { InvariantString: '- Module Group' }]}
   localizedDescriptions={localizedDescriptions}
   type="article"
 >
   <Breadcrumb breadcrumbs={getModuleGroupDetailBreadcrumbs(id)} />
 
-  <LocalizedText id="category-name" tag="h1" localizationKey={group.name} />
+  <h1 id="category-name">
+    <TextElements
+      textElements={Array.isArray(objRefData.text)
+        ? objRefData.text
+        : [objRefData.text]}
+    />
+  </h1>
 
   {
     dynamicDescription && (
