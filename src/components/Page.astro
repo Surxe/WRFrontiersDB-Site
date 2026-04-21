@@ -28,10 +28,18 @@ const {
   headerImage,
 } = Astro.props;
 
-// Determine language from URL for title resolution
 const lang = Astro.url.searchParams.get('lang') || 'en';
 const title =
   typeof rawTitle === 'string' ? rawTitle : localizeText(rawTitle, lang);
+
+// Data structure for client-side title localization
+const titleKeys =
+  rawTitle && typeof rawTitle !== 'string'
+    ? Array.isArray(rawTitle)
+      ? rawTitle
+      : [rawTitle]
+    : null;
+const titleKeysJson = titleKeys ? JSON.stringify(titleKeys) : null;
 
 // Generate absolute URLs
 const siteUrl =
@@ -84,7 +92,7 @@ const baseUrl = import.meta.env.BASE_URL;
 // Basic page layout
 ---
 
-<html lang="en" id="html-root">
+<html lang="en" id="html-root" data-title-keys={titleKeysJson}>
   <head>
     <meta charset="UTF-8" />
     <!--

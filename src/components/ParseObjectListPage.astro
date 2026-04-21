@@ -1,9 +1,10 @@
 ---
 import Page from './Page.astro';
 import ParseObjectListPageScripts from './ParseObjectListPageScripts.astro';
+import type { LocalizationKey } from '../types/localization';
 
 export interface Props {
-  title?: string;
+  title?: string | LocalizationKey | LocalizationKey[];
   description?: string;
   metaImage?: string;
   url?: string;
