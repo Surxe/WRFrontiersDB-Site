@@ -154,6 +154,8 @@ if (isCore) {
 
   <Icon iconPath={module.inventory_icon_path} altText={`${defaultName} icon`} />
 
+  <!-- Direct descriiption block - shown if no abilities or abilities without scalars -->
+  Direct description block (DEBUG)
   {
     module.description && !(abilityStats.length > 0 && module.abilities_scalars) && (
       <div class="module-description-section">
@@ -169,6 +171,8 @@ if (isCore) {
     )
   }
 
+  <!-- Abilities block - shown if abilities with scalars -->
+  Abilities block (DEBUG)
   {
     abilityStats.length > 0 && module.abilities_scalars && (
       <div class="module-abilities-section">
