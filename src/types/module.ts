@@ -5,6 +5,7 @@ export const MODULE_URL = 'modules';
 export const MODULESTAT_URL = 'module_stats';
 export const MODULETYPE_URL = 'module_types';
 export const MODULECATEGORY_URL = 'module_categories';
+export const MODULESTATSTABLE_URL = 'module_stats_table';
 
 export interface ModuleStat extends ParseObject {
   parseObjectClass: 'ModuleStat';
@@ -99,4 +100,11 @@ export interface ModuleType extends ParseObject {
   blueprint_name: LocalizationKey;
   tag_color?: string;
   tag_background_color?: string;
+}
+
+export interface ModuleStatsTable extends ParseObject {
+  parseObjectClass: 'ModuleStatsTable';
+  parseObjectUrl: typeof MODULESTATSTABLE_URL;
+  id: string;
+  stats_refs: Record<string, string>;
 }

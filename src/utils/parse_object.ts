@@ -119,16 +119,16 @@ export function isObjectProductionReady(
     // Extract object type from path to determine production criteria
     const isModule = parseObjectPath.includes('Module.json');
     const obj = objects[objectId];
-    
+
     if (!obj) {
       return false;
     }
-    
+
     // Only Modules require production_status === 'Ready'
     if (isModule) {
       return obj.production_status === 'Ready';
     }
-    
+
     // All other parse object classes are always production ready
     return true;
   } catch {
@@ -273,7 +273,10 @@ export function generateSlugBasedStaticPaths(
     for (const [objectId, object] of Object.entries(allObjects)) {
       // Apply production status filtering only to Modules
       // All other parse object classes are always production ready
-      if (objectType === 'Module' && (!object.production_status || object.production_status !== 'Ready')) {
+      if (
+        objectType === 'Module' &&
+        (!object.production_status || object.production_status !== 'Ready')
+      ) {
         continue;
       }
 
