@@ -40,7 +40,6 @@ export function getRobotDetailBreadcrumbs(botName: string) {
     { label: botName, isCurrent: true },
   ];
 }
----
 
 const localizedDescriptions = [
   {
@@ -53,7 +52,7 @@ const objRefData = getObjRefData(bot as any);
 ---
 
 <ParseObjectPage
-  title={[objRefData.text as any, { InvariantString: '- Robot Platform' }]}
+  title={[objRefData.text as any, { InvariantString: '- Robot Platform' }] as any}
   localizedDescriptions={localizedDescriptions}
   headerImage="/images/T_UnLockPilots.png"
   type="article"
