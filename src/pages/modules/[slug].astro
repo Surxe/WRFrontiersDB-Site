@@ -155,7 +155,7 @@ if (isCore) {
   <Icon iconPath={module.inventory_icon_path} altText={`${defaultName} icon`} />
 
   {
-    module.description && abilityStats.length < 2 && (
+    module.description && !(abilityStats.length > 0 && module.abilities_scalars) && (
       <div class="module-description-section">
         <StatEmbedLocalizedText
           id="module-desc"
@@ -170,7 +170,7 @@ if (isCore) {
   }
 
   {
-    abilityStats.length > 0 && (abilityStats.length > 1 || !module.description) && (
+    abilityStats.length > 0 && module.abilities_scalars && (
       <div class="module-abilities-section">
         {abilityStats.map((abStat, index) => (
           <div class="ability-block" style="margin-top: 1.5rem;">
