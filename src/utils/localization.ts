@@ -1,5 +1,59 @@
+import * as fs from 'fs';
+import * as path from 'path';
 import type { LocalizationKey } from '../types/localization';
-import { loadLocalizationData } from './build_localization';
+import langs from '../../public/langs.json';
+
+const serverLocalizationCache: Record<
+  string,
+  Record<string, Record<string, string>>
+> = {};
+
+/**
+ * Load localization data from local file system
+ */
+export function loadLocalizationData(lang: string) {
+  if (serverLocalizationCache[lang]) {
+    return serverLocalizationCache[lang];
+  }
+
+  try {
+    const localizationPath = path.join(
+      process.cwd(),
+      'WRFrontiersDB-Data/current/Localization',
+      `${lang}.json`
+    );
+
+    let gameData = {};
+    if (fs.existsSync(localizationPath)) {
+      const data = fs.readFileSync(localizationPath, 'utf8');
+      gameData = JSON.parse(data);
+    }
+
+    const localPath = path.join(
+      process.cwd(),
+      'public/locales',
+      `${lang}.json`
+    );
+
+    let localData = {};
+    if (fs.existsSync(localPath)) {
+      const data = fs.readFileSync(localPath, 'utf8');
+      localData = JSON.parse(data);
+    }
+
+    const mergedData: Record<string, Record<string, string>> = { ...gameData };
+    for (const [namespace, keys] of Object.entries(localData)) {
+      if (!mergedData[namespace]) mergedData[namespace] = {};
+      Object.assign(mergedData[namespace], keys as Record<string, string>);
+    }
+
+    serverLocalizationCache[lang] = mergedData;
+    return mergedData;
+  } catch (error) {
+    console.warn(`Failed to load localization for ${lang}:`, error);
+    return null;
+  }
+}
 
 export function getDefaultString(
   localizationKey: LocalizationKey | undefined
