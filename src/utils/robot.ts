@@ -15,6 +15,7 @@ export interface VirtualBot {
   character_type: string;
   core_modules: string[]; // module IDs
   factory_presets: string[]; // preset IDs
+  iconPath?: string; // icon path from factory preset
   [key: string]: unknown;
 }
 
@@ -67,6 +68,7 @@ export function getVirtualBots(
           character_type: preset.character_type || 'Unknown',
           core_modules: [],
           factory_presets: [],
+          iconPath: preset.icon,
         };
       }
 

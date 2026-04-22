@@ -171,7 +171,7 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
       const virtualBot = obj as unknown as VirtualBot;
       return {
         text: virtualBot.name as LocalizationKey,
-        iconPath: undefined, // No icon for VirtualBot objects
+        iconPath: virtualBot.iconPath, // Use icon from VirtualBot object
       };
     }
     default:
