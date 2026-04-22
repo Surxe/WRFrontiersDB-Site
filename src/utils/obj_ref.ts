@@ -170,8 +170,8 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
     case 'VirtualBot': {
       const virtualBot = obj as unknown as VirtualBot;
       return {
-        text: { InvariantString: virtualBot.name },
-        iconPath: '/images/T_UnLockPilots.png', // Default icon for bots
+        text: virtualBot.name as LocalizationKey,
+        iconPath: undefined, // No icon for VirtualBot objects
       };
     }
     default:

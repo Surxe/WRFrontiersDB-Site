@@ -5,40 +5,10 @@
  */
 
 import { getVirtualBots } from './robot';
+import type { VirtualBot } from './robot';
 import { prepareObjectList } from './list';
 import type { Module } from '../types/module';
 import type { CharacterPreset } from '../types/character_preset';
-
-/**
- * Virtual Bot Interface
- *
- * A VirtualBot represents a generic robot platform that groups together:
- * - All factory presets that belong to the same base robot (e.g., "Ares" platform)
- * - The core modules that define that robot's foundation
- *
- * This is NOT a specific CharacterPreset, but rather an abstraction that
- * groups all variants of a robot under one platform name.
- *
- * Example:
- * - VirtualBot "ares" groups all "Ares" factory presets
- * - Contains core modules: Ares Torso, Ares Legs, etc.
- * - Links to all factory presets that use these core modules
- *
- * This allows users to browse robots by their platform rather than
- * individual preset variants.
- */
-export interface VirtualBot {
-  /** URL-friendly slug for the bot platform (e.g., "ares", "guardian") */
-  id: string;
-  /** Display name of the robot platform (e.g., "Ares", "Guardian") */
-  name: string;
-  /** Character type classification (e.g., "Mech", "Titan") */
-  character_type: string;
-  /** Array of core module IDs that define this robot's foundation */
-  core_modules: string[];
-  /** Array of factory preset IDs that belong to this robot platform */
-  factory_presets: string[];
-}
 
 /**
  * Get core modules for a specific bot, excluding a specified module

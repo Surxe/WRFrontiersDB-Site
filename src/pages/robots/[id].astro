@@ -7,6 +7,7 @@ import { getAllVirtualBots, getVirtualBotById } from '../../utils/bot_modules';
 import type { CharacterPreset } from '../../types/character_preset';
 import type { Module } from '../../types/module';
 import { getObjRefData } from '../../utils/obj_ref';
+import { getDefaultString } from '../../utils/localization';
 import TextElements from '../../components/obj_ref/TextElements.astro';
 
 export async function getStaticPaths() {
@@ -44,7 +45,7 @@ export function getRobotDetailBreadcrumbs(botName: string) {
 const localizedDescriptions = [
   {
     lang: 'en',
-    description: `View all details for ${bot.name} in War Robots Frontiers.`,
+    description: `View all details for ${getDefaultString(bot.name)} in War Robots Frontiers.`,
   },
 ];
 
@@ -52,13 +53,13 @@ const objRefData = getObjRefData(bot as any);
 ---
 
 <ParseObjectPage
-  title={[objRefData.text as any, { InvariantString: '- Robot Platform' }] as any}
+  title={objRefData.text}
   localizedDescriptions={localizedDescriptions}
   headerImage="/images/T_UnLockPilots.png"
   type="article"
 >
 
-  <Breadcrumb breadcrumbs={getRobotDetailBreadcrumbs(bot.name)} />
+  <Breadcrumb breadcrumbs={getRobotDetailBreadcrumbs(getDefaultString(bot.name) || bot.id)} />
 
   <h1 id="robot-name">
     <TextElements

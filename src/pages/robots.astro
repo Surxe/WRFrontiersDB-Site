@@ -5,6 +5,7 @@ import BotsNavBox from '../components/nav/BotsNavBox.astro';
 import ObjRef from '../components/obj_ref/ObjRef.astro';
 import { getParseObjects } from '../utils/parse_object';
 import { getAllVirtualBots } from '../utils/bot_modules';
+import { getDefaultString } from '../utils/localization';
 import type { CharacterPreset } from '../types/character_preset';
 import type { Module } from '../types/module';
 
@@ -31,7 +32,9 @@ const groupedBots = bots.reduce(
 // Sort groups alphabetically
 const sortedGroupKeys = Object.keys(groupedBots).sort();
 for (const key of sortedGroupKeys) {
-  groupedBots[key].sort((a, b) => a.name.localeCompare(b.name));
+  groupedBots[key].sort((a, b) => 
+    (getDefaultString(a.name) || a.name.Key || '').localeCompare(getDefaultString(b.name) || b.name.Key || '')
+  );
 }
 
 export function getRobotsBreadcrumbs() {
@@ -78,12 +81,7 @@ export function getRobotsBreadcrumbs() {
               {groupedBots[type].map((bot) => (
                 <tr>
                   <td>
-                    <a
-                      href={`/robots/${bot.id}`}
-                      style="font-weight: 600; font-size: 1.1em;"
-                    >
-                      {bot.name}
-                    </a>
+                    <ObjRef obj={bot} />
                   </td>
                   <td>
                     <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
