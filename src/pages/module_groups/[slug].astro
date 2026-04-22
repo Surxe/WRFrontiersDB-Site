@@ -114,7 +114,7 @@ const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
   getDefaultString(group.name) || id
 );
 
-const objRefData = getObjRefData(group as any); // ModuleGroup is supported in getObjRefData
+const objRefData = getObjRefData({ ...group, parseObjectClass: 'ModuleGroup' });
 ---
 
 <ParseObjectPage
