@@ -1,0 +1,2 @@
+* These are merged into the game localization files during the build process.
+* es.json has entries in it but I don't know spanish. I can't verify they're correct, but most of the site's translations are temporary, so the spanish ones are just for testing purposes.
