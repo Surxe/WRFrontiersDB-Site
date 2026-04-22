@@ -36,6 +36,8 @@ import { enrichModulesWithBotIds } from '../../utils/robot';
 import BotsList from '../../components/bot/BotsList.astro';
 import BotCoreModulesNavBox from '../../components/nav/BotCoreModulesNavBox.astro';
 import { refToId } from '../../utils/object_reference';
+import { getObjRefData } from '../../utils/obj_ref';
+import TextElements from '../../components/obj_ref/TextElements.astro';
 import type { CharacterPreset } from '../../types/character_preset';
 import type { Pilot } from '../../types/pilot';
 
@@ -150,21 +152,24 @@ if (isCore) {
     botCoreModulesNavBox = enrichedModule.bot_id;
   }
 }
+
+const objRefData = getObjRefData(module);
 ---
 
 <ParseObjectPage
+  title={objRefData.text}
   localizedDescriptions={localizedDescriptions}
   headerImage={module.image_path as string}
   type="article"
 >
-  <LocalizedText
-    id="module-name-title"
-    tag="title"
-    localizationKey={module.name}
-    slot="head"
-  />
   <Breadcrumb breadcrumbs={getModuleDetailBreadcrumbs(module)} />
-  <LocalizedText id="module-name" tag="h1" localizationKey={module.name} />
+  <h1 id="module-name">
+    <TextElements
+      textElements={Array.isArray(objRefData.text)
+        ? objRefData.text
+        : [objRefData.text]}
+    />
+  </h1>
 
   <Icon iconPath={module.inventory_icon_path} altText={`${defaultName} icon`} />
 

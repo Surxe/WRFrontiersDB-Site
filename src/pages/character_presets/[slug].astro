@@ -1,6 +1,7 @@
 ---
 import Breadcrumb from '../../components/Breadcrumb.astro';
-import ParseObjectListPage from '../../components/ParseObjectListPage.astro';
+import ParseObjectPage from '../../components/ParseObjectPage.astro';
+import LocalizedText from '../../components/LocalizedText.astro';
 import BotItem from '../../components/bot/BotItem.astro';
 import ObjectPageScripts from '../../components/ObjectPageScripts.astro';
 import {
@@ -10,6 +11,9 @@ import {
 } from '../../utils/parse_object';
 import { getCharacterPresetDetailBreadcrumbs } from '../../utils/breadcrumb';
 import { getDefaultString } from '../../utils/localization';
+import { getObjRefData } from '../../utils/obj_ref';
+import { generateCharacterPresetLocalizedMetaDescriptions } from '../../utils/build_localization';
+import TextElements from '../../components/obj_ref/TextElements.astro';
 import type { CharacterPreset } from '../../types/character_preset';
 
 export async function getStaticPaths() {
@@ -25,19 +29,41 @@ const preset = getParseObject(
 ) as CharacterPreset;
 const pilots = getParseObjects('Objects/Pilot.json');
 const modules = getParseObjects('Objects/Module.json');
+
+const objRefData = preset ? getObjRefData(preset) : null;
+
+const localizedDescriptions = preset ? generateCharacterPresetLocalizedMetaDescriptions(
+  preset,
+  getDefaultString(preset.name) || preset.id
+) : [];
 ---
 
-<ParseObjectListPage
-  title={getDefaultString(preset?.name) || preset?.id || 'Character Preset'}
-  description={`View details for character preset ${getDefaultString(preset?.name) || preset?.id} from War Robots Frontiers`}
+<ParseObjectPage
+  localizedDescriptions={localizedDescriptions}
   headerImage="/images/T_UnLockPilots.png"
+  type="article"
 >
+  {preset && (
+    <LocalizedText
+      id="character-preset-name-title"
+      tag="title"
+      localizationKey={preset.name}
+      slot="head"
+    />
+  )}
+
   <Breadcrumb breadcrumbs={getCharacterPresetDetailBreadcrumbs(preset)} />
 
   {
     preset ? (
       <div class="character-preset-detail">
-        <h1>{getDefaultString(preset.name) || preset.id}</h1>
+        <h1>
+          <TextElements
+            textElements={Array.isArray(objRefData!.text)
+              ? (objRefData!.text as any)
+              : [objRefData!.text as any]}
+          />
+        </h1>
 
         <BotItem preset={preset} modules={modules} pilots={pilots} />
       </div>
@@ -49,5 +75,5 @@ const modules = getParseObjects('Objects/Module.json');
     )
   }
 
-  <ObjectPageScripts objectData={preset} />
-</ParseObjectListPage>
+  <ObjectPageScripts objectData={preset} jsFileName="character_preset.js" />
+</ParseObjectPage>

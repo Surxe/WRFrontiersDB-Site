@@ -28,6 +28,8 @@ import { generatePilotLocalizedMetaDescriptions } from '../../utils/build_locali
 import PilotsNavBox from '../../components/nav/PilotsNavBox.astro';
 import { PILOT_TYPE_LEGENDARY_REF } from '../../utils/constants';
 import { getPilotDetailBreadcrumbs } from '../../utils/breadcrumb';
+import { getObjRefData } from '../../utils/obj_ref';
+import TextElements from '../../components/obj_ref/TextElements.astro';
 
 export async function getStaticPaths() {
   return generateSlugBasedStaticPaths('Pilot');
@@ -74,37 +76,20 @@ const localizedDescriptions = generatePilotLocalizedMetaDescriptions(
   pilotTalentTypes,
   defaultName
 );
+
+const objRefData = getObjRefData(pilot);
 ---
 
 <ParseObjectPage
+  title={objRefData.text}
   localizedDescriptions={localizedDescriptions}
   headerImage={pilot.image_path}
   type="article"
 >
-  <LocalizedText
-    id="pilot-name-title"
-    tag="title"
-    localizationKey={pilot.first_name}
-    slot="head"
-  />
   <Breadcrumb breadcrumbs={getPilotDetailBreadcrumbs(pilot)} />
-  <p>
-    <LocalizedText
-      id="pilot-first-name"
-      tag="h1"
-      localizationKey={pilot.first_name}
-    />
-    {' '}
-    {
-      pilot.second_name && (
-        <LocalizedText
-          id="pilot-second-name"
-          tag="span"
-          localizationKey={pilot.second_name}
-        />
-      )
-    }
-  </p>
+  <h1 id="pilot-name">
+    <TextElements textElements={Array.isArray(objRefData.text) ? objRefData.text : [objRefData.text]} />
+  </h1>
 
   <LocalizedText id="pilot-bio" tag="p" localizationKey={pilot.bio} />
 

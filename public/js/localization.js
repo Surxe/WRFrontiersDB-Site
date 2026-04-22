@@ -171,6 +171,36 @@ export function updateLocalizedElements(locData, selectors) {
 }
 
 /**
+ * Updates the document title based on data-title-keys attribute on document root
+ * @param {LocalizationData} locData - Loaded localization data
+ */
+export function updateTitle(locData) {
+  const root = document.documentElement;
+  const titleKeysRaw = root.dataset.titleKeys;
+  if (!titleKeysRaw) return;
+
+  try {
+    const keys = JSON.parse(titleKeysRaw);
+    if (!keys || !Array.isArray(keys) || keys.length === 0) return;
+
+    const parts = keys.map((key) => {
+      if (!key) return '';
+      if (key.InvariantString) return key.InvariantString;
+      return getLocalizedText(
+        locData,
+        key.TableNamespace,
+        key.Key,
+        key.en || ''
+      );
+    });
+
+    document.title = parts.filter((p) => p).join(' ');
+  } catch (e) {
+    console.warn('Failed to update localized title:', e);
+  }
+}
+
+/**
  * Full localization update for a page
  * @param {string} version - Game version for this page (ignored, always uses current)
  * @param {string|string[]} selectors - Elements to localize
@@ -191,6 +221,7 @@ export async function initializeLocalization(
   const locData = await loadLanguage(currentLang, 'current');
   if (locData) {
     updateLocalizedElements(locData, selectors);
+    updateTitle(locData);
   }
 
   // Also update number formatting

@@ -1,17 +1,22 @@
 import type { CharacterPreset } from '../types/character_preset';
 import type { Module } from '../types/module';
 import type { EnrichedModule } from './module_group_mapping';
+import type { LocalizationKey } from '../types/localization';
 import { isCoreModule } from './core_modules';
 import { refToId } from './object_reference';
 import { getDefaultString } from './localization';
 import { slugify } from './slug_base';
 
 export interface VirtualBot {
+  parseObjectClass: 'VirtualBot';
+  parseObjectUrl: 'robots';
   id: string; // slugified bot ID for URLs (e.g. "ares")
-  name: string; // english name (e.g. "Ares")
+  name: LocalizationKey; // localized name (e.g. "Ares")
   character_type: string;
   core_modules: string[]; // module IDs
   factory_presets: string[]; // preset IDs
+  iconPath?: string; // icon path from factory preset
+  [key: string]: unknown;
 }
 
 export function getVirtualBots(
@@ -56,11 +61,14 @@ export function getVirtualBots(
 
       if (!bots[slugId]) {
         bots[slugId] = {
+          parseObjectClass: 'VirtualBot',
+          parseObjectUrl: 'robots',
           id: slugId,
-          name: botName,
+          name: preset.name,
           character_type: preset.character_type || 'Unknown',
           core_modules: [],
           factory_presets: [],
+          iconPath: preset.icon,
         };
       }
 

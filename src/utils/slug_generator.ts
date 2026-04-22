@@ -9,7 +9,7 @@ import type { CharacterPreset } from '../types/character_preset';
 import type { LocalizationKey } from '../types/localization';
 import {
   getModuleGroupId,
-  getModuleGroupSingularName,
+  MODULE_GROUPS,
 } from './module_group_mapping';
 import { getDefaultString } from './localization';
 import { toSlug, camelToKebab } from './slug_base';
@@ -105,7 +105,7 @@ function generateModuleSlug(module: Module, context?: SlugContext): string {
         `No module group found for type: ${module.module_type_ref}`
       );
     }
-    const singularName = getModuleGroupSingularName(moduleGroup);
+    const singularName = MODULE_GROUPS[moduleGroup].name.en;
     const slug = `${toSlug(singularName)}-${toSlug(moduleName)}`;
     return slug.replace(/-+$/, '');
   } catch {

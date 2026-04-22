@@ -11,6 +11,8 @@ import type { Rarity } from '../types/rarity';
 import type { CharacterPreset } from '../types/character_preset';
 import type { ParseObject } from '../types/parse_object';
 import { isCoreModule, getCoreModuleCategory } from './core_modules';
+import { getModuleGroupId, MODULE_GROUPS } from './module_group_mapping';
+import type { VirtualBot } from './robot';
 
 // Define ModuleGroup interface for obj_ref support
 interface ModuleGroup {
@@ -51,18 +53,32 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
 
       // Check if this is a core module
       if (isCoreModule(module)) {
-        const category = getCoreModuleCategory(module);
-        if (!category) {
-          throw new Error('Core module has no valid category');
+        const groupId = getModuleGroupId(module.module_type_ref);
+        const group = groupId ? MODULE_GROUPS[groupId] : null;
+
+        if (group) {
+          return {
+            text: [
+              module.name as LocalizationKey,
+              group.name as LocalizationKey,
+            ],
+            iconPath: module.inventory_icon_path,
+            hoverText: module.description || undefined,
+          };
         }
-        return {
-          text: [
-            module.name as LocalizationKey,
-            category.name as LocalizationKey,
-          ],
-          iconPath: module.inventory_icon_path,
-          hoverText: module.description || undefined,
-        };
+
+        // Fallback to category if group mapping fails
+        const category = getCoreModuleCategory(module);
+        if (category) {
+          return {
+            text: [
+              module.name as LocalizationKey,
+              category.name as LocalizationKey,
+            ],
+            iconPath: module.inventory_icon_path,
+            hoverText: module.description || undefined,
+          };
+        }
       }
 
       return {
@@ -92,8 +108,13 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
     }
     case 'Pilot': {
       const pilot = obj as Pilot;
+      const text: LocalizationKey[] = [pilot.first_name];
+      if (pilot.second_name) {
+        text.push(pilot.second_name);
+      }
+
       return {
-        text: pilot.first_name,
+        text: text,
         iconPath: pilot.image_path,
       };
     }
@@ -144,6 +165,13 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
       return {
         text: obj.name as LocalizationKey,
         iconPath: undefined,
+      };
+    }
+    case 'VirtualBot': {
+      const virtualBot = obj as unknown as VirtualBot;
+      return {
+        text: virtualBot.name as LocalizationKey,
+        iconPath: virtualBot.iconPath, // Use icon from VirtualBot object
       };
     }
     default:

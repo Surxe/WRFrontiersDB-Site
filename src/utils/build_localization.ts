@@ -1,70 +1,20 @@
-import * as fs from 'fs';
-import * as path from 'path';
 import type { LocalizationKey } from '../types/localization';
 import type { StatValueChoices } from '../types/stat';
 import { processLocalizedTextWithStats } from './stat_formatting';
-import { resolveLocalizedEmbeds, resolveLocalizationKey } from './localization';
+import {
+  resolveLocalizedEmbeds,
+  resolveLocalizationKey,
+  loadLocalizationData,
+} from './localization';
 import type { Pilot, PilotTalent, PilotTalentType } from '../types/pilot';
 import type { EnrichedPilotTalent } from './pilot';
+import type { CharacterPreset } from '../types/character_preset';
+import type { VirtualBot } from './robot';
 import { refToId } from './object_reference';
 import { PILOT_TYPE_LEGENDARY_REF } from './constants';
 import langs from '../../public/langs.json';
 
-const serverLocalizationCache: Record<
-  string,
-  Record<string, Record<string, string>>
-> = {};
-
-// Constants for pilot talent meta description templates
 const PILOT_TALENT_TEMPLATE_LIMIT = 5;
-
-/**
- * Load localization data from local file system
- * Uses same pattern as getParseObjects() for consistency
- */
-export function loadLocalizationData(lang: string) {
-  if (serverLocalizationCache[lang]) {
-    return serverLocalizationCache[lang];
-  }
-
-  try {
-    const localizationPath = path.join(
-      process.cwd(),
-      'WRFrontiersDB-Data/current/Localization',
-      `${lang}.json`
-    );
-
-    let gameData = {};
-    if (fs.existsSync(localizationPath)) {
-      const data = fs.readFileSync(localizationPath, 'utf8');
-      gameData = JSON.parse(data);
-    }
-
-    const localPath = path.join(
-      process.cwd(),
-      'public/locales',
-      `${lang}.json`
-    );
-
-    let localData = {};
-    if (fs.existsSync(localPath)) {
-      const data = fs.readFileSync(localPath, 'utf8');
-      localData = JSON.parse(data);
-    }
-
-    const mergedData: Record<string, Record<string, string>> = { ...gameData };
-    for (const [namespace, keys] of Object.entries(localData)) {
-      if (!mergedData[namespace]) mergedData[namespace] = {};
-      Object.assign(mergedData[namespace], keys as Record<string, string>);
-    }
-
-    serverLocalizationCache[lang] = mergedData;
-    return mergedData;
-  } catch (error) {
-    console.warn(`Failed to load localization for ${lang}:`, error);
-    return null;
-  }
-}
 
 /**
  * Generate localized pilot talent meta descriptions using the embedment system
@@ -319,6 +269,103 @@ export function generatePilotTalentTypeLocalizedMetaDescriptions(
     // Final fallback to a simple description if still empty
     if (!description) {
       description = `${_defaultName}: View detailed information.`;
+    }
+
+    // Apply length limit for SEO
+    results.push({
+      lang,
+      description: description.substring(0, 160),
+    });
+  }
+
+  return results;
+}
+/**
+ * Generate localized robot descriptions using the embedment system
+ */
+export function generateRobotLocalizedMetaDescriptions(
+  robot: VirtualBot,
+  _defaultName: string
+): { lang: string; description: string }[] {
+  const supportedLangs = Object.keys(langs);
+  const results: { lang: string; description: string }[] = [];
+
+  const templateKey = resolveLocalizationKey(
+    'Robot_Meta_Description',
+    'Web_UI'
+  );
+
+  const embeds: Record<string, LocalizationKey> = {
+    robot_name: robot.name,
+    robot_type: { Key: robot.character_type, TableNamespace: 'Web_UI', en: robot.character_type },
+  };
+
+  for (const lang of supportedLangs) {
+    const locData = loadLocalizationData(lang);
+    if (!locData) continue;
+
+    let description = resolveLocalizedEmbeds(templateKey, embeds, locData);
+
+    // Fallback to English template if localized template is empty or not found
+    if (!description && lang !== 'en') {
+      const enLocData = loadLocalizationData('en');
+      if (enLocData) {
+        description = resolveLocalizedEmbeds(templateKey, embeds, enLocData);
+      }
+    }
+
+    // Final fallback to a simple description if still empty
+    if (!description) {
+      description = `${_defaultName}: View detailed robot information and core modules.`;
+    }
+
+    // Apply length limit for SEO
+    results.push({
+      lang,
+      description: description.substring(0, 160),
+    });
+  }
+
+  return results;
+}
+
+/**
+ * Generate localized character preset descriptions using the embedment system
+ */
+export function generateCharacterPresetLocalizedMetaDescriptions(
+  preset: CharacterPreset,
+  _defaultName: string
+): { lang: string; description: string }[] {
+  const supportedLangs = Object.keys(langs);
+  const results: { lang: string; description: string }[] = [];
+
+  const templateKey = resolveLocalizationKey(
+    'CharacterPreset_Meta_Description',
+    'Web_UI'
+  );
+
+  const embeds: Record<string, LocalizationKey> = {
+    preset_name: preset.name,
+    character_type: { Key: preset.character_type, TableNamespace: 'Web_UI', en: preset.character_type },
+  };
+
+  for (const lang of supportedLangs) {
+    const locData = loadLocalizationData(lang);
+    if (!locData) continue;
+
+    let description = resolveLocalizedEmbeds(templateKey, embeds, locData);
+
+    // Fallback to English template if localized template is empty or not found
+    if (!description && lang !== 'en') {
+      const enLocData = loadLocalizationData('en');
+      if (enLocData) {
+        description = resolveLocalizedEmbeds(templateKey, embeds, enLocData);
+      }
+    }
+
+    // Final fallback to a simple description if still empty
+    if (!description) {
+      description = `${_defaultName}: View detailed character preset information and modules.`;
     }
 
     // Apply length limit for SEO
