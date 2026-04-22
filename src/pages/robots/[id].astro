@@ -1,14 +1,14 @@
 ---
 import Breadcrumb from '../../components/Breadcrumb.astro';
 import ParseObjectPage from '../../components/ParseObjectPage.astro';
+import LocalizedText from '../../components/LocalizedText.astro';
+import ObjectPageScripts from '../../components/ObjectPageScripts.astro';
 import ObjRef from '../../components/obj_ref/ObjRef.astro';
 import { getParseObjects } from '../../utils/parse_object';
 import { getAllVirtualBots, getVirtualBotById } from '../../utils/bot_modules';
 import type { CharacterPreset } from '../../types/character_preset';
 import type { Module } from '../../types/module';
-import { getObjRefData } from '../../utils/obj_ref';
 import { getDefaultString } from '../../utils/localization';
-import TextElements from '../../components/obj_ref/TextElements.astro';
 
 export async function getStaticPaths() {
   const presets = getParseObjects<CharacterPreset>(
@@ -49,25 +49,27 @@ const localizedDescriptions = [
   },
 ];
 
-const objRefData = getObjRefData(bot as any);
 ---
 
 <ParseObjectPage
-  title={objRefData.text}
   localizedDescriptions={localizedDescriptions}
   headerImage="/images/T_UnLockPilots.png"
   type="article"
 >
+  <LocalizedText
+    id="robot-name-title"
+    tag="title"
+    localizationKey={bot.name}
+    slot="head"
+  />
 
   <Breadcrumb breadcrumbs={getRobotDetailBreadcrumbs(getDefaultString(bot.name) || bot.id)} />
 
-  <h1 id="robot-name">
-    <TextElements
-      textElements={Array.isArray(objRefData.text)
-        ? (objRefData.text as any)
-        : [objRefData.text as any]}
-    />
-  </h1>
+  <LocalizedText
+    id="robot-name"
+    tag="h1"
+    localizationKey={bot.name}
+  />
   <p><strong>Type:</strong> {bot.character_type}</p>
 
   <section style="margin-top: 2rem;">
@@ -96,4 +98,9 @@ const objRefData = getObjRefData(bot as any);
       }
     </div>
   </section>
+
+  <ObjectPageScripts
+    objectData={bot}
+    jsFileName="robot_page.js"
+  />
 </ParseObjectPage>
