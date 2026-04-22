@@ -8,6 +8,8 @@ import {
 } from './localization';
 import type { Pilot, PilotTalent, PilotTalentType } from '../types/pilot';
 import type { EnrichedPilotTalent } from './pilot';
+import type { CharacterPreset } from '../types/character_preset';
+import type { VirtualBot } from './robot';
 import { refToId } from './object_reference';
 import { PILOT_TYPE_LEGENDARY_REF } from './constants';
 import langs from '../../public/langs.json';
@@ -267,6 +269,103 @@ export function generatePilotTalentTypeLocalizedMetaDescriptions(
     // Final fallback to a simple description if still empty
     if (!description) {
       description = `${_defaultName}: View detailed information.`;
+    }
+
+    // Apply length limit for SEO
+    results.push({
+      lang,
+      description: description.substring(0, 160),
+    });
+  }
+
+  return results;
+}
+/**
+ * Generate localized robot descriptions using the embedment system
+ */
+export function generateRobotLocalizedMetaDescriptions(
+  robot: VirtualBot,
+  _defaultName: string
+): { lang: string; description: string }[] {
+  const supportedLangs = Object.keys(langs);
+  const results: { lang: string; description: string }[] = [];
+
+  const templateKey = resolveLocalizationKey(
+    'Robot_Meta_Description',
+    'Web_UI'
+  );
+
+  const embeds: Record<string, LocalizationKey> = {
+    robot_name: robot.name,
+    robot_type: { InvariantString: robot.character_type },
+  };
+
+  for (const lang of supportedLangs) {
+    const locData = loadLocalizationData(lang);
+    if (!locData) continue;
+
+    let description = resolveLocalizedEmbeds(templateKey, embeds, locData);
+
+    // Fallback to English template if localized template is empty or not found
+    if (!description && lang !== 'en') {
+      const enLocData = loadLocalizationData('en');
+      if (enLocData) {
+        description = resolveLocalizedEmbeds(templateKey, embeds, enLocData);
+      }
+    }
+
+    // Final fallback to a simple description if still empty
+    if (!description) {
+      description = `${_defaultName}: View detailed robot information and core modules.`;
+    }
+
+    // Apply length limit for SEO
+    results.push({
+      lang,
+      description: description.substring(0, 160),
+    });
+  }
+
+  return results;
+}
+
+/**
+ * Generate localized character preset descriptions using the embedment system
+ */
+export function generateCharacterPresetLocalizedMetaDescriptions(
+  preset: CharacterPreset,
+  _defaultName: string
+): { lang: string; description: string }[] {
+  const supportedLangs = Object.keys(langs);
+  const results: { lang: string; description: string }[] = [];
+
+  const templateKey = resolveLocalizationKey(
+    'CharacterPreset_Meta_Description',
+    'Web_UI'
+  );
+
+  const embeds: Record<string, LocalizationKey> = {
+    preset_name: preset.name,
+    character_type: { InvariantString: preset.character_type || 'Unknown' },
+  };
+
+  for (const lang of supportedLangs) {
+    const locData = loadLocalizationData(lang);
+    if (!locData) continue;
+
+    let description = resolveLocalizedEmbeds(templateKey, embeds, locData);
+
+    // Fallback to English template if localized template is empty or not found
+    if (!description && lang !== 'en') {
+      const enLocData = loadLocalizationData('en');
+      if (enLocData) {
+        description = resolveLocalizedEmbeds(templateKey, embeds, enLocData);
+      }
+    }
+
+    // Final fallback to a simple description if still empty
+    if (!description) {
+      description = `${_defaultName}: View detailed character preset information and modules.`;
     }
 
     // Apply length limit for SEO

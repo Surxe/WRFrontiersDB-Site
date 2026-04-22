@@ -25,6 +25,13 @@ Example: [modules/[id].astro](../../src/pages/modules/[id].astro)
 
 - Localization keys stored in JSON objects: `{ Key: string, TableNamespace: string, en: string }`
 - `en` value used as default/fallback text in SSR HTML
+- Game localization data exists in `WRFrontiersDB-Data/current/Localization/` directory
+- Site localization data exists in `public/locales/` directory
+- Site localization includes Web_UI section with meta description templates for SEO
+- Meta descriptions generated server-side for each language using embedment system
+- Functions like `generatePilotLocalizedMetaDescriptions()` create localized meta tags
+- Templates support variable embedding: `{variable_name}` replaced with object data
+- Each language gets separate `<meta name="description" lang="{lang}">` tag in HTML head
 
 ### Client-side (runtime)
 

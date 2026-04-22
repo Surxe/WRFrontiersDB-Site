@@ -1,6 +1,7 @@
 ---
 import Breadcrumb from '../../components/Breadcrumb.astro';
-import ParseObjectListPage from '../../components/ParseObjectListPage.astro';
+import ParseObjectPage from '../../components/ParseObjectPage.astro';
+import LocalizedText from '../../components/LocalizedText.astro';
 import BotItem from '../../components/bot/BotItem.astro';
 import ObjectPageScripts from '../../components/ObjectPageScripts.astro';
 import {
@@ -11,6 +12,7 @@ import {
 import { getCharacterPresetDetailBreadcrumbs } from '../../utils/breadcrumb';
 import { getDefaultString } from '../../utils/localization';
 import { getObjRefData } from '../../utils/obj_ref';
+import { generateCharacterPresetLocalizedMetaDescriptions } from '../../utils/build_localization';
 import TextElements from '../../components/obj_ref/TextElements.astro';
 import type { CharacterPreset } from '../../types/character_preset';
 
@@ -29,13 +31,27 @@ const pilots = getParseObjects('Objects/Pilot.json');
 const modules = getParseObjects('Objects/Module.json');
 
 const objRefData = preset ? getObjRefData(preset) : null;
+
+const localizedDescriptions = preset ? generateCharacterPresetLocalizedMetaDescriptions(
+  preset,
+  getDefaultString(preset.name) || preset.id
+) : [];
 ---
 
-<ParseObjectListPage
-  title={objRefData ? [objRefData.text as any, { InvariantString: '- Factory Preset' }] : 'Character Preset'}
-  description={`View details for character preset ${getDefaultString(preset?.name) || preset?.id} from War Robots Frontiers`}
+<ParseObjectPage
+  localizedDescriptions={localizedDescriptions}
   headerImage="/images/T_UnLockPilots.png"
+  type="article"
 >
+  {preset && (
+    <LocalizedText
+      id="character-preset-name-title"
+      tag="title"
+      localizationKey={preset.name}
+      slot="head"
+    />
+  )}
+
   <Breadcrumb breadcrumbs={getCharacterPresetDetailBreadcrumbs(preset)} />
 
   {
@@ -59,5 +75,5 @@ const objRefData = preset ? getObjRefData(preset) : null;
     )
   }
 
-  <ObjectPageScripts objectData={preset} />
-</ParseObjectListPage>
+  <ObjectPageScripts objectData={preset} jsFileName="character_preset.js" />
+</ParseObjectPage>

@@ -9,6 +9,7 @@ import { getAllVirtualBots, getVirtualBotById } from '../../utils/bot_modules';
 import type { CharacterPreset } from '../../types/character_preset';
 import type { Module } from '../../types/module';
 import { getDefaultString } from '../../utils/localization';
+import { generateRobotLocalizedMetaDescriptions } from '../../utils/build_localization';
 
 export async function getStaticPaths() {
   const presets = getParseObjects<CharacterPreset>(
@@ -42,12 +43,10 @@ export function getRobotDetailBreadcrumbs(botName: string) {
   ];
 }
 
-const localizedDescriptions = [
-  {
-    lang: 'en',
-    description: `View all details for ${getDefaultString(bot.name)} in War Robots Frontiers.`,
-  },
-];
+const localizedDescriptions = generateRobotLocalizedMetaDescriptions(
+  bot,
+  getDefaultString(bot.name) || bot.id
+);
 
 ---
 
