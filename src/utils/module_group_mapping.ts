@@ -241,18 +241,6 @@ export function getAllModuleGroupIdsSorted(): ModuleGroupId[] {
     .map(([id]) => id as ModuleGroupId);
 }
 
-/**
- * Get the singular English name for a module group
- * @param groupId - The module group ID
- * @returns The singular English name
- */
-export function getModuleGroupSingularName(groupId: ModuleGroupId): string {
-  const group = MODULE_GROUPS[groupId];
-  if (!group?.singular_name?.en) {
-    throw new Error(`No singular name found for module group: ${groupId}`);
-  }
-  return group.singular_name.en;
-}
 
 /**
  * Get the most appropriate module type description for a module group

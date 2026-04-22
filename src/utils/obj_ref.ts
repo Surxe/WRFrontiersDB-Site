@@ -60,7 +60,7 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
           return {
             text: [
               module.name as LocalizationKey,
-              group.singular_name as LocalizationKey,
+              group.name as LocalizationKey,
             ],
             iconPath: module.inventory_icon_path,
             hoverText: module.description || undefined,
