@@ -25,13 +25,8 @@ export const MODULE_GROUPS = {
     id: 'titan-torsos',
     sort_order: 1,
     name: {
-      Key: 'GRP_TitanTorsos_Name',
-      TableNamespace: 'ModuleGroups',
-      en: 'Titan Torsos',
-    },
-    singular_name: {
-      Key: 'GRP_TitanTorsos_Singular_Name',
-      TableNamespace: 'ModuleGroups',
+      Key: 'CMP_Type_Titan_Torso',
+      TableNamespace: 'Component_Tags',
       en: 'Titan Torso',
     },
   },
@@ -39,13 +34,8 @@ export const MODULE_GROUPS = {
     id: 'non-titan-torsos',
     sort_order: 2,
     name: {
-      Key: 'GRP_Torsos_Name',
-      TableNamespace: 'ModuleGroups',
-      en: 'Torsos',
-    },
-    singular_name: {
-      Key: 'GRP_Torsos_Singular_Name',
-      TableNamespace: 'ModuleGroups',
+      Key: 'HNG_Torso',
+      TableNamespace: 'Component_Tags',
       en: 'Torso',
     },
   },
@@ -53,13 +43,8 @@ export const MODULE_GROUPS = {
     id: 'titan-chassis',
     sort_order: 3,
     name: {
-      Key: 'GRP_TitanChassis_Name',
-      TableNamespace: 'ModuleGroups',
-      en: 'Titan Chassis',
-    },
-    singular_name: {
-      Key: 'GRP_TitanChassis_Singular_Name',
-      TableNamespace: 'ModuleGroups',
+      Key: 'CMP_Type_Titan_Chassis',
+      TableNamespace: 'Component_Tags',
       en: 'Titan Chassis',
     },
   },
@@ -67,13 +52,8 @@ export const MODULE_GROUPS = {
     id: 'non-titan-chassis',
     sort_order: 4,
     name: {
-      Key: 'GRP_Chassis_Name',
-      TableNamespace: 'ModuleGroups',
-      en: 'Chassis',
-    },
-    singular_name: {
-      Key: 'GRP_Chassis_Singular_Name',
-      TableNamespace: 'ModuleGroups',
+      Key: 'HNG_Chassis',
+      TableNamespace: 'Component_Tags',
       en: 'Chassis',
     },
   },
@@ -83,11 +63,6 @@ export const MODULE_GROUPS = {
     name: {
       Key: 'GRP_TitanShoulders_Name',
       TableNamespace: 'ModuleGroups',
-      en: 'Titan Shoulders',
-    },
-    singular_name: {
-      Key: 'GRP_TitanShoulders_Singular_Name',
-      TableNamespace: 'ModuleGroups',
       en: 'Titan Shoulder',
     },
   },
@@ -95,13 +70,8 @@ export const MODULE_GROUPS = {
     id: 'non-titan-shoulder',
     sort_order: 6,
     name: {
-      Key: 'GRP_Shoulders_Name',
-      TableNamespace: 'ModuleGroups',
-      en: 'Shoulders',
-    },
-    singular_name: {
-      Key: 'GRP_Shoulders_Singular_Name',
-      TableNamespace: 'ModuleGroups',
+      Key: 'HNG_Shoulder',
+      TableNamespace: 'Component_Tags',
       en: 'Shoulder',
     },
   },
@@ -109,11 +79,6 @@ export const MODULE_GROUPS = {
     id: 'light-weapon',
     sort_order: 7,
     name: {
-      Key: 'GRP_LightWeapons_Name',
-      TableNamespace: 'ModuleGroups',
-      en: 'Light Weapons',
-    },
-    singular_name: {
       Key: 'GRP_LightWeapons_Singular_Name',
       TableNamespace: 'ModuleGroups',
       en: 'Light Weapon',
@@ -123,11 +88,6 @@ export const MODULE_GROUPS = {
     id: 'heavy-weapon',
     sort_order: 8,
     name: {
-      Key: 'GRP_HeavyWeapons_Name',
-      TableNamespace: 'ModuleGroups',
-      en: 'Heavy Weapons',
-    },
-    singular_name: {
       Key: 'GRP_HeavyWeapons_Singular_Name',
       TableNamespace: 'ModuleGroups',
       en: 'Heavy Weapon',
@@ -137,11 +97,6 @@ export const MODULE_GROUPS = {
     id: 'titan-weapon',
     sort_order: 9,
     name: {
-      Key: 'GRP_TitanWeapons_Name',
-      TableNamespace: 'ModuleGroups',
-      en: 'Titan Weapons',
-    },
-    singular_name: {
       Key: 'GRP_TitanWeapons_Singular_Name',
       TableNamespace: 'ModuleGroups',
       en: 'Titan Weapon',
@@ -151,11 +106,6 @@ export const MODULE_GROUPS = {
     id: 'supply-gear',
     sort_order: 10,
     name: {
-      Key: 'GRP_SupplyGear_Name',
-      TableNamespace: 'ModuleGroups',
-      en: 'Supply Gear',
-    },
-    singular_name: {
       Key: 'GRP_SupplyGear_Singular_Name',
       TableNamespace: 'ModuleGroups',
       en: 'Supply Gear',
@@ -165,11 +115,6 @@ export const MODULE_GROUPS = {
     id: 'cycle-gear',
     sort_order: 11,
     name: {
-      Key: 'GRP_CycleGear_Name',
-      TableNamespace: 'ModuleGroups',
-      en: 'Cycle Gear',
-    },
-    singular_name: {
       Key: 'GRP_CycleGear_Singular_Name',
       TableNamespace: 'ModuleGroups',
       en: 'Cycle Gear',
