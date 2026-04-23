@@ -6,6 +6,7 @@ import type {
   PilotTalent,
   PilotTalentType,
 } from '../../types/pilot';
+import { URL } from 'node:url';
 import { prepareObjectList, groupBy, sortGroups } from '../../utils/list';
 import { resolveObjectRef } from '../../utils/object_resolver';
 import { refToId } from '../../utils/object_reference';
@@ -35,7 +36,13 @@ const currentView = view || 'talent-overview';
 
 // Validate view and redirect to default if invalid
 if (!validViews.includes(currentView)) {
-  return Astro.redirect('/pilots/talent-overview', 301);
+  const currentUrl = Astro.url;
+  const redirectUrl = new URL('/pilots/talent-overview', currentUrl.origin);
+  // Preserve all query parameters from the current URL
+  currentUrl.searchParams.forEach((value, key) => {
+    redirectUrl.searchParams.set(key, value);
+  });
+  return Astro.redirect(redirectUrl.pathname + redirectUrl.search, 301);
 }
 
 // Load base data (always needed)

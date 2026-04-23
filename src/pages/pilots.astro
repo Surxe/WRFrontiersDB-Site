@@ -1,5 +1,17 @@
 ---
 // Redirect to the default pilots view
+import { URL } from 'node:url';
+
+// Get the current URL and preserve query parameters
+const currentUrl = Astro.url;
+const redirectUrl = new URL('/pilots/talent-overview', currentUrl.origin);
+// Preserve all query parameters from the current URL
+currentUrl.searchParams.forEach((value, key) => {
+  redirectUrl.searchParams.set(key, value);
+});
+
+const finalRedirectUrl = redirectUrl.pathname + redirectUrl.search;
+const canonicalUrl = redirectUrl.pathname + redirectUrl.search;
 ---
 
 <!doctype html>
@@ -7,12 +19,12 @@
   <head>
     <meta charset="utf-8" />
     <title>Redirecting to Pilots...</title>
-    <meta http-equiv="refresh" content="0; url=/pilots/talent-overview" />
-    <link rel="canonical" href="/pilots/talent-overview" />
+    <meta http-equiv="refresh" content={`0; url=${finalRedirectUrl}`} />
+    <link rel="canonical" href={canonicalUrl} />
   </head>
   <body>
     <p>
-      Redirecting to <a href="/pilots/talent-overview">Talent Overview</a>...
+      Redirecting to <a href={finalRedirectUrl}>Talent Overview</a>...
     </p>
   </body>
 </html>
