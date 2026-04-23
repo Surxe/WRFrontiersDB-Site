@@ -22,8 +22,6 @@ const entries = prepareObjectList(pilotClasses, { prodReadyOnly: false });
   <Breadcrumb breadcrumbs={getPilotClassesBreadcrumbs()} />
   <h1>Pilot Classes</h1>
 
-  <p>Showing pilot classes from current version</p>
-
   <ul>
     {
       entries.map(([_id, pilotClass]) => (

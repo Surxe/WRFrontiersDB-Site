@@ -136,7 +136,7 @@ export function isObjectProductionReady(
   }
 }
 
-// Generate static paths for objects in current version only
+// Generate static paths for objects
 export async function generateObjectStaticPaths(
   parseObjectPath: string = 'Objects/Module.json',
   prodReadyOnly: boolean = false
@@ -165,7 +165,7 @@ export async function generateObjectStaticPaths(
         continue;
       }
 
-      // Generate path for current version only
+      // Generate path
       paths.push({
         params: { id: objectId },
         props: {},
@@ -176,7 +176,7 @@ export async function generateObjectStaticPaths(
   return paths;
 }
 
-// Generate static paths for object list pages (e.g., /modules, /pilots, etc.) - current version only
+// Generate static paths for object list pages (e.g., /modules, /pilots, etc.)
 export function generateObjectListStaticPaths(
   objectType:
     | 'Module'

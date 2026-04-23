@@ -4,7 +4,7 @@ Before answering any question, always say 'I have read the copilot instructions 
 
 ## Project Overview
 
-Static Astro site displaying War Robots Frontiers game data from WRFrontiersDB-Data/current. The site builds static pages for game objects (modules, pilots, talents) across multiple game versions with client-side localization.
+Static Astro site displaying War Robots Frontiers game data from WRFrontiersDB-Data/current. The site builds static pages for game objects (modules, pilots, talents) for the latest game version with client-side localization.
 
 ## Quick Reference
 
@@ -21,8 +21,7 @@ Static Astro site displaying War Robots Frontiers game data from WRFrontiersDB-D
 
 1. **Production filtering**: Only objects that support `production_status` attribute and have it set to `'Ready'` appear in production lists
 2. **No TypeScript in public/js**: Client-side scripts must be plain JavaScript with JSDoc
-3. **Localization is version-specific**: Each game version has its own localization files
-4. **Tests go in tests/ directory**: Never place test files next to source files
+3. **Tests go in tests/ directory**: Never place test files next to source files
 
 ## Tech Stack
 
@@ -47,7 +46,6 @@ tests/            # Test files organized by type
   js/             # Tests for public/js/*.js
 WRFrontiersDB-Data/  # External data repository (read-only)
   current/        # Current game data
-  versions.json   # Version registry
 ```
 
 ## Quick Commands

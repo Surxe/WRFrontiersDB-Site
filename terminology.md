@@ -53,7 +53,7 @@ Multi-language support system using key-based text references. All user-facing t
 
 ### Object Reference
 
-String-based references linking game objects together using the format `OBJID_[Type]::[Name].[Version]`. This allows objects to reference each other without direct object dependencies.
+String-based references linking game objects together using the format `OBJID_[Type]::[Name]`. This allows objects to reference each other without direct object dependencies.
 
 ### Slug
 

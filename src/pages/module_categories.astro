@@ -33,8 +33,6 @@ const sortedGroups = sortGroups(grouped);
   <Breadcrumb breadcrumbs={getModuleGroupsBreadcrumbs()} />
   <h1>Module Categories</h1>
 
-  <p>Showing module categories from current version</p>
-
   {
     sortedGroups.map(([categoryName, categoryEntries]) => (
       <section>

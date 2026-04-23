@@ -31,7 +31,7 @@ const localizationCache = {};
 /**
  * Loads localization data for a specific language and version
  * @param {string} lang - Language code (e.g., 'en', 'ru', 'ja')
- * @param {string} version - Game version date (e.g., '2025-12-09')
+ * @param {string} version - Game version date (e.g., '2025-12-09' or 'current')
  * @returns {Promise<LocalizationData|null>} Localization data or null if failed
  */
 export async function loadLanguage(lang, version) {

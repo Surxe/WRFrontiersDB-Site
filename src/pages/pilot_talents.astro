@@ -45,8 +45,6 @@ const sortedGroups = sortGroups(grouped, (a, b) => Number(a) - Number(b));
   <Breadcrumb breadcrumbs={getPilotTalentsBreadcrumbs()} />
   <h1>Pilot Talents</h1>
 
-  <p>Showing pilot talents from current version</p>
-
   {
     sortedGroups.map(([levelNum, pilotTalentEntries]) => (
       <section>

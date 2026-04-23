@@ -30,7 +30,7 @@ export function camelToKebab(str: string): string {
   return (
     str
       .replace(/^DA_Preset_/i, '') // Strip DA_Preset_ prefix
-      .replace(/\.[0-9]+$/, '') // Strip version suffixes like .0
+      .replace(/\.[0-9]+$/, '') // Strip index suffixes like .0
       .replace(/_/g, '-') // Replace underscores with hyphens FIRST so \b works later
       .replace(/([a-z])([A-Z])/g, '$1-$2') // Add hyphens before capitals
       .toLowerCase()

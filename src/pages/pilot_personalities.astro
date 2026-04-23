@@ -24,8 +24,6 @@ const entries = prepareObjectList(pilotPersonalities, { prodReadyOnly: false });
   <Breadcrumb breadcrumbs={getPilotPersonalitiesBreadcrumbs()} />
   <h1>Pilot Personalities</h1>
 
-  <p>Showing pilot personalities from latest version (current)</p>
-
   <ul>
     {
       entries.map(([_id, personality]) => (

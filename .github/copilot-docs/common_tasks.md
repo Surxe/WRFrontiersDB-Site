@@ -35,8 +35,3 @@ Injected by `ObjectPageScripts` component using `<script type="application/json"
 2. **Import and use** in pages or other components
 3. **Pass props** using TypeScript interfaces for type safety
 4. **Use slots** for flexible content injection when appropriate
-
-## Working with Versions
-
-- **Latest version**: `getLatestVersion()` returns the current latest version
-- **Version support**: Only latest version is supported; no version navigation or historical data
