@@ -1,17 +1,5 @@
 ---
 // Redirect to the default pilots view
-import { URL } from 'node:url';
-
-// Get the current URL and preserve query parameters
-const currentUrl = Astro.url;
-const redirectUrl = new URL('/pilots/talent-overview', currentUrl.origin);
-// Preserve all query parameters from the current URL
-currentUrl.searchParams.forEach((value, key) => {
-  redirectUrl.searchParams.set(key, value);
-});
-
-const finalRedirectUrl = redirectUrl.pathname + redirectUrl.search;
-const canonicalUrl = redirectUrl.pathname + redirectUrl.search;
 ---
 
 <!doctype html>
@@ -19,12 +7,25 @@ const canonicalUrl = redirectUrl.pathname + redirectUrl.search;
   <head>
     <meta charset="utf-8" />
     <title>Redirecting to Pilots...</title>
-    <meta http-equiv="refresh" content={`0; url=${finalRedirectUrl}`} />
-    <link rel="canonical" href={canonicalUrl} />
+    <script>
+      // Client-side redirect that preserves query parameters
+      (function() {
+        const currentUrl = new URL(window.location.href);
+        const redirectUrl = new URL('/pilots/talent-overview', window.location.origin);
+        
+        // Preserve all query parameters from the current URL
+        currentUrl.searchParams.forEach((value, key) => {
+          redirectUrl.searchParams.set(key, value);
+        });
+        
+        // Perform the redirect
+        window.location.replace(redirectUrl.toString());
+      })();
+    </script>
   </head>
   <body>
     <p>
-      Redirecting to <a href={finalRedirectUrl}>Talent Overview</a>...
+      Redirecting to <a href="/pilots/talent-overview">Talent Overview</a>...
     </p>
   </body>
 </html>
