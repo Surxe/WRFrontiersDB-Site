@@ -52,8 +52,8 @@ const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
     localizationKey={pilotClass.name}
   />
 
-  <Icon iconPath={pilotClass.image_path} altText={`${defaultName} icon`} />
-
+  <Icon iconPath={pilotClass.badge.image_path} altText={`${defaultName} icon`} />
+  
   <p>Language: <span id="current-lang">en</span></p>
 
   <PilotClassesNavBox currentClass={pilotClass} />
