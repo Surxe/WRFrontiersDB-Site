@@ -7,10 +7,7 @@ import type { Module } from '../types/module';
 import type { Pilot, PilotTalent } from '../types/pilot';
 import type { CharacterPreset } from '../types/character_preset';
 import type { LocalizationKey } from '../types/localization';
-import {
-  getModuleGroupId,
-  MODULE_GROUPS,
-} from './module_group_mapping';
+import { getModuleGroupId, MODULE_GROUPS } from './module_group_mapping';
 import { getDefaultString } from './localization';
 import { toSlug, camelToKebab } from './slug_base';
 import { refToId } from './object_reference';

@@ -47,7 +47,6 @@ const localizedDescriptions = generateRobotLocalizedMetaDescriptions(
   bot,
   getDefaultString(bot.name) || bot.id
 );
-
 ---
 
 <ParseObjectPage
@@ -62,13 +61,13 @@ const localizedDescriptions = generateRobotLocalizedMetaDescriptions(
     slot="head"
   />
 
-  <Breadcrumb breadcrumbs={getRobotDetailBreadcrumbs(getDefaultString(bot.name) || bot.id)} />
-
-  <LocalizedText
-    id="robot-name"
-    tag="h1"
-    localizationKey={bot.name}
+  <Breadcrumb
+    breadcrumbs={getRobotDetailBreadcrumbs(
+      getDefaultString(bot.name) || bot.id
+    )}
   />
+
+  <LocalizedText id="robot-name" tag="h1" localizationKey={bot.name} />
   <p><strong>Type:</strong> {bot.character_type}</p>
 
   <section style="margin-top: 2rem;">
@@ -98,8 +97,5 @@ const localizedDescriptions = generateRobotLocalizedMetaDescriptions(
     </div>
   </section>
 
-  <ObjectPageScripts
-    objectData={bot}
-    jsFileName="robot_page.js"
-  />
+  <ObjectPageScripts objectData={bot} jsFileName="robot_page.js" />
 </ParseObjectPage>

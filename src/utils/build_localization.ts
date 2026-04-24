@@ -297,7 +297,11 @@ export function generateRobotLocalizedMetaDescriptions(
 
   const embeds: Record<string, LocalizationKey> = {
     robot_name: robot.name,
-    robot_type: { Key: robot.character_type, TableNamespace: 'Web_UI', en: robot.character_type },
+    robot_type: {
+      Key: robot.character_type,
+      TableNamespace: 'Web_UI',
+      en: robot.character_type,
+    },
   };
 
   for (const lang of supportedLangs) {
@@ -346,7 +350,11 @@ export function generateCharacterPresetLocalizedMetaDescriptions(
 
   const embeds: Record<string, LocalizationKey> = {
     preset_name: preset.name,
-    character_type: { Key: preset.character_type, TableNamespace: 'Web_UI', en: preset.character_type },
+    character_type: {
+      Key: preset.character_type,
+      TableNamespace: 'Web_UI',
+      en: preset.character_type,
+    },
   };
 
   for (const lang of supportedLangs) {

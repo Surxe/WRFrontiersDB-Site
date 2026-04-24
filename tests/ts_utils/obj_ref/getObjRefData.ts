@@ -9,6 +9,7 @@ import type {
   Pilot,
 } from '../../../src/types/pilot';
 import type { ParseObject } from '../../../src/types/parse_object';
+import type { LocalizationKey } from '../../../src/types/localization';
 
 describe('getObjRefData', () => {
   const mockLocalizationKey = {
@@ -84,19 +85,27 @@ describe('getObjRefData', () => {
   });
 
   describe('Pilot', () => {
-    it('should return correct ObjRefData using first_name', () => {
+    it('should return correct ObjRefData using first_name + second_name', () => {
+      const mockSecondName: LocalizationKey = {
+        Key: 'SECOND_NAME',
+        TableNamespace: 'Pilot',
+        en: 'Doe',
+      };
+
       const pilot: Pilot = {
         parseObjectClass: 'Pilot',
+        parseObjectUrl: 'pilots',
         id: 'PIL_123',
         first_name: mockLocalizationKey,
+        second_name: mockSecondName,
         image_path: '/path/to/pilot',
         bio: mockLocalizationKey,
-        pilot_type_id: 'type_id',
-        pilot_class_id: 'class_id',
-        personality_id: 'personality_id',
-        faction_id: 'faction_id',
+        pilot_type_ref: 'type_ref',
+        pilot_class_ref: 'class_ref',
+        personality_ref: 'personality_ref',
+        faction_ref: 'faction_ref',
         sell_price: {
-          currency_id: 'currency',
+          currency_ref: 'currency',
           amount: 100,
         },
         levels: [],
@@ -105,7 +114,34 @@ describe('getObjRefData', () => {
       const result = getObjRefData(pilot);
 
       expect(result).toEqual({
-        text: mockLocalizationKey,
+        text: [mockLocalizationKey, mockSecondName],
+        iconPath: '/path/to/pilot',
+      });
+    });
+
+    it('should return correct ObjRefData using only first_name when second_name is missing', () => {
+      const pilot: Pilot = {
+        parseObjectClass: 'Pilot',
+        parseObjectUrl: 'pilots',
+        id: 'PIL_456',
+        first_name: mockLocalizationKey,
+        image_path: '/path/to/pilot',
+        bio: mockLocalizationKey,
+        pilot_type_ref: 'type_ref',
+        pilot_class_ref: 'class_ref',
+        personality_ref: 'personality_ref',
+        faction_ref: 'faction_ref',
+        sell_price: {
+          currency_ref: 'currency',
+          amount: 100,
+        },
+        levels: [],
+      };
+
+      const result = getObjRefData(pilot);
+
+      expect(result).toEqual({
+        text: [mockLocalizationKey],
         iconPath: '/path/to/pilot',
       });
     });
@@ -210,16 +246,17 @@ describe('getObjRefData', () => {
     it('should accept Pilot type directly', () => {
       const pilot: Pilot = {
         parseObjectClass: 'Pilot',
+        parseObjectUrl: 'pilots',
         id: 'PIL_123',
         first_name: mockLocalizationKey,
         image_path: '/path/to/pilot',
         bio: mockLocalizationKey,
-        pilot_type_id: 'type_id',
-        pilot_class_id: 'class_id',
-        personality_id: 'personality_id',
-        faction_id: 'faction_id',
+        pilot_type_ref: 'type_ref',
+        pilot_class_ref: 'class_ref',
+        personality_ref: 'personality_ref',
+        faction_ref: 'faction_ref',
         sell_price: {
-          currency_id: 'currency',
+          currency_ref: 'currency',
           amount: 100,
         },
         levels: [],
@@ -227,7 +264,7 @@ describe('getObjRefData', () => {
 
       // This should compile without errors due to overloads
       const result = getObjRefData(pilot);
-      expect(result.text).toBe(mockLocalizationKey);
+      expect(result.text).toEqual([mockLocalizationKey]);
     });
   });
 });

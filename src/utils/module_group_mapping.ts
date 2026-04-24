@@ -241,7 +241,6 @@ export function getAllModuleGroupIdsSorted(): ModuleGroupId[] {
     .map(([id]) => id as ModuleGroupId);
 }
 
-
 /**
  * Get the most appropriate module type description for a module group
  * @param groupId - The module group ID

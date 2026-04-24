@@ -1,7 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type { LocalizationKey } from '../types/localization';
-import langs from '../../public/langs.json';
 
 const serverLocalizationCache: Record<
   string,

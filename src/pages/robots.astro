@@ -32,8 +32,10 @@ const groupedBots = bots.reduce(
 // Sort groups alphabetically
 const sortedGroupKeys = Object.keys(groupedBots).sort();
 for (const key of sortedGroupKeys) {
-  groupedBots[key].sort((a, b) => 
-    (getDefaultString(a.name) || a.name.Key || '').localeCompare(getDefaultString(b.name) || b.name.Key || '')
+  groupedBots[key].sort((a, b) =>
+    (getDefaultString(a.name) || a.name.Key || '').localeCompare(
+      getDefaultString(b.name) || b.name.Key || ''
+    )
   );
 }
 
