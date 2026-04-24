@@ -30,7 +30,7 @@ This document details all end-level enrichments that occur in the WRFrontiersDB-
 ```typescript
 interface EnrichedModule extends Module {
   module_group?: string; // e.g., "titan-shoulder", "non-titan-shoulder"
-  bot_id?: string;
+  bot_ref?: string;
   has_distinct_shoulders?: boolean;
 }
 ```
@@ -42,16 +42,16 @@ interface EnrichedModule extends Module {
 **What it does**:
 - Creates virtual bots from factory presets
 - Maps core modules to their associated bot IDs
-- Adds `bot_id` field to modules
+- Adds `bot_ref` field to modules
 - Calculates `has_distinct_shoulders` for shoulder modules
 
 **Input**: Modules + character presets
-**Output**: Modules with `bot_id` and `has_distinct_shoulders` fields
+**Output**: Modules with `bot_ref` and `has_distinct_shoulders` fields
 
 **Data added**:
 ```typescript
 {
-  bot_id: string, // e.g., "alpha", "ares", "grim"
+  bot_ref: string, // e.g., "alpha", "ares", "grim"
   has_distinct_shoulders?: boolean // true if preset has different left/right shoulders
 }
 ```
@@ -83,7 +83,7 @@ presetDistinctShoulders[presetId] = Boolean(
 
 **What it does**:
 - Scans all pilots to find which ones use each talent
-- Adds `talent_type_id` and `level` to talent objects
+- Adds `talent_type_ref` and `level` to talent objects
 - Creates `pilots_with_this_talent` array with pilot info
 - Sorts pilots: hero pilots first, then by name
 
@@ -93,7 +93,7 @@ presetDistinctShoulders[presetId] = Boolean(
 **Data added**:
 ```typescript
 interface EnrichedPilotTalent extends PilotTalent {
-  talent_type_id: string;
+  talent_type_ref: string;
   level: number;
   pilots_with_this_talent: PilotWithTalentInfo[];
 }
@@ -109,7 +109,7 @@ interface PilotWithTalentInfo {
 1. Initialize all talents with empty `pilots_with_this_talent` arrays
 2. For each pilot, scan through talent levels and references
 3. Add pilot info to corresponding talent entries
-4. Set `talent_type_id` and `level` from first occurrence
+4. Set `talent_type_ref` and `level` from first occurrence
 5. Sort pilots array (hero pilots first)
 
 ---
@@ -178,7 +178,7 @@ interface VirtualBot {
 
 #### Modules
 - Standard: `{module_group_singular.en}-{module_name.en}`
-- Titan shoulders: `titan-shoulder-{side}-{bot_id}`
+- Titan shoulders: `titan-shoulder-{side}-{bot_ref}`
 - Example: "titan-shoulder-left-alpha"
 
 #### Character Presets
@@ -224,7 +224,7 @@ interface VirtualBot {
 
 **Logic**:
 ```typescript
-if (enrichedModule.has_distinct_shoulders && enrichedModule.bot_id) {
+if (enrichedModule.has_distinct_shoulders && enrichedModule.bot_ref) {
   const groupId = getModuleGroupId(module.module_type_ref);
   if (groupId === 'titan-shoulder' || groupId === 'non-titan-shoulder') {
     const isLeftShoulder = module.module_type_ref.includes('ShoulderL') || 
