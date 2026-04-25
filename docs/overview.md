@@ -8,12 +8,12 @@ Static Astro site displaying War Robots Frontiers game data from WRFrontiersDB-D
 
 ## Quick Reference
 
-**Detailed Documentation**:
-
-- [Architecture](copilot-docs/architecture.md) - Data layer, SSG, build vs runtime
-- [Conventions](copilot-docs/conventions.md) - Parse objects, localization, file organization
-- [Common Tasks](copilot-docs/common_tasks.md) - Step-by-step workflows
-- [Testing](copilot-docs/testing.md) - Vitest setup, patterns, and guidelines
+- [Architecture](architecture.md) - Data layer, SSG, build vs runtime
+- [Conventions](conventions.md) - Parse objects, localization, file organization
+- [Object References](object_refs.md) - ObjRef component family and reference resolution
+- [Character Preset Modules Logic](character_preset_modules_logic.md) - Module integration in character presets
+- [Ability Relationships](ability_relationships.md) - Ability system connections and dependencies
+- [Browser Data Access](browser-data-access.md) - Testing data accessibility and patterns
 
 ## Critical Rules
 
