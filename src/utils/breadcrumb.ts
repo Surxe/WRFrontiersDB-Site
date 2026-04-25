@@ -1,4 +1,5 @@
 import type { BreadcrumbTrail } from '../types/breadcrumb';
+import type { LocalizationKey } from '../types/localization';
 import { getDefaultString, resolveLocalizationKey } from './localization';
 import type { Module, ModuleCategory } from '../types/module';
 import type {
@@ -131,7 +132,8 @@ export function getModuleGroupDetailBreadcrumbs(
   let groupName = groupId;
   try {
     const group = getParseObject(groupId, 'Objects/ModuleGroup.json');
-    groupName = getDefaultString(group?.name as any) || groupId;
+    groupName =
+      getDefaultString(group?.name as LocalizationKey | undefined) || groupId;
   } catch {
     // Group not found, use default groupId
   }
@@ -471,7 +473,7 @@ export function getCharacterPresetDetailBreadcrumbs(
       isCurrent: false,
     },
     {
-      label: preset?.is_factory_preset 
+      label: preset?.is_factory_preset
         ? resolveLocalizationKey('Breadcrumb_Factory_Bots', 'Web_UI')
         : resolveLocalizationKey('Breadcrumb_AI_Bots', 'Web_UI'),
       href: preset?.is_factory_preset ? '/factory_bots' : '/ai_bots',
