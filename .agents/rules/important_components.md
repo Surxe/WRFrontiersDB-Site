@@ -2,7 +2,7 @@
 
 This document outlines the most important components that agents should consider using when working with the WRFrontiersDB-Site codebase.
 
-## 🔧 Core Infrastructure Components
+## Core Infrastructure Components
 
 ### 1. ObjRef Family (`src/components/obj_ref/`)
 
@@ -28,7 +28,7 @@ Base page layout component:
 - Handles meta tags, SEO, language selector, header images
 - Provides consistent page structure
 
-## 🎯 Data Display Components
+## Data Display Components
 
 ### 4. StatEmbedLocalizedText.astro
 
