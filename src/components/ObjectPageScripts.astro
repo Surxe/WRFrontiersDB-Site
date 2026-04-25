@@ -2,9 +2,16 @@
 export interface Props {
   objectData: any;
   jsFileName?: string;
+  slug?: string;
 }
 
-const { objectData, jsFileName } = Astro.props;
+const { objectData, jsFileName, slug } = Astro.props;
+
+// Store complete object data with slug for browser access
+const browserData = {
+  ...objectData,
+  slug: slug,
+};
 ---
 
 <!--Common astro scripts for all ParseObject pages--><!--The object's data, for use by js-->
@@ -12,6 +19,13 @@ const { objectData, jsFileName } = Astro.props;
   type="application/json"
   id="object-data"
   set:text={JSON.stringify(objectData)}
+/>
+
+<!--Complete object data with slug for browser access-->
+<script
+  type="application/json"
+  id="browser-data"
+  set:text={JSON.stringify(browserData)}
 />
 
 <!--Initialize localization on all the localizeable elements-->

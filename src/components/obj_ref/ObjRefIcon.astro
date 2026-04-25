@@ -3,6 +3,7 @@
 import Icon from '../../components/Icon.astro';
 import type { ObjRefData } from '../../utils/obj_ref';
 import { getDefaultString } from '../../utils/localization';
+import type { LocalizationKey } from '../../types/localization';
 
 interface Props {
   objRefData: ObjRefData;
@@ -10,13 +11,22 @@ interface Props {
 }
 
 const { objRefData, iconSize } = Astro.props;
+
+// Helper function to handle LocalizationKey | LocalizationKey[]
+function getDefaultStringFromText(text: LocalizationKey | LocalizationKey[]): string {
+  if (Array.isArray(text)) {
+    // For arrays, use the first item's default string
+    return getDefaultString(text[0]) || '';
+  }
+  return getDefaultString(text) || '';
+}
 ---
 
 {
   objRefData.iconPath && (
     <Icon
       iconPath={objRefData.iconPath}
-      altText={`${getDefaultString(objRefData.text)} icon`}
+      altText={`${getDefaultStringFromText(objRefData.text)} icon`}
       size={iconSize}
       color={objRefData.iconColor}
     />
