@@ -7,9 +7,8 @@ import {
   loadLocalizationData,
 } from './localization';
 import type { Pilot, PilotTalent, PilotTalentType } from '../types/pilot';
-import type { EnrichedPilotTalent } from './pilot';
 import type { CharacterPreset } from '../types/character_preset';
-import type { VirtualBot } from './robot';
+import type { VirtualBot } from '../types/virtual_bot';
 import { refToId } from './object_reference';
 import { PILOT_TYPE_LEGENDARY_REF } from './constants';
 import langs from '../../public/langs.json';
@@ -20,14 +19,15 @@ const PILOT_TALENT_TEMPLATE_LIMIT = 5;
  * Generate localized pilot talent meta descriptions using the embedment system
  */
 export function generatePilotTalentLocalizedMetaDescriptions(
-  enrichedTalent: EnrichedPilotTalent,
-  statValueChoices: StatValueChoices
+  talent: PilotTalent,
+  statValueChoices: StatValueChoices,
+  allPilots: Record<string, Pilot>
 ): { lang: string; description: string }[] {
   const supportedLangs = Object.keys(langs);
   const results: { lang: string; description: string }[] = [];
 
   // Get the number of pilots with this talent
-  const pilotCount = enrichedTalent.pilots_with_this_talent?.length || 0;
+  const pilotCount = talent.pilots_with_this_talent?.length || 0;
 
   // Determine which template to use
   let templateKey: string;
@@ -57,7 +57,7 @@ export function generatePilotTalentLocalizedMetaDescriptions(
 
     // Get talent description with embedded stats
     const talentDescriptionWithStats = processLocalizedTextWithStats(
-      enrichedTalent.description,
+      talent.description,
       statValueChoices,
       0, // Use choice 0 for meta descriptions (default stat values)
       locData,
@@ -72,15 +72,20 @@ export function generatePilotTalentLocalizedMetaDescriptions(
 
     // Build embeds object
     const embeds: Record<string, LocalizationKey | string> = {
-      TalentName: enrichedTalent.name,
+      TalentName: talent.name,
       TalentDescriptionWithStats: cleanDescription,
     };
 
     // Add pilot names to embeds
     const maxPilots = Math.min(pilotCount, PILOT_TALENT_TEMPLATE_LIMIT);
-    for (let i = 0; i < maxPilots; i++) {
-      const pilot = enrichedTalent.pilots_with_this_talent[i].pilot;
-      embeds[`pilot${i + 1}`] = pilot.first_name;
+    if (talent.pilots_with_this_talent) {
+      for (let i = 0; i < maxPilots; i++) {
+        const pilotRef = talent.pilots_with_this_talent[i].pilot_ref;
+        const pilot = allPilots[refToId(pilotRef)];
+        if (pilot) {
+          embeds[`pilot${i + 1}`] = pilot.first_name;
+        }
+      }
     }
 
     // Resolve the final template with all embeds
@@ -280,6 +285,7 @@ export function generatePilotTalentTypeLocalizedMetaDescriptions(
 
   return results;
 }
+
 /**
  * Generate localized robot descriptions using the embedment system
  */

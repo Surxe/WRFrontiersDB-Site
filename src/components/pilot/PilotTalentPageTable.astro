@@ -1,15 +1,18 @@
 ---
 import TalentPilotRow from './TalentPilotRow.astro';
-import type { Pilot, PilotTalent } from '../../types/pilot';
+import type {
+  Pilot,
+  PilotTalent,
+  PilotWithTalentInfo,
+} from '../../types/pilot';
+import { refToId } from '../../utils/object_reference';
 
 interface Props {
-  pilotsWithThisTalent: {
-    pilot: Pilot;
-    level: number;
-    talentIndex: number;
-  }[];
+  pilotsWithThisTalent: PilotWithTalentInfo[];
   allPilotTalents: Record<string, PilotTalent>;
+  allPilots: Record<string, Pilot>;
   currentTalentId: string;
+  currentTalentLevel?: number;
   tableClass?: string;
   fullOrOnHover?: 'full' | 'onHover';
 }
@@ -17,7 +20,9 @@ interface Props {
 const {
   pilotsWithThisTalent,
   allPilotTalents,
+  allPilots,
   currentTalentId,
+  currentTalentLevel,
   tableClass = 'pilots-with-talent-table',
   fullOrOnHover = 'full',
 } = Astro.props;
@@ -28,14 +33,21 @@ if (pilotsWithThisTalent.length === 0) {
 }
 
 // Pre-calculate maxTalents for each pilot
-const pilotsWithMaxTalents = pilotsWithThisTalent.map(
-  ({ pilot, level, talentIndex }) => {
-    const maxTalents = Math.max(
-      ...pilot.levels.map((level) => level?.talents_refs?.length || 0)
-    );
-    return { pilot, level, talentIndex, maxTalents };
-  }
-);
+const pilotsWithMaxTalents = pilotsWithThisTalent
+  .map(({ pilot_ref, talent_index }) => {
+    const pilotId = refToId(pilot_ref);
+    const pilot = allPilots[pilotId];
+
+    let maxTalents = 1;
+    if (pilot && pilot.levels) {
+      maxTalents = Math.max(
+        ...pilot.levels.map((level) => level?.talents_refs?.length || 0)
+      );
+    }
+
+    return { pilot, level: currentTalentLevel || 1, talent_index, maxTalents };
+  })
+  .filter((p) => p.pilot); // Filter out missing pilots just in case
 ---
 
 <table class={tableClass}>
@@ -51,7 +63,7 @@ const pilotsWithMaxTalents = pilotsWithThisTalent.map(
   </thead>
   <tbody>
     {
-      pilotsWithMaxTalents.map(({ pilot, level, talentIndex, maxTalents }) => (
+      pilotsWithMaxTalents.map(({ pilot, level, talent_index, maxTalents }) => (
         <TalentPilotRow
           pilot={pilot}
           maxTalents={maxTalents}
@@ -59,7 +71,7 @@ const pilotsWithMaxTalents = pilotsWithThisTalent.map(
           fullOrOnHover={fullOrOnHover}
           highlightTalent={currentTalentId}
           highlightLevel={level}
-          highlightTalentIndex={talentIndex}
+          highlightTalentIndex={talent_index}
         />
       ))
     }

@@ -3,24 +3,22 @@ import Breadcrumb from '../components/Breadcrumb.astro';
 import ParseObjectListPage from '../components/ParseObjectListPage.astro';
 import { getParseObjects } from '../utils/parse_object';
 import { prepareObjectList, groupBy, sortGroups } from '../utils/list';
-import { enrichPilotTalents } from '../utils/pilot';
 import { getStatValueChoices } from '../utils/stat';
-import type { PilotTalent, PilotTalentType, Pilot } from '../types/pilot';
+import type { PilotTalent, PilotTalentType } from '../types/pilot';
 import type { ModuleStat } from '../types/module';
 import StatEmbedLocalizedText from '../components/StatEmbedLocalizedText.astro';
 import ObjRef from '../components/obj_ref/ObjRef.astro';
 import PilotTalentsNavBox from '../components/nav/PilotTalentsNavBox.astro';
 import { getPilotTalentsBreadcrumbs } from '../utils/breadcrumb';
+import { refToId } from '../utils/object_reference';
 
 // Load all data
 const pilotTalents = getParseObjects<PilotTalent>('Objects/PilotTalent.json');
 const pilotTalentTypes = getParseObjects<PilotTalentType>(
   'Objects/PilotTalentType.json'
 );
-const pilots = getParseObjects<Pilot>('Objects/Pilot.json');
-
-// Enrich talents with type and level information
-const enrichedTalents = enrichPilotTalents(pilotTalents, pilots);
+// Pilot talents are now enriched by parser
+const enrichedTalents = pilotTalents;
 
 // Load ModuleStats for stat replacements
 const moduleStats = getParseObjects<ModuleStat>('Objects/ModuleStat.json');
@@ -74,8 +72,10 @@ const sortedGroups = sortGroups(grouped, (a, b) => Number(a) - Number(b));
                   />
                 </td>
                 <td>
-                  {talent.talent_type_id && (
-                    <ObjRef obj={pilotTalentTypes[talent.talent_type_id]} />
+                  {talent.talent_type_ref && (
+                    <ObjRef
+                      obj={pilotTalentTypes[refToId(talent.talent_type_ref)]}
+                    />
                   )}
                 </td>
               </tr>

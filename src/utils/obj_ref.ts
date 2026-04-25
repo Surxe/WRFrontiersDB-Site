@@ -10,17 +10,11 @@ import type { Module, ModuleCategory } from '../types/module';
 import type { Rarity } from '../types/rarity';
 import type { CharacterPreset } from '../types/character_preset';
 import type { ParseObject } from '../types/parse_object';
-import { isCoreModule, getCoreModuleCategory } from './core_modules';
-import { getModuleGroupId, MODULE_GROUPS } from './module_group_mapping';
-import type { VirtualBot } from './robot';
-
-// Define ModuleGroup interface for obj_ref support
-interface ModuleGroup {
-  id: string;
-  name: LocalizationKey;
-  parseObjectClass: string;
-  parseObjectUrl: string;
-}
+import { getCoreModuleCategory } from './core_modules';
+import { getParseObject } from './parse_object';
+import { refToId } from './object_reference';
+import type { VirtualBot } from '../types/virtual_bot';
+import type { ModuleGroup } from '../types/module_group';
 
 // All the data necessary to reference the page in a generic way
 export interface ObjRefData {
@@ -51,33 +45,42 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
         throw new Error('Module object has no name');
       }
 
-      // Check if this is a core module
-      if (isCoreModule(module)) {
-        const groupId = getModuleGroupId(module.module_type_ref);
-        const group = groupId ? MODULE_GROUPS[groupId] : null;
+      // Check if this is a core module using virtual_bot_ref
+      if (module.virtual_bot_ref && module.module_group_ref) {
+        try {
+          const group = getParseObject<ModuleGroup>(
+            refToId(module.module_group_ref),
+            'Objects/ModuleGroup.json'
+          );
 
-        if (group) {
+          let texts: LocalizationKey[] = [module.name as LocalizationKey];
+
+          if (module.shoulder_side === 'L') {
+            texts.push({ en: 'Left Shoulder' } as LocalizationKey);
+          } else if (module.shoulder_side === 'R') {
+            texts.push({ en: 'Right Shoulder' } as LocalizationKey);
+          } else if (group && group.name) {
+            texts.push(group.name as LocalizationKey);
+          }
+
           return {
-            text: [
-              module.name as LocalizationKey,
-              group.name as LocalizationKey,
-            ],
+            text: texts,
             iconPath: module.inventory_icon_path,
             hoverText: module.description || undefined,
           };
-        }
-
-        // Fallback to category if group mapping fails
-        const category = getCoreModuleCategory(module);
-        if (category) {
-          return {
-            text: [
-              module.name as LocalizationKey,
-              category.name as LocalizationKey,
-            ],
-            iconPath: module.inventory_icon_path,
-            hoverText: module.description || undefined,
-          };
+        } catch {
+          // Fallback to category
+          const category = getCoreModuleCategory(module);
+          if (category) {
+            return {
+              text: [
+                module.name as LocalizationKey,
+                category.name as LocalizationKey,
+              ],
+              iconPath: module.inventory_icon_path,
+              hoverText: module.description || undefined,
+            };
+          }
         }
       }
 
@@ -171,7 +174,7 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
       const virtualBot = obj as unknown as VirtualBot;
       return {
         text: virtualBot.name as LocalizationKey,
-        iconPath: virtualBot.iconPath, // Use icon from VirtualBot object
+        iconPath: virtualBot.icon_path, // Use icon from VirtualBot object
       };
     }
     default:

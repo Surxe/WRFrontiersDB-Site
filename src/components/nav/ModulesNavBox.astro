@@ -1,38 +1,27 @@
 ---
+/* global console */
 import BaseNavBox from './BaseNavBox.astro';
-import { getParseObjects } from '../../utils/parse_object';
-import {
-  enrichModulesWithGroups,
-  MODULE_GROUPS,
-  type ModuleGroupId,
-} from '../../utils/module_group_mapping';
+import { getParseObjects, getParseObject } from '../../utils/parse_object';
 import { prepareObjectList } from '../../utils/list';
 import { getDefaultString } from '../../utils/localization';
-import type { Module, ModuleCategory, ModuleType } from '../../types/module';
+import type { Module } from '../../types/module';
+import type { ModuleGroup } from '../../types/module_group';
+import { refToId } from '../../utils/object_reference';
 
 interface Props {
-  moduleGroupId: ModuleGroupId;
+  moduleGroupId: string;
 }
 
 const { moduleGroupId } = Astro.props;
 
-// Load modules, module types, and module categories
+// Load modules
 const modules = getParseObjects<Module>('Objects/Module.json');
-const moduleTypes = getParseObjects<ModuleType>('Objects/ModuleType.json');
-const moduleCategories = getParseObjects<ModuleCategory>(
-  'Objects/ModuleCategory.json'
-);
 
-// Enrich modules with their module group assignments
-const enrichedModules = enrichModulesWithGroups(
-  modules,
-  moduleTypes,
-  moduleCategories
-);
-
-// Filter modules for this specific group and production-ready only
-const allGroupModules = Object.entries(enrichedModules).filter(
-  ([_, module]) => module.module_group === moduleGroupId
+// Filter modules for this specific group
+const allGroupModules = Object.entries(modules).filter(
+  ([_, module]) =>
+    module.module_group_ref &&
+    refToId(module.module_group_ref) === moduleGroupId
 );
 
 // Use prepareObjectList to filter production-ready modules
@@ -46,8 +35,16 @@ const filteredModules = prepareObjectList(Object.fromEntries(allGroupModules), {
 });
 
 // Get localized title for this module group
-const moduleGroup = MODULE_GROUPS[moduleGroupId];
-const title = getDefaultString(moduleGroup.name) || moduleGroup.id;
+let title = moduleGroupId;
+try {
+  const moduleGroup = getParseObject<ModuleGroup>(
+    moduleGroupId,
+    'Objects/ModuleGroup.json'
+  );
+  title = getDefaultString(moduleGroup.name) || moduleGroup.id;
+} catch {
+  console.warn(`ModuleGroup ${moduleGroupId} not found for ModulesNavBox`);
+}
 ---
 
 <BaseNavBox title={title} objects={filteredModules} />

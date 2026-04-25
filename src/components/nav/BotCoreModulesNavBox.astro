@@ -3,7 +3,6 @@ import BaseNavBox from './BaseNavBox.astro';
 import { getParseObjects } from '../../utils/parse_object';
 import { getBotCoreModules } from '../../utils/bot_modules';
 import type { Module } from '../../types/module';
-import type { CharacterPreset } from '../../types/character_preset';
 
 interface Props {
   botId: string;
@@ -14,17 +13,8 @@ const { botId, currentModuleId } = Astro.props;
 
 // Load modules and presets
 const modules = getParseObjects<Module>('Objects/Module.json');
-const presets = getParseObjects<CharacterPreset>(
-  'Objects/CharacterPreset.json'
-);
-
 // Get core modules for this bot (excluding current module)
-const botCoreModules = getBotCoreModules(
-  botId,
-  modules,
-  presets,
-  currentModuleId
-);
+const botCoreModules = getBotCoreModules(botId, modules, currentModuleId);
 
 // Get bot name for title
 const botName =

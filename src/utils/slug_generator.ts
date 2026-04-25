@@ -7,46 +7,17 @@ import type { Module } from '../types/module';
 import type { Pilot, PilotTalent } from '../types/pilot';
 import type { CharacterPreset } from '../types/character_preset';
 import type { LocalizationKey } from '../types/localization';
-import { getModuleGroupId, MODULE_GROUPS } from './module_group_mapping';
+import type { ModuleGroup } from '../types/module_group';
 import { getDefaultString } from './localization';
 import { toSlug, camelToKebab } from './slug_base';
 import { refToId } from './object_reference';
-
-import { enrichModulesWithBotIds } from './robot';
-import type { EnrichedModule } from './module_group_mapping';
 
 export interface SlugMap {
   [objectId: string]: string;
 }
 
 export interface SlugContext {
-  allModules?: Record<string, Module>;
-  allPresets?: Record<string, CharacterPreset>;
-  enrichedModules?: Record<string, EnrichedModule>;
-}
-
-// --- Internal Helpers ---
-
-/**
- * Get shoulder side from character preset module array using socket_name
- */
-function getShoulderSideFromPreset(
-  moduleId: string,
-  presets: Record<string, CharacterPreset>
-): 'left' | 'right' | null {
-  for (const preset of Object.values(presets)) {
-    if (!preset.modules || !Array.isArray(preset.modules)) continue;
-
-    const moduleEntry = preset.modules.find(
-      (m) => refToId(m.module_ref) === moduleId
-    );
-
-    if (moduleEntry) {
-      if (moduleEntry.socket_name === 'Shoulder_L') return 'left';
-      if (moduleEntry.socket_name === 'Shoulder_R') return 'right';
-    }
-  }
-  return null;
+  allModuleGroups?: Record<string, ModuleGroup>;
 }
 
 // --- Slug Generators ---
@@ -76,33 +47,24 @@ function generatePilotTalentSlug(talent: PilotTalent): string {
  * Format: [titan-shoulder-side-titanname] OR [modulecategory-modulename]
  */
 function generateModuleSlug(module: Module, context?: SlugContext): string {
-  const groupId = getModuleGroupId(module.module_type_ref);
+  const groupRef = module.module_group_ref;
+  const isTitanShoulder = groupRef && groupRef.includes('titan-shoulder');
 
-  // Requirement: uses Left, Right for shoulders
-  if (
-    groupId === 'titan-shoulder' &&
-    context?.allPresets &&
-    context?.enrichedModules
-  ) {
-    const side = getShoulderSideFromPreset(module.id, context.allPresets);
-    if (side) {
-      const botId = context.enrichedModules[module.id]?.bot_id;
-      if (botId) {
-        return `titan-shoulder-${side}-${botId}`;
-      }
-    }
+  if (isTitanShoulder && module.shoulder_side && module.virtual_bot_ref) {
+    const sideStr = module.shoulder_side === 'L' ? 'left' : 'right';
+    const botId = refToId(module.virtual_bot_ref);
+    return `titan-shoulder-${sideStr}-${botId}`;
   }
 
   const moduleName = getDefaultString(module.name) || '';
 
   try {
-    const moduleGroup = getModuleGroupId(module.module_type_ref);
-    if (!moduleGroup) {
-      throw new Error(
-        `No module group found for type: ${module.module_type_ref}`
-      );
-    }
-    const singularName = MODULE_GROUPS[moduleGroup].name.en;
+    if (!groupRef) throw new Error('No module group ref');
+    const groupId = refToId(groupRef);
+    const group = context?.allModuleGroups?.[groupId];
+    if (!group) throw new Error('Module group not found in context');
+
+    const singularName = group.name.en || getDefaultString(group.name) || '';
     const slug = `${toSlug(singularName)}-${toSlug(moduleName)}`;
     return slug.replace(/-+$/, '');
   } catch {
@@ -181,37 +143,28 @@ export function generateSlugMap(
   objectRecords: Record<string, ParseObject>[]
 ): SlugMap {
   const slugMap: SlugMap = {};
-  // const collisions: Array<{ objectId: string; slug: string }> = [];
 
-  // Create context for cross-object lookups (e.g. for shoulders)
   const allObjectsById: Record<string, ParseObject> = {};
   for (const record of objectRecords) {
     Object.assign(allObjectsById, record);
   }
 
-  const allModules = allObjectsById as Record<string, Module>;
-  const allPresets = allObjectsById as Record<string, CharacterPreset>;
-  const enrichedModules = enrichModulesWithBotIds(allModules, allPresets);
+  // Filter for ModuleGroups
+  const allModuleGroups: Record<string, ModuleGroup> = {};
+  for (const [id, obj] of Object.entries(allObjectsById)) {
+    if (obj.parseObjectClass === 'ModuleGroup') {
+      allModuleGroups[id] = obj as ModuleGroup;
+    }
+  }
 
   const context: SlugContext = {
-    allModules,
-    allPresets,
-    enrichedModules,
+    allModuleGroups,
   };
 
   for (const objectRecord of objectRecords) {
     for (const [objectId, object] of Object.entries(objectRecord)) {
       try {
         const slug = generateSlugForObject(object, context);
-
-        // Check for collisions (within the same object type context is usually enough,
-        // but we'll check overall to be safe)
-        if (slugMap[slug] && slugMap[slug] !== objectId) {
-          // Note: In some cases multiple IDs might map to same slug intentionally,
-          // but usually we want to know.
-          // collisions.push({ objectId, slug });
-        }
-
         slugMap[objectId] = slug;
       } catch (error) {
         console.warn(`Failed to generate slug for ${objectId}:`, error);

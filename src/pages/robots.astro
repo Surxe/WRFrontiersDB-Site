@@ -9,13 +9,13 @@ import { getDefaultString } from '../utils/localization';
 import type { CharacterPreset } from '../types/character_preset';
 import type { Module } from '../types/module';
 
-const presets = getParseObjects<CharacterPreset>(
+const _presets = getParseObjects<CharacterPreset>(
   'Objects/CharacterPreset.json'
 );
 const modules = getParseObjects<Module>('Objects/Module.json');
 
-const virtualBotsMap = getAllVirtualBots(modules, presets);
-const bots = Object.values(virtualBotsMap);
+const virtualBotsMap = getAllVirtualBots();
+const bots = virtualBotsMap ? Object.values(virtualBotsMap) : [];
 
 // Group by Mech/Titan
 const groupedBots = bots.reduce(
@@ -87,9 +87,14 @@ export function getRobotsBreadcrumbs() {
                   </td>
                   <td>
                     <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                      {bot.core_modules.map(
-                        (mId) => modules[mId] && <ObjRef obj={modules[mId]} />
-                      )}
+                      {bot.core_module_refs?.map((mId) => {
+                        const moduleId = mId.split('::')[1]; // Extract ID from reference
+                        return (
+                          modules[moduleId] && (
+                            <ObjRef obj={modules[moduleId]} />
+                          )
+                        );
+                      })}
                     </div>
                   </td>
                 </tr>

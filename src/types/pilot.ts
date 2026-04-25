@@ -90,9 +90,15 @@ export interface PilotTalent extends ParseObject {
     [key: string]: unknown;
   };
 
-  // Enriched properties (populated at build time)
-  talent_type_id?: string;
+  // Enriched properties (populated by Parser)
+  talent_type_ref?: string;
   level?: number;
+  pilots_with_this_talent?: PilotWithTalentInfo[];
+}
+
+export interface PilotWithTalentInfo {
+  pilot_ref: string;
+  talent_index: number;
 }
 
 export interface Pilot extends ParseObject {

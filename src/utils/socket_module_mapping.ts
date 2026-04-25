@@ -5,8 +5,6 @@
  * Only weapon sockets (Shoulder_Weapon or Torso_Weapon) are mapped.
  */
 
-import type { ModuleGroupId } from './module_group_mapping';
-
 // Weapon socket constants
 export const WEAPON_SOCKET_PREFIXES = {
   SHOULDER_WEAPON: 'Shoulder_Weapon',
@@ -14,7 +12,7 @@ export const WEAPON_SOCKET_PREFIXES = {
 } as const;
 
 // Socket to module group mapping (only for weapon sockets)
-export const WEAPON_SOCKET_TO_MODULE_GROUP: Record<string, ModuleGroupId> = {
+export const WEAPON_SOCKET_TO_MODULE_GROUP: Record<string, string> = {
   // Shoulder weapons map to Shoulder group
   [WEAPON_SOCKET_PREFIXES.SHOULDER_WEAPON]: 'non-titan-shoulder',
   // Torso weapons map to Torso group
@@ -40,7 +38,7 @@ export function isWeaponSocket(socketName: string): boolean {
  */
 export function getModuleGroupForWeaponSocket(
   socketName: string
-): ModuleGroupId | undefined {
+): string | undefined {
   if (!isWeaponSocket(socketName)) {
     return undefined;
   }

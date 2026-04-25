@@ -1,14 +1,20 @@
 ---
 import ModulesNavBox from './ModulesNavBox.astro';
-import { getAllModuleGroupIdsSorted } from '../../utils/module_group_mapping';
+import { getParseObjects } from '../../utils/parse_object';
+import type { ModuleGroup } from '../../types/module_group';
 
-// Get all module group IDs sorted by sort_order
-const moduleGroupIds = getAllModuleGroupIdsSorted();
+// Get all module groups
+const moduleGroups = getParseObjects<ModuleGroup>('Objects/ModuleGroup.json');
+
+// Sort groups by sort_order
+const sortedGroupIds = Object.values(moduleGroups)
+  .sort((a, b) => (a.sort_order || 999) - (b.sort_order || 999))
+  .map((group) => group.id);
 ---
 
 <div class="modules-navboxes-container">
   {
-    moduleGroupIds.map((moduleGroupId) => (
+    sortedGroupIds.map((moduleGroupId) => (
       <ModulesNavBox moduleGroupId={moduleGroupId} />
     ))
   }

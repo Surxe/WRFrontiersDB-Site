@@ -10,13 +10,10 @@ import type { CharacterPreset } from '../../types/character_preset';
 import type { Module } from '../../types/module';
 import { getDefaultString } from '../../utils/localization';
 import { generateRobotLocalizedMetaDescriptions } from '../../utils/build_localization';
+import { refToId } from '../../utils/object_reference';
 
 export async function getStaticPaths() {
-  const presets = getParseObjects<CharacterPreset>(
-    'Objects/CharacterPreset.json'
-  );
-  const modules = getParseObjects<Module>('Objects/Module.json');
-  const virtualBotsMap = getAllVirtualBots(modules, presets);
+  const virtualBotsMap = getAllVirtualBots();
 
   return Object.keys(virtualBotsMap).map((id) => ({
     params: { id },
@@ -24,16 +21,16 @@ export async function getStaticPaths() {
 }
 
 const { id } = Astro.params;
-const presets = getParseObjects<CharacterPreset>(
-  'Objects/CharacterPreset.json'
-);
-const modules = getParseObjects<Module>('Objects/Module.json');
-
-const bot = getVirtualBotById(id as string, modules, presets);
+const bot = getVirtualBotById(id as string);
 
 if (!bot) {
   throw new Error(`Bot with id ${id} not found.`);
 }
+
+const presets = getParseObjects<CharacterPreset>(
+  'Objects/CharacterPreset.json'
+);
+const modules = getParseObjects<Module>('Objects/Module.json');
 
 export function getRobotDetailBreadcrumbs(botName: string) {
   return [
@@ -74,8 +71,8 @@ const localizedDescriptions = generateRobotLocalizedMetaDescriptions(
     <h2>Core Modules</h2>
     <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
       {
-        bot.core_modules.map((mId) => {
-          const module = modules[mId];
+        bot.core_module_refs.map((mRef) => {
+          const module = modules[refToId(mRef)];
           return module ? <ObjRef obj={module} /> : null;
         })
       }
@@ -89,8 +86,8 @@ const localizedDescriptions = generateRobotLocalizedMetaDescriptions(
     </p>
     <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem;">
       {
-        bot.factory_presets.map((pId) => {
-          const preset = presets[pId];
+        bot.factory_preset_refs.map((pRef) => {
+          const preset = presets[refToId(pRef)];
           return preset ? <ObjRef obj={preset} /> : null;
         })
       }

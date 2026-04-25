@@ -5,76 +5,42 @@ import LocalizedText from '../../components/LocalizedText.astro';
 import ModuleGroupsNavBox from '../../components/nav/ModuleGroupsNavBox.astro';
 import ObjectPageScripts from '../../components/ObjectPageScripts.astro';
 import {
-  MODULE_GROUPS,
-  getAllModuleGroupIds,
-  getModuleGroupDescription,
-  enrichModulesWithGroups,
-} from '../../utils/module_group_mapping';
-import { getParseObjects } from '../../utils/parse_object';
+  getParseObjects,
+  generateSlugBasedStaticPaths,
+  getParseObject,
+} from '../../utils/parse_object';
 import { generateSimpleLocalizedMetaDescriptions } from '../../utils/build_localization';
 import { getModuleGroupDetailBreadcrumbs } from '../../utils/breadcrumb';
 import { prepareObjectList } from '../../utils/list';
-import type { ModuleType, Module, ModuleCategory } from '../../types/module';
+import type { Module } from '../../types/module';
+import type { ModuleGroup } from '../../types/module_group';
 import ObjRef from '../../components/obj_ref/ObjRef.astro';
 import { getDefaultString } from '../../utils/localization';
 import { getObjRefData } from '../../utils/obj_ref';
 import TextElements from '../../components/obj_ref/TextElements.astro';
+import { refToId } from '../../utils/object_reference';
 
 export async function getStaticPaths() {
-  // Load slug map to generate slug-based paths
-  try {
-    const slugMapModule = await import('../../../public/slug_map.json');
-    const slugMap = slugMapModule.default;
-
-    // Get all module group IDs and their slugs
-    const groupIds = getAllModuleGroupIds();
-    return groupIds.map((id) => {
-      const slug = slugMap[id];
-      if (!slug) {
-        throw new Error(
-          `No slug found for module group with ID ${id}. All module groups must have a valid slug entry in the slug map.`
-        );
-      }
-      return {
-        params: { slug },
-        props: { id },
-      };
-    });
-  } catch {
-    throw new Error(
-      'Failed to load slug map for module groups. Slug map must exist for build to succeed.'
-    );
-  }
+  return generateSlugBasedStaticPaths('ModuleGroup');
 }
 
 const { slug: _slug } = Astro.params;
 const { id } = Astro.props;
 
-const group = MODULE_GROUPS[id as keyof typeof MODULE_GROUPS];
-
-if (!group) {
+let group: ModuleGroup;
+try {
+  group = getParseObject<ModuleGroup>(id, 'Objects/ModuleGroup.json');
+} catch {
   throw new Error(`Module group not found: ${id}`);
 }
 
-// Load module types to get dynamic descriptions
-const moduleTypes = getParseObjects<ModuleType>('Objects/ModuleType.json');
-
-// Load modules, module types, and module categories
+// Load modules
 const modules = getParseObjects<Module>('Objects/Module.json');
-const moduleCategories = getParseObjects<ModuleCategory>(
-  'Objects/ModuleCategory.json'
-);
 
-// Enrich modules with their module group assignments
-const enrichedModules = enrichModulesWithGroups(
-  modules,
-  moduleTypes,
-  moduleCategories
-);
-
-// Filter modules for this specific group and production-ready only
-const allGroupModules = Object.entries(enrichedModules).filter(
-  ([_, module]) => module.module_group === id
+// Filter modules for this specific group
+const allGroupModules = Object.entries(modules).filter(
+  ([_, module]) =>
+    module.module_group_ref && refToId(module.module_group_ref) === id
 );
 
 // Use prepareObjectList to filter production-ready modules
@@ -87,25 +53,12 @@ const filteredModules = prepareObjectList(Object.fromEntries(allGroupModules), {
   return nameA.localeCompare(nameB);
 });
 
-// Get the dynamic description for this module group
-let dynamicDescription:
-  | { Key: string; TableNamespace: string; en: string }
-  | undefined;
-try {
-  dynamicDescription = getModuleGroupDescription(
-    id as keyof typeof MODULE_GROUPS,
-    moduleTypes
-  );
-} catch {
-  // No description available for this module group - dynamicDescription remains undefined
-}
-
 // Generate localized meta descriptions
 const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
   { Key: 'ModuleGroup_Meta_Description', TableNamespace: 'Web_UI' },
   {
     groupName: group.name,
-    groupDescription: dynamicDescription || {
+    groupDescription: group.description || {
       Key: '',
       TableNamespace: '',
       en: '',
@@ -114,7 +67,7 @@ const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
   getDefaultString(group.name) || id
 );
 
-const objRefData = getObjRefData({ ...group, parseObjectClass: 'ModuleGroup' });
+const objRefData = getObjRefData(group);
 ---
 
 <ParseObjectPage
@@ -133,11 +86,11 @@ const objRefData = getObjRefData({ ...group, parseObjectClass: 'ModuleGroup' });
   </h1>
 
   {
-    dynamicDescription && (
+    group.description && (
       <LocalizedText
         id="category-desc"
         tag="p"
-        localizationKey={dynamicDescription}
+        localizationKey={group.description}
         stripColorMarkup={true}
       />
     )
