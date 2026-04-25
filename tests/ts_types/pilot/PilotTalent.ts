@@ -151,7 +151,9 @@ describe('PilotTalent interface', () => {
         'buff_class',
         'effect_offset',
         'default_properties',
-        // talent_type_id and level are enriched at build time, not in raw data
+        'talent_type_ref',
+        'level',
+        'pilots_with_this_talent',
         // parseObjectClass is added at build time, not in raw data
       ]);
 

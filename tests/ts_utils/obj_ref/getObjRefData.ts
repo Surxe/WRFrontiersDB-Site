@@ -105,7 +105,7 @@ describe('getObjRefData', () => {
       const result = getObjRefData(pilot);
 
       expect(result).toEqual({
-        text: mockLocalizationKey,
+        text: [mockLocalizationKey],
         iconPath: '/path/to/pilot',
       });
     });
@@ -227,7 +227,7 @@ describe('getObjRefData', () => {
 
       // This should compile without errors due to overloads
       const result = getObjRefData(pilot);
-      expect(result.text).toBe(mockLocalizationKey);
+      expect(result.text).toEqual([mockLocalizationKey]);
     });
   });
 });

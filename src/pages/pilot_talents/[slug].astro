@@ -12,7 +12,6 @@ import {
   getParseObjects,
   generateSlugBasedStaticPaths,
 } from '../../utils/parse_object';
-import { enrichPilotTalents } from '../../utils/pilot';
 import { getDefaultString } from '../../utils/localization';
 import { getStatValueChoices } from '../../utils/stat';
 import { generatePilotTalentLocalizedMetaDescriptions } from '../../utils/build_localization';
@@ -31,12 +30,11 @@ const { id } = Astro.props;
 // Load pilots to enrich talent data
 const pilots = getParseObjects<Pilot>('Objects/Pilot.json');
 const pilotTalents = getParseObjects<PilotTalent>('Objects/PilotTalent.json');
-const enrichedTalents = enrichPilotTalents(pilotTalents, pilots);
 const pilotTalentTypes = getParseObjects<PilotTalentType>(
   'Objects/PilotTalentType.json'
 );
 
-const pilotTalent = enrichedTalents[id];
+const pilotTalent = pilotTalents[id];
 
 if (!pilotTalent) {
   throw new Error(`Pilot talent not found: ${id}`);
@@ -56,7 +54,8 @@ const defaultName = getDefaultString(pilotTalent.name) || pilotTalent.id;
 // Generate localized meta descriptions for all supported languages
 const localizedDescriptions = generatePilotTalentLocalizedMetaDescriptions(
   pilotTalent,
-  statValueChoices
+  statValueChoices,
+  pilots
 );
 ---
 
@@ -116,7 +115,9 @@ const localizedDescriptions = generatePilotTalentLocalizedMetaDescriptions(
   <PilotTalentPageTable
     pilotsWithThisTalent={pilotTalent.pilots_with_this_talent || []}
     allPilotTalents={pilotTalents}
+    allPilots={pilots}
     currentTalentId={id}
+    currentTalentLevel={pilotTalent.level}
   />
 
   <ObjectPageScripts

@@ -1,8 +1,7 @@
 ---
 import BaseNavBox from './BaseNavBox.astro';
 import { getParseObjects } from '../../utils/parse_object';
-import { enrichPilotTalents } from '../../utils/pilot';
-import type { PilotTalent, Pilot } from '../../types/pilot';
+import type { PilotTalent } from '../../types/pilot';
 
 interface Props {
   level: 1 | 2 | 3 | 4 | 5;
@@ -10,13 +9,11 @@ interface Props {
 
 const { level } = Astro.props;
 
-// Load and enrich pilot talents
-const pilots = getParseObjects<Pilot>('Objects/Pilot.json');
+// Load pilot talents - now enriched by parser
 const pilotTalents = getParseObjects<PilotTalent>('Objects/PilotTalent.json');
-const enrichedTalents = enrichPilotTalents(pilotTalents, pilots);
 
 // Filter talents by level
-const filteredTalents = Object.entries(enrichedTalents)
+const filteredTalents = Object.entries(pilotTalents)
   .filter(([_, talent]) => talent.level === level)
   .sort(([_a, a], [_b, b]) => {
     // Sort by talent name

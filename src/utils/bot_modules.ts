@@ -4,11 +4,11 @@
  * Shared utilities for working with bot core modules across different pages.
  */
 
-import { getVirtualBots } from './robot';
-import type { VirtualBot } from './robot';
+import { getParseObjects } from './parse_object';
+import type { VirtualBot } from '../types/virtual_bot';
 import { prepareObjectList } from './list';
 import type { Module } from '../types/module';
-import type { CharacterPreset } from '../types/character_preset';
+import { refToId } from './object_reference';
 
 /**
  * Get core modules for a specific bot, excluding a specified module
@@ -16,19 +16,25 @@ import type { CharacterPreset } from '../types/character_preset';
 export function getBotCoreModules(
   botId: string,
   modules: Record<string, Module>,
-  presets: Record<string, CharacterPreset>,
   excludeModuleId?: string
 ): Module[] {
-  const virtualBotsMap = getVirtualBots(modules, presets);
+  const virtualBotsMap = getParseObjects<VirtualBot>('Objects/VirtualBot.json');
   const bot = virtualBotsMap[botId];
 
   if (!bot) {
     return [];
   }
 
-  const coreModuleIds = bot.core_modules.filter((id) => id !== excludeModuleId);
+  // Ref is like "OBJID_Module::DA_Module_ChassisAlpha.1", we just need the ID part if we use ID, wait... bot.core_module_refs contains "OBJID_Module::..."
+  // But wait, the modules dict is keyed by module ID (e.g. "DA_Module_ChassisAlpha.1")
+  // We need to parse the ref to ID first.
+
+  const coreModuleIds = bot.core_module_refs
+    .map((ref: string) => refToId(ref))
+    .filter((id: string) => id !== excludeModuleId);
+
   const coreModules = coreModuleIds
-    .map((id) => modules[id])
+    .map((id: string) => modules[id])
     .filter(Boolean) as Module[];
 
   // Filter production-ready modules
@@ -49,21 +55,14 @@ export function getBotCoreModules(
 /**
  * Get all virtual bots mapped by ID
  */
-export function getAllVirtualBots(
-  modules: Record<string, Module>,
-  presets: Record<string, CharacterPreset>
-): Record<string, VirtualBot> {
-  return getVirtualBots(modules, presets);
+export function getAllVirtualBots(): Record<string, VirtualBot> {
+  return getParseObjects<VirtualBot>('Objects/VirtualBot.json');
 }
 
 /**
  * Get a specific virtual bot by ID
  */
-export function getVirtualBotById(
-  botId: string,
-  modules: Record<string, Module>,
-  presets: Record<string, CharacterPreset>
-): VirtualBot | undefined {
-  const virtualBotsMap = getVirtualBots(modules, presets);
+export function getVirtualBotById(botId: string): VirtualBot | undefined {
+  const virtualBotsMap = getParseObjects<VirtualBot>('Objects/VirtualBot.json');
   return virtualBotsMap[botId];
 }

@@ -43,6 +43,7 @@ describe('slug_generator', () => {
         parseObjectClass: 'Module',
         id: 'test_module.1',
         name: { en: 'Laser Cannon' },
+        module_group_ref: 'OBJID_ModuleGroup::light-weapon',
         inventory_icon_path: '',
         module_rarity_ref: '',
         character_module_mounts: [],
@@ -50,7 +51,14 @@ describe('slug_generator', () => {
         module_type_ref: 'OBJID_ModuleType::DA_ModuleType_Weapon.0',
       } as Module;
 
-      const slug = generateSlugForObject(module);
+      const slug = generateSlugForObject(module, {
+        allModuleGroups: {
+          'light-weapon': {
+            id: 'light-weapon',
+            name: { en: 'Light Weapon' },
+          } as any,
+        },
+      });
       expect(slug).toBe('light-weapon-laser-cannon');
     });
 
@@ -105,6 +113,7 @@ describe('slug_generator', () => {
       const module: Module = {
         parseObjectClass: 'Module',
         id: 'test_module.1',
+        module_group_ref: 'OBJID_ModuleGroup::light-weapon',
         inventory_icon_path: '',
         module_rarity_ref: '',
         character_module_mounts: [],
@@ -112,7 +121,14 @@ describe('slug_generator', () => {
         module_type_ref: 'OBJID_ModuleType::DA_ModuleType_Weapon.0',
       } as Module;
 
-      const slug = generateSlugForObject(module);
+      const slug = generateSlugForObject(module, {
+        allModuleGroups: {
+          'light-weapon': {
+            id: 'light-weapon',
+            name: { en: 'Light Weapon' },
+          } as any,
+        },
+      });
       expect(slug).toBe('light-weapon');
     });
   });
@@ -139,12 +155,20 @@ describe('slug_generator', () => {
             parseObjectClass: 'Module',
             id: 'module1',
             name: { en: 'Laser Cannon' },
+            module_group_ref: 'OBJID_ModuleGroup::light-weapon',
             inventory_icon_path: '',
             module_rarity_ref: '',
             character_module_mounts: [],
             faction_ref: '',
             module_type_ref: 'OBJID_ModuleType::DA_ModuleType_Weapon.0',
           } as Module,
+        },
+        {
+          'light-weapon': {
+            parseObjectClass: 'ModuleGroup',
+            id: 'light-weapon',
+            name: { en: 'Light Weapon' },
+          } as any,
         },
       ];
 
@@ -153,7 +177,8 @@ describe('slug_generator', () => {
       expect(slugMap['pilot1']).toBe('john-doe');
       expect(slugMap['pilot2']).toBe('jane-smith');
       expect(slugMap['module1']).toBe('light-weapon-laser-cannon');
-      expect(Object.keys(slugMap)).toHaveLength(3);
+      expect(slugMap['light-weapon']).toBe('light-weapon');
+      expect(Object.keys(slugMap)).toHaveLength(4);
     });
 
     it('should handle empty object arrays', () => {

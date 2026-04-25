@@ -9,7 +9,7 @@ import type {
   PilotTalentType,
 } from '../types/pilot';
 import type { CharacterPreset } from '../types/character_preset';
-import { MODULE_GROUPS } from './module_group_mapping';
+import { getParseObject } from './parse_object';
 
 /**
  * Generate breadcrumb trail for home page
@@ -128,8 +128,13 @@ export function getModuleCategoryDetailBreadcrumbs(
 export function getModuleGroupDetailBreadcrumbs(
   groupId: string
 ): BreadcrumbTrail {
-  const group = MODULE_GROUPS[groupId as keyof typeof MODULE_GROUPS];
-  const groupName = getDefaultString(group?.name) || groupId;
+  let groupName = groupId;
+  try {
+    const group = getParseObject(groupId, 'Objects/ModuleGroup.json');
+    groupName = getDefaultString(group?.name) || groupId;
+  } catch (e) {
+    console.warn(`Could not load group ${groupId} for breadcrumbs`);
+  }
 
   return [
     {

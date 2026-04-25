@@ -9,15 +9,18 @@
     <title>Redirecting to Pilots...</title>
     <script>
       // Client-side redirect that preserves query parameters
-      (function() {
+      (function () {
         const currentUrl = new URL(window.location.href);
-        const redirectUrl = new URL('/pilots/talent-overview', window.location.origin);
-        
+        const redirectUrl = new URL(
+          '/pilots/talent-overview',
+          window.location.origin
+        );
+
         // Preserve all query parameters from the current URL
         currentUrl.searchParams.forEach((value, key) => {
           redirectUrl.searchParams.set(key, value);
         });
-        
+
         // Perform the redirect
         window.location.replace(redirectUrl.toString());
       })();

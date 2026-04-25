@@ -77,6 +77,9 @@ export interface Module extends ParseObject {
   module_stats_table_ref?: string;
   module_type_ref: string;
   module_socket_type_refs?: string[];
+  module_group_ref?: string;
+  virtual_bot_ref?: string;
+  shoulder_side?: 'L' | 'R';
 }
 
 export interface ModuleCategory extends ParseObject {

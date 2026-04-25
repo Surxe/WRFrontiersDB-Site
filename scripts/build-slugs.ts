@@ -17,7 +17,6 @@ const projectRoot = path.join(__dirname, '..');
 // Import utilities
 import { getParseObjects } from '../src/utils/parse_object.js';
 import { generateSlugMap, type SlugMap } from '../src/utils/slug_generator.js';
-import { MODULE_GROUPS } from '../src/utils/module_group_mapping.js';
 import type { ParseObject } from '../src/types/parse_object.js';
 
 // Object types to generate slugs for
@@ -85,13 +84,6 @@ async function buildSlugMap() {
     console.error('Error generating slug map:', error);
     process.exit(1);
   }
-
-  // Generate slugs for module groups (using plural names)
-  for (const [groupId, groupData] of Object.entries(MODULE_GROUPS)) {
-    const slug = groupData.name.en.toLowerCase().replace(/\s+/g, '-');
-    slugMap[groupId] = slug;
-  }
-  console.warn(`Added ${Object.keys(MODULE_GROUPS).length} module group slugs`);
 
   // Write slug map to public directory
   const publicDir = path.join(projectRoot, 'public');

@@ -9,12 +9,12 @@ import {
   getModuleGroupForWeaponSocket,
   isWeaponSocket,
 } from '../../utils/socket_module_mapping';
-import { MODULE_GROUPS } from '../../utils/module_group_mapping';
 import { getSocketSideLocaleKey } from '../../utils/socket_side_mapping';
 import {
   getDefaultString,
   resolveLocalizationKey,
 } from '../../utils/localization';
+import { getParseObject } from '../../utils/parse_object';
 
 interface Props {
   preset: CharacterPreset;
@@ -97,11 +97,12 @@ const { grouped, shouldShowWeaponGroups, hasDifferentShoulders } =
 
 // Helper to get group name (Shoulder/Torso)
 function getModuleGroupName(groupId: string): string {
-  return (
-    getDefaultString(
-      MODULE_GROUPS[groupId as keyof typeof MODULE_GROUPS]?.name
-    ) || groupId
-  );
+  try {
+    const group = getParseObject(groupId, 'Objects/ModuleGroup.json');
+    return getDefaultString(group.name) || groupId;
+  } catch {
+    return groupId;
+  }
 }
 ---
 

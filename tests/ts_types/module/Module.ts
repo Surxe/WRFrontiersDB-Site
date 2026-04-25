@@ -191,6 +191,9 @@ describe('Module interface', () => {
         'module_stats_table_ref',
         'module_type_ref',
         'module_socket_type_refs',
+        'module_group_ref',
+        'virtual_bot_ref',
+        'shoulder_side',
         // parseObjectClass is added at build time, not in raw data
       ]);
 
