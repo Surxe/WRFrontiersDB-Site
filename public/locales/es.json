@@ -20,7 +20,17 @@
     "Mech": "Mech spanish",
     "Titan": "Titan spanish",
     "Socket_Left": "Izquierdo",
-    "Socket_Right": "Derecho"
+    "Socket_Right": "Derecho",
+    "Breadcrumb_Home": "Inicio",
+    "Breadcrumb_Module_Groups": "Grupos de Módulos",
+    "Breadcrumb_Modules": "Módulos",
+    "Breadcrumb_Pilots": "Pilotos",
+    "Breadcrumb_Pilot_Classes": "Clases de Piloto",
+    "Breadcrumb_Pilot_Personalities": "Personalidades de Piloto",
+    "Breadcrumb_Pilot_Talent_Types": "Tipos de Talento de Piloto",
+    "Breadcrumb_Pilot_Talents": "Talentos de Piloto",
+    "Breadcrumb_AI_Bots": "Bots IA",
+    "Breadcrumb_Factory_Bots": "Bots de Fábrica"
   },
   "ModuleGroups": {
     "GRP_TitanShoulders_Name": "Hombros de Titán"

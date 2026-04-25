@@ -7,6 +7,7 @@
 **Cause**: Used logical OR operator (`||`) which treats `0` as falsy, causing fallback to `999`.
 
 **Fix**: Replaced `||` with nullish coalescing operator (`??`) in:
+
 - `src/pages/module_groups.astro`
 - `src/components/nav/ModuleGroupsNavBox.astro`
 
@@ -19,6 +20,7 @@
 **Cause**: `toSlug` function used `/[^a-z0-9]+/g` which treats apostrophes as special characters.
 
 **Fix**: Modified `src/utils/slug_base.ts` to remove apostrophes before other character replacement:
+
 - Added `.replace(/'/g, '')` before the general character replacement
 - Regenerated slug map with `npm run build:slugs`
 
@@ -30,12 +32,14 @@
 
 **Cause**: `obj_ref.ts` used hardcoded strings `{ en: 'Left Shoulder' }` and `{ en: 'Right Shoulder' }`.
 
-**Fix**: 
+**Fix**:
+
 - Added missing `Socket_Left` and `Socket_Right` keys to Spanish locale (es.json)
 - Updated `src/utils/obj_ref.ts` to use proper LocalizationKey objects with `Key`, `TableNamespace`, and `en` fallback
 - Changed from hardcoded strings to `{ Key: 'Socket_Left', TableNamespace: 'Web_UI', en: 'Left' }` and `{ Key: 'Socket_Right', TableNamespace: 'Web_UI', en: 'Right' }`
 
 **Result**: Titan shoulder modules now properly localized:
-- English: "Alpha Left", "Alpha Right"  
+
+- English: "Alpha Left", "Alpha Right"
 - Spanish: "Alpha Izquierdo", "Alpha Derecho"
 - All other languages will use English fallback until localization keys are added.

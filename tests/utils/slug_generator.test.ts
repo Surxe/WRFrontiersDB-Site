@@ -106,7 +106,7 @@ describe('slug_generator', () => {
       } as Pilot;
 
       const slug = generateSlugForObject(pilot);
-      expect(slug).toBe('jean-luc-o-reilly');
+      expect(slug).toBe('jean-luc-oreilly');
     });
 
     it('should handle empty names gracefully', () => {

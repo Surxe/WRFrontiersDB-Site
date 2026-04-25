@@ -20,7 +20,17 @@
     "PilotClass_Meta_Description": "{name}: View detailed information about this pilot class in War Robots Frontiers. Includes characteristics and abilities.",
     "Module_Meta_Description": "{name}: View detailed information about this module in War Robots Frontiers. Includes stats, effects, and usage information.",
     "Robot_Meta_Description": "{robot_name}: View detailed information about this {robot_type} robot platform in War Robots Frontiers. Includes core modules and factory presets.",
-    "CharacterPreset_Meta_Description": "{preset_name}: View detailed information about this {character_type} character preset in War Robots Frontiers. Includes modules and pilot information."
+    "CharacterPreset_Meta_Description": "{preset_name}: View detailed information about this {character_type} character preset in War Robots Frontiers. Includes modules and pilot information.",
+    "Breadcrumb_Home": "Home",
+    "Breadcrumb_Module_Groups": "Module Groups",
+    "Breadcrumb_Modules": "Modules",
+    "Breadcrumb_Pilots": "Pilots",
+    "Breadcrumb_Pilot_Classes": "Pilot Classes",
+    "Breadcrumb_Pilot_Personalities": "Pilot Personalities",
+    "Breadcrumb_Pilot_Talent_Types": "Pilot Talent Types",
+    "Breadcrumb_Pilot_Talents": "Pilot Talents",
+    "Breadcrumb_AI_Bots": "AI Bots",
+    "Breadcrumb_Factory_Bots": "Factory Bots"
   },
   "ModuleGroups": {
     "GRP_TitanShoulders_Name": "Titan Shoulder"

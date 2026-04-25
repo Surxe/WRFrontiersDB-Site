@@ -56,9 +56,17 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
           let texts: LocalizationKey[] = [module.name as LocalizationKey];
 
           if (module.shoulder_side === 'L') {
-            texts.push({ Key: 'Socket_Left', TableNamespace: 'Web_UI', en: 'Left' } as LocalizationKey);
+            texts.push({
+              Key: 'Socket_Left',
+              TableNamespace: 'Web_UI',
+              en: 'Left',
+            } as LocalizationKey);
           } else if (module.shoulder_side === 'R') {
-            texts.push({ Key: 'Socket_Right', TableNamespace: 'Web_UI', en: 'Right' } as LocalizationKey);
+            texts.push({
+              Key: 'Socket_Right',
+              TableNamespace: 'Web_UI',
+              en: 'Right',
+            } as LocalizationKey);
           } else if (group && group.name) {
             texts.push(group.name as LocalizationKey);
           }
