@@ -82,15 +82,17 @@ const getTalentData = (levelIdx: number, talentIdx: number) => {
 // Pre-compute rendering logic
 const shouldRender = levelIndex === 4 ? talent_index === 0 : true;
 const rowspan = levelIndex === 4 ? maxTalents : undefined;
-const talentData = shouldRender ? getTalentData(levelIndex, talent_index) : null;
+const talentData = shouldRender
+  ? getTalentData(levelIndex, talent_index)
+  : null;
 ---
 
 {/* Talent column */}
 {/* For level 5, use rowspan and only render on first talent row */}
 {/* For levels 1 and 2-4, render for each talent index */}
 {
-  shouldRender && (
-    talentData ? (
+  shouldRender &&
+    (talentData ? (
       <TalentCell
         talent={talentData.talent}
         statValueChoices={talentData.statValueChoices}
@@ -99,7 +101,6 @@ const talentData = shouldRender ? getTalentData(levelIndex, talent_index) : null
         isHighlighted={isHighlighted}
       />
     ) : (
-      <td rowspan={rowspan}></td>
-    )
-  )
+      <td rowspan={rowspan} />
+    ))
 }

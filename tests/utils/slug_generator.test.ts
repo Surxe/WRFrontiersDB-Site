@@ -56,7 +56,7 @@ describe('slug_generator', () => {
           'light-weapon': {
             id: 'light-weapon',
             name: { en: 'Light Weapon' },
-          } as any,
+          } as unknown,
         },
       });
       expect(slug).toBe('light-weapon-laser-cannon');
@@ -126,7 +126,7 @@ describe('slug_generator', () => {
           'light-weapon': {
             id: 'light-weapon',
             name: { en: 'Light Weapon' },
-          } as any,
+          } as unknown,
         },
       });
       expect(slug).toBe('light-weapon');
@@ -168,7 +168,7 @@ describe('slug_generator', () => {
             parseObjectClass: 'ModuleGroup',
             id: 'light-weapon',
             name: { en: 'Light Weapon' },
-          } as any,
+          },
         },
       ];
 

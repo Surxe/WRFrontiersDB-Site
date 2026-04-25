@@ -43,7 +43,9 @@ const talentsForThisType = Object.values(pilotTalents).filter(
 // Generate localized meta descriptions
 const localizedDescriptions = generatePilotTalentTypeLocalizedMetaDescriptions(
   pilotTalentType,
-  talentsForThisType.map((talent) => [talent.id, talent] as [string, PilotTalent]),
+  talentsForThisType.map(
+    (talent) => [talent.id, talent] as [string, PilotTalent]
+  ),
   id
 );
 ---

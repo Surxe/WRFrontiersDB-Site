@@ -131,9 +131,9 @@ export function getModuleGroupDetailBreadcrumbs(
   let groupName = groupId;
   try {
     const group = getParseObject(groupId, 'Objects/ModuleGroup.json');
-    groupName = getDefaultString(group?.name) || groupId;
-  } catch (e) {
-    console.warn(`Could not load group ${groupId} for breadcrumbs`);
+    groupName = getDefaultString(group?.name as string) || groupId;
+  } catch {
+    // Group not found, use default groupId
   }
 
   return [
