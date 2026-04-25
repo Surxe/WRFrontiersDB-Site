@@ -21,27 +21,6 @@
     "Titan": "Titan spanish"
   },
   "ModuleGroups": {
-    "GRP_TitanTorsos_Name": "Torso de Titán",
-    "GRP_TitanTorsos_Desc": "Módulos de torso para mechs Titán",
-    "GRP_Torsos_Name": "Torso",
-    "GRP_Torsos_Desc": "Módulos de torso estándar",
-    "GRP_TitanChassis_Name": "Chasis de Titán",
-    "GRP_TitanChassis_Desc": "Módulos de chasis para mechs Titán",
-    "GRP_Chassis_Name": "Chasis",
-    "GRP_Chassis_Desc": "Módulos de chasis estándar",
-    "GRP_TitanShoulders_Name": "Hombros de Titán",
-    "GRP_TitanShoulders_Desc": "Módulos de hombro para mechs Titán",
-    "GRP_Shoulders_Name": "Hombros",
-    "GRP_Shoulders_Desc": "Módulos de hombro estándar",
-    "GRP_LightWeapons_Name": "Armas Ligeras",
-    "GRP_LightWeapons_Desc": "Módulos de armas ligeras",
-    "GRP_HeavyWeapons_Name": "Armas Pesadas",
-    "GRP_HeavyWeapons_Desc": "Módulos de armas pesadas",
-    "GRP_TitanWeapons_Name": "Armas de Titán",
-    "GRP_TitanWeapons_Desc": "Módulos de armas para mechs Titán",
-    "GRP_SupplyGear_Name": "Equipo de Suministro",
-    "GRP_SupplyGear_Desc": "Módulos de equipo de suministro",
-    "GRP_CycleGear_Name": "Equipo de Ciclo",
-    "GRP_CycleGear_Desc": "Módulos de equipo de ciclo"
+    "GRP_TitanShoulders_Name": "Hombros de Titán"
   }
 }
