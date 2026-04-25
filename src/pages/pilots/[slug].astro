@@ -88,7 +88,11 @@ const objRefData = getObjRefData(pilot);
 >
   <Breadcrumb breadcrumbs={getPilotDetailBreadcrumbs(pilot)} />
   <h1 id="pilot-name">
-    <TextElements textElements={Array.isArray(objRefData.text) ? objRefData.text : [objRefData.text]} />
+    <TextElements
+      textElements={Array.isArray(objRefData.text)
+        ? objRefData.text
+        : [objRefData.text]}
+    />
   </h1>
 
   <LocalizedText id="pilot-bio" tag="p" localizationKey={pilot.bio} />
