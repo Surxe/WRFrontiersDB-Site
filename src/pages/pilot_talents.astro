@@ -10,6 +10,7 @@ import StatEmbedLocalizedText from '../components/StatEmbedLocalizedText.astro';
 import ObjRef from '../components/obj_ref/ObjRef.astro';
 import PilotTalentsNavBox from '../components/nav/PilotTalentsNavBox.astro';
 import { getPilotTalentsBreadcrumbs } from '../utils/breadcrumb';
+import { refToId } from '../utils/object_reference';
 
 // Load all data
 const pilotTalents = getParseObjects<PilotTalent>('Objects/PilotTalent.json');
@@ -71,8 +72,8 @@ const sortedGroups = sortGroups(grouped, (a, b) => Number(a) - Number(b));
                   />
                 </td>
                 <td>
-                  {talent.talent_type_id && (
-                    <ObjRef obj={pilotTalentTypes[talent.talent_type_id]} />
+                  {talent.talent_type_ref && (
+                    <ObjRef obj={pilotTalentTypes[refToId(talent.talent_type_ref)]} />
                   )}
                 </td>
               </tr>

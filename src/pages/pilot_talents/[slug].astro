@@ -99,9 +99,9 @@ const localizedDescriptions = generatePilotTalentLocalizedMetaDescriptions(
   <p>
     Talent Type:
     {
-      pilotTalent.pilot_talent_type_ref ? (
+      pilotTalent.talent_type_ref ? (
         <ObjRef
-          obj={pilotTalentTypes[refToId(pilotTalent.pilot_talent_type_ref)]}
+          obj={pilotTalentTypes[refToId(pilotTalent.talent_type_ref)]}
           useHref={false}
         />
       ) : (
