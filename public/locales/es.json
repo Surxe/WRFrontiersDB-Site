@@ -18,7 +18,9 @@
     "Robot_Meta_Description": "{robot_name}: Ver información detallada sobre esta plataforma de robot {robot_type} en War Robots Frontiers. Incluye módulos centrales y preconfiguraciones de fábrica.",
     "CharacterPreset_Meta_Description": "{preset_name}: Ver información detallada sobre esta preconfiguración de personaje {character_type} en War Robots Frontiers. Incluye módulos e información del piloto.",
     "Mech": "Mech spanish",
-    "Titan": "Titan spanish"
+    "Titan": "Titan spanish",
+    "Socket_Left": "Izquierdo",
+    "Socket_Right": "Derecho"
   },
   "ModuleGroups": {
     "GRP_TitanShoulders_Name": "Hombros de Titán"
