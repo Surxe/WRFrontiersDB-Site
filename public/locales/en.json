@@ -23,24 +23,7 @@
     "CharacterPreset_Meta_Description": "{preset_name}: View detailed information about this {character_type} character preset in War Robots Frontiers. Includes modules and pilot information."
   },
   "ModuleGroups": {
-    "GRP_TitanTorsos_Desc": "Torso modules for Titan mechs",
-    "GRP_Torsos_Desc": "Standard torso modules",
-    "GRP_TitanChassis_Desc": "Chassis modules for Titan mechs",
-    "GRP_Chassis_Desc": "Standard chassis modules",
-    "GRP_TitanShoulders_Name": "Titan Shoulder",
-    "GRP_TitanShoulders_Desc": "Shoulder modules for Titan mechs",
-    "GRP_Shoulders_Name": "Shoulders",
-    "GRP_Shoulders_Desc": "Standard shoulder modules",
-    "GRP_LightWeapons_Name": "Light Weapons",
-    "GRP_LightWeapons_Desc": "Light weapon modules",
-    "GRP_HeavyWeapons_Name": "Heavy Weapons",
-    "GRP_HeavyWeapons_Desc": "Heavy weapon modules",
-    "GRP_TitanWeapons_Name": "Titan Weapons",
-    "GRP_TitanWeapons_Desc": "Weapon modules for Titan mechs",
-    "GRP_SupplyGear_Name": "Supply Gear",
-    "GRP_SupplyGear_Desc": "Supply gear modules",
-    "GRP_CycleGear_Name": "Cycle Gear",
-    "GRP_CycleGear_Desc": "Cycle gear modules"
+    "GRP_TitanShoulders_Name": "Titan Shoulder"
   },
   "TestStats": {
     "desc_ArmorBoost": "This stat provides {ArmorBoost} bonus to the pilot",

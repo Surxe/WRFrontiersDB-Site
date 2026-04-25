@@ -11,7 +11,7 @@ const moduleGroups = getParseObjects<ModuleGroup>('Objects/ModuleGroup.json');
 
 // Sort groups by sort_order
 const sortedGroups = Object.values(moduleGroups).sort(
-  (a, b) => (a.sort_order || 999) - (b.sort_order || 999)
+  (a, b) => (a.sort_order ?? 999) - (b.sort_order ?? 999)
 );
 ---
 
