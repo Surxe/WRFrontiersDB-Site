@@ -4,11 +4,12 @@ import type { PilotTalentType } from '../../types/pilot';
 import { refToId } from '../../utils/object_reference';
 
 interface Props {
-  level?: {
-    talents_refs?: string[];
-    talent_type_ref?: string;
+  levelIndex: number; // 0 for level 1, 1 for level 2, 2 for level 3, 3 for level 4, 4 for level 5
+  level: {
+    talents_refs: string[];
+    talent_type_ref: string;
   };
-  talentIndex: number;
+  talent_index: number;
   maxTalents: number;
   pilotTalentTypes?: Record<string, PilotTalentType>;
 }
@@ -19,7 +20,7 @@ Level 1-5:
 TalentType (rowspan=maxTalents)
 */
 
-const { level, talentIndex, maxTalents, pilotTalentTypes } = Astro.props;
+const { level, talent_index, maxTalents, pilotTalentTypes } = Astro.props;
 ---
 
 {/* Talent column */}
@@ -27,7 +28,7 @@ const { level, talentIndex, maxTalents, pilotTalentTypes } = Astro.props;
 {/* For levels 1 and 2-4, render for each talent index */}
 
 {
-  talentIndex === 0 && (
+  talent_index === 0 && (
     <td rowspan={maxTalents}>
       {level?.talent_type_ref && pilotTalentTypes && (
         <ObjRef obj={pilotTalentTypes[refToId(level.talent_type_ref)]} />

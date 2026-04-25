@@ -34,7 +34,7 @@ if (pilotsWithThisTalent.length === 0) {
 
 // Pre-calculate maxTalents for each pilot
 const pilotsWithMaxTalents = pilotsWithThisTalent
-  .map(({ pilot_ref, talentIndex }) => {
+  .map(({ pilot_ref, talent_index }) => {
     const pilotId = refToId(pilot_ref);
     const pilot = allPilots[pilotId];
 
@@ -45,7 +45,7 @@ const pilotsWithMaxTalents = pilotsWithThisTalent
       );
     }
 
-    return { pilot, level: currentTalentLevel || 1, talentIndex, maxTalents };
+    return { pilot, level: currentTalentLevel || 1, talent_index, maxTalents };
   })
   .filter((p) => p.pilot); // Filter out missing pilots just in case
 ---
@@ -63,7 +63,7 @@ const pilotsWithMaxTalents = pilotsWithThisTalent
   </thead>
   <tbody>
     {
-      pilotsWithMaxTalents.map(({ pilot, level, talentIndex, maxTalents }) => (
+      pilotsWithMaxTalents.map(({ pilot, level, talent_index, maxTalents }) => (
         <TalentPilotRow
           pilot={pilot}
           maxTalents={maxTalents}
@@ -71,7 +71,7 @@ const pilotsWithMaxTalents = pilotsWithThisTalent
           fullOrOnHover={fullOrOnHover}
           highlightTalent={currentTalentId}
           highlightLevel={level}
-          highlightTalentIndex={talentIndex}
+          highlightTalentIndex={talent_index}
         />
       ))
     }

@@ -25,10 +25,10 @@ const {
 ---
 
 {
-  Array.from({ length: Math.max(1, maxTalents) }).map((_, talentIndex) => (
+  Array.from({ length: Math.max(1, maxTalents) }).map((_, talent_index) => (
     <tr>
       {/* Pilot Name */}
-      {talentIndex === 0 && (
+      {talent_index === 0 && (
         <>
           <td rowspan={maxTalents}>
             <ObjRef obj={pilot} iconSize={48} />
@@ -40,14 +40,14 @@ const {
         <LevelPilotTalenttd
           levelIndex={levelIndex}
           level={pilot.levels[levelIndex]}
-          talentIndex={talentIndex}
+          talent_index={talent_index}
           maxTalents={maxTalents}
           pilotTalents={pilotTalents}
           fullOrOnHover={fullOrOnHover}
           isHighlighted={
             highlightTalent
               ? highlightLevel === levelIndex + 1 &&
-                highlightTalentIndex === talentIndex
+                highlightTalentIndex === talent_index
               : false
           }
         />

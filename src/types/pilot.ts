@@ -98,7 +98,7 @@ export interface PilotTalent extends ParseObject {
 
 export interface PilotWithTalentInfo {
   pilot_ref: string;
-  talentIndex: number;
+  talent_index: number;
 }
 
 export interface Pilot extends ParseObject {
