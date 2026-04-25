@@ -1,5 +1,7 @@
 ---
 import type { BreadcrumbTrail } from '../types/breadcrumb';
+import type { LocalizationKey } from '../types/localization';
+import { getDefaultString } from '../utils/localization';
 
 interface Props {
   breadcrumbs: BreadcrumbTrail;
@@ -13,9 +15,39 @@ const { breadcrumbs } = Astro.props;
     breadcrumbs.map((breadcrumb, index) => (
       <span>
         {breadcrumb.href ? (
-          <a href={breadcrumb.href}>{breadcrumb.label}</a>
+          <a href={breadcrumb.href}>
+            {typeof breadcrumb.label === 'string' ? (
+              breadcrumb.label
+            ) : (
+              <>
+                {breadcrumb.label.InvariantString || (
+                  <span
+                    data-loc-key={breadcrumb.label.Key}
+                    data-loc-namespace={breadcrumb.label.TableNamespace}
+                  >
+                    {getDefaultString(breadcrumb.label)}
+                  </span>
+                )}
+              </>
+            )}
+          </a>
         ) : (
-          <span class="current">{breadcrumb.label}</span>
+          <span class="current">
+            {typeof breadcrumb.label === 'string' ? (
+              breadcrumb.label
+            ) : (
+              <>
+                {breadcrumb.label.InvariantString || (
+                  <span
+                    data-loc-key={breadcrumb.label.Key}
+                    data-loc-namespace={breadcrumb.label.TableNamespace}
+                  >
+                    {getDefaultString(breadcrumb.label)}
+                  </span>
+                )}
+              </>
+            )}
+          </span>
         )}
         {index < breadcrumbs.length - 1 && (
           <span class="separator"> &gt; </span>

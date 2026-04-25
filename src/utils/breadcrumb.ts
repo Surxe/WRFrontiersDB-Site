@@ -1,5 +1,5 @@
 import type { BreadcrumbTrail } from '../types/breadcrumb';
-import { getDefaultString } from './localization';
+import { getDefaultString, resolveLocalizationKey } from './localization';
 import type { Module, ModuleCategory } from '../types/module';
 import type {
   Pilot,
@@ -17,7 +17,7 @@ import { getParseObject } from './parse_object';
 export function getHomeBreadcrumbs(): BreadcrumbTrail {
   return [
     {
-      label: 'Home',
+      label: resolveLocalizationKey('Breadcrumb_Home', 'Web_UI'),
       href: '/',
       isCurrent: true,
     },
@@ -30,12 +30,12 @@ export function getHomeBreadcrumbs(): BreadcrumbTrail {
 export function getModuleGroupsBreadcrumbs(): BreadcrumbTrail {
   return [
     {
-      label: 'Home',
+      label: resolveLocalizationKey('Breadcrumb_Home', 'Web_UI'),
       href: '/',
       isCurrent: false,
     },
     {
-      label: 'Module Groups',
+      label: resolveLocalizationKey('Breadcrumb_Module_Groups', 'Web_UI'),
       href: '/module_groups',
       isCurrent: true,
     },
@@ -48,17 +48,17 @@ export function getModuleGroupsBreadcrumbs(): BreadcrumbTrail {
 export function getModulesBreadcrumbs(): BreadcrumbTrail {
   return [
     {
-      label: 'Home',
+      label: resolveLocalizationKey('Breadcrumb_Home', 'Web_UI'),
       href: '/',
       isCurrent: false,
     },
     {
-      label: 'Module Groups',
+      label: resolveLocalizationKey('Breadcrumb_Module_Groups', 'Web_UI'),
       href: '/module_groups',
       isCurrent: false,
     },
     {
-      label: 'Modules',
+      label: resolveLocalizationKey('Breadcrumb_Modules', 'Web_UI'),
       href: '/modules',
       isCurrent: true,
     },
@@ -73,17 +73,17 @@ export function getModuleDetailBreadcrumbs(module: Module): BreadcrumbTrail {
 
   return [
     {
-      label: 'Home',
+      label: resolveLocalizationKey('Breadcrumb_Home', 'Web_UI'),
       href: '/',
       isCurrent: false,
     },
     {
-      label: 'Module Groups',
+      label: resolveLocalizationKey('Breadcrumb_Module_Groups', 'Web_UI'),
       href: '/module_groups',
       isCurrent: false,
     },
     {
-      label: 'Modules',
+      label: resolveLocalizationKey('Breadcrumb_Modules', 'Web_UI'),
       href: '/modules',
       isCurrent: false,
     },
@@ -105,12 +105,12 @@ export function getModuleCategoryDetailBreadcrumbs(
 
   return [
     {
-      label: 'Home',
+      label: resolveLocalizationKey('Breadcrumb_Home', 'Web_UI'),
       href: '/',
       isCurrent: false,
     },
     {
-      label: 'Module Groups',
+      label: resolveLocalizationKey('Breadcrumb_Module_Groups', 'Web_UI'),
       href: '/module_groups',
       isCurrent: false,
     },
@@ -131,19 +131,19 @@ export function getModuleGroupDetailBreadcrumbs(
   let groupName = groupId;
   try {
     const group = getParseObject(groupId, 'Objects/ModuleGroup.json');
-    groupName = getDefaultString(group?.name as string) || groupId;
+    groupName = getDefaultString(group?.name as any) || groupId;
   } catch {
     // Group not found, use default groupId
   }
 
   return [
     {
-      label: 'Home',
+      label: resolveLocalizationKey('Breadcrumb_Home', 'Web_UI'),
       href: '/',
       isCurrent: false,
     },
     {
-      label: 'Module Groups',
+      label: resolveLocalizationKey('Breadcrumb_Module_Groups', 'Web_UI'),
       href: '/module_groups',
       isCurrent: false,
     },
@@ -161,12 +161,12 @@ export function getModuleGroupDetailBreadcrumbs(
 export function getPilotsBreadcrumbs(): BreadcrumbTrail {
   return [
     {
-      label: 'Home',
+      label: resolveLocalizationKey('Breadcrumb_Home', 'Web_UI'),
       href: '/',
       isCurrent: false,
     },
     {
-      label: 'Pilots',
+      label: resolveLocalizationKey('Breadcrumb_Pilots', 'Web_UI'),
       href: '/pilots',
       isCurrent: true,
     },
@@ -181,12 +181,12 @@ export function getPilotDetailBreadcrumbs(pilot: Pilot): BreadcrumbTrail {
 
   return [
     {
-      label: 'Home',
+      label: resolveLocalizationKey('Breadcrumb_Home', 'Web_UI'),
       href: '/',
       isCurrent: false,
     },
     {
-      label: 'Pilots',
+      label: resolveLocalizationKey('Breadcrumb_Pilots', 'Web_UI'),
       href: '/pilots',
       isCurrent: false,
     },
@@ -204,17 +204,17 @@ export function getPilotDetailBreadcrumbs(pilot: Pilot): BreadcrumbTrail {
 export function getPilotClassesBreadcrumbs(): BreadcrumbTrail {
   return [
     {
-      label: 'Home',
+      label: resolveLocalizationKey('Breadcrumb_Home', 'Web_UI'),
       href: '/',
       isCurrent: false,
     },
     {
-      label: 'Pilots',
+      label: resolveLocalizationKey('Breadcrumb_Pilots', 'Web_UI'),
       href: '/pilots',
       isCurrent: false,
     },
     {
-      label: 'Pilot Classes',
+      label: resolveLocalizationKey('Breadcrumb_Pilot_Classes', 'Web_UI'),
       href: '/pilot_classes',
       isCurrent: true,
     },
@@ -231,17 +231,17 @@ export function getPilotClassDetailBreadcrumbs(
 
   return [
     {
-      label: 'Home',
+      label: resolveLocalizationKey('Breadcrumb_Home', 'Web_UI'),
       href: '/',
       isCurrent: false,
     },
     {
-      label: 'Pilots',
+      label: resolveLocalizationKey('Breadcrumb_Pilots', 'Web_UI'),
       href: '/pilots',
       isCurrent: false,
     },
     {
-      label: 'Pilot Classes',
+      label: resolveLocalizationKey('Breadcrumb_Pilot_Classes', 'Web_UI'),
       href: '/pilot_classes',
       isCurrent: false,
     },
@@ -259,17 +259,17 @@ export function getPilotClassDetailBreadcrumbs(
 export function getPilotPersonalitiesBreadcrumbs(): BreadcrumbTrail {
   return [
     {
-      label: 'Home',
+      label: resolveLocalizationKey('Breadcrumb_Home', 'Web_UI'),
       href: '/',
       isCurrent: false,
     },
     {
-      label: 'Pilots',
+      label: resolveLocalizationKey('Breadcrumb_Pilots', 'Web_UI'),
       href: '/pilots',
       isCurrent: false,
     },
     {
-      label: 'Pilot Personalities',
+      label: resolveLocalizationKey('Breadcrumb_Pilot_Personalities', 'Web_UI'),
       href: '/pilot_personalities',
       isCurrent: true,
     },
@@ -286,17 +286,17 @@ export function getPilotPersonalityDetailBreadcrumbs(
 
   return [
     {
-      label: 'Home',
+      label: resolveLocalizationKey('Breadcrumb_Home', 'Web_UI'),
       href: '/',
       isCurrent: false,
     },
     {
-      label: 'Pilots',
+      label: resolveLocalizationKey('Breadcrumb_Pilots', 'Web_UI'),
       href: '/pilots',
       isCurrent: false,
     },
     {
-      label: 'Pilot Personalities',
+      label: resolveLocalizationKey('Breadcrumb_Pilot_Personalities', 'Web_UI'),
       href: '/pilot_personalities',
       isCurrent: false,
     },
@@ -314,17 +314,17 @@ export function getPilotPersonalityDetailBreadcrumbs(
 export function getPilotTalentTypesBreadcrumbs(): BreadcrumbTrail {
   return [
     {
-      label: 'Home',
+      label: resolveLocalizationKey('Breadcrumb_Home', 'Web_UI'),
       href: '/',
       isCurrent: false,
     },
     {
-      label: 'Pilots',
+      label: resolveLocalizationKey('Breadcrumb_Pilots', 'Web_UI'),
       href: '/pilots',
       isCurrent: false,
     },
     {
-      label: 'Pilot Talent Types',
+      label: resolveLocalizationKey('Breadcrumb_Pilot_Talent_Types', 'Web_UI'),
       href: '/pilot_talent_types',
       isCurrent: true,
     },
@@ -341,17 +341,17 @@ export function getPilotTalentTypeDetailBreadcrumbs(
 
   return [
     {
-      label: 'Home',
+      label: resolveLocalizationKey('Breadcrumb_Home', 'Web_UI'),
       href: '/',
       isCurrent: false,
     },
     {
-      label: 'Pilots',
+      label: resolveLocalizationKey('Breadcrumb_Pilots', 'Web_UI'),
       href: '/pilots',
       isCurrent: false,
     },
     {
-      label: 'Pilot Talent Types',
+      label: resolveLocalizationKey('Breadcrumb_Pilot_Talent_Types', 'Web_UI'),
       href: '/pilot_talent_types',
       isCurrent: false,
     },
@@ -369,17 +369,17 @@ export function getPilotTalentTypeDetailBreadcrumbs(
 export function getPilotTalentsBreadcrumbs(): BreadcrumbTrail {
   return [
     {
-      label: 'Home',
+      label: resolveLocalizationKey('Breadcrumb_Home', 'Web_UI'),
       href: '/',
       isCurrent: false,
     },
     {
-      label: 'Pilots',
+      label: resolveLocalizationKey('Breadcrumb_Pilots', 'Web_UI'),
       href: '/pilots',
       isCurrent: false,
     },
     {
-      label: 'Pilot Talents',
+      label: resolveLocalizationKey('Breadcrumb_Pilot_Talents', 'Web_UI'),
       href: '/pilot_talents',
       isCurrent: true,
     },
@@ -396,17 +396,17 @@ export function getPilotTalentDetailBreadcrumbs(
 
   return [
     {
-      label: 'Home',
+      label: resolveLocalizationKey('Breadcrumb_Home', 'Web_UI'),
       href: '/',
       isCurrent: false,
     },
     {
-      label: 'Pilots',
+      label: resolveLocalizationKey('Breadcrumb_Pilots', 'Web_UI'),
       href: '/pilots',
       isCurrent: false,
     },
     {
-      label: 'Pilot Talents',
+      label: resolveLocalizationKey('Breadcrumb_Pilot_Talents', 'Web_UI'),
       href: '/pilot_talents',
       isCurrent: false,
     },
@@ -424,12 +424,12 @@ export function getPilotTalentDetailBreadcrumbs(
 export function getBotPresetsBreadcrumbs(): BreadcrumbTrail {
   return [
     {
-      label: 'Home',
+      label: resolveLocalizationKey('Breadcrumb_Home', 'Web_UI'),
       href: '/',
       isCurrent: false,
     },
     {
-      label: 'AI Bots',
+      label: resolveLocalizationKey('Breadcrumb_AI_Bots', 'Web_UI'),
       href: '/ai_bots',
       isCurrent: true,
     },
@@ -442,12 +442,12 @@ export function getBotPresetsBreadcrumbs(): BreadcrumbTrail {
 export function getFactoryPresetsBreadcrumbs(): BreadcrumbTrail {
   return [
     {
-      label: 'Home',
+      label: resolveLocalizationKey('Breadcrumb_Home', 'Web_UI'),
       href: '/',
       isCurrent: false,
     },
     {
-      label: 'Factory Bots',
+      label: resolveLocalizationKey('Breadcrumb_Factory_Bots', 'Web_UI'),
       href: '/factory_bots',
       isCurrent: true,
     },
@@ -466,12 +466,14 @@ export function getCharacterPresetDetailBreadcrumbs(
 
   return [
     {
-      label: 'Home',
+      label: resolveLocalizationKey('Breadcrumb_Home', 'Web_UI'),
       href: '/',
       isCurrent: false,
     },
     {
-      label: preset?.is_factory_preset ? 'Factory Bots' : 'AI Bots',
+      label: preset?.is_factory_preset 
+        ? resolveLocalizationKey('Breadcrumb_Factory_Bots', 'Web_UI')
+        : resolveLocalizationKey('Breadcrumb_AI_Bots', 'Web_UI'),
       href: preset?.is_factory_preset ? '/factory_bots' : '/ai_bots',
       isCurrent: false,
     },
@@ -489,12 +491,12 @@ export function getCharacterPresetDetailBreadcrumbs(
 export function getAiBotsBreadcrumbs(): BreadcrumbTrail {
   return [
     {
-      label: 'Home',
+      label: resolveLocalizationKey('Breadcrumb_Home', 'Web_UI'),
       href: '/',
       isCurrent: false,
     },
     {
-      label: 'AI Bots',
+      label: resolveLocalizationKey('Breadcrumb_AI_Bots', 'Web_UI'),
       href: '/ai_bots',
       isCurrent: true,
     },
@@ -507,12 +509,12 @@ export function getAiBotsBreadcrumbs(): BreadcrumbTrail {
 export function getFactoryBotsBreadcrumbs(): BreadcrumbTrail {
   return [
     {
-      label: 'Home',
+      label: resolveLocalizationKey('Breadcrumb_Home', 'Web_UI'),
       href: '/',
       isCurrent: false,
     },
     {
-      label: 'Factory Bots',
+      label: resolveLocalizationKey('Breadcrumb_Factory_Bots', 'Web_UI'),
       href: '/factory_bots',
       isCurrent: true,
     },

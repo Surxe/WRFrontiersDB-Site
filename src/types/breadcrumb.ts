@@ -1,5 +1,7 @@
+import type { LocalizationKey } from '../types/localization';
+
 export interface BreadcrumbItem {
-  label: string; // Display text (localized)
+  label: string | LocalizationKey; // Display text (localized)
   href?: string; // URL (undefined for current page)
   isCurrent: boolean; // true for current page
 }
