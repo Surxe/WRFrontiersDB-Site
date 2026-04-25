@@ -12,7 +12,8 @@
 export function toSlug(str: string): string {
   return str
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/'/g, '') // Remove apostrophes first
+    .replace(/[^a-z0-9]+/g, '-') // Then replace other special chars with hyphens
     .replace(/-+/g, '-')
     .replace(/^-+|-+$/g, '');
 }
