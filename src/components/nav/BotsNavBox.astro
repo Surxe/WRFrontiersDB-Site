@@ -1,5 +1,11 @@
 ---
-// Simple navbox for bot navigation
+import { resolveLocalizationKey } from '../../utils/localization';
+import LocalizedText from '../LocalizedText.astro';
+
+// Get localized descriptions
+const robotsDesc = resolveLocalizationKey('Robots_Description', 'Web_UI');
+const aiBotsDesc = resolveLocalizationKey('AI_Bots_Description', 'Web_UI');
+const factoryBotsDesc = resolveLocalizationKey('Factory_Bots_Description', 'Web_UI');
 ---
 
 <nav>
@@ -8,12 +14,15 @@
     <ul>
       <li>
         <a href="/robots">Robots</a>
+        <LocalizedText tag="p" localizationKey={robotsDesc} class="nav-description" />
       </li>
       <li>
         <a href="/ai_bots">AI Bots</a>
+        <LocalizedText tag="p" localizationKey={aiBotsDesc} class="nav-description" />
       </li>
       <li>
         <a href="/factory_bots">Factory Bots</a>
+        <LocalizedText tag="p" localizationKey={factoryBotsDesc} class="nav-description" />
       </li>
     </ul>
   </div>
@@ -56,5 +65,13 @@
   .nav-box a:hover {
     background-color: #e9ecef;
     color: #0056b3;
+  }
+
+  .nav-description {
+    margin: 0.25rem 0 0 0.75rem;
+    font-size: 0.875rem;
+    color: #6c757d;
+    line-height: 1.4;
+    max-width: 300px;
   }
 </style>
