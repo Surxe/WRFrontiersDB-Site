@@ -4,14 +4,12 @@ import type {
   CharacterPresetModule,
 } from '../../types/character_preset';
 import ObjRef from '../obj_ref/ObjRef.astro';
+import LocalizedText from '../LocalizedText.astro';
 import { refToId } from '../../utils/object_reference';
 import {
   getModuleCategoryForWeaponSocket,
   isWeaponSocket,
 } from '../../utils/socket_module_mapping';
-import {
-  getDefaultString,
-} from '../../utils/localization';
 import { getParseObject } from '../../utils/parse_object';
 
 interface Props {
@@ -116,14 +114,14 @@ const { grouped, shouldShowWeaponGroups } =
           const moduleCategory = moduleCategoryID ? getParseObject(moduleCategoryID, 'Objects/ModuleCategory.json') : undefined;
           const moduleCategoryName =
             isWeapon && shouldShowWeaponGroups && moduleCategory
-              ? getDefaultString(moduleCategory.name as any)
+              ? moduleCategory.name
               : undefined;
 
           return (
             <span class="module-item">
               <ObjRef obj={module} />
               {moduleCategoryName && (
-                <span class="module-group">({moduleCategoryName})</span>
+                <span class="module-group">(<LocalizedText tag="span" localizationKey={moduleCategoryName} />)</span>
               )}
               {count > 1 && (
                 <span class="module-count">x{count}</span>
