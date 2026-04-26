@@ -6,15 +6,14 @@ import type { Module } from '../../types/module';
 
 interface Props {
   botId: string;
-  currentModuleId: string;
 }
 
-const { botId, currentModuleId } = Astro.props;
+const { botId } = Astro.props;
 
 // Load modules and presets
 const modules = getParseObjects<Module>('Objects/Module.json');
-// Get core modules for this bot (excluding current module)
-const botCoreModules = getBotCoreModules(botId, modules, currentModuleId);
+// Get core modules for this bot (including current module)
+const botCoreModules = getBotCoreModules(botId, modules);
 
 // Get bot name for title
 const botName =
