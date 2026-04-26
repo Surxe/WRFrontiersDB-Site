@@ -57,7 +57,9 @@ function getProcessedData() {
 
     // Group weapons by module_ref, but separate by category (Shoulder/Torso) if we are showing groups
     const weaponCategorySuffix =
-      isWeapon && shouldShowWeaponGroups && mCategoryId ? `|${mCategoryId}` : '';
+      isWeapon && shouldShowWeaponGroups && mCategoryId
+        ? `|${mCategoryId}`
+        : '';
 
     // Shoulders are grouped if they are the same
     const isShoulderSlot =
@@ -71,9 +73,14 @@ function getProcessedData() {
     // Calculate module category name if needed
     let moduleCategoryName: any;
     if (isWeapon && shouldShowWeaponGroups) {
-      const moduleCategoryID = getModuleCategoryForWeaponSocket(entry.socket_name);
+      const moduleCategoryID = getModuleCategoryForWeaponSocket(
+        entry.socket_name
+      );
       if (moduleCategoryID) {
-        const moduleCategory = getParseObject(moduleCategoryID, 'Objects/ModuleCategory.json');
+        const moduleCategory = getParseObject(
+          moduleCategoryID,
+          'Objects/ModuleCategory.json'
+        );
         moduleCategoryName = moduleCategory.name;
       }
     }
@@ -81,7 +88,12 @@ function getProcessedData() {
     if (groups.has(key)) {
       groups.get(key)!.count++;
     } else {
-      groups.set(key, { module, count: 1, firstIndex: idx, moduleCategoryName });
+      groups.set(key, {
+        module,
+        count: 1,
+        firstIndex: idx,
+        moduleCategoryName,
+      });
     }
   });
 
@@ -93,9 +105,7 @@ function getProcessedData() {
   };
 }
 
-const { grouped } =
-  getProcessedData();
-
+const { grouped } = getProcessedData();
 ---
 
 <tr class="bot-row">
@@ -119,11 +129,16 @@ const { grouped } =
             <span class="module-item">
               <ObjRef obj={module} />
               {moduleCategoryName && (
-                <span class="module-group">(<LocalizedText tag="span" localizationKey={moduleCategoryName} />)</span>
+                <span class="module-group">
+                  (
+                  <LocalizedText
+                    tag="span"
+                    localizationKey={moduleCategoryName}
+                  />
+                  )
+                </span>
               )}
-              {count > 1 && (
-                <span class="module-count">x{count}</span>
-              )}
+              {count > 1 && <span class="module-count">x{count}</span>}
             </span>
           );
         })
@@ -180,7 +195,6 @@ const { grouped } =
     color: #666;
     font-size: 0.8rem;
   }
-
 
   .module-count {
     color: #666;

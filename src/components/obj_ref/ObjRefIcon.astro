@@ -13,7 +13,9 @@ interface Props {
 const { objRefData, iconSize } = Astro.props;
 
 // Helper function to handle LocalizationKey | LocalizationKey[]
-function getDefaultStringFromText(text: LocalizationKey | LocalizationKey[]): string {
+function getDefaultStringFromText(
+  text: LocalizationKey | LocalizationKey[]
+): string {
   if (Array.isArray(text)) {
     // For arrays, use the first item's default string
     return getDefaultString(text[0]) || '';

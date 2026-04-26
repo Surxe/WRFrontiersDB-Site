@@ -228,9 +228,7 @@ const objRefData = getObjRefData(module);
   {
     botCoreModulesNavBox && (
       <section style="margin-top: 2rem;">
-        <BotCoreModulesNavBox
-          botId={botCoreModulesNavBox}
-        />
+        <BotCoreModulesNavBox botId={botCoreModulesNavBox} />
       </section>
     )
   }
@@ -248,5 +246,9 @@ const objRefData = getObjRefData(module);
     )
   }
 
-  <ObjectPageScripts objectData={module} jsFileName="module_page.js" slug={_slug} />
+  <ObjectPageScripts
+    objectData={module}
+    jsFileName="module_page.js"
+    slug={_slug}
+  />
 </ParseObjectPage>
