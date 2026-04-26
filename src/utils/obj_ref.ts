@@ -55,6 +55,7 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
 
           let texts: LocalizationKey[] = [module.name as LocalizationKey];
 
+          // Add shoulder side if applicable
           if (module.shoulder_side === 'L') {
             texts.push({
               Key: 'Socket_Left',
@@ -67,7 +68,10 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
               TableNamespace: 'Web_UI',
               en: 'Right',
             } as LocalizationKey);
-          } else if (group && group.name && group.id !== 'titan-weapon') { // titan weapons dont need category label, just like light/heavy weapons
+          }
+
+          // Add group name if not a titan weapon
+          if (group && group.name && group.id !== 'titan-weapon') {
             texts.push(group.name as LocalizationKey);
           }
 
