@@ -38,13 +38,13 @@ function getProcessedData() {
   // Grouping logic
   interface ModuleGroupEntry {
     module: any;
-    entry: CharacterPresetModule;
     count: number;
     firstIndex: number;
+    moduleCategoryName?: any;
   }
   const groups = new Map<string, ModuleGroupEntry>();
 
-  modules_arr.forEach((entry, idx) => {
+  modules_arr.forEach((entry: CharacterPresetModule, idx) => {
     const moduleId = refToId(entry.module_ref);
     const module = modules[moduleId];
     if (!module) return;
@@ -68,10 +68,20 @@ function getProcessedData() {
         ? `${entry.module_ref}${weaponCategorySuffix}`
         : `${entry.module_ref}|${entry.socket_name}`;
 
+    // Calculate module category name if needed
+    let moduleCategoryName: any;
+    if (isWeapon && shouldShowWeaponGroups) {
+      const moduleCategoryID = getModuleCategoryForWeaponSocket(entry.socket_name);
+      if (moduleCategoryID) {
+        const moduleCategory = getParseObject(moduleCategoryID, 'Objects/ModuleCategory.json');
+        moduleCategoryName = moduleCategory.name;
+      }
+    }
+
     if (groups.has(key)) {
       groups.get(key)!.count++;
     } else {
-      groups.set(key, { module, entry, count: 1, firstIndex: idx });
+      groups.set(key, { module, count: 1, firstIndex: idx, moduleCategoryName });
     }
   });
 
@@ -83,7 +93,7 @@ function getProcessedData() {
   };
 }
 
-const { grouped, shouldShowWeaponGroups } =
+const { grouped } =
   getProcessedData();
 
 ---
@@ -104,19 +114,7 @@ const { grouped, shouldShowWeaponGroups } =
   <td class="bot-modules">
     <div class="modules-list">
       {
-        grouped.map(({ module, entry, count }) => {
-          const isWeapon = isWeaponSocket(entry.socket_name);
-                  // Socket side labels removed since module names now contain Left/Right information
-
-          const moduleCategoryID = isWeapon
-            ? getModuleCategoryForWeaponSocket(entry.socket_name)
-            : undefined;
-          const moduleCategory = moduleCategoryID ? getParseObject(moduleCategoryID, 'Objects/ModuleCategory.json') : undefined;
-          const moduleCategoryName =
-            isWeapon && shouldShowWeaponGroups && moduleCategory
-              ? moduleCategory.name
-              : undefined;
-
+        grouped.map(({ module, count, moduleCategoryName }) => {
           return (
             <span class="module-item">
               <ObjRef obj={module} />
