@@ -6,6 +6,7 @@ import ObjRef from '../components/obj_ref/ObjRef.astro';
 import { getParseObjects } from '../utils/parse_object';
 import { getAllVirtualBots } from '../utils/bot_modules';
 import { getDefaultString } from '../utils/localization';
+import { getRobotsBreadcrumbs } from '../utils/breadcrumb';
 import type { CharacterPreset } from '../types/character_preset';
 import type { Module } from '../types/module';
 
@@ -37,13 +38,6 @@ for (const key of sortedGroupKeys) {
       getDefaultString(b.name) || b.name.Key || ''
     )
   );
-}
-
-export function getRobotsBreadcrumbs() {
-  return [
-    { label: 'Home', href: '/', isCurrent: false },
-    { label: 'Robots', isCurrent: true },
-  ];
 }
 ---
 

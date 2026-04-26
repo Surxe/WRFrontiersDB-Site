@@ -473,6 +473,11 @@ export function getCharacterPresetDetailBreadcrumbs(
       isCurrent: false,
     },
     {
+      label: 'Bots',
+      href: '/bots',
+      isCurrent: false,
+    },
+    {
       label: preset?.is_factory_preset
         ? resolveLocalizationKey('Breadcrumb_Factory_Bots', 'Web_UI')
         : resolveLocalizationKey('Breadcrumb_AI_Bots', 'Web_UI'),
@@ -498,6 +503,11 @@ export function getAiBotsBreadcrumbs(): BreadcrumbTrail {
       isCurrent: false,
     },
     {
+      label: 'Bots',
+      href: '/bots',
+      isCurrent: false,
+    },
+    {
       label: resolveLocalizationKey('Breadcrumb_AI_Bots', 'Web_UI'),
       href: '/ai_bots',
       isCurrent: true,
@@ -513,6 +523,11 @@ export function getFactoryBotsBreadcrumbs(): BreadcrumbTrail {
     {
       label: resolveLocalizationKey('Breadcrumb_Home', 'Web_UI'),
       href: '/',
+      isCurrent: false,
+    },
+    {
+      label: 'Bots',
+      href: '/bots',
       isCurrent: false,
     },
     {
@@ -536,6 +551,29 @@ export function getBotsBreadcrumbs(): BreadcrumbTrail {
     {
       label: 'Bots',
       href: '/bots',
+      isCurrent: true,
+    },
+  ];
+}
+
+/**
+ * Generate breadcrumb trail for robots page
+ */
+export function getRobotsBreadcrumbs(): BreadcrumbTrail {
+  return [
+    {
+      label: resolveLocalizationKey('Breadcrumb_Home', 'Web_UI'),
+      href: '/',
+      isCurrent: false,
+    },
+    {
+      label: 'Bots',
+      href: '/bots',
+      isCurrent: false,
+    },
+    {
+      label: 'Robots',
+      href: '/robots',
       isCurrent: true,
     },
   ];

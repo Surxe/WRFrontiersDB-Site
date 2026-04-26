@@ -1,59 +1,8 @@
 ---
 import Breadcrumb from '../components/Breadcrumb.astro';
 import ParseObjectListPage from '../components/ParseObjectListPage.astro';
-import BotsList from '../components/bot/BotsList.astro';
 import BotsNavBox from '../components/nav/BotsNavBox.astro';
 import { getBotsBreadcrumbs } from '../utils/breadcrumb';
-import { getParseObjects } from '../utils/parse_object';
-import { prepareObjectList } from '../utils/list';
-import { getDefaultString } from '../utils/localization';
-
-// Load character presets, modules, and pilots
-const presets = getParseObjects('Objects/CharacterPreset.json');
-const modules = getParseObjects('Objects/Module.json');
-const pilots = getParseObjects('Objects/Pilot.json');
-
-// Load slug map to check for production-ready modules
-const slugMapModule = await import('../../public/slug_map.json');
-const slugMap = slugMapModule.default as Record<string, string>;
-
-// Function to check if preset contains only production-ready modules
-function hasOnlyProductionModules(preset: any): boolean {
-  if (!preset.modules) return true;
-
-  return Object.values(preset.modules).every((moduleInfo: any) => {
-    if (!moduleInfo || !moduleInfo.module_ref) return true;
-
-    const moduleId = moduleInfo.module_ref.replace('OBJID_Module::', '');
-    return slugMap[moduleId] !== undefined;
-  });
-}
-
-// Prepare and filter presets
-const entries = prepareObjectList(presets, { prodReadyOnly: false });
-
-// Filter AI bots (non-factory presets with production modules)
-const aiBotEntries = entries.filter(
-  ([_, preset]) => !preset.is_factory_preset && hasOnlyProductionModules(preset)
-);
-
-// Filter factory bots (factory presets)
-const factoryBotEntries = entries.filter(
-  ([_, preset]) => preset.is_factory_preset
-);
-
-// Sort presets by name
-const sortedAiBots = aiBotEntries.sort(([_a, a], [_b, b]) => {
-  const nameA = getDefaultString(a.name as any) || a.id;
-  const nameB = getDefaultString(b.name as any) || b.id;
-  return nameA.localeCompare(nameB);
-});
-
-const sortedFactoryBots = factoryBotEntries.sort(([_a, a], [_b, b]) => {
-  const nameA = getDefaultString(a.name as any) || a.id;
-  const nameB = getDefaultString(b.name as any) || b.id;
-  return nameA.localeCompare(nameB);
-});
 ---
 
 <ParseObjectListPage
@@ -64,12 +13,4 @@ const sortedFactoryBots = factoryBotEntries.sort(([_a, a], [_b, b]) => {
   <Breadcrumb breadcrumbs={getBotsBreadcrumbs()} />
 
   <BotsNavBox />
-
-  <h1>Bots</h1>
-
-  <h2>AI Bots</h2>
-  <BotsList presets={sortedAiBots} modules={modules} pilots={pilots} />
-
-  <h2>Factory Bots</h2>
-  <BotsList presets={sortedFactoryBots} modules={modules} pilots={pilots} />
 </ParseObjectListPage>
