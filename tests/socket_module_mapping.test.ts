@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  getModuleGroupForWeaponSocket,
+  getModuleCategoryForWeaponSocket,
   isWeaponSocket,
   WEAPON_SOCKET_PREFIXES,
 } from '../src/utils/socket_module_mapping';
@@ -24,27 +24,27 @@ describe('socket_module_mapping', () => {
     });
   });
 
-  describe('getModuleGroupForWeaponSocket', () => {
-    it('should return correct module group for Shoulder_Weapon sockets', () => {
-      expect(getModuleGroupForWeaponSocket('Shoulder_Weapon_0')).toBe(
-        'non-titan-shoulder'
+  describe('getModuleCategoryForWeaponSocket', () => {
+    it('should return correct module category for Shoulder_Weapon sockets', () => {
+      expect(getModuleCategoryForWeaponSocket('Shoulder_Weapon_0')).toBe(
+        'DA_ModuleCategory_Shoulder.0'
       );
-      expect(getModuleGroupForWeaponSocket('Shoulder_Weapon_1')).toBe(
-        'non-titan-shoulder'
+      expect(getModuleCategoryForWeaponSocket('Shoulder_Weapon_1')).toBe(
+        'DA_ModuleCategory_Shoulder.0'
       );
     });
 
-    it('should return correct module group for Torso_Weapon sockets', () => {
-      expect(getModuleGroupForWeaponSocket('Torso_Weapon_0')).toBe(
-        'non-titan-torsos'
+    it('should return correct module category for Torso_Weapon sockets', () => {
+      expect(getModuleCategoryForWeaponSocket('Torso_Weapon_0')).toBe(
+        'DA_ModuleCategory_Torso.0'
       );
     });
 
     it('should return undefined for non-weapon sockets', () => {
-      expect(getModuleGroupForWeaponSocket('Root')).toBeUndefined();
-      expect(getModuleGroupForWeaponSocket('Shoulder_L')).toBeUndefined();
-      expect(getModuleGroupForWeaponSocket('Shoulder_R')).toBeUndefined();
-      expect(getModuleGroupForWeaponSocket('Unknown')).toBeUndefined();
+      expect(getModuleCategoryForWeaponSocket('Root')).toBeUndefined();
+      expect(getModuleCategoryForWeaponSocket('Shoulder_L')).toBeUndefined();
+      expect(getModuleCategoryForWeaponSocket('Shoulder_R')).toBeUndefined();
+      expect(getModuleCategoryForWeaponSocket('Unknown')).toBeUndefined();
     });
   });
 
