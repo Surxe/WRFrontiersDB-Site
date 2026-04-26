@@ -6,7 +6,7 @@ import type {
 import ObjRef from '../obj_ref/ObjRef.astro';
 import { refToId } from '../../utils/object_reference';
 import {
-  getModuleGroupForWeaponSocket,
+  getModuleCategoryForWeaponSocket,
   isWeaponSocket,
 } from '../../utils/socket_module_mapping';
 import {
@@ -53,13 +53,13 @@ function getProcessedData() {
 
     // Determine grouping key
     const isWeapon = isWeaponSocket(entry.socket_name);
-    const mGroupId = isWeapon
-      ? getModuleGroupForWeaponSocket(entry.socket_name)
+    const mCategoryId = isWeapon
+      ? getModuleCategoryForWeaponSocket(entry.socket_name)
       : undefined;
 
-    // Group weapons by module_ref, but separate by group (Shoulder/Torso) if we are showing groups
-    const weaponGroupSuffix =
-      isWeapon && shouldShowWeaponGroups && mGroupId ? `|${mGroupId}` : '';
+    // Group weapons by module_ref, but separate by category (Shoulder/Torso) if we are showing groups
+    const weaponCategorySuffix =
+      isWeapon && shouldShowWeaponGroups && mCategoryId ? `|${mCategoryId}` : '';
 
     // Shoulders are grouped if they are the same
     const isShoulderSlot =
@@ -67,7 +67,7 @@ function getProcessedData() {
 
     const key =
       isWeapon || isShoulderSlot
-        ? `${entry.module_ref}${weaponGroupSuffix}`
+        ? `${entry.module_ref}${weaponCategorySuffix}`
         : `${entry.module_ref}|${entry.socket_name}`;
 
     if (groups.has(key)) {
@@ -88,15 +88,6 @@ function getProcessedData() {
 const { grouped, shouldShowWeaponGroups } =
   getProcessedData();
 
-// Helper to get group name (Shoulder/Torso)
-function getModuleGroupName(groupId: string): string {
-  try {
-    const group = getParseObject(groupId, 'Objects/ModuleGroup.json');
-    return getDefaultString(group.name as any) || groupId;
-  } catch {
-    return groupId;
-  }
-}
 ---
 
 <tr class="bot-row">
@@ -119,19 +110,20 @@ function getModuleGroupName(groupId: string): string {
           const isWeapon = isWeaponSocket(entry.socket_name);
                   // Socket side labels removed since module names now contain Left/Right information
 
-          const moduleGroup = isWeapon
-            ? getModuleGroupForWeaponSocket(entry.socket_name)
+          const moduleCategoryID = isWeapon
+            ? getModuleCategoryForWeaponSocket(entry.socket_name)
             : undefined;
-          const moduleGroupName =
-            isWeapon && shouldShowWeaponGroups && moduleGroup
-              ? getModuleGroupName(moduleGroup)
+          const moduleCategory = moduleCategoryID ? getParseObject(moduleCategoryID, 'Objects/ModuleCategory.json') : undefined;
+          const moduleCategoryName =
+            isWeapon && shouldShowWeaponGroups && moduleCategory
+              ? getDefaultString(moduleCategory.name as any)
               : undefined;
 
           return (
             <span class="module-item">
               <ObjRef obj={module} />
-              {moduleGroupName && (
-                <span class="module-group">({moduleGroupName})</span>
+              {moduleCategoryName && (
+                <span class="module-group">({moduleCategoryName})</span>
               )}
               {count > 1 && (
                 <span class="module-count">x{count}</span>
