@@ -67,7 +67,7 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
               TableNamespace: 'Web_UI',
               en: 'Right',
             } as LocalizationKey);
-          } else if (group && group.name) {
+          } else if (group && group.name && group.id !== 'titan-weapon') { // titan weapons dont need category label, just like light/heavy weapons
             texts.push(group.name as LocalizationKey);
           }
 
