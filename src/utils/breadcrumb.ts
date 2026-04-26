@@ -522,3 +522,21 @@ export function getFactoryBotsBreadcrumbs(): BreadcrumbTrail {
     },
   ];
 }
+
+/**
+ * Generate breadcrumb trail for bots page
+ */
+export function getBotsBreadcrumbs(): BreadcrumbTrail {
+  return [
+    {
+      label: resolveLocalizationKey('Breadcrumb_Home', 'Web_UI'),
+      href: '/',
+      isCurrent: false,
+    },
+    {
+      label: 'Bots',
+      href: '/bots',
+      isCurrent: true,
+    },
+  ];
+}
