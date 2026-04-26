@@ -9,10 +9,8 @@ import {
   getModuleGroupForWeaponSocket,
   isWeaponSocket,
 } from '../../utils/socket_module_mapping';
-import { getSocketSideLocaleKey } from '../../utils/socket_side_mapping';
 import {
   getDefaultString,
-  resolveLocalizationKey,
 } from '../../utils/localization';
 import { getParseObject } from '../../utils/parse_object';
 
@@ -28,11 +26,7 @@ const { preset, modules, pilots } = Astro.props;
 function getProcessedData() {
   const modules_arr = preset.modules || [];
 
-  // Identify shoulder distinctness
-  const shoulderL = modules_arr.find((e) => e.socket_name === 'Shoulder_L');
-  const shoulderR = modules_arr.find((e) => e.socket_name === 'Shoulder_R');
-  const hasDifferentShoulders =
-    shoulderL && shoulderR && shoulderL.module_ref !== shoulderR.module_ref;
+  // Shoulder distinctness identification removed since module names now contain Left/Right information
 
   // Track unique weapon IDs to decide on group name visibility
   const weaponIds = new Set<string>();
@@ -88,18 +82,17 @@ function getProcessedData() {
       (a, b) => a.firstIndex - b.firstIndex
     ),
     shouldShowWeaponGroups,
-    hasDifferentShoulders,
   };
 }
 
-const { grouped, shouldShowWeaponGroups, hasDifferentShoulders } =
+const { grouped, shouldShowWeaponGroups } =
   getProcessedData();
 
 // Helper to get group name (Shoulder/Torso)
 function getModuleGroupName(groupId: string): string {
   try {
     const group = getParseObject(groupId, 'Objects/ModuleGroup.json');
-    return getDefaultString(group.name) || groupId;
+    return getDefaultString(group.name as any) || groupId;
   } catch {
     return groupId;
   }
@@ -124,21 +117,7 @@ function getModuleGroupName(groupId: string): string {
       {
         grouped.map(({ module, entry, count }) => {
           const isWeapon = isWeaponSocket(entry.socket_name);
-          const isShoulderSlot =
-            entry.socket_name === 'Shoulder_L' ||
-            entry.socket_name === 'Shoulder_R';
-
-          let socketSideLabel = undefined;
-          if (isShoulderSlot && hasDifferentShoulders) {
-            const sideLocaleKey = getSocketSideLocaleKey(entry.socket_name);
-            if (sideLocaleKey) {
-              const localizationKey = resolveLocalizationKey(
-                sideLocaleKey,
-                'Web_UI'
-              );
-              socketSideLabel = getDefaultString(localizationKey);
-            }
-          }
+                  // Socket side labels removed since module names now contain Left/Right information
 
           const moduleGroup = isWeapon
             ? getModuleGroupForWeaponSocket(entry.socket_name)
@@ -151,13 +130,10 @@ function getModuleGroupName(groupId: string): string {
           return (
             <span class="module-item">
               <ObjRef obj={module} />
-              {socketSideLabel && (
-                <span class="socket-side">({socketSideLabel})</span>
-              )}
               {moduleGroupName && (
                 <span class="module-group">({moduleGroupName})</span>
               )}
-              {count > 1 && !socketSideLabel && (
+              {count > 1 && (
                 <span class="module-count">x{count}</span>
               )}
             </span>
@@ -217,11 +193,6 @@ function getModuleGroupName(groupId: string): string {
     font-size: 0.8rem;
   }
 
-  .socket-side {
-    color: #666;
-    font-size: 0.8rem;
-    font-weight: 500;
-  }
 
   .module-count {
     color: #666;

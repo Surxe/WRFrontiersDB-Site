@@ -32,33 +32,6 @@ Weapons are grouped purely by their `module_ref` unless multiple groups (Shoulde
 
 ---
 
-## 2. Left / Right Labeling Logic
-
-The `socket_name` (specifically `Shoulder_L` and `Shoulder_R`) is used for labeling **only** when there is a meaningful difference in the modules attached to those sockets.
-
-### The Comparison Rule
-
-1. Find the `Shoulder_L` entry.
-2. Find the `Shoulder_R` entry.
-3. If their `module_ref` differs: **SHOW (Left)/(Right) labels**.
-4. If their `module_ref` is the same: **GROUP as x2 and HIDE labels**.
-
-**Example: Phantom Scourge (`DA_Preset_BotAdv_PhantomScourge.0`)**
-
-- `Shoulder_L` -> `DA_Module_Shoulder_L_Phantom.0`
-- `Shoulder_R` -> `DA_Module_Shoulder_R_Phantom.0`
-- _Ref difference_: Yes.
-- **Result**: `Shoulder (Left)`, `Shoulder (Right)`
-
-**Example: Ceres Locust**
-
-- `Shoulder_L` -> `ShoulderDemeter.0`
-- `Shoulder_R` -> `ShoulderDemeter.0`
-- _Ref difference_: No.
-- **Result**: `Shoulder x2`
-
----
-
 ## 3. Weapon Grouping Labels
 
 We use a helper `hasDifferentWeaponIds` to determine if we should sub-divide the weapon list by their physical location (Shoulder vs. Torso).
