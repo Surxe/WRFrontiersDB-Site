@@ -19,4 +19,5 @@ export interface CharacterPreset extends ParseObject {
   pilot_ref: string;
   is_factory_preset: boolean;
   character_type: string;
+  weapon_module_ref?: string;
 }
