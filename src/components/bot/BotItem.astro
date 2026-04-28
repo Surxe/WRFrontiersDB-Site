@@ -114,8 +114,11 @@ const { grouped } = getProcessedData();
   </td>
   <td class="bot-pilot">
     {
-      preset.pilot_ref ? (
-        <ObjRef obj={pilots[refToId(preset.pilot_ref)]} iconSize={24} />
+      preset.pilot ? (
+        <>
+          <ObjRef obj={pilots[refToId(preset.pilot.pilot_ref)]} iconSize={24}/>
+          {preset.pilot.level && <span class="pilot-level">Lvl {preset.pilot.level}</span>}
+        </>
       ) : (
         <span class="no-pilot">-</span>
       )

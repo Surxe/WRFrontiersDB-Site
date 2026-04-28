@@ -16,7 +16,10 @@ export interface CharacterPreset extends ParseObject {
   icon?: string;
   name: LocalizationKey;
   modules: CharacterPresetModule[];
-  pilot_ref: string;
+  pilot: {
+    pilot_ref: string;
+    level?: number;
+  };
   is_factory_preset: boolean;
   character_type: string;
   weapon_module_ref?: string;
