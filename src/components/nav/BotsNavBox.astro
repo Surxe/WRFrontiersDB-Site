@@ -1,11 +1,22 @@
 ---
 import { resolveLocalizationKey } from '../../utils/localization';
 import LocalizedText from '../LocalizedText.astro';
+import ObjRef from '../obj_ref/ObjRef.astro';
+import { getParseObjects } from '../../utils/parse_object';
 
 // Get localized descriptions
 const robotsDesc = resolveLocalizationKey('Robots_Description', 'Web_UI');
 const aiBotsDesc = resolveLocalizationKey('AI_Bots_Description', 'Web_UI');
 const factoryBotsDesc = resolveLocalizationKey('Factory_Bots_Description', 'Web_UI');
+
+// Get example objects
+const virtualBots = getParseObjects('Objects/VirtualBot.json');
+const presets = getParseObjects('Objects/CharacterPreset.json');
+
+// Find example objects
+const robotExample = virtualBots['bulgasari'];
+const aiBotExample = presets['DA_Preset_BotAdv_BulwarkQuantum.0'];
+const factoryBotExample = presets['DA_Preset_Legend_DevbotBulgasari.0'];
 ---
 
 <nav>
@@ -14,15 +25,18 @@ const factoryBotsDesc = resolveLocalizationKey('Factory_Bots_Description', 'Web_
     <ul>
       <li>
         <a href="/robots">Robots</a>
-        <LocalizedText tag="p" localizationKey={robotsDesc} class="nav-description" />
+        <LocalizedText tag="p" localizationKey={robotsDesc} />
+        {robotExample && <ObjRef obj={robotExample} showIcon={true} useHref={true} />}
       </li>
       <li>
         <a href="/ai_bots">AI Bots</a>
-        <LocalizedText tag="p" localizationKey={aiBotsDesc} class="nav-description" />
+        <LocalizedText tag="p" localizationKey={aiBotsDesc} />
+        {aiBotExample && <ObjRef obj={aiBotExample} showIcon={true} useHref={true} />}
       </li>
       <li>
         <a href="/factory_bots">Factory Bots</a>
-        <LocalizedText tag="p" localizationKey={factoryBotsDesc} class="nav-description" />
+        <LocalizedText tag="p" localizationKey={factoryBotsDesc} />
+        {factoryBotExample && <ObjRef obj={factoryBotExample} showIcon={true} useHref={true} />}
       </li>
     </ul>
   </div>
@@ -73,5 +87,23 @@ const factoryBotsDesc = resolveLocalizationKey('Factory_Bots_Description', 'Web_
     color: #6c757d;
     line-height: 1.4;
     max-width: 300px;
+  }
+
+  .nav-box .obj-ref {
+    margin: 0.5rem 0 0 0.75rem;
+    display: inline-block;
+  }
+
+  .nav-box .obj-ref a {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .nav-box .obj-ref img {
+    width: 1.25rem;
+    height: 1.25rem;
   }
 </style>
