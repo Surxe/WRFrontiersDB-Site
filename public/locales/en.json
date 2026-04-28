@@ -31,9 +31,9 @@
     "Breadcrumb_Pilot_Talents": "Pilot Talents",
     "Breadcrumb_AI_Bots": "AI Bots",
     "Breadcrumb_Factory_Bots": "Factory Bots",
-    "Robots_Description": "Base robotic platforms and their core modules that form the foundation for all bot variants",
-    "AI_Bots_Description": "Player-controlled bot presets with custom module configurations and pilot assignments",
-    "Factory_Bots_Description": "Pre-configured bot variants with standardized loadouts used in game modes"
+    "Robots_Description": "Thematic robots and their core modules",
+    "AI_Bots_Description": "Bot builds used by AI bots",
+    "Factory_Bots_Description": "Pre-configured bot builds created by the game developers"
   },
   "ModuleGroups": {
     "GRP_TitanShoulders_Name": "Titan Shoulder"
