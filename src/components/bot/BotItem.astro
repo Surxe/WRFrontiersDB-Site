@@ -10,6 +10,7 @@ import {
   getModuleCategoryForWeaponSocket,
   isWeaponSocket,
 } from '../../utils/socket_module_mapping';
+import { getParseObject } from '../../utils/parse_object';
 
 interface Props {
   preset: CharacterPreset;
@@ -69,7 +70,21 @@ function getProcessedData() {
         ? `${entry.module_ref}${weaponCategorySuffix}`
         : `${entry.module_ref}|${entry.socket_name}`;
 
-    
+    // Calculate module category name if needed
+    let moduleCategoryName: any;
+    if (isWeapon && shouldShowWeaponGroups) {
+      const moduleCategoryID = getModuleCategoryForWeaponSocket(
+        entry.socket_name
+      );
+      if (moduleCategoryID) {
+        const moduleCategory = getParseObject(
+          moduleCategoryID,
+          'Objects/ModuleCategory.json'
+        );
+        moduleCategoryName = moduleCategory.name;
+      }
+    }
+
     if (groups.has(key)) {
       groups.get(key)!.count++;
     } else {
@@ -77,6 +92,7 @@ function getProcessedData() {
         module,
         count: 1,
         firstIndex: idx,
+        moduleCategoryName,
       });
     }
   });
@@ -115,6 +131,16 @@ const { grouped } = getProcessedData();
           return (
             <span class="module-item">
               <ObjRef obj={module} />
+              {moduleCategoryName && (
+                <span class="module-group">
+                  (
+                  <LocalizedText
+                    tag="span"
+                    localizationKey={moduleCategoryName}
+                  />
+                  )
+                </span>
+              )}
               {count > 1 && <span class="module-count">x{count}</span>}
             </span>
           );
