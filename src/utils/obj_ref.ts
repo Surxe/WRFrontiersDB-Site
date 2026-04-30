@@ -165,20 +165,23 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
     }
     case 'CharacterPreset': {
       const characterPreset = obj as CharacterPreset;
-      
+
       // For AI bots with weapon_module_ref, include the weapon name
-      if (!characterPreset.is_factory_preset && characterPreset.weapon_module_ref) {
+      if (
+        !characterPreset.is_factory_preset &&
+        characterPreset.weapon_module_ref
+      ) {
         try {
           const weaponModule = getParseObject(
             refToId(characterPreset.weapon_module_ref),
             'Objects/Module.json'
           );
-          
+
           if (weaponModule && weaponModule.name) {
             return {
               text: [
                 characterPreset.name,
-                weaponModule.name as LocalizationKey
+                weaponModule.name as LocalizationKey,
               ],
               iconPath: characterPreset.icon || undefined,
             };
@@ -187,7 +190,7 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
           // If weapon module not found, fallback to just the preset name
         }
       }
-      
+
       return {
         text: characterPreset.name,
         iconPath: characterPreset.icon || undefined,

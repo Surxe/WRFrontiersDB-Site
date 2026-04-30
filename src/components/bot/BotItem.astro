@@ -118,8 +118,10 @@ const { grouped } = getProcessedData();
     {
       preset.pilot ? (
         <>
-          <ObjRef obj={pilots[refToId(preset.pilot.pilot_ref)]} iconSize={24}/>
-          {preset.pilot.level && <span class="pilot-level">Lvl {preset.pilot.level}</span>}
+          <ObjRef obj={pilots[refToId(preset.pilot.pilot_ref)]} iconSize={24} />
+          {preset.pilot.level && (
+            <span class="pilot-level">Lvl {preset.pilot.level}</span>
+          )}
         </>
       ) : (
         <span class="no-pilot">-</span>
