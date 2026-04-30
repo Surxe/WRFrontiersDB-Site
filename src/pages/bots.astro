@@ -1,0 +1,16 @@
+---
+import Breadcrumb from '../components/Breadcrumb.astro';
+import ParseObjectListPage from '../components/ParseObjectListPage.astro';
+import BotsNavBox from '../components/nav/BotsNavBox.astro';
+import { getBotsBreadcrumbs } from '../utils/breadcrumb';
+---
+
+<ParseObjectListPage
+  title="Bots"
+  description="Browse all bot presets from War Robots Frontiers"
+  headerImage="/images/T_UnLockPilots.png"
+>
+  <Breadcrumb breadcrumbs={getBotsBreadcrumbs()} />
+
+  <BotsNavBox />
+</ParseObjectListPage>

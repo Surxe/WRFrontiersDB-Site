@@ -41,6 +41,7 @@ function getProcessedData() {
     count: number;
     firstIndex: number;
     moduleCategoryName?: any;
+    level: number;
   }
   const groups = new Map<string, ModuleGroupEntry>();
 
@@ -93,6 +94,7 @@ function getProcessedData() {
         count: 1,
         firstIndex: idx,
         moduleCategoryName,
+        level: entry.level,
       });
     }
   });
@@ -114,8 +116,13 @@ const { grouped } = getProcessedData();
   </td>
   <td class="bot-pilot">
     {
-      preset.pilot_ref ? (
-        <ObjRef obj={pilots[refToId(preset.pilot_ref)]} iconSize={24} />
+      preset.pilot ? (
+        <>
+          <ObjRef obj={pilots[refToId(preset.pilot.pilot_ref)]} iconSize={24} />
+          {preset.pilot.level && (
+            <span class="pilot-level">Lvl {preset.pilot.level}</span>
+          )}
+        </>
       ) : (
         <span class="no-pilot">-</span>
       )
@@ -124,10 +131,11 @@ const { grouped } = getProcessedData();
   <td class="bot-modules">
     <div class="modules-list">
       {
-        grouped.map(({ module, count, moduleCategoryName }) => {
+        grouped.map(({ module, count, moduleCategoryName, level }) => {
           return (
             <span class="module-item">
               <ObjRef obj={module} />
+              <span class="level">Lvl {level}</span>
               {moduleCategoryName && (
                 <span class="module-group">
                   (
@@ -200,5 +208,10 @@ const { grouped } = getProcessedData();
     color: #666;
     font-size: 0.8rem;
     font-weight: 500;
+  }
+
+  .level {
+    color: #666;
+    font-size: 0.8rem;
   }
 </style>
