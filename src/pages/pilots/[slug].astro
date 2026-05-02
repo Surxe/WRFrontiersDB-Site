@@ -25,6 +25,7 @@ import { resolveObjectRef } from '../../utils/object_resolver';
 import { refToId } from '../../utils/object_reference';
 import type { ModuleStat } from '../../types/module';
 import ObjRef from '../../components/obj_ref/ObjRef.astro';
+import CurrencyAmount from '../../components/CurrencyAmount.astro';
 import { generatePilotLocalizedMetaDescriptions } from '../../utils/build_localization';
 import PilotsNavBox from '../../components/nav/PilotsNavBox.astro';
 import { PILOT_TYPE_LEGENDARY_REF } from '../../utils/constants';
@@ -105,17 +106,17 @@ const objRefData = getObjRefData(pilot);
 
   <Icon iconPath={pilot.image_path} altText={`${defaultName} portrait`} />
 
-  <p id="pilot-sell-price-currency">
-    Sell Price Currency: {
+  <p id="pilot-sell-price">
+    Sell Price: {
       sellPriceCurrency ? (
-        <ObjRef obj={sellPriceCurrency} />
+        <CurrencyAmount
+          amount={pilot.sell_price.amount}
+          currency={sellPriceCurrency}
+        />
       ) : (
-        pilot.sell_price?.currency_ref
+        `${pilot.sell_price.amount} ${pilot.sell_price.currency_ref}`
       )
     }
-  </p>
-  <p id="pilot-sell-price-amount">
-    Sell Price Amount: {pilot.sell_price.amount}
   </p>
 
   <h3>Levels</h3>

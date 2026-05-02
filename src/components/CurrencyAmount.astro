@@ -1,0 +1,26 @@
+---
+import type { Currency } from '../types/currency';
+import Number from './Number.astro';
+import ObjRef from './obj_ref/ObjRef.astro';
+
+interface Props {
+  amount: number;
+  currency: Currency;
+  iconSize?: number;
+}
+
+const { amount, currency, iconSize = 24 } = Astro.props;
+---
+
+<span class="currency-amount">
+  <Number value={amount} />
+  <ObjRef obj={currency} iconSize={iconSize} />
+</span>
+
+<style>
+  .currency-amount {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+</style>
