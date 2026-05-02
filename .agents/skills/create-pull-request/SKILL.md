@@ -1,3 +1,8 @@
+---
+name: create-pull-request
+description: Creates a pull request for the current feature branch
+---
+
 # Creating a pull request
 
 ## Prerequisites
