@@ -7,14 +7,14 @@ description: Adds support for a new object type to the WRFrontiersDB-Site
 
 Before adding a new object type, ensure you have answers from the user for the following questions:
 
-1. Should this object type have its own dedicated list and detail pages? 
+1. What is the name of the JSON file that contains the data for this object type? (e.g., `Module.json`)
+2. Should this object type have its own dedicated list and detail pages? 
    1. If no:
       1. Should it have any purpose beyond ObjRef integration?
    2. If yes:
-      1. What is the name of the JSON file that contains the data for this object type? (e.g., `Module.json`)
-      2. What is the name of the url it should live at? (e.g., `/modules`)
-      3. What should the breadcrumb path be? (e.g., `Module Groups` -> `Modules` -> `<Module>`)
-2. What should the slug derive from? (e.g., `name`.`en`)
+      1. What is the name of the url it should live at? (e.g., `/modules`)
+      2. What should the breadcrumb path be? (e.g., `Module Groups` -> `Modules` -> `<Module>`)
+3. What should the slug derive from? (e.g., `name`.`en`)
 
 # Adding a New Object Type
 
