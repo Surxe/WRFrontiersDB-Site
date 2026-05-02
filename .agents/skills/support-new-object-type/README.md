@@ -14,6 +14,7 @@ Before adding a new object type, ensure you have answers from the user for the f
       1. What is the name of the JSON file that contains the data for this object type? (e.g., `Module.json`)
       2. What is the name of the url it should live at? (e.g., `/modules`)
       3. What should the breadcrumb path be? (e.g., `Module Groups` -> `Modules` -> `<Module>`)
+2. What should the slug derive from? (e.g., `name`.`en`)
 
 # Adding a New Object Type
 
@@ -26,4 +27,5 @@ Before adding a new object type, ensure you have answers from the user for the f
 7. **Call** `generateObjectListStaticPaths("{parseObject}")`
 8. **Add link** to homepage ([index.astro](../../src/pages/index.astro))
 9. **Configure breadcrumbs** in `src/components/Breadcrumbs.astro`'s `getBreadcrumbPath` function
-10. **Rebuild slugs**: `npm run build:slugs`
+10. **Configure slug generation** in `src/utils/slug_generator.ts`'s `generateSlugForObjectType` function
+11. **Rebuild slugs**: `npm run build:slugs`
