@@ -7,9 +7,7 @@ import { prepareObjectList } from '../utils/list';
 import { getCurrenciesBreadcrumbs } from '../utils/breadcrumb';
 import ObjRef from '../components/obj_ref/ObjRef.astro';
 
-const currencies = getParseObjects<Currency>(
-  'Objects/Currency.json'
-);
+const currencies = getParseObjects<Currency>('Objects/Currency.json');
 
 const entries = prepareObjectList(currencies, { prodReadyOnly: false });
 ---

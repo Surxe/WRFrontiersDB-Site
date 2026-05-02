@@ -116,7 +116,8 @@ function generateDefaultSlug(object: ParseObject): string {
  * Format: name.en
  */
 function generateCurrencySlug(object: Currency): string {
-  const objectName = object.name.en || getDefaultString(object.name as LocalizationKey) || '';
+  const objectName =
+    object.name.en || getDefaultString(object.name as LocalizationKey) || '';
   return toSlug(objectName);
 }
 

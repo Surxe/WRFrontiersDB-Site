@@ -182,7 +182,6 @@ export async function generateObjectStaticPaths(
   return paths;
 }
 
-
 // Generate slug-based static paths for object detail pages
 export function generateSlugBasedStaticPaths(
   objectType:

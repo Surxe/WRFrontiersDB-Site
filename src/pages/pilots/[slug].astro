@@ -106,7 +106,13 @@ const objRefData = getObjRefData(pilot);
   <Icon iconPath={pilot.image_path} altText={`${defaultName} portrait`} />
 
   <p id="pilot-sell-price-currency">
-    Sell Price Currency: {sellPriceCurrency ? <ObjRef obj={sellPriceCurrency} /> : pilot.sell_price?.currency_ref}
+    Sell Price Currency: {
+      sellPriceCurrency ? (
+        <ObjRef obj={sellPriceCurrency} />
+      ) : (
+        pilot.sell_price?.currency_ref
+      )
+    }
   </p>
   <p id="pilot-sell-price-amount">
     Sell Price Amount: {pilot.sell_price.amount}

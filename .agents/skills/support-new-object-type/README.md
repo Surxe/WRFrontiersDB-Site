@@ -8,7 +8,7 @@ description: Adds support for a new object type to the WRFrontiersDB-Site
 Ensure you have answers from the user for the following questions:
 
 1. What is the name of the JSON file that contains the data for this object type? (e.g., `Module.json`)
-2. Should this object type have its own dedicated list and detail pages? 
+2. Should this object type have its own dedicated list and detail pages?
    1. If no:
       1. Should it have any purpose beyond ObjRef integration?
    2. If yes:

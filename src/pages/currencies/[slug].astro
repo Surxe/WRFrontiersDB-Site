@@ -27,7 +27,6 @@ const localizedDescriptions = generateCurrencyLocalizedMetaDescriptions(
   currency,
   defaultName
 );
-
 ---
 
 <ParseObjectPage
@@ -42,52 +41,85 @@ const localizedDescriptions = generateCurrencyLocalizedMetaDescriptions(
     slot="head"
   />
   <Breadcrumb breadcrumbs={getCurrencyDetailBreadcrumbs(currency)} />
+  <LocalizedText id="currency-name" tag="h1" localizationKey={currency.name} />
+
   <LocalizedText
-    id="currency-name"
-    tag="h1"
-    localizationKey={currency.name}
+    id="currency-description"
+    tag="p"
+    localizationKey={currency.description}
   />
 
-  <LocalizedText id="currency-description" tag="p" localizationKey={currency.description} />
+  {
+    currency.large_icon_path && (
+      <div>
+        <Icon
+          iconPath={currency.large_icon_path}
+          altText={`${defaultName} Large Icon`}
+          size={256}
+        />
+      </div>
+    )
+  }
 
-  {currency.large_icon_path && (
-    <div>
-      <Icon iconPath={currency.large_icon_path} altText={`${defaultName} Large Icon`} size={256} />
-    </div>
-  )}
+  {
+    currency.wallet_icon_path && (
+      <div>
+        <Icon
+          iconPath={currency.wallet_icon_path}
+          altText={`${defaultName} Wallet Icon`}
+          size={128}
+        />
+      </div>
+    )
+  }
 
-  {currency.wallet_icon_path && (
-    <div>
-      <Icon iconPath={currency.wallet_icon_path} altText={`${defaultName} Wallet Icon`} size={128} />
-    </div>
-  )}
+  {
+    currency.how_to_use_descriptions &&
+      currency.how_to_use_descriptions.length > 0 && (
+        <div>
+          <LocalizedText
+            id="currency-how-to-use"
+            tag="h3"
+            localizationKey={{
+              Key: 'Currency_How_To_Use',
+              TableNamespace: 'Web_UI',
+              en: 'How To Use',
+            }}
+          />
+          <ul>
+            {currency.how_to_use_descriptions.map((desc) => (
+              <li>
+                <LocalizedText tag="span" localizationKey={desc} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      )
+  }
 
-  {currency.how_to_use_descriptions && currency.how_to_use_descriptions.length > 0 && (
-    <div>
-      <LocalizedText id="currency-how-to-use" tag="h3" localizationKey={{ Key: 'Currency_How_To_Use', TableNamespace: 'Web_UI', en: 'How To Use' }} />
-      <ul>
-        {currency.how_to_use_descriptions.map((desc) => (
-          <li>
-            <LocalizedText tag="span" localizationKey={desc} />
-          </li>
-        ))}
-      </ul>
-    </div>
-  )}
-
-  {currency.where_to_get_descriptions && currency.where_to_get_descriptions.length > 0 && (
-    <div>
-      <LocalizedText id="currency-where-to-get" tag="h3" localizationKey={{ Key: 'Currency_Where_To_Get', TableNamespace: 'Web_UI', en: 'Where To Get' }} />
-      <ul>
-        {currency.where_to_get_descriptions.map((desc) => (
-          <li>
-            <LocalizedText tag="span" localizationKey={desc} />
-          </li>
-        ))}
-      </ul>
-    </div>
-  )}
+  {
+    currency.where_to_get_descriptions &&
+      currency.where_to_get_descriptions.length > 0 && (
+        <div>
+          <LocalizedText
+            id="currency-where-to-get"
+            tag="h3"
+            localizationKey={{
+              Key: 'Currency_Where_To_Get',
+              TableNamespace: 'Web_UI',
+              en: 'Where To Get',
+            }}
+          />
+          <ul>
+            {currency.where_to_get_descriptions.map((desc) => (
+              <li>
+                <LocalizedText tag="span" localizationKey={desc} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      )
+  }
 
   <ObjectPageScripts objectData={currency} slug={currency.id} />
-
 </ParseObjectPage>
