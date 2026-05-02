@@ -19,6 +19,8 @@
     "PilotPersonality_Meta_Description": "{name}: View detailed information about this pilot personality in War Robots Frontiers. Includes traits and effects.",
     "PilotClass_Meta_Description": "{name}: View detailed information about this pilot class in War Robots Frontiers. Includes characteristics and abilities.",
     "Module_Meta_Description": "{name}: View detailed information about this module in War Robots Frontiers. Includes stats, effects, and usage information.",
+    "Currency_How_To_Use": "How To Use",
+    "Currency_Where_To_Get": "Where To Get",
     "Robot_Meta_Description": "{robot_name}: View detailed information about this {robot_type} robot platform in War Robots Frontiers. Includes core modules and factory presets.",
     "CharacterPreset_Meta_Description": "{preset_name}: View detailed information about this {character_type} character preset in War Robots Frontiers. Includes modules and pilot information.",
     "Breadcrumb_Home": "Home",

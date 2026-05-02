@@ -9,45 +9,43 @@ import {
 } from '../../utils/parse_object';
 import { getDefaultString } from '../../utils/localization';
 import { getCurrencyDetailBreadcrumbs } from '../../utils/breadcrumb';
-import { getObjRefData } from '../../utils/obj_ref';
-import TextElements from '../../components/obj_ref/TextElements.astro';
 
 export async function getStaticPaths() {
   return generateSlugBasedStaticPaths('Currency');
 }
 
-import langs from '../../../public/langs.json';
-
+import { generateCurrencyLocalizedMetaDescriptions } from '../../utils/build_localization';
 import Icon from '../../components/Icon.astro';
 
 const { id } = Astro.props;
 const currency = getParseObject<Currency>(id, 'Objects/Currency.json');
 
 const defaultName = getDefaultString(currency.name) || currency.id;
-const objRefData = getObjRefData(currency);
 
-const supportedLangs = Object.keys(langs);
-const localizedDescriptions = supportedLangs.map((lang) => ({
-  lang,
-  description: (currency.description[lang as keyof typeof currency.description] as string) || currency.description.en || ''
-}));
+const localizedDescriptions = generateCurrencyLocalizedMetaDescriptions(
+  currency,
+  defaultName
+);
 
 ---
 
 <ParseObjectPage
-  title={objRefData.text}
   localizedDescriptions={localizedDescriptions}
   headerImage={currency.wallet_icon_path}
   type="article"
 >
+  <LocalizedText
+    id="currency-name-title"
+    tag="title"
+    localizationKey={currency.name}
+    slot="head"
+  />
   <Breadcrumb breadcrumbs={getCurrencyDetailBreadcrumbs(currency)} />
-  <h1 id="currency-name">
-    <TextElements
-      textElements={Array.isArray(objRefData.text)
-        ? objRefData.text
-        : [objRefData.text]}
-    />
-  </h1>
+  <LocalizedText
+    id="currency-name"
+    tag="h1"
+    localizationKey={currency.name}
+  />
 
   <LocalizedText id="currency-description" tag="p" localizationKey={currency.description} />
 
@@ -65,7 +63,7 @@ const localizedDescriptions = supportedLangs.map((lang) => ({
 
   {currency.how_to_use_descriptions && currency.how_to_use_descriptions.length > 0 && (
     <div>
-      <h3>How To Use</h3>
+      <LocalizedText id="currency-how-to-use" tag="h3" localizationKey={{ Key: 'Currency_How_To_Use', TableNamespace: 'Web_UI', en: 'How To Use' }} />
       <ul>
         {currency.how_to_use_descriptions.map((desc) => (
           <li>
@@ -78,7 +76,7 @@ const localizedDescriptions = supportedLangs.map((lang) => ({
 
   {currency.where_to_get_descriptions && currency.where_to_get_descriptions.length > 0 && (
     <div>
-      <h3>Where To Get</h3>
+      <LocalizedText id="currency-where-to-get" tag="h3" localizationKey={{ Key: 'Currency_Where_To_Get', TableNamespace: 'Web_UI', en: 'Where To Get' }} />
       <ul>
         {currency.where_to_get_descriptions.map((desc) => (
           <li>
