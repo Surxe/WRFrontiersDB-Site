@@ -8,6 +8,7 @@ import type { Pilot, PilotTalent } from '../types/pilot';
 import type { CharacterPreset } from '../types/character_preset';
 import type { LocalizationKey } from '../types/localization';
 import type { ModuleGroup } from '../types/module_group';
+import type { Currency } from '../types/currency';
 import { getDefaultString } from './localization';
 import { toSlug, camelToKebab } from './slug_base';
 import { refToId } from './object_reference';
@@ -111,6 +112,15 @@ function generateDefaultSlug(object: ParseObject): string {
 }
 
 /**
+ * Generate slug for a currency object
+ * Format: name.en
+ */
+function generateCurrencySlug(object: Currency): string {
+  const objectName = object.name.en || getDefaultString(object.name as LocalizationKey) || '';
+  return toSlug(objectName);
+}
+
+/**
  * Main entry point for generating a slug for any parse object
  */
 export function generateSlugForObject(
@@ -131,6 +141,8 @@ export function generateSlugForObject(
       return generateAiBotSlug(object);
     case 'CharacterPreset':
       return generateCharacterPresetSlug(object as CharacterPreset);
+    case 'Currency':
+      return generateCurrencySlug(object as Currency);
     default:
       return generateDefaultSlug(object);
   }

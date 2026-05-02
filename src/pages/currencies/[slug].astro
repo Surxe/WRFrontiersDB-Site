@@ -1,0 +1,86 @@
+---
+import type { Currency } from '../../types/currency';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import LocalizedText from '../../components/LocalizedText.astro';
+import ParseObjectPage from '../../components/ParseObjectPage.astro';
+import {
+  getParseObject,
+  generateSlugBasedStaticPaths,
+} from '../../utils/parse_object';
+import { getDefaultString } from '../../utils/localization';
+import { getCurrencyDetailBreadcrumbs } from '../../utils/breadcrumb';
+import { getObjRefData } from '../../utils/obj_ref';
+import TextElements from '../../components/obj_ref/TextElements.astro';
+
+export async function getStaticPaths() {
+  return generateSlugBasedStaticPaths('Currency');
+}
+
+const { id } = Astro.props;
+const currency = getParseObject<Currency>(id, 'Objects/Currency.json');
+
+const defaultName = getDefaultString(currency.name) || currency.id;
+const objRefData = getObjRefData(currency);
+
+const localizedDescriptions = currency.description
+  ? { [defaultName]: currency.description }
+  : {};
+
+---
+
+<ParseObjectPage
+  title={objRefData.text}
+  localizedDescriptions={localizedDescriptions}
+  headerImage={currency.wallet_icon_path}
+  type="article"
+>
+  <Breadcrumb breadcrumbs={getCurrencyDetailBreadcrumbs(currency)} />
+  <h1 id="currency-name">
+    <TextElements
+      textElements={Array.isArray(objRefData.text)
+        ? objRefData.text
+        : [objRefData.text]}
+    />
+  </h1>
+
+  <LocalizedText id="currency-description" tag="p" localizationKey={currency.description} />
+
+  {currency.large_icon_path && (
+    <div>
+      <img src={currency.large_icon_path} alt={`${defaultName} Large Icon`} />
+    </div>
+  )}
+
+  {currency.wallet_icon_path && (
+    <div>
+      <img src={currency.wallet_icon_path} alt={`${defaultName} Wallet Icon`} />
+    </div>
+  )}
+
+  {currency.how_to_use_descriptions && currency.how_to_use_descriptions.length > 0 && (
+    <div>
+      <h3>How To Use</h3>
+      <ul>
+        {currency.how_to_use_descriptions.map((desc) => (
+          <li>
+            <LocalizedText localizationKey={desc} />
+          </li>
+        ))}
+      </ul>
+    </div>
+  )}
+
+  {currency.where_to_get_descriptions && currency.where_to_get_descriptions.length > 0 && (
+    <div>
+      <h3>Where To Get</h3>
+      <ul>
+        {currency.where_to_get_descriptions.map((desc) => (
+          <li>
+            <LocalizedText localizationKey={desc} />
+          </li>
+        ))}
+      </ul>
+    </div>
+  )}
+
+</ParseObjectPage>

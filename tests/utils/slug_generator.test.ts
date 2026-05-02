@@ -86,6 +86,17 @@ describe('slug_generator', () => {
       expect(slug).toBe('assembler');
     });
 
+    it('should generate currency slugs correctly', () => {
+      const currency: ParseObject = {
+        parseObjectClass: 'Currency',
+        id: 'DA_Meta_Currency_Alloys.0',
+        name: { en: 'Salvage' },
+      } as ParseObject;
+
+      const slug = generateSlugForObject(currency);
+      expect(slug).toBe('salvage');
+    });
+
     it('should generate default slugs for unknown object types', () => {
       const unknownObject: ParseObject = {
         parseObjectClass: 'UnknownType',

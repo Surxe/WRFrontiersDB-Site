@@ -543,5 +543,8 @@
   "DA_Preset_Titan_Grim.0": "grim",
   "DA_Preset_Titan_Matriarch.0": "matriarch",
   "DA_Preset_Titan_Norna.0": "norna",
-  "DA_Preset_Titan_Spire.0": "volta"
+  "DA_Preset_Titan_Spire.0": "volta",
+  "DA_Meta_Currency_Alloys.0": "salvage",
+  "DA_Meta_Currency_Credits.0": "credits",
+  "DA_Meta_Currency_Intel.0": "intel"
 }

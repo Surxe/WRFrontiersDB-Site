@@ -10,6 +10,7 @@ import type {
   PilotTalentType,
 } from '../types/pilot';
 import type { CharacterPreset } from '../types/character_preset';
+import type { Currency } from '../types/currency';
 import { getParseObject } from './parse_object';
 
 /**
@@ -574,6 +575,51 @@ export function getRobotsBreadcrumbs(): BreadcrumbTrail {
     {
       label: 'Robots',
       href: '/robots',
+      isCurrent: true,
+    },
+  ];
+}
+
+/**
+ * Generate breadcrumb trail for currencies page
+ */
+export function getCurrenciesBreadcrumbs(): BreadcrumbTrail {
+  return [
+    {
+      label: resolveLocalizationKey('Breadcrumb_Home', 'Web_UI'),
+      href: '/',
+      isCurrent: false,
+    },
+    {
+      label: 'Currencies',
+      href: '/currencies',
+      isCurrent: true,
+    },
+  ];
+}
+
+/**
+ * Generate breadcrumb trail for currency detail page
+ */
+export function getCurrencyDetailBreadcrumbs(
+  currency: Currency
+): BreadcrumbTrail {
+  const currencyName = getDefaultString(currency.name) || currency.id;
+
+  return [
+    {
+      label: resolveLocalizationKey('Breadcrumb_Home', 'Web_UI'),
+      href: '/',
+      isCurrent: false,
+    },
+    {
+      label: 'Currencies',
+      href: '/currencies',
+      isCurrent: false,
+    },
+    {
+      label: currencyName,
+      href: undefined,
       isCurrent: true,
     },
   ];

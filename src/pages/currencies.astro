@@ -1,0 +1,13 @@
+---
+import Layout from '../layouts/Layout.astro';
+import ParseObjectList from '../components/ParseObjectList.astro';
+import { getCurrenciesBreadcrumbs } from '../utils/breadcrumb';
+---
+
+<Layout title="Currencies">
+  <ParseObjectList
+    type="Currency"
+    title="Currencies"
+    breadcrumbs={getCurrenciesBreadcrumbs()}
+  />
+</Layout>
