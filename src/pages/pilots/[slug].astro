@@ -7,6 +7,7 @@ import {
   type PilotTalent,
   type PilotTalentType,
 } from '../../types/pilot';
+import type { Currency } from '../../types/currency';
 import type { Rarity } from '../../types/rarity';
 import Breadcrumb from '../../components/Breadcrumb.astro';
 import Icon from '../../components/Icon.astro';
@@ -24,6 +25,7 @@ import { resolveObjectRef } from '../../utils/object_resolver';
 import { refToId } from '../../utils/object_reference';
 import type { ModuleStat } from '../../types/module';
 import ObjRef from '../../components/obj_ref/ObjRef.astro';
+import CurrencyAmount from '../../components/CurrencyAmount.astro';
 import { generatePilotLocalizedMetaDescriptions } from '../../utils/build_localization';
 import PilotsNavBox from '../../components/nav/PilotsNavBox.astro';
 import { PILOT_TYPE_LEGENDARY_REF } from '../../utils/constants';
@@ -67,6 +69,11 @@ const pilotPersonality = pilot.personality_ref
     )
   : undefined;
 
+const currencies = getParseObjects<Currency>('Objects/Currency.json');
+const sellPriceCurrency = pilot.sell_price?.currency_ref
+  ? resolveObjectRef(pilot.sell_price.currency_ref, currencies)
+  : undefined;
+
 // Extract English text as fallback
 const defaultName = getDefaultString(pilot.first_name) || pilot.id;
 
@@ -99,11 +106,17 @@ const objRefData = getObjRefData(pilot);
 
   <Icon iconPath={pilot.image_path} altText={`${defaultName} portrait`} />
 
-  <p id="pilot-sell-price-currency">
-    Sell Price Currency: {pilot.sell_price.currency_ref}
-  </p>
-  <p id="pilot-sell-price-amount">
-    Sell Price Amount: {pilot.sell_price.amount}
+  <p id="pilot-sell-price">
+    Sell Price: {
+      sellPriceCurrency ? (
+        <CurrencyAmount
+          amount={pilot.sell_price.amount}
+          currency={sellPriceCurrency}
+        />
+      ) : (
+        `${pilot.sell_price.amount} ${pilot.sell_price.currency_ref}`
+      )
+    }
   </p>
 
   <h3>Levels</h3>

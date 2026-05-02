@@ -1,3 +1,8 @@
+---
+name: add-test
+description: Adds a test for a specific file or function
+---
+
 # Testing
 
 ## Testing Framework

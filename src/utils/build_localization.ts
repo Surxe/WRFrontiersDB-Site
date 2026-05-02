@@ -8,6 +8,7 @@ import {
 } from './localization';
 import type { Pilot, PilotTalent, PilotTalentType } from '../types/pilot';
 import type { CharacterPreset } from '../types/character_preset';
+import type { Currency } from '../types/currency';
 import type { VirtualBot } from '../types/virtual_bot';
 import { refToId } from './object_reference';
 import { PILOT_TYPE_LEGENDARY_REF } from './constants';
@@ -327,6 +328,55 @@ export function generateRobotLocalizedMetaDescriptions(
     // Final fallback to a simple description if still empty
     if (!description) {
       description = `${_defaultName}: View detailed robot information and core modules.`;
+    }
+
+    // Apply length limit for SEO
+    results.push({
+      lang,
+      description: description.substring(0, 160),
+    });
+  }
+
+  return results;
+}
+
+/**
+ * Generate localized currency descriptions using the embedment system
+ */
+export function generateCurrencyLocalizedMetaDescriptions(
+  currency: Currency,
+  _defaultName: string
+): { lang: string; description: string }[] {
+  const supportedLangs = Object.keys(langs);
+  const results: { lang: string; description: string }[] = [];
+
+  const templateKey = resolveLocalizationKey(
+    'Currency_Meta_Description_With_Description',
+    'Web_UI'
+  );
+
+  const embeds: Record<string, LocalizationKey> = {
+    name: currency.name,
+    description: currency.description,
+  };
+
+  for (const lang of supportedLangs) {
+    const locData = loadLocalizationData(lang);
+    if (!locData) continue;
+
+    let description = resolveLocalizedEmbeds(templateKey, embeds, locData);
+
+    // Fallback to English template if localized template is empty or not found
+    if (!description && lang !== 'en') {
+      const enLocData = loadLocalizationData('en');
+      if (enLocData) {
+        description = resolveLocalizedEmbeds(templateKey, embeds, enLocData);
+      }
+    }
+
+    // Final fallback to simple description if still empty
+    if (!description) {
+      description = `${_defaultName}: View detailed information about this currency in War Robots Frontiers.`;
     }
 
     // Apply length limit for SEO

@@ -7,6 +7,7 @@ import * as rarityTypes from '../types/rarity';
 import * as characterPresetTypes from '../types/character_preset';
 import * as virtualBotTypes from '../types/virtual_bot';
 import * as moduleGroupTypes from '../types/module_group';
+import * as currencyTypes from '../types/currency';
 
 // import { generateSlugForObject } from './slug_generator';
 
@@ -18,6 +19,7 @@ const allTypeExports = {
   ...characterPresetTypes,
   ...virtualBotTypes,
   ...moduleGroupTypes,
+  ...currencyTypes,
 };
 
 /**
@@ -180,66 +182,6 @@ export async function generateObjectStaticPaths(
   return paths;
 }
 
-// Generate static paths for object list pages (e.g., /modules, /pilots, etc.)
-export function generateObjectListStaticPaths(
-  objectType:
-    | 'Module'
-    | 'ModuleCategory'
-    | 'Pilot'
-    | 'PilotTalent'
-    | 'PilotTalentType'
-    | 'PilotClass'
-    | 'PilotPersonality'
-    | 'Rarity'
-    | 'CharacterPreset'
-    | 'VirtualBot'
-    | 'ModuleGroup',
-  prodReadyOnly: boolean = false
-): { params: { id: string } }[] {
-  const objectPath = path.join(
-    process.cwd(),
-    'WRFrontiersDB-Data/current',
-    `Objects/${objectType}.json`
-  );
-
-  if (fs.existsSync(objectPath)) {
-    try {
-      const allObjects = readJsonFile(objectPath) as Record<
-        string,
-        ParseObject
-      >;
-      let objectIds = Object.keys(allObjects);
-
-      // Apply production filtering only to Modules
-      if (prodReadyOnly) {
-        const isModule = objectPath.includes('Module.json');
-        objectIds = objectIds.filter((id) => {
-          const obj = allObjects[id];
-          if (isModule) {
-            return (
-              obj.production_status === 'Ready' &&
-              obj.name != null &&
-              obj.name !== ''
-            );
-          }
-          // All other parse object classes are always production ready
-          return obj.name != null && obj.name !== '';
-        });
-      }
-
-      // Generate paths for filtered object IDs
-      return objectIds.map((id) => ({
-        params: { id },
-      }));
-    } catch (error) {
-      console.warn(`Failed to read or parse data file: ${objectPath}`, error);
-    }
-  }
-
-  // Fallback: return empty array if data file doesn't exist
-  return [];
-}
-
 // Generate slug-based static paths for object detail pages
 export function generateSlugBasedStaticPaths(
   objectType:
@@ -254,6 +196,7 @@ export function generateSlugBasedStaticPaths(
     | 'CharacterPreset'
     | 'VirtualBot'
     | 'ModuleGroup'
+    | 'Currency'
 ): Array<{ params: { slug: string }; props: { id: string } }> {
   // Load slug map to generate slug-based paths
   const slugMapPath = path.join(process.cwd(), 'public', 'slug_map.json');

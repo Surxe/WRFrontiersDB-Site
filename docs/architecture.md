@@ -17,7 +17,7 @@
 ### Build-time (Node.js)
 
 - `src/utils/parse_object.ts`: Loads JSON from filesystem using `fs` and `path`
-- `generateObjectListStaticPaths()`: Creates static routes
+- `generateSlugBasedStaticPaths()`: Creates static routes
 - Type definitions in `src/types/`
 
 ### Runtime (Browser)

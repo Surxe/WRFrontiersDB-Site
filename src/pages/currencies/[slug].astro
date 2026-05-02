@@ -1,0 +1,125 @@
+---
+import type { Currency } from '../../types/currency';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import LocalizedText from '../../components/LocalizedText.astro';
+import ParseObjectPage from '../../components/ParseObjectPage.astro';
+import {
+  getParseObject,
+  generateSlugBasedStaticPaths,
+} from '../../utils/parse_object';
+import { getDefaultString } from '../../utils/localization';
+import { getCurrencyDetailBreadcrumbs } from '../../utils/breadcrumb';
+
+export async function getStaticPaths() {
+  return generateSlugBasedStaticPaths('Currency');
+}
+
+import { generateCurrencyLocalizedMetaDescriptions } from '../../utils/build_localization';
+import Icon from '../../components/Icon.astro';
+import ObjectPageScripts from '../../components/ObjectPageScripts.astro';
+
+const { id } = Astro.props;
+const currency = getParseObject<Currency>(id, 'Objects/Currency.json');
+
+const defaultName = getDefaultString(currency.name) || currency.id;
+
+const localizedDescriptions = generateCurrencyLocalizedMetaDescriptions(
+  currency,
+  defaultName
+);
+---
+
+<ParseObjectPage
+  localizedDescriptions={localizedDescriptions}
+  headerImage={currency.wallet_icon_path}
+  type="article"
+>
+  <LocalizedText
+    id="currency-name-title"
+    tag="title"
+    localizationKey={currency.name}
+    slot="head"
+  />
+  <Breadcrumb breadcrumbs={getCurrencyDetailBreadcrumbs(currency)} />
+  <LocalizedText id="currency-name" tag="h1" localizationKey={currency.name} />
+
+  <LocalizedText
+    id="currency-description"
+    tag="p"
+    localizationKey={currency.description}
+  />
+
+  {
+    currency.large_icon_path && (
+      <div>
+        <Icon
+          iconPath={currency.large_icon_path}
+          altText={`${defaultName} Large Icon`}
+          size={256}
+        />
+      </div>
+    )
+  }
+
+  {
+    currency.wallet_icon_path && (
+      <div>
+        <Icon
+          iconPath={currency.wallet_icon_path}
+          altText={`${defaultName} Wallet Icon`}
+          size={128}
+        />
+      </div>
+    )
+  }
+
+  {
+    currency.how_to_use_descriptions &&
+      currency.how_to_use_descriptions.length > 0 && (
+        <div>
+          <LocalizedText
+            id="currency-how-to-use"
+            tag="h3"
+            localizationKey={{
+              Key: 'Currency_How_To_Use',
+              TableNamespace: 'Web_UI',
+              en: 'How To Use',
+            }}
+          />
+          <ul>
+            {currency.how_to_use_descriptions.map((desc) => (
+              <li>
+                <LocalizedText tag="span" localizationKey={desc} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      )
+  }
+
+  {
+    currency.where_to_get_descriptions &&
+      currency.where_to_get_descriptions.length > 0 && (
+        <div>
+          <LocalizedText
+            id="currency-where-to-get"
+            tag="h3"
+            localizationKey={{
+              Key: 'Currency_Where_To_Get',
+              TableNamespace: 'Web_UI',
+              en: 'Where To Get',
+            }}
+          />
+          <ul>
+            {currency.where_to_get_descriptions.map((desc) => (
+              <li>
+                <LocalizedText tag="span" localizationKey={desc} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      )
+  }
+
+  <ObjectPageScripts objectData={currency} slug={currency.id} />
+</ParseObjectPage>
