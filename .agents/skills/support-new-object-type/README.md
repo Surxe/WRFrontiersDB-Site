@@ -3,9 +3,9 @@ name: support-new-object-type
 description: Adds support for a new object type to the WRFrontiersDB-Site
 ---
 
-# Prerequisites
+## Prerequisites
 
-Before adding a new object type, ensure you have answers from the user for the following questions:
+Ensure you have answers from the user for the following questions:
 
 1. What is the name of the JSON file that contains the data for this object type? (e.g., `Module.json`)
 2. Should this object type have its own dedicated list and detail pages? 
@@ -15,8 +15,9 @@ Before adding a new object type, ensure you have answers from the user for the f
       1. What is the name of the url it should live at? (e.g., `/modules`)
       2. What should the breadcrumb path be? (e.g., `Module Groups` -> `Modules` -> `<Module>`)
 3. What should the slug derive from? (e.g., `name`.`en`)
+4. What name and icon attribute should be used for this object type? If not specified, check if there is 1 name and 1 icon field. If there are more than 1 that could apply, ask the user which one to use.
 
-# Adding a New Object Type
+## Adding a New Object Type
 
 1. **Study JSON structure** in `public/WRFrontiersDB-Data/current/Objects/{parseObject}.json`
 2. **Create type interface** in `src/types/{parseObject}.ts` (e.g., `export interface Weapon { ... }`) with url constant for `parseObjectUrl`
