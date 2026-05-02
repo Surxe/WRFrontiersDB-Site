@@ -1,13 +1,34 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import ParseObjectList from '../components/ParseObjectList.astro';
+import type { Currency } from '../types/currency';
+import Breadcrumb from '../components/Breadcrumb.astro';
+import ParseObjectListPage from '../components/ParseObjectListPage.astro';
+import { getParseObjects } from '../utils/parse_object';
+import { prepareObjectList } from '../utils/list';
 import { getCurrenciesBreadcrumbs } from '../utils/breadcrumb';
+import ObjRef from '../components/obj_ref/ObjRef.astro';
+
+const currencies = getParseObjects<Currency>(
+  'Objects/Currency.json'
+);
+
+const entries = prepareObjectList(currencies, { prodReadyOnly: false });
 ---
 
-<Layout title="Currencies">
-  <ParseObjectList
-    type="Currency"
-    title="Currencies"
-    breadcrumbs={getCurrenciesBreadcrumbs()}
-  />
-</Layout>
+<ParseObjectListPage
+  title="Currencies"
+  description="Browse all currencies in War Robots Frontiers"
+  headerImage="/WRFrontiers/Content/Sparrow/UI/Textures/Meta/Currency/T_Credits_Render"
+>
+  <Breadcrumb breadcrumbs={getCurrenciesBreadcrumbs()} />
+  <h1>Currencies</h1>
+
+  <ul>
+    {
+      entries.map(([_id, currency]) => (
+        <li>
+          <ObjRef obj={currency} />
+        </li>
+      ))
+    }
+  </ul>
+</ParseObjectListPage>

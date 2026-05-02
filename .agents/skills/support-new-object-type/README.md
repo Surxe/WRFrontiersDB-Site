@@ -16,6 +16,7 @@ Ensure you have answers from the user for the following questions:
       2. What should the breadcrumb path be? (e.g., `Module Groups` -> `Modules` -> `<Module>`)
 3. What should the slug derive from? (e.g., `name`.`en`)
 4. What name and icon attribute should be used for this object type? If not specified, check if there is 1 name and 1 icon field. If there are more than 1 that could apply, ask the user which one to use.
+5. Which object type should I use as a guide? (e.g. model it after `Pilot` object type)
 
 ## Adding a New Object Type
 
