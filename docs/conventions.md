@@ -14,7 +14,7 @@ Example: [modules.astro](../../src/pages/modules.astro)
 
 Example: [modules/[id].astro](../../src/pages/modules/[id].astro)
 
-- Dynamic routes with `getStaticPaths()` calling `generateObjectListStaticPaths()`
+- Dynamic routes with `getStaticPaths()` calling `generateSlugBasedStaticPaths()`
 - Uses `ParseObjectPage` wrapper
 - Props: `{ id }` from params
 - Shows object data for latest version only

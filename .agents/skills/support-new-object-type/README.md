@@ -26,7 +26,7 @@ Ensure you have answers from the user for the following questions:
 4. **Configure ObjRef overload** in `src/utils/obj_ref.ts`'s `getObjRefData` function
 5. **Create list page**: `src/pages/{parseObject}s.astro` (properly pluralized) using `ParseObjectList`
 6. **Create detail page**: `src/pages/{parseObject}s/[id].astro` with `getStaticPaths()`
-7. **Call** `generateObjectListStaticPaths("{parseObject}")`
+7. **Call** `generateSlugBasedStaticPaths("{parseObject}")`
 8. **Add link** to homepage ([index.astro](../../src/pages/index.astro))
 9. **Configure breadcrumbs** in `src/components/Breadcrumbs.astro`'s `getBreadcrumbPath` function
 10. **Configure slug generation** in `src/utils/slug_generator.ts`'s `generateSlugForObjectType` function and add to list of supported object types in `scripts/build-slugs.ts`
