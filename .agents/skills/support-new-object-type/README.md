@@ -1,6 +1,21 @@
-# Common Tasks
+---
+name: support-new-object-type
+description: Adds support for a new object type to the WRFrontiersDB-Site
+---
 
-## Adding a New Object Type
+# Prerequisites
+
+Before adding a new object type, ensure you have answers from the user for the following questions:
+
+1. Should this object type have its own dedicated list and detail pages? 
+   1. If no:
+      1. Should it have any purpose beyond ObjRef integration?
+   2. If yes:
+      1. What is the name of the JSON file that contains the data for this object type? (e.g., `Module.json`)
+      2. What is the name of the url it should live at? (e.g., `/modules`)
+      3. What should the breadcrumb path be? (e.g., `Module Groups` -> `Modules` -> `<Module>`)
+
+# Adding a New Object Type
 
 1. **Study JSON structure** in `public/WRFrontiersDB-Data/current/Objects/{parseObject}.json`
 2. **Create type interface** in `src/types/{parseObject}.ts` (e.g., `export interface Weapon { ... }`) with url constant for `parseObjectUrl`
