@@ -16,15 +16,21 @@ export async function getStaticPaths() {
   return generateSlugBasedStaticPaths('Currency');
 }
 
+import langs from '../../../public/langs.json';
+
+import Icon from '../../components/Icon.astro';
+
 const { id } = Astro.props;
 const currency = getParseObject<Currency>(id, 'Objects/Currency.json');
 
 const defaultName = getDefaultString(currency.name) || currency.id;
 const objRefData = getObjRefData(currency);
 
-const localizedDescriptions = currency.description
-  ? { [defaultName]: currency.description }
-  : {};
+const supportedLangs = Object.keys(langs);
+const localizedDescriptions = supportedLangs.map((lang) => ({
+  lang,
+  description: (currency.description[lang as keyof typeof currency.description] as string) || currency.description.en || ''
+}));
 
 ---
 
@@ -47,13 +53,13 @@ const localizedDescriptions = currency.description
 
   {currency.large_icon_path && (
     <div>
-      <img src={currency.large_icon_path} alt={`${defaultName} Large Icon`} />
+      <Icon iconPath={currency.large_icon_path} altText={`${defaultName} Large Icon`} size={256} />
     </div>
   )}
 
   {currency.wallet_icon_path && (
     <div>
-      <img src={currency.wallet_icon_path} alt={`${defaultName} Wallet Icon`} />
+      <Icon iconPath={currency.wallet_icon_path} altText={`${defaultName} Wallet Icon`} size={128} />
     </div>
   )}
 
@@ -63,7 +69,7 @@ const localizedDescriptions = currency.description
       <ul>
         {currency.how_to_use_descriptions.map((desc) => (
           <li>
-            <LocalizedText localizationKey={desc} />
+            <LocalizedText tag="span" localizationKey={desc} />
           </li>
         ))}
       </ul>
@@ -76,7 +82,7 @@ const localizedDescriptions = currency.description
       <ul>
         {currency.where_to_get_descriptions.map((desc) => (
           <li>
-            <LocalizedText localizationKey={desc} />
+            <LocalizedText tag="span" localizationKey={desc} />
           </li>
         ))}
       </ul>
