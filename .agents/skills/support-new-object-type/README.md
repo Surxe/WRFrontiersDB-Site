@@ -23,11 +23,12 @@ Ensure you have answers from the user for the following questions:
 1. **Study JSON structure** in `public/WRFrontiersDB-Data/current/Objects/{parseObject}.json`
 2. **Create type interface** in `src/types/{parseObject}.ts` (e.g., `export interface Weapon { ... }`) with url constant for `parseObjectUrl`
 3. **Add to getAllParseObjects** in `src/utils/parse_object.ts`
-4. **Configure ObjRef overload** in `src/utils/obj_ref.ts`'s `getObjRefData` function
-5. **Create list page**: `src/pages/{parseObject}s.astro` (properly pluralized) using `ParseObjectList`
-6. **Create detail page**: `src/pages/{parseObject}s/[id].astro` with `getStaticPaths()`
-7. **Call** `generateSlugBasedStaticPaths("{parseObject}")`
-8. **Add link** to homepage ([index.astro](../../src/pages/index.astro))
-9. **Configure breadcrumbs** in `src/components/Breadcrumbs.astro`'s `getBreadcrumbPath` function
-10. **Configure slug generation** in `src/utils/slug_generator.ts`'s `generateSlugForObjectType` function and add to list of supported object types in `scripts/build-slugs.ts`
-11. **Rebuild slugs**: `npm run build:slugs`
+4. **Add to slugableObjectTypes** in `src/components/obj_ref/ObjRef.astro`'s `slugableObjectTypes()` function
+5. **Configure ObjRef overload** in `src/utils/obj_ref.ts`'s `getObjRefData` function
+6. **Create list page**: `src/pages/{parseObject}s.astro` (properly pluralized) using `ParseObjectList`
+7. **Create detail page**: `src/pages/{parseObject}s/[id].astro` with `getStaticPaths()`
+8. **Call** `generateSlugBasedStaticPaths("{parseObject}")`
+9. **Add link** to homepage ([index.astro](../../src/pages/index.astro))
+10. **Configure breadcrumbs** in `src/components/Breadcrumbs.astro`'s `getBreadcrumbPath` function
+11. **Configure slug generation** in `src/utils/slug_generator.ts`'s `generateSlugForObjectType` function and add to list of supported object types in `scripts/build-slugs.ts`
+12. **Rebuild slugs**: `npm run build:slugs`

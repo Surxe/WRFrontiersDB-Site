@@ -1,7 +1,7 @@
 import type { LocalizationKey } from './localization';
 import type { ParseObject } from './parse_object';
 
-export const CURRENCY_URL = '/currencies';
+export const CURRENCY_URL = 'currencies';
 
 export interface Currency extends ParseObject {
   name: LocalizationKey;
