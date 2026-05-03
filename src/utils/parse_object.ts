@@ -8,6 +8,7 @@ import * as characterPresetTypes from '../types/character_preset';
 import * as virtualBotTypes from '../types/virtual_bot';
 import * as moduleGroupTypes from '../types/module_group';
 import * as currencyTypes from '../types/currency';
+import * as characterClassTypes from '../types/character_class';
 
 // import { generateSlugForObject } from './slug_generator';
 
@@ -20,6 +21,7 @@ const allTypeExports = {
   ...virtualBotTypes,
   ...moduleGroupTypes,
   ...currencyTypes,
+  ...characterClassTypes,
 };
 
 /**
@@ -197,6 +199,7 @@ export function generateSlugBasedStaticPaths(
     | 'VirtualBot'
     | 'ModuleGroup'
     | 'Currency'
+    | 'CharacterClass'
 ): Array<{ params: { slug: string }; props: { id: string } }> {
   // Load slug map to generate slug-based paths
   const slugMapPath = path.join(process.cwd(), 'public', 'slug_map.json');

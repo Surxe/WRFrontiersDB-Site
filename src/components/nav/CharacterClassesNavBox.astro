@@ -1,0 +1,25 @@
+---
+import BaseNavBox from './BaseNavBox.astro';
+import { getParseObjects } from '../../utils/parse_object';
+import type { CharacterClass } from '../../types/character_class';
+
+interface Props {
+  currentClass?: CharacterClass;
+}
+
+// Load character classes
+const characterClasses = getParseObjects<CharacterClass>('Objects/CharacterClass.json');
+
+// Sort classes by name key
+const sortedClasses = Object.entries(characterClasses).sort(([_a, a], [_b, b]) => {
+  const nameA = a.name?.Key || a.id;
+  const nameB = b.name?.Key || b.id;
+  return nameA.localeCompare(nameB);
+});
+
+// Generate descriptive title
+const classCount = sortedClasses.length;
+const title = `Character Classes (${classCount})`;
+---
+
+<BaseNavBox title={title} objects={sortedClasses} />
