@@ -2,14 +2,10 @@ import type { LocalizationKey } from './localization';
 import type { ParseObject } from './parse_object';
 
 export const MODULE_URL = 'modules';
-export const MODULESTAT_URL = 'module_stats';
-export const MODULETYPE_URL = 'module_types';
 export const MODULECATEGORY_URL = 'module_categories';
-export const MODULESTATSTABLE_URL = 'module_stats_table';
 
 export interface ModuleStat extends ParseObject {
   parseObjectClass: 'ModuleStat';
-  parseObjectUrl: typeof MODULESTAT_URL;
   id: string;
   stat_name: LocalizationKey;
   short_key: string;
@@ -96,7 +92,6 @@ export interface ModuleCategory extends ParseObject {
 
 export interface ModuleType extends ParseObject {
   parseObjectClass: 'ModuleType';
-  parseObjectUrl: typeof MODULETYPE_URL;
   id: string;
   module_category_ref: string;
   name: LocalizationKey;
@@ -107,7 +102,6 @@ export interface ModuleType extends ParseObject {
 
 export interface ModuleStatsTable extends ParseObject {
   parseObjectClass: 'ModuleStatsTable';
-  parseObjectUrl: typeof MODULESTATSTABLE_URL;
   id: string;
   stats_refs: Record<string, string>;
 }

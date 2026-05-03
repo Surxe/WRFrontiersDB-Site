@@ -22,6 +22,7 @@ import type { ModuleTag } from '../types/module_tag';
 // All the data necessary to reference the page in a generic way
 export interface ObjRefData {
   text: LocalizationKey | LocalizationKey[];
+  textColor?: string;
   textBackgroundColor?: string;
   iconPath?: string;
   iconColor?: string;
@@ -244,6 +245,7 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
       const moduleTag = obj as unknown as ModuleTag;
       return {
         text: moduleTag.name,
+        textColor: moduleTag.text_hex,
         textBackgroundColor: moduleTag.background_hex.substring(2),
       };
     }

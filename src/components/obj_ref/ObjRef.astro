@@ -33,6 +33,10 @@ const {
 // Determine if we should use href based on production status for modules
 let useHref = initialUseHref;
 
+if (!obj.parseObjectUrl) {
+  useHref = false;
+}
+
 // Get the page reference data (localization key, icon path, hex color)
 const objRefData = getObjRefData(obj);
 
