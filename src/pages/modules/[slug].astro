@@ -38,8 +38,6 @@ import { getObjRefData } from '../../utils/obj_ref';
 import TextElements from '../../components/obj_ref/TextElements.astro';
 import type { CharacterPreset } from '../../types/character_preset';
 import type { Pilot } from '../../types/pilot';
-import type { ModuleClass } from '../../types/module';
-import type { ModuleTag } from '../../types/module';
 import ModuleAbilityReferences from '../../components/ModuleAbilityReferences.astro';
 
 export async function getStaticPaths() {
@@ -85,10 +83,6 @@ const allCharacterModules = getParseObjects<CharacterModule>(
   'Objects/CharacterModule.json'
 );
 const allAbilities = getParseObjects<Ability>('Objects/Ability.json');
-const allModuleClasses = getParseObjects<ModuleClass>(
-  'Objects/ModuleClass.json'
-);
-const allModuleTags = getParseObjects<ModuleTag>('Objects/ModuleTag.json');
 
 const abilityStats = getModuleAbilityStats(
   module,
@@ -216,8 +210,6 @@ const objRefData = getObjRefData(module);
               {constants && (
                 <ModuleAbilityReferences 
                   constants={constants}
-                  allModuleClasses={allModuleClasses}
-                  allModuleTags={allModuleTags}
                 />
               )}
             </div>
