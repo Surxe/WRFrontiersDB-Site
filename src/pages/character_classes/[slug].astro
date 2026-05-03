@@ -53,9 +53,11 @@ const localizedDescriptions = generateCharacterClassLocalizedMetaDescriptions(
     altText={`${defaultName} badge`}
   />
 
-  {characterClass.description.LocalizedString && (
-    <p id="character-class-description">{characterClass.description.LocalizedString}</p>
-  )}
+  <LocalizedText
+    id="character-class-description"
+    tag="p"
+    localizationKey={characterClass.description}
+  />
 
   <Icon
     iconPath={characterClass.image_big_path}

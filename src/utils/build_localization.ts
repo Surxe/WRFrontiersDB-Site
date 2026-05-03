@@ -458,14 +458,9 @@ export function generateCharacterClassLocalizedMetaDescriptions(
     'Web_UI'
   );
 
-  // Description uses LocalizedString (not standard LocalizationKey with 'en')
-  const descriptionText: LocalizationKey = characterClass.description.LocalizedString
-    ? { InvariantString: characterClass.description.LocalizedString }
-    : { InvariantString: _defaultName };
-
   const embeds: Record<string, LocalizationKey> = {
     name: characterClass.name,
-    description: descriptionText,
+    description: characterClass.description,
   };
 
   for (const lang of supportedLangs) {
