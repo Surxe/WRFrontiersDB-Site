@@ -8,7 +8,9 @@ import { getCharacterClassesBreadcrumbs } from '../utils/breadcrumb';
 import ObjRef from '../components/obj_ref/ObjRef.astro';
 import CharacterClassesNavBox from '../components/nav/CharacterClassesNavBox.astro';
 
-const characterClasses = getParseObjects<CharacterClass>('Objects/CharacterClass.json');
+const characterClasses = getParseObjects<CharacterClass>(
+  'Objects/CharacterClass.json'
+);
 
 const entries = prepareObjectList(characterClasses, { prodReadyOnly: false });
 ---

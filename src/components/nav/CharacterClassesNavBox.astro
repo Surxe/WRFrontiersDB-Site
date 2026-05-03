@@ -7,15 +7,21 @@ interface Props {
   currentClass?: CharacterClass;
 }
 
+const { currentClass: _currentClass } = Astro.props;
+
 // Load character classes
-const characterClasses = getParseObjects<CharacterClass>('Objects/CharacterClass.json');
+const characterClasses = getParseObjects<CharacterClass>(
+  'Objects/CharacterClass.json'
+);
 
 // Sort classes by name key
-const sortedClasses = Object.entries(characterClasses).sort(([_a, a], [_b, b]) => {
-  const nameA = a.name?.Key || a.id;
-  const nameB = b.name?.Key || b.id;
-  return nameA.localeCompare(nameB);
-});
+const sortedClasses = Object.entries(characterClasses).sort(
+  ([_a, a], [_b, b]) => {
+    const nameA = a.name?.Key || a.id;
+    const nameB = b.name?.Key || b.id;
+    return nameA.localeCompare(nameB);
+  }
+);
 
 // Generate descriptive title
 const classCount = sortedClasses.length;

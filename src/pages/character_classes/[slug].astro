@@ -21,7 +21,10 @@ export async function getStaticPaths() {
 const { slug: _slug } = Astro.params;
 const { id } = Astro.props;
 
-const characterClass = getParseObject<CharacterClass>(id, 'Objects/CharacterClass.json');
+const characterClass = getParseObject<CharacterClass>(
+  id,
+  'Objects/CharacterClass.json'
+);
 
 const defaultName = getDefaultString(characterClass.name) || characterClass.id;
 
@@ -31,17 +34,16 @@ const localizedDescriptions = generateCharacterClassLocalizedMetaDescriptions(
 );
 ---
 
-<ParseObjectPage
-  localizedDescriptions={localizedDescriptions}
-  type="article"
->
+<ParseObjectPage localizedDescriptions={localizedDescriptions} type="article">
   <LocalizedText
     id="character-class-name-title"
     tag="title"
     localizationKey={characterClass.name}
     slot="head"
   />
-  <Breadcrumb breadcrumbs={getCharacterClassDetailBreadcrumbs(characterClass)} />
+  <Breadcrumb
+    breadcrumbs={getCharacterClassDetailBreadcrumbs(characterClass)}
+  />
   <LocalizedText
     id="character-class-name"
     tag="h1"

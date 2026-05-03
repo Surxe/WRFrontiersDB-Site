@@ -17,6 +17,7 @@ import type { VirtualBot } from '../types/virtual_bot';
 import type { ModuleGroup } from '../types/module_group';
 import type { Currency } from '../types/currency';
 import type { CharacterClass } from '../types/character_class';
+import type { ModuleTag } from '../types/module_tag';
 
 // All the data necessary to reference the page in a generic way
 export interface ObjRefData {
@@ -38,6 +39,7 @@ export function getObjRefData(_obj: Pilot): ObjRefData;
 export function getObjRefData(_obj: Rarity): ObjRefData;
 export function getObjRefData(_obj: Currency): ObjRefData;
 export function getObjRefData(_obj: CharacterClass): ObjRefData;
+export function getObjRefData(_obj: ModuleTag): ObjRefData;
 export function getObjRefData(_obj: ParseObject): ObjRefData; // Here just for type support. Better than an overload that requires specifying the name of every class.
 
 export function getObjRefData(obj: ParseObject): ObjRefData {
@@ -236,6 +238,13 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
         text: characterClass.name,
         iconPath: characterClass.badge.image_path,
         iconColor: characterClass.badge.hex,
+      };
+    }
+    case 'ModuleTag': {
+      const moduleTag = obj as unknown as ModuleTag;
+      return {
+        text: moduleTag.name,
+        textBackgroundColor: moduleTag.background_hex.substring(2),
       };
     }
     default:
