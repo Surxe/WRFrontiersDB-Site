@@ -40,6 +40,7 @@ import type { CharacterPreset } from '../../types/character_preset';
 import type { Pilot } from '../../types/pilot';
 import type { ModuleClass } from '../../types/module';
 import type { ModuleTag } from '../../types/module_tag';
+import type { Faction } from '../../types/faction';
 
 export async function getStaticPaths() {
   return generateSlugBasedStaticPaths('Module');
@@ -86,6 +87,7 @@ const allCharacterModules = getParseObjects<CharacterModule>(
 const allAbilities = getParseObjects<Ability>('Objects/Ability.json');
 const allModuleClasses = getParseObjects<ModuleClass>('Objects/ModuleClass.json');
 const allModuleTags = getParseObjects<ModuleTag>('Objects/ModuleTag.json');
+const allFactions = getParseObjects<Faction>('Objects/Faction.json');
 
 const abilityStats = getModuleAbilityStats(
   module,
@@ -186,8 +188,13 @@ const objRefData = getObjRefData(module);
   <!-- Module classes and tags -->
   {
     (() => {
-      // Resolve top-level module classes and tags
+      // Resolve top-level module classes, tags, and faction
       const allRefs: any[] = [];
+      
+      if (module.faction_ref) {
+        const resolved = resolveObjectRef(module.faction_ref, allFactions);
+        if (resolved) allRefs.push(resolved);
+      }
       
       if (module.module_classes_refs) {
         for (const ref of module.module_classes_refs) {
@@ -205,7 +212,7 @@ const objRefData = getObjRefData(module);
       
       return allRefs.length > 0 && (
         <div class="module-references-section" style="margin-top: 2rem;">
-          <h2>Module Classes & Tags</h2>
+          <h2>Module Classes, Tags & Faction</h2>
           <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem;">
             {allRefs.map((resolvedObj) => (
               <ObjRef obj={resolvedObj} useHref={false} />
