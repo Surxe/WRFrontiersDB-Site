@@ -278,8 +278,9 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
         iconColor: faction.hex,
         textColor: faction.hex,
         textBackgroundColor:
-          faction.hex.substring(2) +
-          faction.hex.substring(0, 2),
+          '33' + // Add alpha transparency
+          faction.hex.substring(2) + // Move last 4 chars
+          faction.hex.substring(0, 2), // Move first 2 chars to end
       };
     }
     default:
