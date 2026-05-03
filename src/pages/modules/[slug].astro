@@ -189,9 +189,6 @@ const objRefData = getObjRefData(module);
     abilityStats.length > 0 && module.abilities_scalars && (
       <div class="module-abilities-section">
         {abilityStats.map((abStat, index) => {
-          const abilityScalar = module.abilities_scalars?.[index];
-          const constants = abilityScalar?.levels?.constants;
-
           return (
             <div class="ability-block" style="margin-top: 1.5rem;">
               {abStat.ability.name && (
@@ -211,16 +208,14 @@ const objRefData = getObjRefData(module);
               )}
 
               {/* Module class and tag references */}
-              {constants && (() => {
-                // Resolve all references
+              {(() => {
+                // Resolve top-level module classes and tags
                 const resolvedObjects = [
-                  constants.module_class_ref_1 ? resolveObjectRef(constants.module_class_ref_1 as string, allModuleClasses) : null,
-                  constants.module_class_ref_2 ? resolveObjectRef(constants.module_class_ref_2 as string, allModuleClasses) : null,
-                  constants.module_tag_ref_1 ? resolveObjectRef(constants.module_tag_ref_1 as string, allModuleTags) : null,
-                  constants.module_tag_ref_2 ? resolveObjectRef(constants.module_tag_ref_2 as string, allModuleTags) : null,
+                  ...(module.module_classes_refs?.map(ref => resolveObjectRef(ref, allModuleClasses)) || []),
+                  ...(module.module_tags_refs?.map(ref => resolveObjectRef(ref, allModuleTags)) || []),
                 ].filter(Boolean); // Filter out null values
                 
-                return (
+                return resolvedObjects.length > 0 && (
                   <ModuleAbilityReferences 
                     resolvedObjects={resolvedObjects}
                   />
