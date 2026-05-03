@@ -247,7 +247,21 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
       return {
         text: moduleTag.name,
         textColor: moduleTag.text_hex,
-        textBackgroundColor: moduleTag.background_hex.substring(2) + moduleTag.background_hex.substring(0, 2),
+        textBackgroundColor:
+          moduleTag.background_hex.substring(2) +
+          moduleTag.background_hex.substring(0, 2),
+      };
+    }
+    case 'ModuleClass': {
+      const moduleClass = obj as ModuleClass;
+      const characterClass = getParseObject<CharacterClass>(
+        refToId(moduleClass.character_class_ref),
+        'Objects/CharacterClass.json'
+      );
+      return {
+        text: characterClass.name,
+        iconPath: characterClass.badge.image_path,
+        iconColor: characterClass.badge.hex,
       };
     }
     case 'ModuleClass': {
