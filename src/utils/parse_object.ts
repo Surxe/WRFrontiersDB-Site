@@ -203,6 +203,7 @@ export function generateSlugBasedStaticPaths(
     | 'Currency'
     | 'CharacterClass'
     | 'ModuleTag'
+    | 'Faction'
 ): Array<{ params: { slug: string }; props: { id: string } }> {
   // Load slug map to generate slug-based paths
   const slugMapPath = path.join(process.cwd(), 'public', 'slug_map.json');

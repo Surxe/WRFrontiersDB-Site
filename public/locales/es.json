@@ -32,7 +32,8 @@
     "Breadcrumb_Pilot_Talent_Types": "Tipos de Talento de Piloto",
     "Breadcrumb_Pilot_Talents": "Talentos de Piloto",
     "Breadcrumb_AI_Bots": "Bots IA",
-    "Breadcrumb_Factory_Bots": "Bots de Fábrica"
+    "Breadcrumb_Factory_Bots": "Bots de Fábrica",
+    "Faction_Meta_Description": "{name}: Ver información detallada sobre esta facción en War Robots Frontiers."
   },
   "ModuleGroups": {
     "GRP_TitanShoulders_Name": "Hombros de Titán"
