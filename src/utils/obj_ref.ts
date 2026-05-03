@@ -264,18 +264,6 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
         iconColor: characterClass.badge.hex,
       };
     }
-    case 'ModuleClass': {
-      const moduleClass = obj as ModuleClass;
-      const characterClass = getParseObject<CharacterClass>(
-        refToId(moduleClass.character_class_ref),
-        'Objects/CharacterClass.json'
-      );
-      return {
-        text: characterClass.name,
-        iconPath: characterClass.badge.image_path,
-        iconColor: characterClass.badge.hex,
-      };
-    }
     default:
       throw new Error(`Unsupported parseObjectClass: ${obj.parseObjectClass}`);
   }
