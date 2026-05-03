@@ -11,6 +11,7 @@ import type {
 } from '../types/pilot';
 import type { CharacterPreset } from '../types/character_preset';
 import type { Currency } from '../types/currency';
+import type { CharacterClass } from '../types/character_class';
 import { getParseObject } from './parse_object';
 
 /**
@@ -619,6 +620,51 @@ export function getCurrencyDetailBreadcrumbs(
     },
     {
       label: currencyName,
+      href: undefined,
+      isCurrent: true,
+    },
+  ];
+}
+
+/**
+ * Generate breadcrumb trail for character classes page
+ */
+export function getCharacterClassesBreadcrumbs(): BreadcrumbTrail {
+  return [
+    {
+      label: resolveLocalizationKey('Breadcrumb_Home', 'Web_UI'),
+      href: '/',
+      isCurrent: false,
+    },
+    {
+      label: 'Character Classes',
+      href: '/character_classes',
+      isCurrent: true,
+    },
+  ];
+}
+
+/**
+ * Generate breadcrumb trail for character class detail page
+ */
+export function getCharacterClassDetailBreadcrumbs(
+  characterClass: CharacterClass
+): BreadcrumbTrail {
+  const className = getDefaultString(characterClass.name) || characterClass.id;
+
+  return [
+    {
+      label: resolveLocalizationKey('Breadcrumb_Home', 'Web_UI'),
+      href: '/',
+      isCurrent: false,
+    },
+    {
+      label: 'Character Classes',
+      href: '/character_classes',
+      isCurrent: false,
+    },
+    {
+      label: className,
       href: undefined,
       isCurrent: true,
     },

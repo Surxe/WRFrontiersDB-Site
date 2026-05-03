@@ -1,0 +1,73 @@
+---
+import type { CharacterClass } from '../../types/character_class';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import Icon from '../../components/Icon.astro';
+import LocalizedText from '../../components/LocalizedText.astro';
+import ObjectPageScripts from '../../components/ObjectPageScripts.astro';
+import ParseObjectPage from '../../components/ParseObjectPage.astro';
+import {
+  getParseObject,
+  generateSlugBasedStaticPaths,
+} from '../../utils/parse_object';
+import { getDefaultString } from '../../utils/localization';
+import { generateCharacterClassLocalizedMetaDescriptions } from '../../utils/build_localization';
+import CharacterClassesNavBox from '../../components/nav/CharacterClassesNavBox.astro';
+import { getCharacterClassDetailBreadcrumbs } from '../../utils/breadcrumb';
+
+export async function getStaticPaths() {
+  return generateSlugBasedStaticPaths('CharacterClass');
+}
+
+const { slug: _slug } = Astro.params;
+const { id } = Astro.props;
+
+const characterClass = getParseObject<CharacterClass>(
+  id,
+  'Objects/CharacterClass.json'
+);
+
+const defaultName = getDefaultString(characterClass.name) || characterClass.id;
+
+const localizedDescriptions = generateCharacterClassLocalizedMetaDescriptions(
+  characterClass,
+  defaultName
+);
+---
+
+<ParseObjectPage localizedDescriptions={localizedDescriptions} type="article">
+  <LocalizedText
+    id="character-class-name-title"
+    tag="title"
+    localizationKey={characterClass.name}
+    slot="head"
+  />
+  <Breadcrumb
+    breadcrumbs={getCharacterClassDetailBreadcrumbs(characterClass)}
+  />
+  <LocalizedText
+    id="character-class-name"
+    tag="h1"
+    localizationKey={characterClass.name}
+  />
+
+  <Icon
+    iconPath={characterClass.badge.image_path}
+    altText={`${defaultName} badge`}
+  />
+
+  <LocalizedText
+    id="character-class-description"
+    tag="p"
+    localizationKey={characterClass.description}
+  />
+
+  <Icon
+    iconPath={characterClass.image_big_path}
+    altText={`${defaultName} large image`}
+    size={256}
+  />
+
+  <CharacterClassesNavBox currentClass={characterClass} />
+
+  <ObjectPageScripts objectData={characterClass} slug={_slug} />
+</ParseObjectPage>

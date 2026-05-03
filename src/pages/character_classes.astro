@@ -1,0 +1,36 @@
+---
+import type { CharacterClass } from '../types/character_class';
+import Breadcrumb from '../components/Breadcrumb.astro';
+import ParseObjectListPage from '../components/ParseObjectListPage.astro';
+import { getParseObjects } from '../utils/parse_object';
+import { prepareObjectList } from '../utils/list';
+import { getCharacterClassesBreadcrumbs } from '../utils/breadcrumb';
+import ObjRef from '../components/obj_ref/ObjRef.astro';
+import CharacterClassesNavBox from '../components/nav/CharacterClassesNavBox.astro';
+
+const characterClasses = getParseObjects<CharacterClass>(
+  'Objects/CharacterClass.json'
+);
+
+const entries = prepareObjectList(characterClasses, { prodReadyOnly: false });
+---
+
+<ParseObjectListPage
+  title="Character Classes"
+  description="Browse all character classes in War Robots Frontiers"
+>
+  <Breadcrumb breadcrumbs={getCharacterClassesBreadcrumbs()} />
+  <h1>Character Classes</h1>
+
+  <ul>
+    {
+      entries.map(([_id, characterClass]) => (
+        <li>
+          <ObjRef obj={characterClass} />
+        </li>
+      ))
+    }
+  </ul>
+
+  <CharacterClassesNavBox />
+</ParseObjectListPage>
