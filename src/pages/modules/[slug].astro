@@ -84,9 +84,10 @@ const allCharacterModules = getParseObjects<CharacterModule>(
   'Objects/CharacterModule.json'
 );
 const allAbilities = getParseObjects<Ability>('Objects/Ability.json');
-const allModuleClasses = getParseObjects<ModuleClass>('Objects/ModuleClass.json');
+const allModuleClasses = getParseObjects<ModuleClass>(
+  'Objects/ModuleClass.json'
+);
 const allModuleTags = getParseObjects<ModuleTag>('Objects/ModuleTag.json');
-
 
 const abilityStats = getModuleAbilityStats(
   module,
@@ -184,7 +185,6 @@ const objRefData = getObjRefData(module);
       )
   }
 
-  
   <!-- Abilities block - shown if abilities with scalars -->
   {
     abilityStats.length > 0 && module.abilities_scalars && (
@@ -192,7 +192,7 @@ const objRefData = getObjRefData(module);
         {abilityStats.map((abStat, index) => {
           const abilityScalar = module.abilities_scalars?.[index];
           const constants = abilityScalar?.levels?.constants;
-          
+
           return (
             <div class="ability-block" style="margin-top: 1.5rem;">
               {abStat.ability.name && (
@@ -210,48 +210,75 @@ const objRefData = getObjRefData(module);
                   statValueChoices={abStat.statValueChoices}
                 />
               )}
-              
+
               {/* Module class and tag references */}
               {constants && (
-                <div class="ability-references" style="margin-top: 1rem; font-size: 0.9rem; color: #666;">
+                <div
+                  class="ability-references"
+                  style="margin-top: 1rem; font-size: 0.9rem; color: #666;"
+                >
                   {constants.module_class_ref_1 && (
                     <div style="margin-bottom: 0.25rem;">
-                      <strong>Class 1:</strong> {
-                        (() => {
-                          const moduleClass = resolveObjectRef(constants.module_class_ref_1, allModuleClasses);
-                          return moduleClass ? <ObjRef obj={moduleClass} useHref={false} /> : constants.module_class_ref_1;
-                        })()
-                      }
+                      <strong>Class 1:</strong>{' '}
+                      {(() => {
+                        const moduleClass = resolveObjectRef(
+                          constants.module_class_ref_1,
+                          allModuleClasses
+                        );
+                        return moduleClass ? (
+                          <ObjRef obj={moduleClass} useHref={false} />
+                        ) : (
+                          constants.module_class_ref_1
+                        );
+                      })()}
                     </div>
                   )}
                   {constants.module_class_ref_2 && (
                     <div style="margin-bottom: 0.25rem;">
-                      <strong>Class 2:</strong> {
-                        (() => {
-                          const moduleClass = resolveObjectRef(constants.module_class_ref_2, allModuleClasses);
-                          return moduleClass ? <ObjRef obj={moduleClass} useHref={false} /> : constants.module_class_ref_2;
-                        })()
-                      }
+                      <strong>Class 2:</strong>{' '}
+                      {(() => {
+                        const moduleClass = resolveObjectRef(
+                          constants.module_class_ref_2,
+                          allModuleClasses
+                        );
+                        return moduleClass ? (
+                          <ObjRef obj={moduleClass} useHref={false} />
+                        ) : (
+                          constants.module_class_ref_2
+                        );
+                      })()}
                     </div>
                   )}
                   {constants.module_tag_ref_1 && (
                     <div style="margin-bottom: 0.25rem;">
-                      <strong>Tag 1:</strong> {
-                        (() => {
-                          const moduleTag = resolveObjectRef(constants.module_tag_ref_1, allModuleTags);
-                          return moduleTag ? <ObjRef obj={moduleTag} useHref={false} /> : constants.module_tag_ref_1;
-                        })()
-                      }
+                      <strong>Tag 1:</strong>{' '}
+                      {(() => {
+                        const moduleTag = resolveObjectRef(
+                          constants.module_tag_ref_1,
+                          allModuleTags
+                        );
+                        return moduleTag ? (
+                          <ObjRef obj={moduleTag} useHref={false} />
+                        ) : (
+                          constants.module_tag_ref_1
+                        );
+                      })()}
                     </div>
                   )}
                   {constants.module_tag_ref_2 && (
                     <div style="margin-bottom: 0.25rem;">
-                      <strong>Tag 2:</strong> {
-                        (() => {
-                          const moduleTag = resolveObjectRef(constants.module_tag_ref_2, allModuleTags);
-                          return moduleTag ? <ObjRef obj={moduleTag} useHref={false} /> : constants.module_tag_ref_2;
-                        })()
-                      }
+                      <strong>Tag 2:</strong>{' '}
+                      {(() => {
+                        const moduleTag = resolveObjectRef(
+                          constants.module_tag_ref_2,
+                          allModuleTags
+                        );
+                        return moduleTag ? (
+                          <ObjRef obj={moduleTag} useHref={false} />
+                        ) : (
+                          constants.module_tag_ref_2
+                        );
+                      })()}
                     </div>
                   )}
                 </div>
