@@ -212,7 +212,7 @@ const objRefData = getObjRefData(module);
 
               {/* Module class and tag references */}
               {constants && (() => {
-                // Resolve all references in the calling code
+                // Resolve all references
                 const resolvedObjects = [
                   constants.module_class_ref_1 ? resolveObjectRef(constants.module_class_ref_1 as string, allModuleClasses) : null,
                   constants.module_class_ref_2 ? resolveObjectRef(constants.module_class_ref_2 as string, allModuleClasses) : null,
