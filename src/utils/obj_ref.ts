@@ -6,7 +6,7 @@ import type {
   PilotTalentType,
   Pilot,
 } from '../types/pilot';
-import type { Module, ModuleCategory } from '../types/module';
+import type { Module, ModuleCategory, ModuleClass } from '../types/module';
 import type { Rarity } from '../types/rarity';
 import type { CharacterPreset } from '../types/character_preset';
 import type { ParseObject } from '../types/parse_object';
@@ -32,6 +32,7 @@ export interface ObjRefData {
 // For each class, define a method to retrieve the ObjRefData
 export function getObjRefData(_obj: Module): ObjRefData;
 export function getObjRefData(_obj: ModuleCategory): ObjRefData;
+export function getObjRefData(_obj: ModuleClass): ObjRefData;
 export function getObjRefData(_obj: PilotPersonality): ObjRefData;
 export function getObjRefData(_obj: PilotClass): ObjRefData;
 export function getObjRefData(_obj: PilotTalent): ObjRefData;
@@ -247,6 +248,18 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
         text: moduleTag.name,
         textColor: moduleTag.text_hex,
         textBackgroundColor: moduleTag.background_hex.substring(2) + moduleTag.background_hex.substring(0, 2),
+      };
+    }
+    case 'ModuleClass': {
+      const moduleClass = obj as ModuleClass;
+      const characterClass = getParseObject<CharacterClass>(
+        refToId(moduleClass.character_class_ref),
+        'Objects/CharacterClass.json'
+      );
+      return {
+        text: characterClass.name,
+        iconPath: characterClass.badge.image_path,
+        iconColor: characterClass.badge.hex,
       };
     }
     default:
