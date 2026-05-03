@@ -45,25 +45,22 @@ const moduleReferences: ModuleReference[] = [
   class="ability-references"
   style="margin-top: 1rem; font-size: 0.9rem; color: #666;"
 >
-  {
-    moduleReferences.map((ref) => {
-      const refValue = constants[ref.key];
-      if (!refValue) return null;
-
-      const resolvedObj = ref.isClass
-        ? resolveObjectRef(refValue, allModuleClasses)
-        : resolveObjectRef(refValue, allModuleTags);
-
-      return (
-        <div style="margin-bottom: 0.25rem;">
-          <strong>{ref.label}:</strong>{' '}
-          {resolvedObj ? (
-            <ObjRef obj={resolvedObj} useHref={false} />
-          ) : (
-            refValue
-          )}
-        </div>
-      );
-    })
-  }
+  {moduleReferences.map((ref) => {
+    const refValue = constants[ref.key];
+    if (!refValue) return null;
+    
+    const resolvedObj = ref.isClass 
+      ? resolveObjectRef(refValue, allModuleClasses)
+      : resolveObjectRef(refValue, allModuleTags);
+    
+    return (
+      <span style="margin-right: 0.5rem;">
+        {resolvedObj ? (
+          <ObjRef obj={resolvedObj} useHref={false} />
+        ) : (
+          refValue
+        )}
+      </span>
+    );
+  })}
 </div>
