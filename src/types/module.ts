@@ -3,6 +3,7 @@ import type { ParseObject } from './parse_object';
 
 export const MODULE_URL = 'modules';
 export const MODULECATEGORY_URL = 'module_categories';
+export const MODULECLASS_URL = 'module_classes';
 
 export interface ModuleStat extends ParseObject {
   parseObjectClass: 'ModuleStat';
@@ -100,8 +101,15 @@ export interface ModuleType extends ParseObject {
   tag_background_color?: string;
 }
 
-export interface ModuleStatsTable extends ParseObject {
-  parseObjectClass: 'ModuleStatsTable';
+export interface ModuleRarity extends ParseObject {
+  parseObjectClass: 'ModuleRarity';
   id: string;
-  stats_refs: Record<string, string>;
+  rarity_ref: string;
+  sort_order: number;
+}
+
+export interface ModuleClass extends ParseObject {
+  parseObjectClass: 'ModuleClass';
+  id: string;
+  character_class_ref: string;
 }

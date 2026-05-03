@@ -1,0 +1,55 @@
+---
+import Page from '../components/Page.astro';
+import ObjRef from '../components/obj_ref/ObjRef.astro';
+import { getParseObjects } from '../utils/parse_object';
+import type { ModuleClass } from '../types/module';
+
+// Hardcoded ModuleClass IDs to test
+const moduleClassIds = [
+  'DA_Module_Class_Assault.0',
+  'DA_Module_Class_Defender.0', 
+  'DA_Module_Class_Flanker.0',
+  'DA_Module_Class_Tactician.0'
+];
+
+// Load all ModuleClass objects
+const allModuleClasses = getParseObjects<ModuleClass>('Objects/ModuleClass.json');
+
+// Get the specific ModuleClass objects we want to test
+const moduleClasses = moduleClassIds.map(id => allModuleClasses[id]).filter(Boolean);
+---
+
+<Page title="ModuleClass Test" description="Testing ModuleClass rendering and CharacterClass resolution.">
+  <div style="padding: 2rem;">
+    <h1>ModuleClass Test</h1>
+    <p>This page tests the rendering of ModuleClass objects and their resolution to CharacterClass objects.</p>
+    <p>Each ModuleClass should display as its associated CharacterClass name and badge.</p>
+
+    <div style="margin-top: 2rem;">
+      <h2>ModuleClass Objects (4 total)</h2>
+      <div style="display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1rem;">
+        {moduleClasses.map((moduleClass) => (
+          <div style="border: 1px solid #ccc; padding: 1rem; border-radius: 4px;">
+            <h3>ModuleClass: {moduleClass.id}</h3>
+            <p>Character Class Ref: {moduleClass.character_class_ref}</p>
+            <div style="margin-top: 0.5rem;">
+              <strong>Resolved Display:</strong>
+              <ObjRef obj={moduleClass} useHref={false} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <div style="margin-top: 2rem;">
+      <h2>All ModuleClass Objects in System</h2>
+      <div style="display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1rem;">
+        {Object.values(allModuleClasses).map((moduleClass) => (
+          <div style="border: 1px solid #ddd; padding: 0.5rem; border-radius: 4px;">
+            <ObjRef obj={moduleClass} useHref={false} />
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</Page>
