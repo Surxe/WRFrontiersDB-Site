@@ -20,13 +20,26 @@ const getTextElements = (
 ): LocalizationKey[] => {
   return isMultipleTexts(text) ? text : [text];
 };
+
+const hasBackgroundColor = !!objRefData.textBackgroundColor;
+const hasTextColor = !!objRefData.textColor;
+
+const style = [
+  hasBackgroundColor
+    ? `background-color: #${objRefData.textBackgroundColor};`
+    : '',
+  hasTextColor ? `color: #${objRefData.textColor};` : '',
+  hasBackgroundColor || hasTextColor
+    ? `display: inline-block; padding: 2px 8px; border-radius: 4px;`
+    : '',
+]
+  .filter(Boolean)
+  .join(' ');
 ---
 
 {
-  objRefData.textBackgroundColor ? (
-    <div
-      style={`display: inline-block; padding: 2px 8px; background-color: #${objRefData.textBackgroundColor}; border-radius: 4px;`}
-    >
+  style ? (
+    <div style={style}>
       <TextElements textElements={getTextElements(objRefData.text)} />
     </div>
   ) : (

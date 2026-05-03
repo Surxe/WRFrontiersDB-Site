@@ -16,10 +16,12 @@ import { refToId } from './object_reference';
 import type { VirtualBot } from '../types/virtual_bot';
 import type { ModuleGroup } from '../types/module_group';
 import type { Currency } from '../types/currency';
+import type { ModuleTag } from '../types/module_tag';
 
 // All the data necessary to reference the page in a generic way
 export interface ObjRefData {
   text: LocalizationKey | LocalizationKey[];
+  textColor?: string;
   textBackgroundColor?: string;
   iconPath?: string;
   iconColor?: string;
@@ -36,6 +38,7 @@ export function getObjRefData(_obj: PilotTalentType): ObjRefData;
 export function getObjRefData(_obj: Pilot): ObjRefData;
 export function getObjRefData(_obj: Rarity): ObjRefData;
 export function getObjRefData(_obj: Currency): ObjRefData;
+export function getObjRefData(_obj: ModuleTag): ObjRefData;
 export function getObjRefData(_obj: ParseObject): ObjRefData; // Here just for type support. Better than an overload that requires specifying the name of every class.
 
 export function getObjRefData(obj: ParseObject): ObjRefData {
@@ -226,6 +229,14 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
         text: currency.name,
         iconPath: currency.wallet_icon_path,
         hoverText: currency.description,
+      };
+    }
+    case 'ModuleTag': {
+      const moduleTag = obj as unknown as ModuleTag;
+      return {
+        text: moduleTag.name,
+        textColor: moduleTag.text_hex,
+        textBackgroundColor: moduleTag.background_hex.substring(2),
       };
     }
     default:
