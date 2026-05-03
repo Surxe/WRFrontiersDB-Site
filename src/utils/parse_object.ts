@@ -10,6 +10,7 @@ import * as moduleGroupTypes from '../types/module_group';
 import * as currencyTypes from '../types/currency';
 import * as characterClassTypes from '../types/character_class';
 import * as moduleTagTypes from '../types/module_tag';
+import * as factionTypes from '../types/faction';
 
 // import { generateSlugForObject } from './slug_generator';
 
@@ -24,6 +25,7 @@ const allTypeExports = {
   ...currencyTypes,
   ...characterClassTypes,
   ...moduleTagTypes,
+  ...factionTypes,
 };
 
 /**
