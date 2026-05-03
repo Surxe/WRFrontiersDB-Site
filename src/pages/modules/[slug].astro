@@ -217,70 +217,60 @@ const objRefData = getObjRefData(module);
                   class="ability-references"
                   style="margin-top: 1rem; font-size: 0.9rem; color: #666;"
                 >
-                  {constants.module_class_ref_1 && (
-                    <div style="margin-bottom: 0.25rem;">
-                      <strong>Class 1:</strong>{' '}
-                      {(() => {
-                        const moduleClass = resolveObjectRef(
-                          constants.module_class_ref_1,
-                          allModuleClasses
-                        );
-                        return moduleClass ? (
-                          <ObjRef obj={moduleClass} useHref={false} />
-                        ) : (
-                          constants.module_class_ref_1
-                        );
-                      })()}
-                    </div>
-                  )}
-                  {constants.module_class_ref_2 && (
-                    <div style="margin-bottom: 0.25rem;">
-                      <strong>Class 2:</strong>{' '}
-                      {(() => {
-                        const moduleClass = resolveObjectRef(
-                          constants.module_class_ref_2,
-                          allModuleClasses
-                        );
-                        return moduleClass ? (
-                          <ObjRef obj={moduleClass} useHref={false} />
-                        ) : (
-                          constants.module_class_ref_2
-                        );
-                      })()}
-                    </div>
-                  )}
-                  {constants.module_tag_ref_1 && (
-                    <div style="margin-bottom: 0.25rem;">
-                      <strong>Tag 1:</strong>{' '}
-                      {(() => {
-                        const moduleTag = resolveObjectRef(
-                          constants.module_tag_ref_1,
-                          allModuleTags
-                        );
-                        return moduleTag ? (
-                          <ObjRef obj={moduleTag} useHref={false} />
-                        ) : (
-                          constants.module_tag_ref_1
-                        );
-                      })()}
-                    </div>
-                  )}
-                  {constants.module_tag_ref_2 && (
-                    <div style="margin-bottom: 0.25rem;">
-                      <strong>Tag 2:</strong>{' '}
-                      {(() => {
-                        const moduleTag = resolveObjectRef(
-                          constants.module_tag_ref_2,
-                          allModuleTags
-                        );
-                        return moduleTag ? (
-                          <ObjRef obj={moduleTag} useHref={false} />
-                        ) : (
-                          constants.module_tag_ref_2
-                        );
-                      })()}
-                    </div>
-                  )}
+                  {(() => {
+                    // Dynamic function to render module class or tag references
+                    const renderModuleReference = (
+                      refKey: string,
+                      label: string,
+                      isClass: boolean
+                    ) => {
+                      const refValue = constants[refKey];
+                      if (!refValue) return null;
+
+                      const resolvedObj = isClass
+                        ? resolveObjectRef(refValue, allModuleClasses)
+                        : resolveObjectRef(refValue, allModuleTags);
+
+                      return (
+                        <div style="margin-bottom: 0.25rem;">
+                          <strong>{label}:</strong>{' '}
+                          {resolvedObj ? (
+                            <ObjRef obj={resolvedObj} useHref={false} />
+                          ) : (
+                            refValue
+                          )}
+                        </div>
+                      );
+                    };
+
+                    // Define all possible references to check
+                    const moduleReferences = [
+                      {
+                        key: 'module_class_ref_1',
+                        label: 'Class 1',
+                        isClass: true,
+                      },
+                      {
+                        key: 'module_class_ref_2',
+                        label: 'Class 2',
+                        isClass: true,
+                      },
+                      {
+                        key: 'module_tag_ref_1',
+                        label: 'Tag 1',
+                        isClass: false,
+                      },
+                      {
+                        key: 'module_tag_ref_2',
+                        label: 'Tag 2',
+                        isClass: false,
+                      },
+                    ];
+
+                    return moduleReferences.map((ref) =>
+                      renderModuleReference(ref.key, ref.label, ref.isClass)
+                    );
+                  })()}
                 </div>
               )}
             </div>
