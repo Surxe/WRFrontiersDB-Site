@@ -10,6 +10,7 @@ import * as moduleGroupTypes from '../types/module_group';
 import * as currencyTypes from '../types/currency';
 import * as characterClassTypes from '../types/character_class';
 import * as moduleTagTypes from '../types/module_tag';
+import * as factionTypes from '../types/faction';
 
 // import { generateSlugForObject } from './slug_generator';
 
@@ -24,6 +25,7 @@ const allTypeExports = {
   ...currencyTypes,
   ...characterClassTypes,
   ...moduleTagTypes,
+  ...factionTypes,
 };
 
 /**
@@ -203,6 +205,7 @@ export function generateSlugBasedStaticPaths(
     | 'Currency'
     | 'CharacterClass'
     | 'ModuleTag'
+    | 'Faction'
 ): Array<{ params: { slug: string }; props: { id: string } }> {
   // Load slug map to generate slug-based paths
   const slugMapPath = path.join(process.cwd(), 'public', 'slug_map.json');

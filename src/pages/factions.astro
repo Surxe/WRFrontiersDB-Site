@@ -1,0 +1,36 @@
+---
+import type { Faction } from '../types/faction';
+import Breadcrumb from '../components/Breadcrumb.astro';
+import ParseObjectListPage from '../components/ParseObjectListPage.astro';
+import { getParseObjects } from '../utils/parse_object';
+import { prepareObjectList } from '../utils/list';
+import { getFactionsBreadcrumbs } from '../utils/breadcrumb';
+import FactionsNavBox from '../components/nav/FactionsNavBox.astro';
+import ObjRef from '../components/obj_ref/ObjRef.astro';
+
+const factions = getParseObjects<Faction>('Objects/Faction.json');
+
+// Prepare and filter factions
+const entries = prepareObjectList(factions, { prodReadyOnly: false });
+---
+
+<ParseObjectListPage
+  title="Factions"
+  description="Browse all factions with their unique characteristics and backgrounds from War Robots Frontiers"
+  headerImage="/images/T_AlphaUnlock.png"
+>
+  <Breadcrumb breadcrumbs={getFactionsBreadcrumbs()} />
+  <h1>Factions</h1>
+
+  <ul>
+    {
+      entries.map(([_id, faction]) => (
+        <li>
+          <ObjRef obj={faction} />
+        </li>
+      ))
+    }
+  </ul>
+
+  <FactionsNavBox />
+</ParseObjectListPage>
