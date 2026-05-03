@@ -8,6 +8,7 @@ import * as characterPresetTypes from '../types/character_preset';
 import * as virtualBotTypes from '../types/virtual_bot';
 import * as moduleGroupTypes from '../types/module_group';
 import * as currencyTypes from '../types/currency';
+import * as moduleTagTypes from '../types/module_tag';
 
 // import { generateSlugForObject } from './slug_generator';
 
@@ -20,6 +21,7 @@ const allTypeExports = {
   ...virtualBotTypes,
   ...moduleGroupTypes,
   ...currencyTypes,
+  ...moduleTagTypes,
 };
 
 /**

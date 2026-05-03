@@ -1,0 +1,22 @@
+---
+import Page from '../components/Page.astro';
+import ObjRef from '../components/obj_ref/ObjRef.astro';
+import { getParseObjects } from '../utils/parse_object';
+import type { ModuleTag } from '../types/module_tag';
+
+// Load all tags
+const tags = Object.values(getParseObjects<ModuleTag>('Objects/ModuleTag.json'));
+---
+
+<Page title="ModuleTag Test" description="Testing ModuleTag rendering.">
+  <div style="padding: 2rem;">
+    <h1>Module Tag Test</h1>
+    <p>This is a temporary page to test the rendering of all ModuleTags.</p>
+    
+    <div style="margin-top: 2rem; display: flex; flex-wrap: wrap; gap: 1rem;">
+      {tags.map(tag => (
+        <ObjRef obj={tag} />
+      ))}
+    </div>
+  </div>
+</Page>
