@@ -8,9 +8,7 @@ import { getFactionsBreadcrumbs } from '../utils/breadcrumb';
 import FactionsNavBox from '../components/nav/FactionsNavBox.astro';
 import ObjRef from '../components/obj_ref/ObjRef.astro';
 
-const factions = getParseObjects<Faction>(
-  'Objects/Faction.json'
-);
+const factions = getParseObjects<Faction>('Objects/Faction.json');
 
 // Prepare and filter factions
 const entries = prepareObjectList(factions, { prodReadyOnly: false });

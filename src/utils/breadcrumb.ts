@@ -693,9 +693,7 @@ export function getFactionsBreadcrumbs(): BreadcrumbTrail {
 /**
  * Generate breadcrumb trail for faction detail page
  */
-export function getFactionDetailBreadcrumbs(
-  faction: Faction
-): BreadcrumbTrail {
+export function getFactionDetailBreadcrumbs(faction: Faction): BreadcrumbTrail {
   const factionName = getDefaultString(faction.name) || faction.id;
 
   return [

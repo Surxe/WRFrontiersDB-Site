@@ -21,14 +21,10 @@ export async function getStaticPaths() {
 const { slug: _slug } = Astro.params;
 const { id } = Astro.props;
 
-const faction = getParseObject<Faction>(
-  id,
-  'Objects/Faction.json'
-);
+const faction = getParseObject<Faction>(id, 'Objects/Faction.json');
 
 // Extract English text as fallback
-const defaultName =
-  getDefaultString(faction.name) || faction.id;
+const defaultName = getDefaultString(faction.name) || faction.id;
 
 // Generate localized meta descriptions
 const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
@@ -49,24 +45,12 @@ const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
     localizationKey={faction.name}
     slot="head"
   />
-  <Breadcrumb
-    breadcrumbs={getFactionDetailBreadcrumbs(faction)}
-  />
-  <LocalizedText
-    id="faction-name"
-    tag="h1"
-    localizationKey={faction.name}
-  />
+  <Breadcrumb breadcrumbs={getFactionDetailBreadcrumbs(faction)} />
+  <LocalizedText id="faction-name" tag="h1" localizationKey={faction.name} />
 
-  <Icon
-    iconPath={faction.image_path}
-    altText={`${defaultName} image`}
-  />
+  <Icon iconPath={faction.image_path} altText={`${defaultName} image`} />
 
-  <Icon
-    iconPath={faction.badge.image_path}
-    altText={`${defaultName} badge`}
-  />
+  <Icon iconPath={faction.badge.image_path} altText={`${defaultName} badge`} />
 
   <p>Language: <span id="current-lang">en</span></p>
 
