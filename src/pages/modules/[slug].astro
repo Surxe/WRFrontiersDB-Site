@@ -40,6 +40,7 @@ import type { CharacterPreset } from '../../types/character_preset';
 import type { Pilot } from '../../types/pilot';
 import type { ModuleClass } from '../../types/module';
 import type { ModuleTag } from '../../types/module';
+import ModuleReferences from '../../components/ModuleReferences.astro';
 
 export async function getStaticPaths() {
   return generateSlugBasedStaticPaths('Module');
@@ -213,65 +214,11 @@ const objRefData = getObjRefData(module);
 
               {/* Module class and tag references */}
               {constants && (
-                <div
-                  class="ability-references"
-                  style="margin-top: 1rem; font-size: 0.9rem; color: #666;"
-                >
-                  {(() => {
-                    // Dynamic function to render module class or tag references
-                    const renderModuleReference = (
-                      refKey: string,
-                      label: string,
-                      isClass: boolean
-                    ) => {
-                      const refValue = constants[refKey];
-                      if (!refValue) return null;
-
-                      const resolvedObj = isClass
-                        ? resolveObjectRef(refValue, allModuleClasses)
-                        : resolveObjectRef(refValue, allModuleTags);
-
-                      return (
-                        <div style="margin-bottom: 0.25rem;">
-                          <strong>{label}:</strong>{' '}
-                          {resolvedObj ? (
-                            <ObjRef obj={resolvedObj} useHref={false} />
-                          ) : (
-                            refValue
-                          )}
-                        </div>
-                      );
-                    };
-
-                    // Define all possible references to check
-                    const moduleReferences = [
-                      {
-                        key: 'module_class_ref_1',
-                        label: 'Class 1',
-                        isClass: true,
-                      },
-                      {
-                        key: 'module_class_ref_2',
-                        label: 'Class 2',
-                        isClass: true,
-                      },
-                      {
-                        key: 'module_tag_ref_1',
-                        label: 'Tag 1',
-                        isClass: false,
-                      },
-                      {
-                        key: 'module_tag_ref_2',
-                        label: 'Tag 2',
-                        isClass: false,
-                      },
-                    ];
-
-                    return moduleReferences.map((ref) =>
-                      renderModuleReference(ref.key, ref.label, ref.isClass)
-                    );
-                  })()}
-                </div>
+                <ModuleReferences
+                  constants={constants}
+                  allModuleClasses={allModuleClasses}
+                  allModuleTags={allModuleTags}
+                />
               )}
             </div>
           );
