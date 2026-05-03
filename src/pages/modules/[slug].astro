@@ -40,7 +40,7 @@ import type { CharacterPreset } from '../../types/character_preset';
 import type { Pilot } from '../../types/pilot';
 import type { ModuleClass } from '../../types/module';
 import type { ModuleTag } from '../../types/module';
-import ModuleReferences from '../../components/ModuleReferences.astro';
+import ModuleAbilityReferences from '../../components/ModuleAbilityReferences.astro';
 
 export async function getStaticPaths() {
   return generateSlugBasedStaticPaths('Module');
@@ -214,7 +214,7 @@ const objRefData = getObjRefData(module);
 
               {/* Module class and tag references */}
               {constants && (
-                <ModuleReferences
+                <ModuleAbilityReferences 
                   constants={constants}
                   allModuleClasses={allModuleClasses}
                   allModuleTags={allModuleTags}
