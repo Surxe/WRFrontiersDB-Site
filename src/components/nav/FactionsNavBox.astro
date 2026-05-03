@@ -1,0 +1,23 @@
+---
+import BaseNavBox from './BaseNavBox.astro';
+import { getParseObjects } from '../../utils/parse_object';
+import type { Faction } from '../../types/faction';
+
+interface Props {
+  currentFaction?: Faction;
+}
+
+const { currentFaction: _currentFaction } = Astro.props;
+
+// Load factions
+const factions = getParseObjects<Faction>('Objects/Faction.json');
+
+// Sort factions by name
+const sortedFactions = Object.entries(factions).sort(([_a, a], [_b, b]) => {
+  const nameA = a.name?.Key || a.id;
+  const nameB = b.name?.Key || b.id;
+  return nameA.localeCompare(nameB);
+});
+---
+
+<BaseNavBox title="Factions" objects={sortedFactions} />

@@ -37,7 +37,8 @@
     "Robots_Description": "Bot platforms that represent themed robots as they are referenced by the community, including their core modules and titan weapons.",
     "AI_Bots_Description": "Bot builds used by AI when there are not enough players to fill a match.",
     "Factory_Bots_Description": "Pre-configured bot builds created by the game developers.",
-    "CharacterClass_Meta_Description": "{name}: {description}"
+    "CharacterClass_Meta_Description": "{name}: {description}",
+    "Faction_Meta_Description": "{name}: View detailed information about this faction in War Robots Frontiers."
   },
   "ModuleGroups": {
     "GRP_TitanShoulders_Name": "Titan Shoulder"

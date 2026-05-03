@@ -1,0 +1,60 @@
+---
+import type { Faction } from '../../types/faction';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import Icon from '../../components/Icon.astro';
+import LocalizedText from '../../components/LocalizedText.astro';
+import ObjectPageScripts from '../../components/ObjectPageScripts.astro';
+import ParseObjectPage from '../../components/ParseObjectPage.astro';
+import {
+  getParseObject,
+  generateSlugBasedStaticPaths,
+} from '../../utils/parse_object';
+import { getDefaultString } from '../../utils/localization';
+import { getFactionDetailBreadcrumbs } from '../../utils/breadcrumb';
+import { generateSimpleLocalizedMetaDescriptions } from '../../utils/build_localization';
+import FactionsNavBox from '../../components/nav/FactionsNavBox.astro';
+
+export async function getStaticPaths() {
+  return generateSlugBasedStaticPaths('Faction');
+}
+
+const { slug: _slug } = Astro.params;
+const { id } = Astro.props;
+
+const faction = getParseObject<Faction>(id, 'Objects/Faction.json');
+
+// Extract English text as fallback
+const defaultName = getDefaultString(faction.name) || faction.id;
+
+// Generate localized meta descriptions
+const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
+  { Key: 'Faction_Meta_Description', TableNamespace: 'Web_UI' },
+  { name: faction.name },
+  defaultName
+);
+---
+
+<ParseObjectPage
+  localizedDescriptions={localizedDescriptions}
+  headerImage={faction.image_path}
+  type="article"
+>
+  <LocalizedText
+    id="faction-name-title"
+    tag="title"
+    localizationKey={faction.name}
+    slot="head"
+  />
+  <Breadcrumb breadcrumbs={getFactionDetailBreadcrumbs(faction)} />
+  <LocalizedText id="faction-name" tag="h1" localizationKey={faction.name} />
+
+  <Icon iconPath={faction.image_path} altText={`${defaultName} image`} />
+
+  <Icon iconPath={faction.badge.image_path} altText={`${defaultName} badge`} />
+
+  <p>Language: <span id="current-lang">en</span></p>
+
+  <FactionsNavBox currentFaction={faction} />
+
+  <ObjectPageScripts objectData={faction} slug={_slug} />
+</ParseObjectPage>

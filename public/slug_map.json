@@ -550,5 +550,9 @@
   "DA_CharacterClass_Assault.0": "assault",
   "DA_CharacterClass_Defender.0": "defender",
   "DA_CharacterClass_Flanker.0": "flanker",
-  "DA_CharacterClass_Tactician.0": "tactician"
+  "DA_CharacterClass_Tactician.0": "tactician",
+  "DA_Faction_FortEvo.0": "fortevo",
+  "DA_Faction_Freecon.0": "freecon",
+  "DA_Faction_Mayflower.0": "mayflower",
+  "DA_Faction_Tortuga.0": "tortuga"
 }

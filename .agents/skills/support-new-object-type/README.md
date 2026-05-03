@@ -25,10 +25,11 @@ Ensure you have answers from the user for the following questions:
 3. **Add to getAllParseObjects** in `src/utils/parse_object.ts`
 4. **Add to slugableObjectTypes** in `src/components/obj_ref/ObjRef.astro`'s `slugableObjectTypes()` function
 5. **Configure ObjRef overload** in `src/utils/obj_ref.ts`'s `getObjRefData` function
-6. **Create list page**: `src/pages/{parseObject}s.astro` (properly pluralized) using `ParseObjectList`
-7. **Create detail page**: `src/pages/{parseObject}s/[id].astro` with `getStaticPaths()` and include `ObjectPageScripts` component
-8. **Call** `generateSlugBasedStaticPaths("{parseObject}")`
-9. **Add link** to homepage ([index.astro](../../src/pages/index.astro))
-10. **Configure breadcrumbs** in `src/components/Breadcrumbs.astro`'s `getBreadcrumbPath` function
-11. **Configure slug generation** in `src/utils/slug_generator.ts`'s `generateSlugForObjectType` function and add to list of supported object types in `scripts/build-slugs.ts`
-12. **Rebuild slugs**: `npm run build:slugs`
+6. **Add to allTypeExports** in `src/utils/parse_object.ts`
+7. **Create list page**: `src/pages/{parseObject}s.astro` (properly pluralized) using `ParseObjectList`
+8. **Create detail page**: `src/pages/{parseObject}s/[id].astro` with `getStaticPaths()` and include `ObjectPageScripts` component
+9. **Call** `generateSlugBasedStaticPaths("{parseObject}")`
+10. **Add link** to homepage ([index.astro](../../src/pages/index.astro))
+11. **Configure breadcrumbs** in `src/components/Breadcrumbs.astro`'s `getBreadcrumbPath` function
+12. **Configure slug generation** in `src/utils/slug_generator.ts`'s `generateSlugForObjectType` function and add to list of supported object types in `scripts/build-slugs.ts`
+13. **Rebuild slugs**: `npm run build:slugs`

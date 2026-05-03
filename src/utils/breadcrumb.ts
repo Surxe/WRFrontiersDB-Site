@@ -12,6 +12,7 @@ import type {
 import type { CharacterPreset } from '../types/character_preset';
 import type { Currency } from '../types/currency';
 import type { CharacterClass } from '../types/character_class';
+import type { Faction } from '../types/faction';
 import { getParseObject } from './parse_object';
 
 /**
@@ -665,6 +666,49 @@ export function getCharacterClassDetailBreadcrumbs(
     },
     {
       label: className,
+      href: undefined,
+      isCurrent: true,
+    },
+  ];
+}
+
+/**
+ * Generate breadcrumb trail for factions page
+ */
+export function getFactionsBreadcrumbs(): BreadcrumbTrail {
+  return [
+    {
+      label: resolveLocalizationKey('Breadcrumb_Home', 'Web_UI'),
+      href: '/',
+      isCurrent: false,
+    },
+    {
+      label: 'Factions',
+      href: '/factions',
+      isCurrent: true,
+    },
+  ];
+}
+
+/**
+ * Generate breadcrumb trail for faction detail page
+ */
+export function getFactionDetailBreadcrumbs(faction: Faction): BreadcrumbTrail {
+  const factionName = getDefaultString(faction.name) || faction.id;
+
+  return [
+    {
+      label: resolveLocalizationKey('Breadcrumb_Home', 'Web_UI'),
+      href: '/',
+      isCurrent: false,
+    },
+    {
+      label: 'Factions',
+      href: '/factions',
+      isCurrent: false,
+    },
+    {
+      label: factionName,
       href: undefined,
       isCurrent: true,
     },

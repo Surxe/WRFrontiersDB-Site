@@ -36,6 +36,7 @@ const OBJECT_TYPES = [
   'Robot',
   'Currency',
   'CharacterClass',
+  'Faction',
 ];
 
 async function buildSlugMap() {
