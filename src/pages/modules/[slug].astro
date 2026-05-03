@@ -40,7 +40,6 @@ import type { CharacterPreset } from '../../types/character_preset';
 import type { Pilot } from '../../types/pilot';
 import type { ModuleClass } from '../../types/module';
 import type { ModuleTag } from '../../types/module_tag';
-import ModuleAbilityReferences from '../../components/ModuleAbilityReferences.astro';
 
 export async function getStaticPaths() {
   return generateSlugBasedStaticPaths('Module');
@@ -184,6 +183,39 @@ const objRefData = getObjRefData(module);
       )
   }
 
+  <!-- Module classes and tags -->
+  {
+    (() => {
+      // Resolve top-level module classes and tags
+      const allRefs: any[] = [];
+      
+      if (module.module_classes_refs) {
+        for (const ref of module.module_classes_refs) {
+          const resolved = resolveObjectRef(ref, allModuleClasses);
+          if (resolved) allRefs.push(resolved);
+        }
+      }
+      
+      if (module.module_tags_refs) {
+        for (const ref of module.module_tags_refs) {
+          const resolved = resolveObjectRef(ref, allModuleTags);
+          if (resolved) allRefs.push(resolved);
+        }
+      }
+      
+      return allRefs.length > 0 && (
+        <div class="module-references-section" style="margin-top: 2rem;">
+          <h2>Module Classes & Tags</h2>
+          <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem;">
+            {allRefs.map((resolvedObj) => (
+              <ObjRef obj={resolvedObj} useHref={false} />
+            ))}
+          </div>
+        </div>
+      );
+    })()
+  }
+
   <!-- Abilities block - shown if abilities with scalars -->
   {
     abilityStats.length > 0 && module.abilities_scalars && (
@@ -207,21 +239,7 @@ const objRefData = getObjRefData(module);
                 />
               )}
 
-              {/* Module class and tag references */}
-              {(() => {
-                // Resolve top-level module classes and tags
-                const resolvedObjects = [
-                  ...(module.module_classes_refs?.map(ref => resolveObjectRef(ref, allModuleClasses)) || []),
-                  ...(module.module_tags_refs?.map(ref => resolveObjectRef(ref, allModuleTags)) || []),
-                ].filter(Boolean); // Filter out null values
-                
-                return resolvedObjects.length > 0 && (
-                  <ModuleAbilityReferences 
-                    resolvedObjects={resolvedObjects}
-                  />
-                );
-              })()}
-            </div>
+                          </div>
           );
         })}
 
