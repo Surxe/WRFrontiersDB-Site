@@ -7,6 +7,7 @@ export interface Faction extends ParseObject {
   parseObjectClass: 'Faction';
   parseObjectUrl: typeof FACTION_URL;
   image_path: string;
+  hex: string;
   badge: {
     image_path: string;
     hex: string;
