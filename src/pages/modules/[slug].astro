@@ -38,6 +38,8 @@ import { getObjRefData } from '../../utils/obj_ref';
 import TextElements from '../../components/obj_ref/TextElements.astro';
 import type { CharacterPreset } from '../../types/character_preset';
 import type { Pilot } from '../../types/pilot';
+import type { ModuleClass } from '../../types/module';
+import type { ModuleTag } from '../../types/module_tag';
 import ModuleAbilityReferences from '../../components/ModuleAbilityReferences.astro';
 
 export async function getStaticPaths() {
@@ -83,6 +85,8 @@ const allCharacterModules = getParseObjects<CharacterModule>(
   'Objects/CharacterModule.json'
 );
 const allAbilities = getParseObjects<Ability>('Objects/Ability.json');
+const allModuleClasses = getParseObjects<ModuleClass>('Objects/ModuleClass.json');
+const allModuleTags = getParseObjects<ModuleTag>('Objects/ModuleTag.json');
 
 const abilityStats = getModuleAbilityStats(
   module,
@@ -207,11 +211,21 @@ const objRefData = getObjRefData(module);
               )}
 
               {/* Module class and tag references */}
-              {constants && (
-                <ModuleAbilityReferences 
-                  constants={constants}
-                />
-              )}
+              {constants && (() => {
+                // Resolve all references in the calling code
+                const resolvedObjects = [
+                  constants.module_class_ref_1 ? resolveObjectRef(constants.module_class_ref_1 as string, allModuleClasses) : null,
+                  constants.module_class_ref_2 ? resolveObjectRef(constants.module_class_ref_2 as string, allModuleClasses) : null,
+                  constants.module_tag_ref_1 ? resolveObjectRef(constants.module_tag_ref_1 as string, allModuleTags) : null,
+                  constants.module_tag_ref_2 ? resolveObjectRef(constants.module_tag_ref_2 as string, allModuleTags) : null,
+                ].filter(Boolean); // Filter out null values
+                
+                return (
+                  <ModuleAbilityReferences 
+                    resolvedObjects={resolvedObjects}
+                  />
+                );
+              })()}
             </div>
           );
         })}

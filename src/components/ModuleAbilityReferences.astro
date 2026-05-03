@@ -1,43 +1,22 @@
 ---
-interface ModuleReference {
-  key: string;
-}
+import ObjRef from './obj_ref/ObjRef.astro';
 
 interface Props {
-  constants: Record<string, any>;
+  resolvedObjects: any[];
 }
 
-const { constants } = Astro.props;
-
-// Define all possible references to check
-const moduleReferences: ModuleReference[] = [
-  {
-    key: 'module_class_ref_1',
-  },
-  {
-    key: 'module_class_ref_2',
-  },
-  {
-    key: 'module_tag_ref_1',
-  },
-  {
-    key: 'module_tag_ref_2',
-  },
-];
+const { resolvedObjects } = Astro.props;
 ---
 
 <div
   class="ability-references"
   style="margin-top: 1rem; font-size: 0.9rem; color: #666;"
 >
-  {moduleReferences.map((ref) => {
-    const refValue = constants[ref.key];
-    if (!refValue) return null;
-    
-    return (
-      <span style="margin-right: 0.5rem;">
-        {refValue}
-      </span>
-    );
-  })}
+  {resolvedObjects.map((resolvedObj) => (
+    <span style="margin-right: 0.5rem;">
+      {resolvedObj ? (
+        <ObjRef obj={resolvedObj} useHref={false} />
+      ) : null}
+    </span>
+  ))}
 </div>
