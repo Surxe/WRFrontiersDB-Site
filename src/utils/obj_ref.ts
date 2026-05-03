@@ -236,7 +236,7 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
       return {
         text: moduleTag.name,
         textColor: moduleTag.text_hex,
-        textBackgroundColor: moduleTag.background_hex.substring(2),
+        textBackgroundColor: moduleTag.background_hex.substring(2) + moduleTag.background_hex.substring(0, 2),
       };
     }
     default:
