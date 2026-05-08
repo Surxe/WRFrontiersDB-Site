@@ -265,9 +265,9 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
       return {
         text: characterClass.name,
         iconPath: characterClass.badge.image_path,
-        iconColor: characterClass.badge.color.RGBA, // Use RGBA for icon background color
+        iconColor: characterClass.badge.color.Hex, // Use RGBA for icon background color
         textColor: characterClass.badge.color.Hex, // Use Hex for text color (different from icon)
-        textBackgroundColor: characterClass.badge.color.Hex, // Use Hex for text background
+        textBackgroundColor: characterClass.badge.color.RGBA, // Use Hex for text background
       };
     }
     case 'Faction': {
