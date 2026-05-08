@@ -291,15 +291,20 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
     }
     case 'Faction': {
       const faction = obj as Faction;
+      // Use RGBA with enhanced alpha for better visibility
+      const rgba = faction.color.RGBA;
+      const enhancedRgba = {
+        R: rgba.R,
+        G: rgba.G,
+        B: rgba.B,
+        A: 0.4 // Set alpha to 0.4 for Faction backgrounds
+      };
       return {
         text: faction.name,
         iconPath: faction.badge.image_path,
         iconColor: faction.color.Hex,
         textColor: faction.color.Hex,
-        textBackgroundColor:
-          '33' + // Add alpha transparency
-          faction.color.Hex.substring(2) + // Move last 4 chars
-          faction.color.Hex.substring(0, 2), // Move first 2 chars to end
+        textBackgroundColor: enhancedRgba,
       };
     }
     default:
