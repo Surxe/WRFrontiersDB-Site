@@ -191,16 +191,16 @@ const objRefData = getObjRefData(module);
       // Resolve top-level module classes, tags, and faction
       const allRefs: any[] = [];
       
-      if (module.faction_ref) {
-        const resolved = resolveObjectRef(module.faction_ref, allFactions);
-        if (resolved) allRefs.push(resolved);
-      }
-      
       if (module.module_classes_refs) {
         for (const ref of module.module_classes_refs) {
           const resolved = resolveObjectRef(ref, allModuleClasses);
           if (resolved) allRefs.push(resolved);
         }
+      }
+
+      if (module.faction_ref) {
+        const resolved = resolveObjectRef(module.faction_ref, allFactions);
+        if (resolved) allRefs.push(resolved);
       }
       
       if (module.module_tags_refs) {
