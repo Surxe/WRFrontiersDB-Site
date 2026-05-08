@@ -262,17 +262,11 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
         'Objects/CharacterClass.json'
       );
       // Use RGBA for icon color and Hex for text colors
-      const rgba = {
-        R: characterClass.badge.color.RGBA.R,
-        G: characterClass.badge.color.RGBA.G,
-        B: characterClass.badge.color.RGBA.B,
-        A: characterClass.badge.color.RGBA.A,
-      };
       return {
         text: characterClass.name,
         iconPath: characterClass.badge.image_path,
-        iconColor: rgba, // Use RGBA for icon background color
-        textColor: characterClass.badge.color.Hex, // Use Hex for text color
+        iconColor: characterClass.badge.color.RGBA, // Use RGBA for icon background color
+        textColor: characterClass.badge.color.Hex, // Use Hex for text color (different from icon)
         textBackgroundColor: characterClass.badge.color.Hex, // Use Hex for text background
       };
     }

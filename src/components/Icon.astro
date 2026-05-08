@@ -27,7 +27,7 @@ function rgbaToString(rgba: RGBA): string {
 function colorToString(color: string | RGBA | undefined): string {
   if (!color) return '';
   if (typeof color === 'string') {
-    return color;
+    return color.startsWith('#') ? color : `#${color}`;
   }
   return rgbaToString(color);
 }
