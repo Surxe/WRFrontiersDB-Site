@@ -173,7 +173,7 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
       return {
         text: rarity.name,
         textBackgroundColor: rarity.color.RGBA,
-        textColor: rarity.color.Hex
+        textColor: rarity.color.Hex,
       };
     }
     case 'CharacterPreset': {
@@ -246,7 +246,7 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
         iconPath: characterClass.badge.image_path,
         iconColor: characterClass.badge.color.Hex,
         textColor: characterClass.badge.color.Hex,
-        textBackgroundColor: characterClass.badge.color.RGBA
+        textBackgroundColor: characterClass.badge.color.RGBA,
       };
     }
     case 'ModuleTag': {
@@ -257,12 +257,12 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
         R: rgba.R,
         G: rgba.G,
         B: rgba.B,
-        A: Math.max(rgba.A, 0.4) // Ensure minimum alpha of 0.4 for better visibility
+        A: Math.max(rgba.A, 0.4), // Ensure minimum alpha of 0.4 for better visibility
       };
       return {
         text: moduleTag.name,
         textColor: moduleTag.text_color.Hex,
-        textBackgroundColor: enhancedRgba
+        textBackgroundColor: enhancedRgba,
       };
     }
     case 'ModuleClass': {
@@ -279,7 +279,7 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
         R: rgba.R,
         G: rgba.G,
         B: rgba.B,
-        A: 0.3 // Set alpha to 0.3 for ModuleClass backgrounds
+        A: 0.3, // Set alpha to 0.3 for ModuleClass backgrounds
       };
       return {
         text: characterClass.name,
@@ -297,7 +297,7 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
         R: rgba.R,
         G: rgba.G,
         B: rgba.B,
-        A: 0.4 // Set alpha to 0.4 for Faction backgrounds
+        A: 0.4, // Set alpha to 0.4 for Faction backgrounds
       };
       return {
         text: faction.name,
