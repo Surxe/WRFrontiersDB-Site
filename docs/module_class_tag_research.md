@@ -16,8 +16,8 @@ All modules share the same top-level reference structure:
 
 ```typescript
 interface Module {
-  module_classes_refs?: string[];      // Array of module class references
-  module_tags_refs?: string[];          // Array of module tag references
+  module_classes_refs?: string[]; // Array of module class references
+  module_tags_refs?: string[]; // Array of module tag references
   module_scalars: {
     levels: {
       constants: Record<string, unknown>; // Contains module_class_ref_X and module_tag_ref_X
@@ -37,12 +37,8 @@ interface Module {
 
 ```json
 {
-  "module_classes_refs": [
-    "OBJID_ModuleClass::DA_Module_Class_Tactician.0"
-  ],
-  "module_tags_refs": [
-    "OBJID_ModuleTag::DA_Tag_AbilityType_Defensive.0"
-  ],
+  "module_classes_refs": ["OBJID_ModuleClass::DA_Module_Class_Tactician.0"],
+  "module_tags_refs": ["OBJID_ModuleTag::DA_Tag_AbilityType_Defensive.0"],
   "module_scalars": {
     "levels": {
       "constants": {
@@ -57,6 +53,7 @@ interface Module {
 ```
 
 **Characteristics:**
+
 - Have `module_classes_refs` and `module_tags_refs` at the module level
 - Have additional references in `module_scalars.levels.constants`
 - References in scalars may differ from top-level references
@@ -68,9 +65,7 @@ interface Module {
 
 ```json
 {
-  "module_classes_refs": [
-    "OBJID_ModuleClass::DA_Module_Class_Tactician.0"
-  ],
+  "module_classes_refs": ["OBJID_ModuleClass::DA_Module_Class_Tactician.0"],
   "module_tags_refs": [
     "OBJID_ModuleTag::DA_Tag_WeaponDamageElectromagnetic.0",
     "OBJID_ModuleTag::DA_Tag_WeaponTypeSniper.0"
@@ -89,6 +84,7 @@ interface Module {
 ```
 
 **Characteristics:**
+
 - Have `module_classes_refs` and `module_tags_refs` at the module level
 - Have additional references in `module_scalars.levels.constants`
 - Weapon-specific tags (e.g., `DA_Tag_WeaponDamageElectromagnetic`, `DA_Tag_WeaponTypeSniper`)
@@ -100,9 +96,7 @@ interface Module {
 
 ```json
 {
-  "module_classes_refs": [
-    "OBJID_ModuleClass::DA_Module_Class_Assault.0"
-  ],
+  "module_classes_refs": ["OBJID_ModuleClass::DA_Module_Class_Assault.0"],
   "abilities_scalars": [
     {
       "levels": {
@@ -124,6 +118,7 @@ interface Module {
 ```
 
 **Characteristics:**
+
 - References are stored within `abilities_scalars` array
 - Each ability can have its own set of class and tag references
 - References are in `abilities_scalars[index].levels.constants`
@@ -132,22 +127,24 @@ interface Module {
 
 ## Data Structure Comparison
 
-| Aspect | Cycle/Supply Gear | Weapon Modules | Module Ability References |
-|--------|-------------------|----------------|---------------------------|
-| **Top-level refs** | `module_classes_refs[]`, `module_tags_refs[]` | `module_classes_refs[]`, `module_tags_refs[]` | `module_classes_refs[]`, `module_tags_refs[]` |
-| **Scalar refs** | `module_scalars.levels.constants` | `module_scalars.levels.constants` | `abilities_scalars[].levels.constants` |
-| **Per-ability refs** | N/A (module is the ability) | N/A (module is the weapon) | Yes, each ability has own refs |
-| **Tag types** | Ability-specific tags | Weapon-specific tags | Ability-specific tags |
-| **Class resolution** | ModuleClass → CharacterClass | ModuleClass → CharacterClass | ModuleClass → CharacterClass |
+| Aspect               | Cycle/Supply Gear                             | Weapon Modules                                | Module Ability References                     |
+| -------------------- | --------------------------------------------- | --------------------------------------------- | --------------------------------------------- |
+| **Top-level refs**   | `module_classes_refs[]`, `module_tags_refs[]` | `module_classes_refs[]`, `module_tags_refs[]` | `module_classes_refs[]`, `module_tags_refs[]` |
+| **Scalar refs**      | `module_scalars.levels.constants`             | `module_scalars.levels.constants`             | `abilities_scalars[].levels.constants`        |
+| **Per-ability refs** | N/A (module is the ability)                   | N/A (module is the weapon)                    | Yes, each ability has own refs                |
+| **Tag types**        | Ability-specific tags                         | Weapon-specific tags                          | Ability-specific tags                         |
+| **Class resolution** | ModuleClass → CharacterClass                  | ModuleClass → CharacterClass                  | ModuleClass → CharacterClass                  |
 
 ## Current Display Implementation
 
 ### Module Pages
+
 - **Module name/header**: Uses `getObjRefData(module)` for display
 - **Module classes/tags**: Currently NOT displayed in the UI
 - **Ability references**: Displayed via `ModuleAbilityReferences` component (shows raw refs)
 
 ### ObjRef Resolution
+
 ```typescript
 // ModuleClass → CharacterClass
 case 'ModuleClass': {
@@ -177,21 +174,25 @@ case 'ModuleTag': {
 ## Key Differences and Implications
 
 ### 1. **Scope of References**
+
 - **Module-level**: Apply to the entire module (shown in module lists, breadcrumbs)
 - **Scalar-level**: Apply to the module's stats/behavior (currently not displayed)
 - **Ability-level**: Apply to individual abilities (newly implemented)
 
 ### 2. **Data Redundancy**
+
 - Many modules have both top-level and scalar-level references
 - Scalar-level references may override or supplement top-level ones
 - Ability-level references provide granular control per ability
 
 ### 3. **Display Gaps**
+
 - Module classes and tags are NOT currently displayed on module detail pages
 - Only ability references are displayed (via new ModuleAbilityReferences component)
 - Top-level module classes/tags are resolved in `getObjRefData` but only used for display names
 
 ### 4. **Tag Classification**
+
 - **Ability modules**: Use `DA_Tag_AbilityType_*` tags
 - **Weapon modules**: Use `DA_Tag_WeaponDamage_*` and `DA_Tag_WeaponType_*` tags
 - **Ability references**: Use ability-type tags specific to each ability

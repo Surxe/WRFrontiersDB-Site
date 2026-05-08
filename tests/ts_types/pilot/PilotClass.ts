@@ -47,10 +47,11 @@ describe('PilotClass interface', () => {
       });
     });
 
-    it('should have "badge.hex" field in every object', () => {
+    it('should have "badge.color.Hex" field in every object', () => {
       pilotClassArray.forEach((pilotClass) => {
-        expect(pilotClass.badge).toHaveProperty('hex');
-        expect(typeof pilotClass.badge.hex).toBe('string');
+        expect(pilotClass.badge).toHaveProperty('color');
+        expect(pilotClass.badge.color).toHaveProperty('Hex');
+        expect(typeof pilotClass.badge.color.Hex).toBe('string');
       });
     });
   });
@@ -72,7 +73,7 @@ describe('PilotClass interface', () => {
         // parseObjectClass is added at build time, not in raw data
       ]);
 
-      const allowedBadgeFields = new Set(['image_path', 'hex']);
+      const allowedBadgeFields = new Set(['image_path', 'color']);
 
       pilotClassArray.forEach((pilotClass) => {
         const actualFields = Object.keys(pilotClass);
@@ -96,15 +97,16 @@ describe('PilotClass interface', () => {
   });
 
   describe('Nested structures', () => {
-    it('should have valid badge structure with image_path and hex', () => {
+    it('should have valid badge structure with image_path and color.Hex', () => {
       pilotClassArray.forEach((pilotClass) => {
         expect(pilotClass.badge).toBeDefined();
         expect(pilotClass.badge.image_path).toBeDefined();
-        expect(pilotClass.badge.hex).toBeDefined();
+        expect(pilotClass.badge.color).toBeDefined();
+        expect(pilotClass.badge.color.Hex).toBeDefined();
         expect(typeof pilotClass.badge.image_path).toBe('string');
-        expect(typeof pilotClass.badge.hex).toBe('string');
+        expect(typeof pilotClass.badge.color.Hex).toBe('string');
         // Hex should be a valid hex color (6 characters)
-        expect(pilotClass.badge.hex).toMatch(/^[0-9A-Fa-f]{6}$/);
+        expect(pilotClass.badge.color.Hex).toMatch(/^[0-9A-Fa-f]{6}$/);
       });
     });
 
@@ -133,7 +135,7 @@ describe('PilotClass interface', () => {
         expect(pilotClass.id.length).toBeGreaterThan(0);
         expect(pilotClass.name.en.length).toBeGreaterThan(0);
         expect(pilotClass.badge.image_path.length).toBeGreaterThan(0);
-        expect(pilotClass.badge.hex.length).toBeGreaterThan(0);
+        expect(pilotClass.badge.color.Hex.length).toBeGreaterThan(0);
       });
     });
   });

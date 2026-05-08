@@ -1,9 +1,11 @@
 ---
+import type { RGBA } from '../types/color';
+
 export interface Props {
   iconPath?: string;
   altText: string;
   size?: number;
-  color?: string;
+  color?: string | RGBA;
 }
 
 const { iconPath, altText, size = 64, color } = Astro.props;
@@ -11,6 +13,23 @@ const { iconPath, altText, size = 64, color } = Astro.props;
 let iconSrc = null;
 if (iconPath) {
   iconSrc = `/WRFrontiersDB-Data/textures${iconPath}.png`;
+}
+
+// Helper function to convert RGBA to CSS color string
+function rgbaToString(rgba: RGBA): string {
+  const r = Math.round(rgba.R * 255);
+  const g = Math.round(rgba.G * 255);
+  const b = Math.round(rgba.B * 255);
+  return `rgba(${r}, ${g}, ${b}, ${rgba.A})`;
+}
+
+// Helper function to convert color to CSS string
+function colorToString(color: string | RGBA | undefined): string {
+  if (!color) return '';
+  if (typeof color === 'string') {
+    return color.startsWith('#') ? color : `#${color}`;
+  }
+  return rgbaToString(color);
 }
 ---
 
@@ -22,7 +41,7 @@ if (iconPath) {
       vertical-align: middle;
       width: ${size}px; 
       height: ${size}px; 
-      background-color: #${color}; 
+      background-color: ${colorToString(color)}; 
       -webkit-mask-image: url(${iconSrc}); 
       mask-image: url(${iconSrc}); 
       -webkit-mask-size: contain; 

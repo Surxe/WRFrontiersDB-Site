@@ -33,10 +33,11 @@ describe('Rarity interface', () => {
       });
     });
 
-    it('should have "hex" field in every object', () => {
+    it('should have "color" field with Hex in every object', () => {
       rarityArray.forEach((rarity) => {
-        expect(rarity).toHaveProperty('hex');
-        expect(typeof rarity.hex).toBe('string');
+        expect(rarity).toHaveProperty('color');
+        expect(rarity.color).toHaveProperty('Hex');
+        expect(typeof rarity.color.Hex).toBe('string');
       });
     });
   });
@@ -54,7 +55,7 @@ describe('Rarity interface', () => {
       const allowedFields = new Set([
         'id',
         'name',
-        'hex',
+        'color',
         // parseObjectClass and parseObjectUrl are added at build time, not in raw data
       ]);
 
@@ -94,14 +95,14 @@ describe('Rarity interface', () => {
       rarityArray.forEach((rarity) => {
         expect(rarity.id.length).toBeGreaterThan(0);
         expect(rarity.name.en.length).toBeGreaterThan(0);
-        expect(rarity.hex.length).toBeGreaterThan(0);
+        expect(rarity.color.Hex.length).toBeGreaterThan(0);
       });
     });
 
     it('should have valid hex color format', () => {
       rarityArray.forEach((rarity) => {
         // Hex should be a valid hex color (6 characters)
-        expect(rarity.hex).toMatch(/^[0-9A-Fa-f]{6}$/);
+        expect(rarity.color.Hex).toMatch(/^[0-9A-Fa-f]{6}$/);
       });
     });
 

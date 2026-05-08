@@ -19,16 +19,19 @@ import type { Currency } from '../types/currency';
 import type { CharacterClass } from '../types/character_class';
 import type { ModuleTag } from '../types/module_tag';
 import type { Faction } from '../types/faction';
+import type { RGBA } from '../types/color';
 
 // All the data necessary to reference the page in a generic way
 export interface ObjRefData {
   text: LocalizationKey | LocalizationKey[];
-  textColor?: string;
-  textBackgroundColor?: string;
+  textColor?: string | RGBA;
+  textBackgroundColor?: string | RGBA;
   iconPath?: string;
-  iconColor?: string;
+  iconColor?: string | RGBA;
   hoverText?: LocalizationKey;
 }
+
+// Alpha channels don't seem correct, so we use our own.
 
 // For each class, define a method to retrieve the ObjRefData
 export function getObjRefData(_obj: Module): ObjRefData;
@@ -120,7 +123,6 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
       return {
         text: moduleCategory.name,
         iconPath: moduleCategory.icon_path,
-        hoverText: moduleCategory.description,
       };
     }
     case 'PilotClass': {
@@ -128,7 +130,7 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
       return {
         text: pilotClass.name,
         iconPath: pilotClass.badge.image_path,
-        iconColor: pilotClass.badge.hex,
+        iconColor: pilotClass.badge.color.Hex,
       };
     }
     case 'Pilot': {
@@ -170,7 +172,8 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
       const rarity = obj as Rarity;
       return {
         text: rarity.name,
-        textBackgroundColor: rarity.hex,
+        textBackgroundColor: rarity.color.RGBA,
+        textColor: rarity.color.Hex,
       };
     }
     case 'CharacterPreset': {
@@ -241,46 +244,67 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
       return {
         text: characterClass.name,
         iconPath: characterClass.badge.image_path,
-        iconColor: characterClass.badge.hex,
+        iconColor: characterClass.badge.color.Hex,
+        textColor: characterClass.badge.color.Hex,
+        textBackgroundColor: characterClass.badge.color.RGBA,
       };
     }
     case 'ModuleTag': {
-      const moduleTag = obj as unknown as ModuleTag;
+      const moduleTag = obj as ModuleTag;
+      // Create a new RGBA object with higher alpha for better visibility on dark background
+      const rgba = moduleTag.background_color.RGBA;
+      const enhancedRgba = {
+        R: rgba.R,
+        G: rgba.G,
+        B: rgba.B,
+        A: Math.max(rgba.A, 0.4), // Ensure minimum alpha of 0.4 for better visibility
+      };
       return {
         text: moduleTag.name,
-        textColor: moduleTag.text_hex,
-        textBackgroundColor:
-          moduleTag.background_hex.substring(2) +
-          moduleTag.background_hex.substring(0, 2),
+        textColor: moduleTag.text_color.Hex,
+        textBackgroundColor: enhancedRgba,
       };
     }
     case 'ModuleClass': {
       const moduleClass = obj as ModuleClass;
+      const characterClassId = refToId(moduleClass.character_class_ref);
       const characterClass = getParseObject<CharacterClass>(
-        refToId(moduleClass.character_class_ref),
+        characterClassId,
         'Objects/CharacterClass.json'
       );
+      // Use RGBA for icon color and Hex for text colors
+      // Set specific alpha for better visibility on dark background
+      const rgba = characterClass.badge.color.RGBA;
+      const enhancedRgba = {
+        R: rgba.R,
+        G: rgba.G,
+        B: rgba.B,
+        A: 0.3, // Set alpha to 0.3 for ModuleClass backgrounds
+      };
       return {
         text: characterClass.name,
         iconPath: characterClass.badge.image_path,
-        iconColor: characterClass.badge.hex,
-        textColor: characterClass.badge.hex,
-        textBackgroundColor:
-          characterClass.badge.hex.substring(2) +
-          characterClass.badge.hex.substring(0, 2),
+        iconColor: characterClass.badge.color.Hex, // Use RGBA for icon background color
+        textColor: characterClass.badge.color.Hex, // Use Hex for text color (different from icon)
+        textBackgroundColor: enhancedRgba, // Use enhanced RGBA for text background
       };
     }
     case 'Faction': {
       const faction = obj as Faction;
+      // Use RGBA with enhanced alpha for better visibility
+      const rgba = faction.color.RGBA;
+      const enhancedRgba = {
+        R: rgba.R,
+        G: rgba.G,
+        B: rgba.B,
+        A: 0.4, // Set alpha to 0.4 for Faction backgrounds
+      };
       return {
         text: faction.name,
         iconPath: faction.badge.image_path,
-        iconColor: faction.hex,
-        textColor: faction.hex,
-        textBackgroundColor:
-          '33' + // Add alpha transparency
-          faction.hex.substring(2) + // Move last 4 chars
-          faction.hex.substring(0, 2), // Move first 2 chars to end
+        iconColor: faction.color.Hex,
+        textColor: faction.color.Hex,
+        textBackgroundColor: enhancedRgba,
       };
     }
     default:

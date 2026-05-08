@@ -1,0 +1,249 @@
+/* Global Dark Theme Styles */
+
+/* Reset and base styles */
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  background-color: #1a1a1a;
+  color: #ffffff;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  min-height: 100vh;
+}
+
+/* Typography - only apply to elements without explicit color styling */
+h1, h2, h3, h4, h5, h6 {
+  color: #ffffff;
+  margin: 1rem 0;
+  font-weight: 600;
+}
+
+p {
+  color: #ffffff;
+}
+
+/* Links */
+a {
+  color: #4fc3f7;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: #29b6f6;
+  text-decoration: underline;
+}
+
+a:visited {
+  color: #7986cb;
+}
+
+/* Form elements */
+select, input, textarea, button {
+  background-color: #2a2a2a;
+  color: #ffffff;
+  border: 1px solid #444;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-family: inherit;
+}
+
+select option {
+  background-color: #2a2a2a;
+  color: #ffffff;
+}
+
+select:focus, input:focus, textarea:focus, button:focus {
+  outline: 2px solid #4fc3f7;
+  outline-offset: 2px;
+}
+
+/* Tables */
+table {
+  background-color: #1a1a1a;
+  color: #ffffff;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th, td {
+  background-color: #2a2a2a;
+  color: #ffffff;
+  border: 1px solid #444;
+  padding: 8px 12px;
+  text-align: left;
+}
+
+th {
+  background-color: #333;
+  font-weight: 600;
+}
+
+/* Code blocks */
+code, pre {
+  background-color: #2a2a2a;
+  color: #ffffff;
+  border: 1px solid #444;
+  border-radius: 4px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+code {
+  padding: 2px 4px;
+  font-size: 0.9em;
+}
+
+pre {
+  padding: 1rem;
+  overflow-x: auto;
+}
+
+/* Blockquotes */
+blockquote {
+  background-color: #2a2a2a;
+  border-left: 4px solid #4fc3f7;
+  margin: 1rem 0;
+  padding: 1rem;
+  color: #ffffff;
+}
+
+/* Horizontal rules */
+hr {
+  border: none;
+  border-top: 1px solid #444;
+  margin: 2rem 0;
+}
+
+/* Lists */
+ul, ol {
+  padding-left: 2rem;
+  margin: 1rem 0;
+}
+
+li {
+  margin: 0.5rem 0;
+}
+
+/* Images */
+img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+
+/* Cards and containers */
+.card, .box, .container, .content, .wrapper {
+  background-color: #2a2a2a;
+  border: 1px solid #444;
+  border-radius: 8px;
+  padding: 1rem;
+  color: #ffffff;
+}
+
+/* Sections */
+section, article, main {
+  background-color: #1a1a1a;
+  color: #ffffff;
+}
+
+/* Utility classes */
+.text-muted {
+  color: #999;
+}
+
+.text-primary {
+  color: #4fc3f7;
+}
+
+.text-secondary {
+  color: #666;
+}
+
+.bg-dark {
+  background-color: #1a1a1a;
+}
+
+.bg-darker {
+  background-color: #0f0f0f;
+}
+
+.bg-light {
+  background-color: #2a2a2a;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Selection color */
+::selection {
+  background-color: #4fc3f7;
+  color: #1a1a1a;
+}
+
+::-moz-selection {
+  background-color: #4fc3f7;
+  color: #1a1a1a;
+}
+
+/* Only override explicit light theme styles, but don't interfere with component colors */
+div[style*="background-color: white"],
+div[style*="background-color: #fff"],
+div[style*="background-color: #ffffff"],
+div[style*="background: white"],
+div[style*="background: #fff"],
+div[style*="background: #ffffff"] {
+  background-color: #1a1a1a;
+}
+
+/* Override hardcoded light theme styles in components */
+.nav-box {
+  background-color: #2a2a2a !important;
+  border: 1px solid #444 !important;
+}
+
+.nav-box-title {
+  color: #ffffff !important;
+}
+
+.bots-table {
+  background-color: #2a2a2a !important;
+}
+
+/* Override switcher buttons light theme */
+.switcher-buttons {
+  background: #2a2a2a !important;
+  border: 1px solid #444 !important;
+}
+
+.switcher-btn {
+  color: #ffffff !important;
+}
+
+.switcher-btn:hover {
+  background: #333 !important;
+  color: #ffffff !important;
+}
+
+/* Override highlighted talent light theme */
+.highlighted-talent {
+  background-color: rgba(255, 193, 7, 0.2) !important;
+  border: 2px solid #ffc107 !important;
+}
