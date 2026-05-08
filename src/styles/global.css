@@ -1,0 +1,224 @@
+/* Global Dark Theme Styles */
+
+/* Reset and base styles */
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif !important;
+  min-height: 100vh !important;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  color: #ffffff !important;
+  margin: 1rem 0 !important;
+  font-weight: 600 !important;
+}
+
+p, div, span, td, th, li, ul, ol {
+  color: #ffffff !important;
+}
+
+/* Links */
+a {
+  color: #4fc3f7 !important;
+  text-decoration: none !important;
+  transition: color 0.2s ease !important;
+}
+
+a:hover {
+  color: #29b6f6 !important;
+  text-decoration: underline !important;
+}
+
+a:visited {
+  color: #7986cb !important;
+}
+
+/* Form elements */
+select, input, textarea, button {
+  background-color: #2a2a2a !important;
+  color: #ffffff !important;
+  border: 1px solid #444 !important;
+  padding: 8px 12px !important;
+  border-radius: 4px !important;
+  font-family: inherit !important;
+}
+
+select option {
+  background-color: #2a2a2a !important;
+  color: #ffffff !important;
+}
+
+select:focus, input:focus, textarea:focus, button:focus {
+  outline: 2px solid #4fc3f7 !important;
+  outline-offset: 2px !important;
+}
+
+/* Tables */
+table {
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
+  border-collapse: collapse !important;
+  width: 100% !important;
+}
+
+th, td {
+  background-color: #2a2a2a !important;
+  color: #ffffff !important;
+  border: 1px solid #444 !important;
+  padding: 8px 12px !important;
+  text-align: left !important;
+}
+
+th {
+  background-color: #333 !important;
+  font-weight: 600 !important;
+}
+
+/* Code blocks */
+code, pre {
+  background-color: #2a2a2a !important;
+  color: #ffffff !important;
+  border: 1px solid #444 !important;
+  border-radius: 4px !important;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace !important;
+}
+
+code {
+  padding: 2px 4px !important;
+  font-size: 0.9em !important;
+}
+
+pre {
+  padding: 1rem !important;
+  overflow-x: auto !important;
+}
+
+/* Blockquotes */
+blockquote {
+  background-color: #2a2a2a !important;
+  border-left: 4px solid #4fc3f7 !important;
+  margin: 1rem 0 !important;
+  padding: 1rem !important;
+  color: #ffffff !important;
+}
+
+/* Horizontal rules */
+hr {
+  border: none !important;
+  border-top: 1px solid #444 !important;
+  margin: 2rem 0 !important;
+}
+
+/* Lists */
+ul, ol {
+  padding-left: 2rem !important;
+  margin: 1rem 0 !important;
+}
+
+li {
+  margin: 0.5rem 0 !important;
+}
+
+/* Images */
+img {
+  max-width: 100% !important;
+  height: auto !important;
+  border-radius: 4px !important;
+}
+
+/* Cards and containers */
+.card, .box, .container, .content, .wrapper {
+  background-color: #2a2a2a !important;
+  border: 1px solid #444 !important;
+  border-radius: 8px !important;
+  padding: 1rem !important;
+  color: #ffffff !important;
+}
+
+/* Sections */
+section, article, main {
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
+}
+
+/* Utility classes */
+.text-muted {
+  color: #999 !important;
+}
+
+.text-primary {
+  color: #4fc3f7 !important;
+}
+
+.text-secondary {
+  color: #666 !important;
+}
+
+.bg-dark {
+  background-color: #1a1a1a !important;
+}
+
+.bg-darker {
+  background-color: #0f0f0f !important;
+}
+
+.bg-light {
+  background-color: #2a2a2a !important;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px !important;
+}
+
+::-webkit-scrollbar-track {
+  background: #1a1a1a !important;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #444 !important;
+  border-radius: 4px !important;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555 !important;
+}
+
+/* Selection color */
+::selection {
+  background-color: #4fc3f7 !important;
+  color: #1a1a1a !important;
+}
+
+::-moz-selection {
+  background-color: #4fc3f7 !important;
+  color: #1a1a1a !important;
+}
+
+/* Remove any light theme overrides */
+[style*="background"] {
+  background-color: inherit !important;
+}
+
+/* Ensure all divs have dark background by default */
+div {
+  background-color: transparent !important;
+}
+
+/* Override any inline light theme styles */
+div[style*="background-color: white"],
+div[style*="background-color: #fff"],
+div[style*="background-color: #ffffff"],
+div[style*="background: white"],
+div[style*="background: #fff"],
+div[style*="background: #ffffff"] {
+  background-color: #1a1a1a !important;
+}
