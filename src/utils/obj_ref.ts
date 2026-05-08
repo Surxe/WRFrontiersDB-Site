@@ -19,14 +19,15 @@ import type { Currency } from '../types/currency';
 import type { CharacterClass } from '../types/character_class';
 import type { ModuleTag } from '../types/module_tag';
 import type { Faction } from '../types/faction';
+import type { RGBA } from '../types/color';
 
 // All the data necessary to reference the page in a generic way
 export interface ObjRefData {
   text: LocalizationKey | LocalizationKey[];
-  textColor?: string;
-  textBackgroundColor?: string;
+  textColor?: string | RGBA;
+  textBackgroundColor?: string | RGBA;
   iconPath?: string;
-  iconColor?: string;
+  iconColor?: string | RGBA;
   hoverText?: LocalizationKey;
 }
 
@@ -255,18 +256,24 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
     }
     case 'ModuleClass': {
       const moduleClass = obj as ModuleClass;
+      const characterClassId = refToId(moduleClass.character_class_ref);
       const characterClass = getParseObject<CharacterClass>(
-        refToId(moduleClass.character_class_ref),
+        characterClassId,
         'Objects/CharacterClass.json'
       );
+      // Use RGBA for icon color and Hex for text colors
+      const rgba = {
+        R: characterClass.badge.color.RGBA.R,
+        G: characterClass.badge.color.RGBA.G,
+        B: characterClass.badge.color.RGBA.B,
+        A: characterClass.badge.color.RGBA.A,
+      };
       return {
         text: characterClass.name,
         iconPath: characterClass.badge.image_path,
-        iconColor: characterClass.badge.color.Hex,
-        textColor: characterClass.badge.color.Hex,
-        textBackgroundColor:
-          characterClass.badge.color.Hex.substring(2) +
-          characterClass.badge.color.Hex.substring(0, 2),
+        iconColor: rgba, // Use RGBA for icon background color
+        textColor: characterClass.badge.color.Hex, // Use Hex for text color
+        textBackgroundColor: characterClass.badge.color.Hex, // Use Hex for text background
       };
     }
     case 'Faction': {

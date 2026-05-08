@@ -2,6 +2,7 @@
 import TextElements from './TextElements.astro';
 import type { ObjRefData } from '../../utils/obj_ref';
 import type { LocalizationKey } from '../../types/localization';
+import type { RGBA } from '../../types/color';
 
 interface Props {
   objRefData: ObjRefData;
@@ -21,14 +22,31 @@ const getTextElements = (
   return isMultipleTexts(text) ? text : [text];
 };
 
+// Helper function to convert RGBA to CSS color string
+function rgbaToString(rgba: RGBA): string {
+  const r = Math.round(rgba.R * 255);
+  const g = Math.round(rgba.G * 255);
+  const b = Math.round(rgba.B * 255);
+  return `rgba(${r}, ${g}, ${b}, ${rgba.A})`;
+}
+
+// Helper function to convert color to CSS string
+function colorToString(color: string | RGBA | undefined): string {
+  if (!color) return '';
+  if (typeof color === 'string') {
+    return color.startsWith('#') ? color : `#${color}`;
+  }
+  return rgbaToString(color);
+}
+
 const hasBackgroundColor = !!objRefData.textBackgroundColor;
 const hasTextColor = !!objRefData.textColor;
 
 const style = [
   hasBackgroundColor
-    ? `background-color: #${objRefData.textBackgroundColor};`
+    ? `background-color: ${colorToString(objRefData.textBackgroundColor)};`
     : '',
-  hasTextColor ? `color: #${objRefData.textColor};` : '',
+  hasTextColor ? `color: ${colorToString(objRefData.textColor)};` : '',
   hasBackgroundColor || hasTextColor
     ? `display: inline-block; padding: 2px 8px; border-radius: 4px;`
     : '',
