@@ -170,7 +170,8 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
       const rarity = obj as Rarity;
       return {
         text: rarity.name,
-        textBackgroundColor: rarity.color.Hex,
+        textBackgroundColor: rarity.color.RGBA,
+        textColor: rarity.color.Hex
       };
     }
     case 'CharacterPreset': {
@@ -242,6 +243,8 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
         text: characterClass.name,
         iconPath: characterClass.badge.image_path,
         iconColor: characterClass.badge.color.Hex,
+        textColor: characterClass.badge.color.Hex,
+        textBackgroundColor: characterClass.badge.color.RGBA
       };
     }
     case 'ModuleTag': {
@@ -250,8 +253,7 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
         text: moduleTag.name,
         textColor: moduleTag.text_color.Hex,
         textBackgroundColor:
-          moduleTag.background_color.Hex.substring(2) +
-          moduleTag.background_color.Hex.substring(0, 2),
+          moduleTag.background_color.RGBA
       };
     }
     case 'ModuleClass': {
