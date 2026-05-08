@@ -212,3 +212,38 @@ div[style*="background: #fff"],
 div[style*="background: #ffffff"] {
   background-color: #1a1a1a;
 }
+
+/* Override hardcoded light theme styles in components */
+.nav-box {
+  background-color: #2a2a2a !important;
+  border: 1px solid #444 !important;
+}
+
+.nav-box-title {
+  color: #ffffff !important;
+}
+
+.bots-table {
+  background-color: #2a2a2a !important;
+}
+
+/* Override switcher buttons light theme */
+.switcher-buttons {
+  background: #2a2a2a !important;
+  border: 1px solid #444 !important;
+}
+
+.switcher-btn {
+  color: #ffffff !important;
+}
+
+.switcher-btn:hover {
+  background: #333 !important;
+  color: #ffffff !important;
+}
+
+/* Override highlighted talent light theme */
+.highlighted-talent {
+  background-color: rgba(255, 193, 7, 0.2) !important;
+  border: 2px solid #ffc107 !important;
+}
