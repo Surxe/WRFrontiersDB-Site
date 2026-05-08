@@ -10,7 +10,15 @@ export interface CharacterClass extends ParseObject {
   description: LocalizationKey;
   badge: {
     image_path: string;
-    hex: string;
+    color: {
+      RGBA: {
+        R: number;
+        G: number;
+        B: number;
+        A: number;
+      };
+      Hex: string;
+    };
   };
   image_big_path: string;
   image_small_path: string;

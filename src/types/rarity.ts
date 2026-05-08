@@ -5,5 +5,13 @@ export interface Rarity extends ParseObject {
   parseObjectClass: 'Rarity';
   id: string;
   name: LocalizationKey;
-  hex: string;
+  color: {
+    RGBA: {
+      R: number;
+      G: number;
+      B: number;
+      A: number;
+    };
+    Hex: string;
+  };
 }

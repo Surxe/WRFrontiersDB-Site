@@ -7,10 +7,26 @@ export interface Faction extends ParseObject {
   parseObjectClass: 'Faction';
   parseObjectUrl: typeof FACTION_URL;
   image_path: string;
-  hex: string;
+  color: {
+    RGBA: {
+      R: number;
+      G: number;
+      B: number;
+      A: number;
+    };
+    Hex: string;
+  };
   badge: {
     image_path: string;
-    hex: string;
+    color: {
+      RGBA: {
+        R: number;
+        G: number;
+        B: number;
+        A: number;
+      };
+      Hex: string;
+    };
   };
   name: LocalizationKey;
 }

@@ -5,6 +5,22 @@ export interface ModuleTag extends ParseObject {
   parseObjectClass: 'ModuleTag';
   id: string;
   name: LocalizationKey;
-  text_hex: string;
-  background_hex: string;
+  text_color: {
+    RGBA: {
+      R: number;
+      G: number;
+      B: number;
+      A: number;
+    };
+    Hex: string;
+  };
+  background_color: {
+    RGBA: {
+      R: number;
+      G: number;
+      B: number;
+      A: number;
+    };
+    Hex: string;
+  };
 }

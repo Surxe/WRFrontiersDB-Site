@@ -120,7 +120,6 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
       return {
         text: moduleCategory.name,
         iconPath: moduleCategory.icon_path,
-        hoverText: moduleCategory.description,
       };
     }
     case 'PilotClass': {
@@ -128,7 +127,7 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
       return {
         text: pilotClass.name,
         iconPath: pilotClass.badge.image_path,
-        iconColor: pilotClass.badge.hex,
+        iconColor: pilotClass.badge.color.Hex,
       };
     }
     case 'Pilot': {
@@ -170,7 +169,7 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
       const rarity = obj as Rarity;
       return {
         text: rarity.name,
-        textBackgroundColor: rarity.hex,
+        textBackgroundColor: rarity.color.Hex,
       };
     }
     case 'CharacterPreset': {
@@ -241,17 +240,17 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
       return {
         text: characterClass.name,
         iconPath: characterClass.badge.image_path,
-        iconColor: characterClass.badge.hex,
+        iconColor: characterClass.badge.color.Hex,
       };
     }
     case 'ModuleTag': {
-      const moduleTag = obj as unknown as ModuleTag;
+      const moduleTag = obj as ModuleTag;
       return {
         text: moduleTag.name,
-        textColor: moduleTag.text_hex,
+        textColor: moduleTag.text_color.Hex,
         textBackgroundColor:
-          moduleTag.background_hex.substring(2) +
-          moduleTag.background_hex.substring(0, 2),
+          moduleTag.background_color.Hex.substring(2) +
+          moduleTag.background_color.Hex.substring(0, 2),
       };
     }
     case 'ModuleClass': {
@@ -263,11 +262,11 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
       return {
         text: characterClass.name,
         iconPath: characterClass.badge.image_path,
-        iconColor: characterClass.badge.hex,
-        textColor: characterClass.badge.hex,
+        iconColor: characterClass.badge.color.Hex,
+        textColor: characterClass.badge.color.Hex,
         textBackgroundColor:
-          characterClass.badge.hex.substring(2) +
-          characterClass.badge.hex.substring(0, 2),
+          characterClass.badge.color.Hex.substring(2) +
+          characterClass.badge.color.Hex.substring(0, 2),
       };
     }
     case 'Faction': {
@@ -275,12 +274,12 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
       return {
         text: faction.name,
         iconPath: faction.badge.image_path,
-        iconColor: faction.hex,
-        textColor: faction.hex,
+        iconColor: faction.color.Hex,
+        textColor: faction.color.Hex,
         textBackgroundColor:
           '33' + // Add alpha transparency
-          faction.hex.substring(2) + // Move last 4 chars
-          faction.hex.substring(0, 2), // Move first 2 chars to end
+          faction.color.Hex.substring(2) + // Move last 4 chars
+          faction.color.Hex.substring(0, 2), // Move first 2 chars to end
       };
     }
     default:

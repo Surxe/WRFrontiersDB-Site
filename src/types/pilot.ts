@@ -38,7 +38,15 @@ export interface PilotClass extends ParseObject {
   name: LocalizationKey;
   badge: {
     image_path: string;
-    hex: string;
+    color: {
+      RGBA: {
+        R: number;
+        G: number;
+        B: number;
+        A: number;
+      };
+      Hex: string;
+    };
   };
 }
 

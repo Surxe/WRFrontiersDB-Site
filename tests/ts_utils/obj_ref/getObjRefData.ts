@@ -65,11 +65,20 @@ describe('getObjRefData', () => {
     it('should return correct ObjRefData including hexColor', () => {
       const pilotClass: PilotClass = {
         parseObjectClass: 'PilotClass',
+        parseObjectUrl: 'pilot_classes',
         id: 'PC_123',
         name: mockLocalizationKey,
         badge: {
           image_path: '/path/to/badge',
-          hex: '#FF5733',
+          color: {
+            RGBA: {
+              R: 1.0,
+              G: 0.341,
+              B: 0.2,
+              A: 1.0,
+            },
+            Hex: '#FF5733',
+          },
         },
       };
 
