@@ -31,6 +31,8 @@ export interface ObjRefData {
   hoverText?: LocalizationKey;
 }
 
+// Alpha channels don't seem correct, so we use our own.
+
 // For each class, define a method to retrieve the ObjRefData
 export function getObjRefData(_obj: Module): ObjRefData;
 export function getObjRefData(_obj: ModuleCategory): ObjRefData;
@@ -249,11 +251,18 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
     }
     case 'ModuleTag': {
       const moduleTag = obj as ModuleTag;
+      // Create a new RGBA object with higher alpha for better visibility on dark background
+      const rgba = moduleTag.background_color.RGBA;
+      const enhancedRgba = {
+        R: rgba.R,
+        G: rgba.G,
+        B: rgba.B,
+        A: Math.max(rgba.A, 0.4) // Ensure minimum alpha of 0.4 for better visibility
+      };
       return {
         text: moduleTag.name,
         textColor: moduleTag.text_color.Hex,
-        textBackgroundColor:
-          moduleTag.background_color.RGBA
+        textBackgroundColor: enhancedRgba
       };
     }
     case 'ModuleClass': {
@@ -264,12 +273,20 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
         'Objects/CharacterClass.json'
       );
       // Use RGBA for icon color and Hex for text colors
+      // Set specific alpha for better visibility on dark background
+      const rgba = characterClass.badge.color.RGBA;
+      const enhancedRgba = {
+        R: rgba.R,
+        G: rgba.G,
+        B: rgba.B,
+        A: 0.3 // Set alpha to 0.3 for ModuleClass backgrounds
+      };
       return {
         text: characterClass.name,
         iconPath: characterClass.badge.image_path,
         iconColor: characterClass.badge.color.Hex, // Use RGBA for icon background color
         textColor: characterClass.badge.color.Hex, // Use Hex for text color (different from icon)
-        textBackgroundColor: characterClass.badge.color.RGBA, // Use Hex for text background
+        textBackgroundColor: enhancedRgba, // Use enhanced RGBA for text background
       };
     }
     case 'Faction': {
