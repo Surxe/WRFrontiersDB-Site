@@ -1,5 +1,6 @@
 import type { LocalizationKey } from './localization';
 import type { ParseObject } from './parse_object';
+import type { Color } from './color';
 
 export const PILOTTALENTTYPE_URL = 'pilot_talent_types';
 export const PILOTPERSONALITY_URL = 'pilot_personalities';
@@ -38,15 +39,7 @@ export interface PilotClass extends ParseObject {
   name: LocalizationKey;
   badge: {
     image_path: string;
-    color: {
-      RGBA: {
-        R: number;
-        G: number;
-        B: number;
-        A: number;
-      };
-      Hex: string;
-    };
+    color: Color;
   };
 }
 

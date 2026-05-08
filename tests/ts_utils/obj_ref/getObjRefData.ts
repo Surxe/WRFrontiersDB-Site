@@ -9,6 +9,7 @@ import type {
   Pilot,
 } from '../../../src/types/pilot';
 import type { ParseObject } from '../../../src/types/parse_object';
+import type { Color, RGBA } from '../../../src/types/color';
 
 describe('getObjRefData', () => {
   const mockLocalizationKey = {
@@ -63,6 +64,18 @@ describe('getObjRefData', () => {
 
   describe('PilotClass', () => {
     it('should return correct ObjRefData including hexColor', () => {
+      const pilotClassRGBA: RGBA = {
+        R: 1.0,
+        G: 0.341,
+        B: 0.2,
+        A: 1.0,
+      };
+
+      const pilotClassColor: Color = {
+        RGBA: pilotClassRGBA,
+        Hex: '#FF5733',
+      };
+
       const pilotClass: PilotClass = {
         parseObjectClass: 'PilotClass',
         parseObjectUrl: 'pilot_classes',
@@ -70,15 +83,7 @@ describe('getObjRefData', () => {
         name: mockLocalizationKey,
         badge: {
           image_path: '/path/to/badge',
-          color: {
-            RGBA: {
-              R: 1.0,
-              G: 0.341,
-              B: 0.2,
-              A: 1.0,
-            },
-            Hex: '#FF5733',
-          },
+          color: pilotClassColor,
         },
       };
 

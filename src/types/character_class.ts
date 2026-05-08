@@ -1,5 +1,6 @@
 import type { LocalizationKey } from './localization';
 import type { ParseObject } from './parse_object';
+import type { Color } from './color';
 
 export const CHARACTERCLASS_URL = 'character_classes';
 
@@ -10,15 +11,7 @@ export interface CharacterClass extends ParseObject {
   description: LocalizationKey;
   badge: {
     image_path: string;
-    color: {
-      RGBA: {
-        R: number;
-        G: number;
-        B: number;
-        A: number;
-      };
-      Hex: string;
-    };
+    color: Color;
   };
   image_big_path: string;
   image_small_path: string;
