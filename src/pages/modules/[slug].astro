@@ -38,6 +38,9 @@ import { getObjRefData } from '../../utils/obj_ref';
 import TextElements from '../../components/obj_ref/TextElements.astro';
 import type { CharacterPreset } from '../../types/character_preset';
 import type { Pilot } from '../../types/pilot';
+import type { ModuleClass } from '../../types/module';
+import type { ModuleTag } from '../../types/module_tag';
+import type { Faction } from '../../types/faction';
 
 export async function getStaticPaths() {
   return generateSlugBasedStaticPaths('Module');
@@ -82,6 +85,10 @@ const allCharacterModules = getParseObjects<CharacterModule>(
   'Objects/CharacterModule.json'
 );
 const allAbilities = getParseObjects<Ability>('Objects/Ability.json');
+const allModuleClasses = getParseObjects<ModuleClass>('Objects/ModuleClass.json');
+const allModuleTags = getParseObjects<ModuleTag>('Objects/ModuleTag.json');
+const allFactions = getParseObjects<Faction>('Objects/Faction.json');
+
 const abilityStats = getModuleAbilityStats(
   module,
   allCharacterModules,
@@ -178,29 +185,70 @@ const objRefData = getObjRefData(module);
       )
   }
 
+  <!-- Module classes and tags -->
+  {
+    (() => {
+      // Resolve top-level module classes, tags, and faction
+      const allRefs: any[] = [];
+      
+      if (module.faction_ref) {
+        const resolved = resolveObjectRef(module.faction_ref, allFactions);
+        if (resolved) allRefs.push(resolved);
+      }
+      
+      if (module.module_classes_refs) {
+        for (const ref of module.module_classes_refs) {
+          const resolved = resolveObjectRef(ref, allModuleClasses);
+          if (resolved) allRefs.push(resolved);
+        }
+      }
+      
+      if (module.module_tags_refs) {
+        for (const ref of module.module_tags_refs) {
+          const resolved = resolveObjectRef(ref, allModuleTags);
+          if (resolved) allRefs.push(resolved);
+        }
+      }
+      
+      return allRefs.length > 0 && (
+        <div class="module-references-section" style="margin-top: 2rem;">
+          <h2>Module Classes, Tags & Faction</h2>
+          <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem;">
+            {allRefs.map((resolvedObj) => (
+              <ObjRef obj={resolvedObj} useHref={false} />
+            ))}
+          </div>
+        </div>
+      );
+    })()
+  }
+
   <!-- Abilities block - shown if abilities with scalars -->
   {
     abilityStats.length > 0 && module.abilities_scalars && (
       <div class="module-abilities-section">
-        {abilityStats.map((abStat, index) => (
-          <div class="ability-block" style="margin-top: 1.5rem;">
-            {abStat.ability.name && (
-              <LocalizedText
-                id={`ability-name-${index}`}
-                tag="h3"
-                localizationKey={abStat.ability.name}
-              />
-            )}
-            {abStat.ability.description && (
-              <StatEmbedLocalizedText
-                id={`ability-desc-${index}`}
-                tag="p"
-                localizationKey={abStat.ability.description}
-                statValueChoices={abStat.statValueChoices}
-              />
-            )}
-          </div>
-        ))}
+        {abilityStats.map((abStat, index) => {
+          return (
+            <div class="ability-block" style="margin-top: 1.5rem;">
+              {abStat.ability.name && (
+                <LocalizedText
+                  id={`ability-name-${index}`}
+                  tag="h3"
+                  localizationKey={abStat.ability.name}
+                />
+              )}
+              {abStat.ability.description && (
+                <StatEmbedLocalizedText
+                  id={`ability-desc-${index}`}
+                  tag="p"
+                  localizationKey={abStat.ability.description}
+                  statValueChoices={abStat.statValueChoices}
+                />
+              )}
+
+                          </div>
+          );
+        })}
 
         {maxLevel > 0 && (abilityStats.length > 1 || !module.description) && (
           <LevelSwitcher maxLevel={maxLevel} />

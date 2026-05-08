@@ -264,6 +264,10 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
         text: characterClass.name,
         iconPath: characterClass.badge.image_path,
         iconColor: characterClass.badge.hex,
+        textColor: characterClass.badge.hex,
+        textBackgroundColor:
+          characterClass.badge.hex.substring(2) +
+          characterClass.badge.hex.substring(0, 2),
       };
     }
     case 'Faction': {
@@ -271,7 +275,12 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
       return {
         text: faction.name,
         iconPath: faction.badge.image_path,
-        iconColor: faction.badge.hex,
+        iconColor: faction.hex,
+        textColor: faction.hex,
+        textBackgroundColor:
+          '33' + // Add alpha transparency
+          faction.hex.substring(2) + // Move last 4 chars
+          faction.hex.substring(0, 2), // Move first 2 chars to end
       };
     }
     default:
