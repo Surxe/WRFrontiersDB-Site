@@ -40,7 +40,7 @@ function colorToString(color: string | RGBA | undefined): string {
       display: inline-block;
       vertical-align: middle;
       width: ${size}px; 
-      height: ${size}px; 
+      height: auto; 
       background-color: ${colorToString(color)}; 
       -webkit-mask-image: url(${iconSrc}); 
       mask-image: url(${iconSrc}); 
@@ -48,6 +48,8 @@ function colorToString(color: string | RGBA | undefined): string {
       mask-size: contain;
       -webkit-mask-repeat: no-repeat;
       mask-repeat: no-repeat;
+      -webkit-mask-position: center;
+      mask-position: center;
     `}
       role="img"
       aria-label={altText}
@@ -60,7 +62,7 @@ function colorToString(color: string | RGBA | undefined): string {
     <img
       src={iconSrc}
       alt={altText}
-      style={`display: inline-block; vertical-align: middle; width: ${size}px; height: ${size}px;`}
+      style={`display: inline-block; vertical-align: middle; width: ${size}px; height: auto; object-fit: contain;`}
     />
   )
 }
