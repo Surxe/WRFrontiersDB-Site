@@ -1,9 +1,8 @@
 import type { LocalizationKey } from './localization';
 import type { ParseObject } from './parse_object';
 
-export const CURRENCY_URL = 'currencies';
-
 export interface Currency extends ParseObject {
+  parseObjectClass: 'Currency';
   name: LocalizationKey;
   description: LocalizationKey;
   how_to_use_descriptions?: LocalizationKey[];

@@ -30,34 +30,40 @@ const {
   useHref: initialUseHref = true,
 } = Astro.props;
 
-// Determine if we should use href based on production status for modules
-let useHref = initialUseHref;
-
-if (!obj.parseObjectUrl) {
-  useHref = false;
-}
-
 // Get the page reference data (localization key, icon path, hex color)
 const objRefData = getObjRefData(obj);
 
 // Try to get slug for objects that have slugs, otherwise fall back to ID
 let urlSegment = obj.id;
-const slugableObjectTypes = [
-  'modules',
-  'pilots',
-  'pilot_talents',
-  'pilot_classes',
-  'pilot_personalities',
-  'factions',
-  'pilot_talent_types',
-  'character_presets',
-  'module_categories',
-  'module_groups',
-  'currencies',
-  'character_classes',
-];
+const slugableObjectTypesMap = {
+  Module: 'modules',
+  Pilot: 'pilots',
+  PilotTalent: 'pilot_talents',
+  PilotClass: 'pilot_classes',
+  PilotPersonality: 'pilot_personalities',
+  Faction: 'factions',
+  PilotTalentType: 'pilot_talent_types',
+  CharacterPreset: 'character_presets',
+  ModuleCategory: 'module_categories',
+  ModuleGroup: 'module_groups',
+  Currency: 'currencies',
+  CharacterClass: 'character_classes',
+};
 
-if (slugableObjectTypes.includes(obj.parseObjectUrl || '')) {
+const objectTypeUrl =
+  slugableObjectTypesMap[
+    obj.parseObjectClass as keyof typeof slugableObjectTypesMap
+  ];
+const isSlugableType = !!objectTypeUrl;
+
+// Determine if we should use href based on object type and production status
+let useHref = initialUseHref;
+
+if (!isSlugableType) {
+  useHref = false;
+}
+
+if (isSlugableType) {
   // For modules, only require slugs for production-ready modules
   if (obj.parseObjectClass === 'Module' && obj.production_status !== 'Ready') {
     // Non-production modules don't get links
@@ -71,7 +77,7 @@ if (slugableObjectTypes.includes(obj.parseObjectUrl || '')) {
 
       if (!slug) {
         throw new Error(
-          `No slug found for ${obj.parseObjectUrl} object with ID ${obj.id}. All production ${obj.parseObjectClass} objects must have a valid slug entry in the slug map.`
+          `No slug found for ${objectTypeUrl} object with ID ${obj.id}. All production ${obj.parseObjectClass} objects must have a valid slug entry in the slug map.`
         );
       }
 
@@ -84,7 +90,7 @@ if (slugableObjectTypes.includes(obj.parseObjectUrl || '')) {
   }
 }
 
-const pageUrl = `/${obj.parseObjectUrl}/${urlSegment}`;
+const pageUrl = objectTypeUrl ? `/${objectTypeUrl}/${urlSegment}` : undefined;
 
 // Validate hover
 if (useOnHover && !objRefData.hoverText) {

@@ -19,13 +19,11 @@ describe('resolveObjectRef', () => {
           id: 'test_id',
           name: 'Test Object',
           parseObjectClass: 'Test',
-          parseObjectUrl: 'test',
         },
         another_id: {
           id: 'another_id',
           name: 'Another Object',
           parseObjectClass: 'Test',
-          parseObjectUrl: 'test',
         },
       };
 
@@ -40,7 +38,6 @@ describe('resolveObjectRef', () => {
           id: 'existing_id',
           name: 'Existing Object',
           parseObjectClass: 'Test',
-          parseObjectUrl: 'test',
         },
       };
 
@@ -54,7 +51,6 @@ describe('resolveObjectRef', () => {
           id: 'module_id',
           name: 'Module Object',
           parseObjectClass: 'Module',
-          parseObjectUrl: 'modules',
         },
       };
 
@@ -99,7 +95,6 @@ describe('resolveObjectRef', () => {
           id: 'test_id',
           specificField: 'specific value',
           parseObjectClass: 'Specific',
-          parseObjectUrl: 'specific',
         },
       };
 
@@ -120,19 +115,16 @@ describe('resolveObjectRefs', () => {
           id: 'test_id',
           name: 'Test Object 1',
           parseObjectClass: 'Test',
-          parseObjectUrl: 'test',
         },
         test_id_2: {
           id: 'test_id_2',
           name: 'Test Object 2',
           parseObjectClass: 'Test',
-          parseObjectUrl: 'test',
         },
         test_id_3: {
           id: 'test_id_3',
           name: 'Test Object 3',
           parseObjectClass: 'Test',
-          parseObjectUrl: 'test',
         },
       };
 
@@ -155,7 +147,6 @@ describe('resolveObjectRefs', () => {
           id: 'existing_id',
           name: 'Existing Object',
           parseObjectClass: 'Test',
-          parseObjectUrl: 'test',
         },
       };
 
@@ -177,7 +168,6 @@ describe('resolveObjectRefs', () => {
           id: 'test_id',
           name: 'Test Object',
           parseObjectClass: 'Test',
-          parseObjectUrl: 'test',
         },
       };
 
@@ -191,7 +181,6 @@ describe('resolveObjectRefs', () => {
           id: 'test_id',
           name: 'Test Object',
           parseObjectClass: 'Test',
-          parseObjectUrl: 'test',
         },
       };
 
@@ -205,13 +194,11 @@ describe('resolveObjectRefs', () => {
           id: 'module_id',
           name: 'Module Object',
           parseObjectClass: 'Module',
-          parseObjectUrl: 'modules',
         },
         pilot_id: {
           id: 'pilot_id',
           name: 'Pilot Object',
           parseObjectClass: 'Pilot',
-          parseObjectUrl: 'pilots',
         },
       };
 
@@ -249,7 +236,6 @@ describe('resolveObjectRefs', () => {
           id: 'valid_id',
           name: 'Valid Object',
           parseObjectClass: 'Test',
-          parseObjectUrl: 'test',
         },
       };
 
@@ -272,7 +258,6 @@ describe('resolveObjectRefs', () => {
           id: 'test_id',
           name: 'Test Object',
           parseObjectClass: 'Test',
-          parseObjectUrl: 'test',
         },
       };
 
@@ -287,7 +272,6 @@ describe('resolveObjectRefs', () => {
           id: 'complex_id_v2',
           name: 'Complex Object',
           parseObjectClass: 'Test',
-          parseObjectUrl: 'test',
         },
       };
 

@@ -1,32 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type { StaticPathsResult, ParseObject } from '../types/parse_object';
-import * as moduleTypes from '../types/module';
-import * as pilotTypes from '../types/pilot';
-import * as rarityTypes from '../types/rarity';
-import * as characterPresetTypes from '../types/character_preset';
-import * as virtualBotTypes from '../types/virtual_bot';
-import * as moduleGroupTypes from '../types/module_group';
-import * as currencyTypes from '../types/currency';
-import * as characterClassTypes from '../types/character_class';
-import * as moduleTagTypes from '../types/module_tag';
-import * as factionTypes from '../types/faction';
 
 // import { generateSlugForObject } from './slug_generator';
-
-// Merge all exported constants from type modules
-const allTypeExports = {
-  ...moduleTypes,
-  ...pilotTypes,
-  ...rarityTypes,
-  ...characterPresetTypes,
-  ...virtualBotTypes,
-  ...moduleGroupTypes,
-  ...currencyTypes,
-  ...characterClassTypes,
-  ...moduleTagTypes,
-  ...factionTypes,
-};
 
 /**
  * Simple file reader
@@ -66,19 +42,12 @@ export function getParseObjects<T = ParseObject>(
       const fileName = parseObjectFile.split('/').pop() || '';
       const parseObjectClass = fileName.split('.')[0];
 
-      // Dynamically derive URL constant name: "ModuleStat" -> "MODULESTAT_URL"
-      const urlConstName = parseObjectClass.toUpperCase() + '_URL';
-      const parseObjectUrl = allTypeExports[
-        urlConstName as keyof typeof allTypeExports
-      ] as string;
-
-      // Add parseObjectClass and parseObjectUrl to each object
+      // Add parseObjectClass to each object
       const objectsWithType: Record<string, T> = {};
       for (const [key, value] of Object.entries(data)) {
         objectsWithType[key] = {
           ...(value as object),
           parseObjectClass,
-          parseObjectUrl,
         } as T;
       }
 

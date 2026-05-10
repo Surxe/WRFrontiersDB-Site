@@ -7,7 +7,6 @@ describe('getStatValueChoices', () => {
     'STAT_ARMOR.0': {
       id: 'STAT_ARMOR.0',
       parseObjectClass: 'ModuleStat',
-      parseObjectUrl: 'module_stats',
       stat_name: { Key: 'stat_armor', TableNamespace: 'Stats', en: 'Armor' },
       short_key: 'ArmorBoost',
       unit_name: { Key: 'unit_percent', TableNamespace: 'Units', en: '%' },
@@ -25,7 +24,6 @@ describe('getStatValueChoices', () => {
     'STAT_SPEED.0': {
       id: 'STAT_SPEED.0',
       parseObjectClass: 'ModuleStat',
-      parseObjectUrl: 'module_stats',
       stat_name: { Key: 'stat_speed', TableNamespace: 'Stats', en: 'Speed' },
       short_key: 'SpeedBoost',
       unit_name: { Key: 'unit_mps', TableNamespace: 'Units', en: 'm/s' },
@@ -43,7 +41,6 @@ describe('getStatValueChoices', () => {
     'STAT_NO_SCALER.0': {
       id: 'STAT_NO_SCALER.0',
       parseObjectClass: 'ModuleStat',
-      parseObjectUrl: 'module_stats',
       stat_name: {
         Key: 'stat_no_scaler',
         TableNamespace: 'Stats',

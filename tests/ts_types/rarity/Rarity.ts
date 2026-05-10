@@ -43,7 +43,7 @@ describe('Rarity interface', () => {
   });
 
   describe('Optional fields', () => {
-    // Rarity interface has no optional fields besides parseObjectClass and parseObjectUrl (which are set at build time)
+    // Rarity interface has no optional fields besides parseObjectClass (which is set at build time)
     it('should note that Rarity has no optional fields besides build-time fields', () => {
       // This test exists to document that all fields in Rarity are required
       expect(true).toBe(true);
@@ -56,7 +56,7 @@ describe('Rarity interface', () => {
         'id',
         'name',
         'color',
-        // parseObjectClass and parseObjectUrl are added at build time, not in raw data
+        // parseObjectClass is added at build time, not in raw data
       ]);
 
       rarityArray.forEach((rarity) => {

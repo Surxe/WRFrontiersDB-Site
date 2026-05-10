@@ -1,10 +1,6 @@
 import type { LocalizationKey } from './localization';
 import type { ParseObject } from './parse_object';
 
-export const MODULE_URL = 'modules';
-export const MODULECATEGORY_URL = 'module_categories';
-export const MODULECLASS_URL = 'module_classes';
-
 export interface ModuleStat extends ParseObject {
   parseObjectClass: 'ModuleStat';
   id: string;
@@ -30,7 +26,6 @@ export interface ModuleRarity extends ParseObject {
 
 export interface Module extends ParseObject {
   parseObjectClass: 'Module';
-  parseObjectUrl: typeof MODULE_URL;
   production_status?: string;
   inventory_icon_path: string;
   module_rarity_ref: string;
@@ -81,7 +76,6 @@ export interface Module extends ParseObject {
 
 export interface ModuleCategory extends ParseObject {
   parseObjectClass: 'ModuleCategory';
-  parseObjectUrl: typeof MODULECATEGORY_URL;
   id: string;
   name: LocalizationKey;
   blueprint_name: LocalizationKey;
