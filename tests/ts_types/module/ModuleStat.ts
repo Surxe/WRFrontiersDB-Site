@@ -29,7 +29,6 @@ describe('ModuleStat interface', () => {
     ...requiredFields,
     ...optionalFields,
     'parseObjectClass',
-    'parseObjectUrl',
   ];
 
   it('should have all required fields in every object', () => {

@@ -19,14 +19,12 @@ describe('resolveObjectRef', () => {
           id: 'test_id',
           name: 'Test Object',
           parseObjectClass: 'Test',
-          parseObjectUrl: 'test',
-        },
+                  },
         another_id: {
           id: 'another_id',
           name: 'Another Object',
           parseObjectClass: 'Test',
-          parseObjectUrl: 'test',
-        },
+                  },
       };
 
       const result = resolveObjectRef('OBJID_Test::test_id', objects);
@@ -40,8 +38,7 @@ describe('resolveObjectRef', () => {
           id: 'existing_id',
           name: 'Existing Object',
           parseObjectClass: 'Test',
-          parseObjectUrl: 'test',
-        },
+                  },
       };
 
       const result = resolveObjectRef('OBJID_Test::missing_id', objects);
@@ -54,8 +51,7 @@ describe('resolveObjectRef', () => {
           id: 'module_id',
           name: 'Module Object',
           parseObjectClass: 'Module',
-          parseObjectUrl: 'modules',
-        },
+                  },
       };
 
       const result = resolveObjectRef('OBJID_Module::module_id', objects);
@@ -99,8 +95,7 @@ describe('resolveObjectRef', () => {
           id: 'test_id',
           specificField: 'specific value',
           parseObjectClass: 'Specific',
-          parseObjectUrl: 'specific',
-        },
+                  },
       };
 
       const result = resolveObjectRef<SpecificObject>(
@@ -120,20 +115,17 @@ describe('resolveObjectRefs', () => {
           id: 'test_id',
           name: 'Test Object 1',
           parseObjectClass: 'Test',
-          parseObjectUrl: 'test',
-        },
+                  },
         test_id_2: {
           id: 'test_id_2',
           name: 'Test Object 2',
           parseObjectClass: 'Test',
-          parseObjectUrl: 'test',
-        },
+                  },
         test_id_3: {
           id: 'test_id_3',
           name: 'Test Object 3',
           parseObjectClass: 'Test',
-          parseObjectUrl: 'test',
-        },
+                  },
       };
 
       const refs = [
@@ -155,8 +147,7 @@ describe('resolveObjectRefs', () => {
           id: 'existing_id',
           name: 'Existing Object',
           parseObjectClass: 'Test',
-          parseObjectUrl: 'test',
-        },
+                  },
       };
 
       const refs = [
@@ -177,8 +168,7 @@ describe('resolveObjectRefs', () => {
           id: 'test_id',
           name: 'Test Object',
           parseObjectClass: 'Test',
-          parseObjectUrl: 'test',
-        },
+                  },
       };
 
       const result = resolveObjectRefs(undefined, objects);
@@ -191,8 +181,7 @@ describe('resolveObjectRefs', () => {
           id: 'test_id',
           name: 'Test Object',
           parseObjectClass: 'Test',
-          parseObjectUrl: 'test',
-        },
+                  },
       };
 
       const result = resolveObjectRefs([], objects);
@@ -205,14 +194,12 @@ describe('resolveObjectRefs', () => {
           id: 'module_id',
           name: 'Module Object',
           parseObjectClass: 'Module',
-          parseObjectUrl: 'modules',
-        },
+                  },
         pilot_id: {
           id: 'pilot_id',
           name: 'Pilot Object',
           parseObjectClass: 'Pilot',
-          parseObjectUrl: 'pilots',
-        },
+                  },
       };
 
       const refs = ['OBJID_Module::module_id', 'OBJID_Pilot::pilot_id'];
@@ -249,8 +236,7 @@ describe('resolveObjectRefs', () => {
           id: 'valid_id',
           name: 'Valid Object',
           parseObjectClass: 'Test',
-          parseObjectUrl: 'test',
-        },
+                  },
       };
 
       // Invalid references should cause errors, not be filtered out
@@ -272,8 +258,7 @@ describe('resolveObjectRefs', () => {
           id: 'test_id',
           name: 'Test Object',
           parseObjectClass: 'Test',
-          parseObjectUrl: 'test',
-        },
+                  },
       };
 
       const ref = 'OBJID_Test::test_id';
@@ -287,8 +272,7 @@ describe('resolveObjectRefs', () => {
           id: 'complex_id_v2',
           name: 'Complex Object',
           parseObjectClass: 'Test',
-          parseObjectUrl: 'test',
-        },
+                  },
       };
 
       const ref = 'OBJID_Test::complex_id_v2';

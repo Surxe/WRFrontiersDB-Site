@@ -78,7 +78,6 @@ describe('getObjRefData', () => {
 
       const pilotClass: PilotClass = {
         parseObjectClass: 'PilotClass',
-        parseObjectUrl: 'pilot_classes',
         id: 'PC_123',
         name: mockLocalizationKey,
         badge: {
