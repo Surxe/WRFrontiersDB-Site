@@ -6,7 +6,12 @@ import type {
   PilotTalentType,
   Pilot,
 } from '../types/pilot';
-import type { Module, ModuleCategory, ModuleClass } from '../types/module';
+import type {
+  Module,
+  ModuleCategory,
+  ModuleClass,
+  ModuleRarity,
+} from '../types/module';
 import type { Rarity } from '../types/rarity';
 import type { CharacterPreset } from '../types/character_preset';
 import type { ParseObject } from '../types/parse_object';
@@ -37,6 +42,7 @@ export interface ObjRefData {
 export function getObjRefData(_obj: Module): ObjRefData;
 export function getObjRefData(_obj: ModuleCategory): ObjRefData;
 export function getObjRefData(_obj: ModuleClass): ObjRefData;
+export function getObjRefData(_obj: ModuleRarity): ObjRefData;
 export function getObjRefData(_obj: PilotPersonality): ObjRefData;
 export function getObjRefData(_obj: PilotClass): ObjRefData;
 export function getObjRefData(_obj: PilotTalent): ObjRefData;
@@ -170,9 +176,17 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
     }
     case 'Rarity': {
       const rarity = obj as Rarity;
+      // Use RGBA with enhanced alpha for better visibility on dark background
+      const rgba = rarity.color.RGBA;
+      const enhancedRgba = {
+        R: rgba.R,
+        G: rgba.G,
+        B: rgba.B,
+        A: 0.4, // Set alpha to 0.4 for better visibility (matches ModuleRarity/ModuleTag/Faction pattern)
+      };
       return {
         text: rarity.name,
-        textBackgroundColor: rarity.color.RGBA,
+        textBackgroundColor: enhancedRgba,
         textColor: rarity.color.Hex,
       };
     }
@@ -287,6 +301,29 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
         iconColor: characterClass.badge.color.Hex, // Use RGBA for icon background color
         textColor: characterClass.badge.color.Hex, // Use Hex for text color (different from icon)
         textBackgroundColor: enhancedRgba, // Use enhanced RGBA for text background
+      };
+    }
+    case 'ModuleRarity': {
+      const moduleRarity = obj as ModuleRarity;
+      const rarityId = refToId(moduleRarity.rarity_ref);
+      const rarity = getParseObject<Rarity>(rarityId, 'Objects/Rarity.json');
+      if (!rarity) {
+        throw new Error(
+          `Rarity not found for ModuleRarity: ${moduleRarity.id}`
+        );
+      }
+      // Use RGBA with enhanced alpha for better visibility on dark background
+      const rgba = rarity.color.RGBA;
+      const enhancedRgba = {
+        R: rgba.R,
+        G: rgba.G,
+        B: rgba.B,
+        A: 0.4, // Set alpha to 0.4 for better visibility (matches ModuleTag/Faction pattern)
+      };
+      return {
+        text: rarity.name,
+        textBackgroundColor: enhancedRgba,
+        textColor: rarity.color.Hex,
       };
     }
     case 'Faction': {

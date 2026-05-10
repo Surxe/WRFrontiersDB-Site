@@ -1,0 +1,122 @@
+---
+import Page from '../components/Page.astro';
+import ObjRef from '../components/obj_ref/ObjRef.astro';
+import { getParseObjects } from '../utils/parse_object';
+import type { ModuleRarity } from '../types/module';
+import type { Rarity } from '../types/rarity';
+
+// Load all ModuleRarity and Rarity objects
+const allModuleRarities = getParseObjects<ModuleRarity>(
+  'Objects/ModuleRarity.json'
+);
+const allRarities = getParseObjects<Rarity>('Objects/Rarity.json');
+
+// Get all ModuleRarity objects for testing
+const moduleRarities = Object.values(allModuleRarities);
+---
+
+<Page
+  title="ModuleRarity Test"
+  description="Testing ModuleRarity rendering and Rarity resolution."
+>
+  <div style="padding: 2rem;">
+    <h1>ModuleRarity Test</h1>
+    <p>
+      This page tests the rendering of ModuleRarity objects and their resolution
+      to Rarity objects.
+    </p>
+    <p>
+      Each ModuleRarity should display as its associated Rarity name and color.
+    </p>
+
+    <div style="margin-top: 2rem;">
+      <h2>ModuleRarity Objects ({moduleRarities.length} total)</h2>
+      <div style="display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1rem;">
+        {
+          moduleRarities.map((moduleRarity) => (
+            <div style="border: 1px solid #ccc; padding: 1rem; border-radius: 4px;">
+              <h3>ModuleRarity: {moduleRarity.id}</h3>
+              <p>Rarity Ref: {moduleRarity.rarity_ref}</p>
+              <p>Sort Order: {moduleRarity.sort_order}</p>
+              <div style="margin-top: 0.5rem;">
+                <strong>Resolved Display:</strong>
+                <ObjRef obj={moduleRarity} useHref={false} />
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+
+    <div style="margin-top: 2rem;">
+      <h2>ModuleRarity Objects Sorted by Sort Order</h2>
+      <div style="display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1rem;">
+        {
+          moduleRarities
+            .sort((a, b) => a.sort_order - b.sort_order)
+            .map((moduleRarity) => (
+              <div style="border: 1px solid #ddd; padding: 0.5rem; border-radius: 4px;">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                  <span style="font-weight: bold;">
+                    #{moduleRarity.sort_order}
+                  </span>
+                  <ObjRef obj={moduleRarity} useHref={false} />
+                </div>
+              </div>
+            ))
+        }
+      </div>
+    </div>
+
+    <div style="margin-top: 2rem;">
+      <h2>All Rarity Objects in System</h2>
+      <div style="display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1rem;">
+        {
+          Object.values(allRarities).map((rarity) => (
+            <div style="border: 1px solid #ddd; padding: 0.5rem; border-radius: 4px;">
+              <ObjRef obj={rarity} useHref={false} />
+            </div>
+          ))
+        }
+      </div>
+    </div>
+
+    <div style="margin-top: 2rem;">
+      <h2>ModuleRarity → Rarity Reference Mapping</h2>
+      <div style="margin-top: 1rem;">
+        <table style="border-collapse: collapse; width: 100%;">
+          <thead>
+            <tr style="border-bottom: 2px solid #333;">
+              <th style="text-align: left; padding: 0.5rem;">ModuleRarity ID</th
+              >
+              <th style="text-align: left; padding: 0.5rem;">Rarity Ref</th>
+              <th style="text-align: left; padding: 0.5rem;">Sort Order</th>
+              <th style="text-align: left; padding: 0.5rem;">Resolved Rarity</th
+              >
+            </tr>
+          </thead>
+          <tbody>
+            {
+              moduleRarities
+                .sort((a, b) => a.sort_order - b.sort_order)
+                .map((moduleRarity) => (
+                  <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 0.5rem; font-family: monospace;">
+                      {moduleRarity.id}
+                    </td>
+                    <td style="padding: 0.5rem; font-family: monospace;">
+                      {moduleRarity.rarity_ref}
+                    </td>
+                    <td style="padding: 0.5rem;">{moduleRarity.sort_order}</td>
+                    <td style="padding: 0.5rem;">
+                      <ObjRef obj={moduleRarity} useHref={false} />
+                    </td>
+                  </tr>
+                ))
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</Page>
