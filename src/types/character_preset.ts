@@ -1,7 +1,6 @@
 import type { LocalizationKey } from './localization';
 import type { ParseObject } from './parse_object';
 
-
 export interface CharacterPresetModule {
   module_ref: string;
   socket_name: string;

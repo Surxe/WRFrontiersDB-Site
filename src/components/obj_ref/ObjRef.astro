@@ -36,21 +36,24 @@ const objRefData = getObjRefData(obj);
 // Try to get slug for objects that have slugs, otherwise fall back to ID
 let urlSegment = obj.id;
 const slugableObjectTypesMap = {
-  'Module': 'modules',
-  'Pilot': 'pilots',
-  'PilotTalent': 'pilot_talents',
-  'PilotClass': 'pilot_classes',
-  'PilotPersonality': 'pilot_personalities',
-  'Faction': 'factions',
-  'PilotTalentType': 'pilot_talent_types',
-  'CharacterPreset': 'character_presets',
-  'ModuleCategory': 'module_categories',
-  'ModuleGroup': 'module_groups',
-  'Currency': 'currencies',
-  'CharacterClass': 'character_classes',
+  Module: 'modules',
+  Pilot: 'pilots',
+  PilotTalent: 'pilot_talents',
+  PilotClass: 'pilot_classes',
+  PilotPersonality: 'pilot_personalities',
+  Faction: 'factions',
+  PilotTalentType: 'pilot_talent_types',
+  CharacterPreset: 'character_presets',
+  ModuleCategory: 'module_categories',
+  ModuleGroup: 'module_groups',
+  Currency: 'currencies',
+  CharacterClass: 'character_classes',
 };
 
-const objectTypeUrl = slugableObjectTypesMap[obj.parseObjectClass as keyof typeof slugableObjectTypesMap];
+const objectTypeUrl =
+  slugableObjectTypesMap[
+    obj.parseObjectClass as keyof typeof slugableObjectTypesMap
+  ];
 const isSlugableType = !!objectTypeUrl;
 
 // Determine if we should use href based on object type and production status

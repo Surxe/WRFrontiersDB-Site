@@ -1,7 +1,6 @@
 import type { LocalizationKey } from './localization';
 import type { ParseObject } from './parse_object';
 
-
 export interface Currency extends ParseObject {
   parseObjectClass: 'Currency';
   name: LocalizationKey;

@@ -4,7 +4,6 @@ import type { StaticPathsResult, ParseObject } from '../types/parse_object';
 
 // import { generateSlugForObject } from './slug_generator';
 
-
 /**
  * Simple file reader
  */
