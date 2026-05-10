@@ -312,9 +312,17 @@ export function getObjRefData(obj: ParseObject): ObjRefData {
           `Rarity not found for ModuleRarity: ${moduleRarity.id}`
         );
       }
+      // Use RGBA with enhanced alpha for better visibility on dark background
+      const rgba = rarity.color.RGBA;
+      const enhancedRgba = {
+        R: rgba.R,
+        G: rgba.G,
+        B: rgba.B,
+        A: 0.4, // Set alpha to 0.4 for better visibility (matches ModuleTag/Faction pattern)
+      };
       return {
         text: rarity.name,
-        textBackgroundColor: rarity.color.RGBA,
+        textBackgroundColor: enhancedRgba,
         textColor: rarity.color.Hex,
       };
     }
