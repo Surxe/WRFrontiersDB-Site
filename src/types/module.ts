@@ -102,6 +102,12 @@ export interface ModuleRarity extends ParseObject {
   sort_order: number;
 }
 
+export interface ModuleStatsTable extends ParseObject {
+  parseObjectClass: 'ModuleStatsTable';
+  id: string;
+  stats_refs: Record<string, string>;
+}
+
 export interface ModuleClass extends ParseObject {
   parseObjectClass: 'ModuleClass';
   id: string;
