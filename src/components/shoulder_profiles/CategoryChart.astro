@@ -1,0 +1,151 @@
+---
+/**
+ * CategoryChart.astro
+ * Renders a shield recharge graph for a whole category as a single <canvas> element.
+ * All shoulders in the category are plotted as separate lines.
+ *
+ * All level data is encoded in data-attributes so the client-side chart
+ * renderer can access it without any runtime fetch.
+ */
+import type { LocalizationKey } from '../../types/localization';
+import type { ShoulderEntry } from '../../types/shoulder_profile';
+import { getDefaultString } from '../../utils/localization';
+import { refToId } from '../../utils/object_reference';
+
+export interface Props {
+  /** Shoulders array for this category */
+  shoulders: ShoulderEntry[];
+  /** Map from module ID to localization key */
+  moduleNameMap: Record<string, LocalizationKey>;
+  /** Per-category max DelayAndRechargeTotal – shared X-axis upper bound */
+  categoryMaxTime: number;
+  /** Per-category max ShieldAmount – shared Y-axis upper bound */
+  categoryMaxShield: number;
+  /** Unique canvas id, e.g. "graph-0" */
+  graphId: string;
+}
+
+const {
+  shoulders,
+  moduleNameMap,
+  categoryMaxTime,
+  categoryMaxShield,
+  graphId,
+} = Astro.props;
+
+// distinct colors for lines
+const COLORS = [
+  '#4fc3f7', // light blue
+  '#f48fb1', // pink
+  '#81c784', // green
+  '#ffb74d', // orange
+  '#ba68c8', // purple
+  '#4db6ac', // teal
+  '#e57373', // red
+  '#aed581', // light green
+];
+
+// Serialize the data for JS
+const chartData = shoulders.map((shoulder, idx) => {
+  const moduleId = refToId(shoulder.shoulder_module_ref);
+  return {
+    id: moduleId,
+    color: COLORS[idx % COLORS.length],
+    levels: shoulder.levels,
+  };
+});
+
+const chartDataJson = JSON.stringify(chartData);
+---
+
+<div class="category-graph-card">
+  <div class="chart-container">
+    <canvas
+      id={graphId}
+      class="shield-chart-canvas"
+      width="800"
+      height="300"
+      data-shoulders={chartDataJson}
+      data-max-time={categoryMaxTime}
+      data-max-shield={categoryMaxShield}
+      aria-label="Shield recharge chart for category"
+    ></canvas>
+  </div>
+  
+  <div class="chart-legend">
+    {shoulders.map((shoulder, idx) => {
+      const moduleId = refToId(shoulder.shoulder_module_ref);
+      const moduleName = moduleNameMap[moduleId] ?? { InvariantString: moduleId };
+      const defaultName = getDefaultString(moduleName) ?? moduleId;
+      const color = COLORS[idx % COLORS.length];
+
+      return (
+        <div class="legend-item">
+          <span class="legend-color" style={`background-color: ${color};`}></span>
+          {moduleName.InvariantString ? (
+            <span class="legend-label">{moduleName.InvariantString}</span>
+          ) : (
+            <span
+              class="legend-label"
+              data-loc-key={moduleName.Key}
+              data-loc-namespace={moduleName.TableNamespace}
+            >
+              {defaultName}
+            </span>
+          )}
+        </div>
+      );
+    })}
+  </div>
+</div>
+
+<style>
+  .category-graph-card {
+    background: #242424;
+    border: 1px solid #383838;
+    border-radius: 8px;
+    padding: 1.5rem;
+    width: 100%;
+    margin-bottom: 1.5rem;
+  }
+
+  .chart-container {
+    width: 100%;
+    overflow-x: auto;
+    margin-bottom: 1rem;
+  }
+
+  .shield-chart-canvas {
+    display: block;
+    width: 100%;
+    max-width: 800px;
+    height: auto;
+    border-radius: 4px;
+    margin: 0 auto;
+  }
+
+  .chart-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #333;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: #e0e0e0;
+  }
+
+  .legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    display: inline-block;
+  }
+</style>

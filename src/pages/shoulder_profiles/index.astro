@@ -14,7 +14,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import Page from '../../components/Page.astro';
 import LevelSwitcher from '../../components/LevelSwitcher.astro';
-import ShoulderGraph from '../../components/shoulder_profiles/ShoulderGraph.astro';
+import CategoryChart from '../../components/shoulder_profiles/CategoryChart.astro';
 import ShoulderStatsTable from '../../components/shoulder_profiles/ShoulderStatsTable.astro';
 import type { ShoulderCategory, ShoulderEntry } from '../../types/shoulder_profile';
 import type { Module } from '../../types/module';
@@ -102,22 +102,14 @@ const INITIAL_LEVEL_INDEX = MAX_LEVEL - 1; // 0-indexed → level 13
             <h2 class="category-heading">{label}</h2>
 
             {/* Graphs row */}
-            <div class="shoulder-graphs-row">
-              {category.shoulders.map((shoulder: ShoulderEntry, shoulderIdx: number) => {
-                const moduleId = refToId(shoulder.shoulder_module_ref);
-                const moduleName: LocalizationKey =
-                  moduleNameMap[moduleId] ?? { InvariantString: moduleId };
-                return (
-                  <ShoulderGraph
-                    moduleId={moduleId}
-                    moduleName={moduleName}
-                    levelsData={shoulder.levels}
-                    categoryMaxTime={maxTime}
-                    categoryMaxShield={maxShield}
-                    graphId={`graph-${catIdx}-${shoulderIdx}`}
-                  />
-                );
-              })}
+            <div class="category-graph-row">
+              <CategoryChart
+                shoulders={category.shoulders}
+                moduleNameMap={moduleNameMap}
+                categoryMaxTime={maxTime}
+                categoryMaxShield={maxShield}
+                graphId={`graph-${catIdx}`}
+              />
             </div>
 
             {/* Stats table */}
@@ -174,34 +166,8 @@ const INITIAL_LEVEL_INDEX = MAX_LEVEL - 1; // 0-indexed → level 13
     color: #4fc3f7;
   }
 
-  .shoulder-graphs-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1.5rem;
+  .category-graph-row {
     margin-bottom: 2rem;
-  }
-
-  /* ---- ShoulderGraph card ---- */
-  :global(.shoulder-graph-card) {
-    background: #242424;
-    border: 1px solid #383838;
-    border-radius: 8px;
-    padding: 1rem;
-    min-width: 280px;
-    flex: 1 1 300px;
-  }
-
-  :global(.shoulder-graph-card .shoulder-name) {
-    margin: 0 0 0.75rem 0;
-    font-size: 1rem;
-    color: #e0e0e0;
-  }
-
-  :global(.shield-chart-canvas) {
-    display: block;
-    width: 100%;
-    height: auto;
-    border-radius: 4px;
   }
 
   /* ---- ShoulderStatsTable ---- */

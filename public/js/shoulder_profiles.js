@@ -9,11 +9,15 @@
  * that function while keeping the ShieldChartData interface unchanged.
  * ─────────────────────────────────────────────────────────────────────────
  *
- * @typedef {Object} ShieldChartData
- * Domain model passed into the renderer — decoupled from any library.
+ * @typedef {Object} ShieldChartLine
+ * @property {string} color           - Hex color string
  * @property {number} shieldAmount    - Full shield capacity at this level
  * @property {number} rechargeDelay   - Seconds before regen begins (shields = 0)
  * @property {number} rechargeTime    - Seconds to regen from 0 to shieldAmount
+ *
+ * @typedef {Object} ShieldChartData
+ * Domain model passed into the renderer — decoupled from any library.
+ * @property {ShieldChartLine[]} lines - The array of lines to draw
  * @property {number} maxTime         - X axis upper bound (per-category max, seconds)
  * @property {number} maxShield       - Y axis upper bound (per-category max)
  */
@@ -23,7 +27,7 @@
 // ============================================================
 
 /**
- * Renders a shield recharge curve onto a canvas using the native Canvas API.
+ * Renders multiple shield recharge curves onto a canvas using the native Canvas API.
  *
  * Curve shape:
  *   t ∈ [0, rechargeDelay]                  → shields = 0  (delay flat line)
@@ -34,7 +38,7 @@
  * @param {ShieldChartData}   data
  */
 function drawShieldChart(canvas, data) {
-  const { shieldAmount, rechargeDelay, rechargeTime, maxTime, maxShield } = data;
+  const { lines, maxTime, maxShield } = data;
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
 
@@ -78,48 +82,46 @@ function drawShieldChart(canvas, data) {
   }
   ctx.setLineDash([]);
 
-  // ── Vertical marker at rechargeDelay (start of regen) ────────
-  if (rechargeDelay > 0 && rechargeDelay < maxTime) {
-    ctx.strokeStyle = '#555';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([4, 4]);
+  // ── Draw fills for all lines first (semi-transparent) ────────
+  for (const line of lines) {
+    const { shieldAmount, rechargeDelay, rechargeTime, color } = line;
+    const rechargeEnd = rechargeDelay + rechargeTime;
+
     ctx.beginPath();
-    ctx.moveTo(toX(rechargeDelay), PAD.top);
-    ctx.lineTo(toX(rechargeDelay), PAD.top + plotH);
-    ctx.stroke();
-    ctx.setLineDash([]);
+    ctx.moveTo(toX(0), toY(0));
+    ctx.lineTo(toX(rechargeDelay), toY(0));
+    ctx.lineTo(toX(rechargeEnd), toY(shieldAmount));
+    ctx.lineTo(toX(maxTime), toY(shieldAmount));
+    ctx.lineTo(toX(maxTime), toY(0));
+    ctx.lineTo(toX(0), toY(0));
+    ctx.closePath();
+    
+    // Parse hex to rgba for fill
+    ctx.fillStyle = hexToRgba(color, 0.08);
+    ctx.fill();
   }
 
-  // ── Fill under curve ─────────────────────────────────────────
-  const rechargeEnd = rechargeDelay + rechargeTime;
+  // ── Draw shield recharge curves ──────────────────────────────
+  for (const line of lines) {
+    const { shieldAmount, rechargeDelay, rechargeTime, color } = line;
+    const rechargeEnd = rechargeDelay + rechargeTime;
 
-  ctx.beginPath();
-  ctx.moveTo(toX(0), toY(0));
-  ctx.lineTo(toX(rechargeDelay), toY(0));
-  ctx.lineTo(toX(rechargeEnd), toY(shieldAmount));
-  ctx.lineTo(toX(maxTime), toY(shieldAmount));
-  ctx.lineTo(toX(maxTime), toY(0));
-  ctx.lineTo(toX(0), toY(0));
-  ctx.closePath();
-  ctx.fillStyle = 'rgba(79, 195, 247, 0.08)';
-  ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(toX(0), toY(0));
+    ctx.lineTo(toX(rechargeDelay), toY(0));
+    ctx.lineTo(toX(rechargeEnd), toY(shieldAmount));
+    ctx.lineTo(toX(maxTime), toY(shieldAmount));
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.lineJoin = 'round';
+    ctx.stroke();
 
-  // ── Shield recharge curve ────────────────────────────────────
-  ctx.beginPath();
-  ctx.moveTo(toX(0), toY(0));
-  ctx.lineTo(toX(rechargeDelay), toY(0));
-  ctx.lineTo(toX(rechargeEnd), toY(shieldAmount));
-  ctx.lineTo(toX(maxTime), toY(shieldAmount));
-  ctx.strokeStyle = '#4fc3f7';
-  ctx.lineWidth = 2;
-  ctx.lineJoin = 'round';
-  ctx.stroke();
-
-  // Dot at full-shield point
-  ctx.beginPath();
-  ctx.arc(toX(rechargeEnd), toY(shieldAmount), 4, 0, Math.PI * 2);
-  ctx.fillStyle = '#4fc3f7';
-  ctx.fill();
+    // Dot at full-shield point
+    ctx.beginPath();
+    ctx.arc(toX(rechargeEnd), toY(shieldAmount), 4, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+  }
 
   // ── Y-axis labels (shield values) ────────────────────────────
   ctx.fillStyle = '#888';
@@ -161,8 +163,19 @@ function drawShieldChart(canvas, data) {
   ctx.restore();
 }
 
-// ─── END OF RENDERING BACKEND ────────────────────────────────────────────
+/**
+ * Converts a hex color to rgba.
+ * @param {string} hex  Hex color (e.g. #ff0000)
+ * @param {number} alpha Opacity (0 to 1)
+ */
+function hexToRgba(hex, alpha) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
 
+// ─── END OF RENDERING BACKEND ────────────────────────────────────────────
 
 // ============================================================
 // HELPERS
@@ -181,7 +194,6 @@ function formatShieldLabel(value) {
   return Math.round(value).toString();
 }
 
-
 // ============================================================
 // PAGE ORCHESTRATION
 // ============================================================
@@ -196,25 +208,33 @@ function formatShieldLabel(value) {
 function renderAllCharts(levelIndex) {
   const canvases = document.querySelectorAll('.shield-chart-canvas');
   canvases.forEach((canvas) => {
-    let levels;
+    let shouldersData;
     try {
-      levels = JSON.parse(canvas.dataset.levels);
+      shouldersData = JSON.parse(canvas.dataset.shoulders);
     } catch {
       return;
     }
 
     const levelKey = String(levelIndex + 1); // JSON keys are 1-indexed
-    const stats = levels[levelKey];
-    if (!stats) return;
-
     const maxTime = parseFloat(canvas.dataset.maxTime);
     const maxShield = parseFloat(canvas.dataset.maxShield);
 
+    const lines = [];
+    for (const shoulder of shouldersData) {
+      const stats = shoulder.levels[levelKey];
+      if (stats) {
+        lines.push({
+          color: shoulder.color,
+          shieldAmount: stats.ShieldAmount,
+          rechargeDelay: stats.RechargeDelay,
+          rechargeTime: stats.RechargeTime,
+        });
+      }
+    }
+
     /** @type {ShieldChartData} */
     const chartData = {
-      shieldAmount: stats.ShieldAmount,
-      rechargeDelay: stats.RechargeDelay,
-      rechargeTime: stats.RechargeTime,
+      lines,
       maxTime,
       maxShield,
     };
