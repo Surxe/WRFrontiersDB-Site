@@ -1,0 +1,265 @@
+---
+/**
+ * Shoulder Profiles page
+ * Statically generated at build time from Analysis/shoulder_profiles.json.
+ *
+ * For each category (unique weight_drain × light_slots × heavy_slots),
+ * renders:
+ *   - One shield-recharge graph per shoulder (via ShoulderGraph)
+ *   - One stats table covering all shoulders in the category (via ShoulderStatsTable)
+ *
+ * A shared LevelSwitcher updates all graphs and table highlights simultaneously.
+ */
+import * as fs from 'fs';
+import * as path from 'path';
+import Page from '../../components/Page.astro';
+import LevelSwitcher from '../../components/LevelSwitcher.astro';
+import ShoulderGraph from '../../components/shoulder_profiles/ShoulderGraph.astro';
+import ShoulderStatsTable from '../../components/shoulder_profiles/ShoulderStatsTable.astro';
+import type { ShoulderCategory, ShoulderEntry } from '../../types/shoulder_profile';
+import type { Module } from '../../types/module';
+import type { LocalizationKey } from '../../types/localization';
+import { getParseObjects } from '../../utils/parse_object';
+import { refToId } from '../../utils/object_reference';
+
+// ---------------------------------------------------------------------------
+// Load data
+// ---------------------------------------------------------------------------
+
+const profilesPath = path.join(
+  process.cwd(),
+  'WRFrontiersDB-Data/current/Analysis/shoulder_profiles.json'
+);
+const categories: ShoulderCategory[] = JSON.parse(
+  fs.readFileSync(profilesPath, 'utf-8')
+);
+
+// Build moduleId → LocalizationKey map from Module.json
+const allModules = getParseObjects<Module>('Objects/Module.json');
+const moduleNameMap: Record<string, LocalizationKey> = {};
+for (const [id, module] of Object.entries(allModules)) {
+  if (module.name) {
+    moduleNameMap[id] = module.name as LocalizationKey;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Per-category derived values for shared axis scales
+// ---------------------------------------------------------------------------
+
+interface CategoryDerivedData {
+  maxTime: number;
+  maxShield: number;
+  label: string;
+}
+
+function deriveCategoryData(category: ShoulderCategory): CategoryDerivedData {
+  let maxTime = 0;
+  let maxShield = 0;
+  for (const shoulder of category.shoulders) {
+    for (const stats of Object.values(shoulder.levels)) {
+      if (stats.DelayAndRechargeTotal > maxTime) maxTime = stats.DelayAndRechargeTotal;
+      if (stats.ShieldAmount > maxShield) maxShield = stats.ShieldAmount;
+    }
+  }
+
+  const lightPart =
+    category.light_slots > 0 ? `Light ×${category.light_slots}` : null;
+  const heavyPart =
+    category.heavy_slots > 0 ? `Heavy ×${category.heavy_slots}` : null;
+  const slotParts = [lightPart, heavyPart].filter(Boolean).join(', ') || 'No Slots';
+  const label = `${slotParts} — Weight ${category.weight_drain}`;
+
+  return { maxTime, maxShield, label };
+}
+
+const MAX_LEVEL = 13;
+const INITIAL_LEVEL_INDEX = MAX_LEVEL - 1; // 0-indexed → level 13
+---
+
+<Page
+  title="Shoulder Profiles"
+  description="Shield recharge comparison charts and stat tables for all shoulder module categories in War Robots Frontiers."
+>
+  <main class="shoulder-profiles-page">
+    <h1>Shoulder Profiles</h1>
+    <p class="page-description">
+      Shield recharge curves and stats for each shoulder category. Shields start
+      broken; the graph shows how shields recover over time. Use the level
+      selector to compare at different upgrade levels.
+    </p>
+
+    <div class="level-switcher-sticky">
+      <LevelSwitcher maxLevel={MAX_LEVEL} initialLevel={INITIAL_LEVEL_INDEX} />
+    </div>
+
+    {
+      categories.map((category, catIdx) => {
+        const { maxTime, maxShield, label } = deriveCategoryData(category);
+
+        return (
+          <section class="shoulder-category-section" data-category-idx={catIdx}>
+            <h2 class="category-heading">{label}</h2>
+
+            {/* Graphs row */}
+            <div class="shoulder-graphs-row">
+              {category.shoulders.map((shoulder: ShoulderEntry, shoulderIdx: number) => {
+                const moduleId = refToId(shoulder.shoulder_module_ref);
+                const moduleName: LocalizationKey =
+                  moduleNameMap[moduleId] ?? { InvariantString: moduleId };
+                return (
+                  <ShoulderGraph
+                    moduleId={moduleId}
+                    moduleName={moduleName}
+                    levelsData={shoulder.levels}
+                    categoryMaxTime={maxTime}
+                    categoryMaxShield={maxShield}
+                    graphId={`graph-${catIdx}-${shoulderIdx}`}
+                  />
+                );
+              })}
+            </div>
+
+            {/* Stats table */}
+            <ShoulderStatsTable
+              shoulders={category.shoulders}
+              moduleNameMap={moduleNameMap}
+              tableId={`table-${catIdx}`}
+            />
+          </section>
+        );
+      })
+    }
+  </main>
+
+  {/* Localization + chart initialization */}
+  <script type="module">
+    import { initializeLocalization } from '/js/localization.js';
+    initializeLocalization('current');
+  </script>
+  <script is:inline src="/js/shoulder_profiles.js"></script>
+</Page>
+
+<style>
+  .shoulder-profiles-page {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 1.5rem;
+  }
+
+  .page-description {
+    color: #aaa;
+    margin-bottom: 1.5rem;
+    max-width: 70ch;
+  }
+
+  .level-switcher-sticky {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #1a1a1a;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #333;
+    margin-bottom: 2rem;
+  }
+
+  .shoulder-category-section {
+    margin-bottom: 3.5rem;
+  }
+
+  .category-heading {
+    border-bottom: 2px solid #4fc3f7;
+    padding-bottom: 0.4rem;
+    margin-bottom: 1.5rem;
+    color: #4fc3f7;
+  }
+
+  .shoulder-graphs-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  /* ---- ShoulderGraph card ---- */
+  :global(.shoulder-graph-card) {
+    background: #242424;
+    border: 1px solid #383838;
+    border-radius: 8px;
+    padding: 1rem;
+    min-width: 280px;
+    flex: 1 1 300px;
+  }
+
+  :global(.shoulder-graph-card .shoulder-name) {
+    margin: 0 0 0.75rem 0;
+    font-size: 1rem;
+    color: #e0e0e0;
+  }
+
+  :global(.shield-chart-canvas) {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+  }
+
+  /* ---- ShoulderStatsTable ---- */
+  :global(.shoulder-stats-table-wrapper) {
+    overflow-x: auto;
+    border-radius: 6px;
+    border: 1px solid #383838;
+  }
+
+  :global(.shoulder-stats-table) {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+
+  :global(.shoulder-stats-table th) {
+    background: #2e2e2e;
+    color: #ccc;
+    padding: 0.5rem 0.75rem;
+    white-space: nowrap;
+    text-align: right;
+    font-weight: 600;
+  }
+
+  :global(.shoulder-stats-table th:first-child),
+  :global(.shoulder-stats-table th:nth-child(2)) {
+    text-align: left;
+  }
+
+  :global(.shoulder-stats-table td) {
+    padding: 0.4rem 0.75rem;
+    border-top: 1px solid #2e2e2e;
+    color: #ddd;
+    text-align: right;
+  }
+
+  :global(.shoulder-stats-table .shoulder-name-cell) {
+    text-align: left;
+    font-weight: 600;
+    color: #e8e8e8;
+    background: #252525;
+    border-right: 1px solid #383838;
+    min-width: 110px;
+    vertical-align: top;
+  }
+
+  :global(.shoulder-stats-table .level-cell) {
+    text-align: center;
+    color: #aaa;
+    min-width: 50px;
+  }
+
+  :global(.shoulder-stats-table tr.is-active-level td) {
+    background: rgba(79, 195, 247, 0.12);
+    color: #fff;
+  }
+
+  :global(.shoulder-stats-table tr.is-active-level .shoulder-name-cell) {
+    background: rgba(79, 195, 247, 0.18);
+  }
+</style>

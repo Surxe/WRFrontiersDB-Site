@@ -1,0 +1,77 @@
+---
+/**
+ * ShoulderGraph.astro
+ * Renders a single shoulder's shield recharge graph as a <canvas> element.
+ *
+ * All level data is encoded in data-attributes so the client-side chart
+ * renderer can access it without any runtime fetch.
+ */
+import type { LocalizationKey } from '../../types/localization';
+import type { ShoulderLevelStats } from '../../types/shoulder_profile';
+import { getDefaultString } from '../../utils/localization';
+
+export interface Props {
+  /** Module ID, e.g. "DA_Module_ShoulderPhantom.0" */
+  moduleId: string;
+  /** Localization key for the shoulder's display name */
+  moduleName: LocalizationKey;
+  /** Full levels data record (keys "1"–"13") */
+  levelsData: Record<string, ShoulderLevelStats>;
+  /** Per-category max DelayAndRechargeTotal – shared X-axis upper bound */
+  categoryMaxTime: number;
+  /** Per-category max ShieldAmount – shared Y-axis upper bound */
+  categoryMaxShield: number;
+  /** Unique canvas id, e.g. "graph-0-1" */
+  graphId: string;
+}
+
+const {
+  moduleId,
+  moduleName,
+  levelsData,
+  categoryMaxTime,
+  categoryMaxShield,
+  graphId,
+} = Astro.props;
+
+const defaultName = getDefaultString(moduleName) ?? moduleId;
+const levelsJson = JSON.stringify(levelsData);
+---
+
+<div class="shoulder-graph-card">
+  <!--
+    Shoulder name heading.
+    Uses data-loc-* attributes so the page-level localization JS can
+    translate it when the language changes — same pattern as LocalizedText.astro.
+    Falls back to InvariantString (no localization data attributes needed).
+  -->
+  {
+    moduleName.InvariantString ? (
+      <h3 class="shoulder-name">{moduleName.InvariantString}</h3>
+    ) : (
+      <h3
+        class="shoulder-name"
+        data-loc-key={moduleName.Key}
+        data-loc-namespace={moduleName.TableNamespace}
+      >
+        {defaultName}
+      </h3>
+    )
+  }
+
+  <!--
+    Canvas for the shield recharge chart.
+    All data needed to draw any level is embedded via data attributes
+    so the client-side renderer is self-contained.
+  -->
+  <canvas
+    id={graphId}
+    class="shield-chart-canvas"
+    width="440"
+    height="220"
+    data-levels={levelsJson}
+    data-max-time={categoryMaxTime}
+    data-max-shield={categoryMaxShield}
+    aria-label={`Shield recharge chart for ${defaultName}`}
+  ></canvas>
+</div>
