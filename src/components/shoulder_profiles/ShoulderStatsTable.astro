@@ -41,9 +41,20 @@ const COLUMN_LABELS: Record<string, string> = {
   ShieldAmount: 'Shield Amount',
   ShieldDelayReduction: 'Delay Reduction',
   ShieldRegeneration: 'Shield Regen/s',
-  RechargeDelay: 'Recharge Delay (s)',
-  RechargeTime: 'Recharge Time (s)',
-  DelayAndRechargeTotal: 'Total Recharge (s)',
+  RechargeDelay: 'Regen Delay (s)',
+  RechargeTime: 'Fill Time (s)',
+  DelayAndRechargeTotal: 'Full Recovery (s)',
+};
+
+/** Hover descriptions for the question mark tooltips */
+const COLUMN_DESCRIPTIONS: Record<string, string> = {
+  Armor: 'The total durability of the robot after shields are depleted.',
+  ShieldAmount: 'The maximum capacity of the shield.',
+  ShieldDelayReduction: 'A multiplier reduction applied to the base shield recharge delay.',
+  ShieldRegeneration: 'The amount of shield recovered per second once regeneration begins.',
+  RechargeDelay: 'The time in seconds after taking damage before shield regeneration begins.',
+  RechargeTime: 'The time in seconds it takes to fully regenerate the shield from 0 to maximum capacity.',
+  DelayAndRechargeTotal: 'The total time in seconds from taking damage until the shield is fully recharged (RechargeDelay + RechargeTime).',
 };
 
 /** Format numbers: integers stay as integers; floats to 3 decimal places */
@@ -58,7 +69,17 @@ function fmt(value: number): string {
       <tr>
         <th>Shoulder</th>
         <th>Level</th>
-        {STAT_COLUMNS.map((col) => <th>{COLUMN_LABELS[col]}</th>)}
+        {STAT_COLUMNS.map((col) => (
+          <th>
+            <div class="th-content">
+              <span>{COLUMN_LABELS[col]}</span>
+              <div class="stat-tooltip-container">
+                <span class="stat-help-icon">?</span>
+                <div class="stat-tooltip-text">{COLUMN_DESCRIPTIONS[col]}</div>
+              </div>
+            </div>
+          </th>
+        ))}
       </tr>
     </thead>
     <tbody>
@@ -71,33 +92,30 @@ function fmt(value: number): string {
             (a, b) => parseInt(a) - parseInt(b)
           );
 
-          return levelKeys.map((levelKey, rowIdx) => {
+          return levelKeys.map((levelKey) => {
             const stats = shoulder.levels[levelKey];
             const levelNum = parseInt(levelKey);
-            const isFirstRow = rowIdx === 0;
 
             return (
               <tr data-level={levelNum} data-module-id={moduleId}>
-                {/* Shoulder name cell — span all level rows for this shoulder */}
-                {isFirstRow && (
-                  <td rowspan={levelKeys.length} class="shoulder-name-cell">
-                    {moduleName?.InvariantString ? (
-                      <span class="shoulder-table-name">
-                        {moduleName.InvariantString}
-                      </span>
-                    ) : moduleName ? (
-                      <span
-                        class="shoulder-table-name"
-                        data-loc-key={moduleName.Key}
-                        data-loc-namespace={moduleName.TableNamespace}
-                      >
-                        {defaultName}
-                      </span>
-                    ) : (
-                      <span class="shoulder-table-name">{moduleId}</span>
-                    )}
-                  </td>
-                )}
+                {/* Shoulder name cell — duplicated for every row so we can hide inactive levels easily */}
+                <td class="shoulder-name-cell">
+                  {moduleName?.InvariantString ? (
+                    <span class="shoulder-table-name">
+                      {moduleName.InvariantString}
+                    </span>
+                  ) : moduleName ? (
+                    <span
+                      class="shoulder-table-name"
+                      data-loc-key={moduleName.Key}
+                      data-loc-namespace={moduleName.TableNamespace}
+                    >
+                      {defaultName}
+                    </span>
+                  ) : (
+                    <span class="shoulder-table-name">{moduleId}</span>
+                  )}
+                </td>
                 <td class="level-cell">{levelNum}</td>
                 {STAT_COLUMNS.map((col) => (
                   <td class="stat-cell">{fmt(stats[col])}</td>
