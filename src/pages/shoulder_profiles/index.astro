@@ -34,6 +34,17 @@ const categories: ShoulderCategory[] = JSON.parse(
   fs.readFileSync(profilesPath, 'utf-8')
 );
 
+// Sort the categories by Weight, Light Slots, then Heavy Slots
+categories.sort((a, b) => {
+  if (a.weight_drain !== b.weight_drain) {
+    return a.weight_drain - b.weight_drain;
+  }
+  if (a.light_slots !== b.light_slots) {
+    return a.light_slots - b.light_slots;
+  }
+  return a.heavy_slots - b.heavy_slots;
+});
+
 // Build moduleId → LocalizationKey map from Module.json
 const allModules = getParseObjects<Module>('Objects/Module.json');
 const moduleNameMap: Record<string, LocalizationKey> = {};
