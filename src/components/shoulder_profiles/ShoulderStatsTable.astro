@@ -39,7 +39,7 @@ const STAT_COLUMNS = [
 const COLUMN_LABELS: Record<string, string> = {
   Armor: 'Armor',
   ShieldAmount: 'Shield Amount',
-  ShieldDelayReduction: 'Delay Reduction',
+  ShieldDelayReduction: 'Delay Reduction (%)',
   ShieldRegeneration: 'Shield Regen/s',
   RechargeDelay: 'Regen Delay (s)',
   RechargeTime: 'Fill Time (s)',
@@ -62,9 +62,16 @@ const COLUMN_DESCRIPTIONS: Record<string, string> = {
     'The total time in seconds from taking damage until the shield is fully recharged (RechargeDelay + RechargeTime).',
 };
 
+/** Columns whose raw values should be scaled before display */
+const COLUMN_SCALE: Partial<Record<string, number>> = {
+  ShieldDelayReduction: 100,
+};
+
 /** Format numbers: integers stay as integers; floats to 3 decimal places */
-function fmt(value: number): string {
-  return Number.isInteger(value) ? value.toString() : value.toFixed(3);
+function fmt(value: number, col: string): string {
+  const scale = COLUMN_SCALE[col] ?? 1;
+  const scaled = value * scale;
+  return Number.isInteger(scaled) ? scaled.toString() : scaled.toFixed(3);
 }
 ---
 
@@ -129,7 +136,7 @@ function fmt(value: number): string {
                 </td>
                 <td class="level-cell">{levelNum}</td>
                 {STAT_COLUMNS.map((col) => (
-                  <td class="stat-cell">{fmt(stats[col])}</td>
+                  <td class="stat-cell">{fmt(stats[col], col)}</td>
                 ))}
               </tr>
             );
