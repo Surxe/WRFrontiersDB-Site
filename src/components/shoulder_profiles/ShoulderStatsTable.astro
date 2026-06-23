@@ -1,0 +1,141 @@
+---
+/**
+ * ShoulderStatsTable.astro
+ * Renders a single HTML table for all shoulders in a category, showing
+ * all stats from shoulder_profiles.json. One row per shoulder per level.
+ *
+ * Localization note: shoulder name headings use data-loc-* attributes so
+ * the client-side localization JS can translate them. Stat column headers
+ * are plain text (localization not required per spec).
+ */
+import type { LocalizationKey } from '../../types/localization';
+import type { ShoulderEntry } from '../../types/shoulder_profile';
+import { getDefaultString } from '../../utils/localization';
+import { refToId } from '../../utils/object_reference';
+
+export interface Props {
+  /** All shoulders in this category */
+  shoulders: ShoulderEntry[];
+  /** Map from module ID to its localization key */
+  moduleNameMap: Record<string, LocalizationKey>;
+  /** Unique id for this table element */
+  tableId: string;
+}
+
+const { shoulders, moduleNameMap, tableId } = Astro.props;
+
+/** Ordered list of stat keys to display */
+const STAT_COLUMNS = [
+  'Armor',
+  'ShieldAmount',
+  'ShieldDelayReduction',
+  'ShieldRegeneration',
+  'RechargeDelay',
+  'RechargeTime',
+  'DelayAndRechargeTotal',
+] as const;
+
+/** Human-readable column headers (no localization required per spec) */
+const COLUMN_LABELS: Record<string, string> = {
+  Armor: 'Armor',
+  ShieldAmount: 'Shield Amount',
+  ShieldDelayReduction: 'Delay Reduction',
+  ShieldRegeneration: 'Shield Regen/s',
+  RechargeDelay: 'Regen Delay (s)',
+  RechargeTime: 'Fill Time (s)',
+  DelayAndRechargeTotal: 'Full Recovery (s)',
+};
+
+/** Hover descriptions for the question mark tooltips */
+const COLUMN_DESCRIPTIONS: Record<string, string> = {
+  Armor: 'The durability of the shoulder after shields are depleted.',
+  ShieldAmount: 'The maximum capacity of the shield.',
+  ShieldDelayReduction:
+    'A multiplier reduction applied to the base shield recharge delay (10s).',
+  ShieldRegeneration:
+    'The amount of shield recovered per second once regeneration begins.',
+  RechargeDelay:
+    'The time in seconds after taking damage before shield regeneration begins.',
+  RechargeTime:
+    'The time in seconds it takes to fully regenerate the shield from 0 to maximum capacity.',
+  DelayAndRechargeTotal:
+    'The total time in seconds from taking damage until the shield is fully recharged (RechargeDelay + RechargeTime).',
+};
+
+/** Format numbers: integers stay as integers; floats to 3 decimal places */
+function fmt(value: number): string {
+  return Number.isInteger(value) ? value.toString() : value.toFixed(3);
+}
+---
+
+<div class="shoulder-stats-table-wrapper">
+  <table id={tableId} class="shoulder-stats-table">
+    <thead>
+      <tr>
+        <th>Shoulder</th>
+        <th>Level</th>
+        {
+          STAT_COLUMNS.map((col) => (
+            <th>
+              <div class="th-content">
+                <span>{COLUMN_LABELS[col]}</span>
+                <div class="stat-tooltip-container">
+                  <span class="stat-help-icon">?</span>
+                  <div class="stat-tooltip-text">
+                    {COLUMN_DESCRIPTIONS[col]}
+                  </div>
+                </div>
+              </div>
+            </th>
+          ))
+        }
+      </tr>
+    </thead>
+    <tbody>
+      {
+        shoulders.map((shoulder) => {
+          const moduleId = refToId(shoulder.shoulder_module_ref);
+          const moduleName = moduleNameMap[moduleId];
+          const defaultName = moduleName
+            ? (getDefaultString(moduleName) ?? moduleId)
+            : moduleId;
+          const levelKeys = Object.keys(shoulder.levels).sort(
+            (a, b) => parseInt(a) - parseInt(b)
+          );
+
+          return levelKeys.map((levelKey) => {
+            const stats = shoulder.levels[levelKey];
+            const levelNum = parseInt(levelKey);
+
+            return (
+              <tr data-level={levelNum} data-module-id={moduleId}>
+                {/* Shoulder name cell — duplicated for every row so we can hide inactive levels easily */}
+                <td class="shoulder-name-cell">
+                  {moduleName?.InvariantString ? (
+                    <span class="shoulder-table-name">
+                      {moduleName.InvariantString}
+                    </span>
+                  ) : moduleName ? (
+                    <span
+                      class="shoulder-table-name"
+                      data-loc-key={moduleName.Key}
+                      data-loc-namespace={moduleName.TableNamespace}
+                    >
+                      {defaultName}
+                    </span>
+                  ) : (
+                    <span class="shoulder-table-name">{moduleId}</span>
+                  )}
+                </td>
+                <td class="level-cell">{levelNum}</td>
+                {STAT_COLUMNS.map((col) => (
+                  <td class="stat-cell">{fmt(stats[col])}</td>
+                ))}
+              </tr>
+            );
+          });
+        })
+      }
+    </tbody>
+  </table>
+</div>

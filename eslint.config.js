@@ -62,6 +62,9 @@ export default [
         parser: tsParser,
         extraFileExtensions: ['.astro'],
       },
+      globals: {
+        process: 'readonly',
+      },
     },
     plugins: {
       astro: astroPlugin,

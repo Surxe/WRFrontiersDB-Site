@@ -1,0 +1,78 @@
+---
+/**
+ * TableOfContents.astro
+ * A generic, drop-in Table of Contents component.
+ * It uses a client-side script to scan the page for headings matching the
+ * `selector` prop, assigns them IDs if they lack them, and builds a clickable list.
+ */
+export interface Props {
+  /** The CSS selector for headings to include in the TOC. Defaults to "h2" */
+  selector?: string;
+  /** Title for the TOC box */
+  title?: string;
+}
+
+const { selector = 'h2', title = 'On this page' } = Astro.props;
+---
+
+<aside class="toc-wrapper">
+  <div class="toc-header">{title}</div>
+  <nav
+    id="toc-container"
+    data-toc-selector={selector}
+    aria-label="Table of Contents"
+  >
+    {/* Populated by JS */}
+  </nav>
+</aside>
+
+<script is:inline src="/js/toc.js"></script>
+
+<style>
+  .toc-wrapper {
+    background: #1e1e1e;
+    border: 1px solid #333;
+    border-radius: 6px;
+    padding: 1.25rem;
+    position: sticky;
+    top: 5rem; /* Default sticky offset; relies on parent layout to provide scrolling context */
+    max-height: calc(100vh - 6rem);
+    overflow-y: auto;
+    min-width: 200px;
+  }
+
+  .toc-header {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #888;
+    margin-bottom: 1rem;
+    font-weight: 600;
+  }
+
+  /* We must style elements injected by JS using :global */
+  :global(.toc-list) {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  :global(.toc-list li) {
+    line-height: 1.3;
+  }
+
+  :global(.toc-list a) {
+    color: #ccc;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.15s ease;
+    display: block;
+  }
+
+  :global(.toc-list a:hover) {
+    color: #4fc3f7;
+  }
+</style>

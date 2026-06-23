@@ -714,3 +714,21 @@ export function getFactionDetailBreadcrumbs(faction: Faction): BreadcrumbTrail {
     },
   ];
 }
+
+/**
+ * Generate breadcrumb trail for shoulder profiles page
+ */
+export function getShoulderProfilesBreadcrumbs(): BreadcrumbTrail {
+  return [
+    {
+      label: resolveLocalizationKey('Breadcrumb_Home', 'Web_UI'),
+      href: '/',
+      isCurrent: false,
+    },
+    {
+      label: 'Shoulder Profiles',
+      href: '/shoulder_profiles',
+      isCurrent: true,
+    },
+  ];
+}
