@@ -23,6 +23,14 @@
  */
 
 // ============================================================
+// PER-CANVAS DISABLED SHOULDER SETS
+// Maps canvas ID → Set of shoulder IDs whose lines are hidden.
+// ============================================================
+
+/** @type {Map<string, Set<string>>} */
+const disabledSets = new Map();
+
+// ============================================================
 // RENDERING BACKEND — swap this function to change chart library
 // ============================================================
 
@@ -218,9 +226,11 @@ function renderAllCharts(levelIndex) {
     const levelKey = String(levelIndex + 1); // JSON keys are 1-indexed
     const maxTime = parseFloat(canvas.dataset.maxTime);
     const maxShield = parseFloat(canvas.dataset.maxShield);
+    const disabled = disabledSets.get(canvas.id) ?? new Set();
 
     const lines = [];
     for (const shoulder of shouldersData) {
+      if (disabled.has(shoulder.id)) continue;
       const stats = shoulder.levels[levelKey];
       if (stats) {
         lines.push({
@@ -283,9 +293,46 @@ function init() {
   const initialLevel = parseInt(levelSwitcher.value, 10);
   onLevelChange(initialLevel);
 
-  // Re-render on every change
+  // Re-render on every level change
   levelSwitcher.addEventListener('change', (e) => {
     onLevelChange(parseInt(e.target.value, 10));
+  });
+
+  // ── Legend toggle ─────────────────────────────────────────────
+  /**
+   * Toggle a shoulder line on/off when its legend item is clicked.
+   * @param {HTMLElement} item
+   */
+  function toggleLegendItem(item) {
+    const { shoulderId, graphId } = item.dataset;
+    if (!shoulderId || !graphId) return;
+
+    if (!disabledSets.has(graphId)) disabledSets.set(graphId, new Set());
+    const disabled = disabledSets.get(graphId);
+
+    if (disabled.has(shoulderId)) {
+      disabled.delete(shoulderId);
+      item.classList.remove('legend-item--disabled');
+      item.setAttribute('aria-pressed', 'false');
+    } else {
+      disabled.add(shoulderId);
+      item.classList.add('legend-item--disabled');
+      item.setAttribute('aria-pressed', 'true');
+    }
+
+    // Redraw with current level
+    const currentLevel = parseInt(levelSwitcher.value, 10);
+    renderAllCharts(currentLevel);
+  }
+
+  document.querySelectorAll('.legend-item[data-shoulder-id]').forEach((item) => {
+    item.addEventListener('click', () => toggleLegendItem(item));
+    item.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggleLegendItem(item);
+      }
+    });
   });
 }
 

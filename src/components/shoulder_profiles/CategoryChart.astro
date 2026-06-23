@@ -82,7 +82,15 @@ const chartDataJson = JSON.stringify(chartData);
         const color = COLORS[idx % COLORS.length];
 
         return (
-          <div class="legend-item">
+          <div
+            class="legend-item"
+            role="button"
+            tabindex="0"
+            data-shoulder-id={moduleId}
+            data-graph-id={graphId}
+            aria-pressed="false"
+            title="Click to hide/show this shoulder's line"
+          >
             <span class="legend-color" style={`background-color: ${color};`} />
             {moduleName.InvariantString ? (
               <span class="legend-label">{moduleName.InvariantString}</span>
@@ -130,7 +138,7 @@ const chartDataJson = JSON.stringify(chartData);
   .chart-legend {
     display: flex;
     flex-wrap: wrap;
-    gap: 1rem;
+    gap: 0.5rem;
     justify-content: center;
     margin-top: 1rem;
     padding-top: 1rem;
@@ -141,8 +149,46 @@ const chartDataJson = JSON.stringify(chartData);
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: #e0e0e0;
+    cursor: pointer;
+    user-select: none;
+    padding: 5px 12px 5px 8px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.04);
+    transition:
+      opacity 0.2s ease,
+      background 0.15s ease,
+      border-color 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+
+  .legend-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05);
+  }
+
+  .legend-item:active {
+    background: rgba(255, 255, 255, 0.14);
+    transform: scale(0.97);
+  }
+
+  .legend-item:focus-visible {
+    outline: 2px solid #4fc3f7;
+    outline-offset: 2px;
+  }
+
+  /* Disabled (hidden) state */
+  .legend-item.legend-item--disabled {
+    opacity: 0.4;
+    border-style: dashed;
+    background: transparent;
+  }
+
+  .legend-item.legend-item--disabled .legend-label {
+    text-decoration: line-through;
   }
 
   .legend-color {
@@ -150,5 +196,7 @@ const chartDataJson = JSON.stringify(chartData);
     height: 12px;
     border-radius: 2px;
     display: inline-block;
+    flex-shrink: 0;
+    transition: opacity 0.2s ease;
   }
 </style>
