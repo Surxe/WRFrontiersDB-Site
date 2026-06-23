@@ -251,13 +251,16 @@ function renderChart(canvas, levelIndex) {
   const disabled = disabledSets.get(canvas.id) ?? new Set();
   const isArmorMode = armorModeSet.has(canvas.id);
 
+  // Shield multiplier in armor mode: capacity ×2, regen/s ×2 (so fill time ÷2)
+  const ARMOR_SHIELD_MULT = isArmorMode ? 2 : 1;
+
   // Compute Y-axis upper bound across ALL shoulders in category (stable axis)
   let effectiveMaxShield = 0;
   if (isArmorMode) {
     for (const shoulder of shouldersData) {
       const stats = shoulder.levels[levelKey];
       if (stats) {
-        const total = (stats.Armor ?? 0) + stats.ShieldAmount;
+        const total = (stats.Armor ?? 0) + stats.ShieldAmount * ARMOR_SHIELD_MULT;
         if (total > effectiveMaxShield) effectiveMaxShield = total;
       }
     }
@@ -275,8 +278,10 @@ function renderChart(canvas, levelIndex) {
       lines.push({
         color: shoulder.color,
         armorBase: isArmorMode ? (stats.Armor ?? 0) : 0,
-        shieldAmount: stats.ShieldAmount,
+        shieldAmount: stats.ShieldAmount * ARMOR_SHIELD_MULT,
         rechargeDelay: stats.RechargeDelay,
+        // Regen/s doubles → fill time halves for the original capacity,
+        // but capacity also doubles, so net fill time stays the same.
         rechargeTime: stats.RechargeTime,
       });
     }
@@ -287,7 +292,7 @@ function renderChart(canvas, levelIndex) {
     lines,
     maxTime,
     maxShield: effectiveMaxShield,
-    yLabel: isArmorMode ? 'Armor+Shield' : 'Shields',
+    yLabel: isArmorMode ? 'Armor+2xShields' : 'Shields',
   };
 
   drawShieldChart(canvas, chartData);

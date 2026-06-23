@@ -71,18 +71,6 @@ const chartDataJson = JSON.stringify(chartData);
       aria-label="Shield recharge chart for category"></canvas>
   </div>
 
-  <div class="chart-controls">
-    <button
-      class="armor-mode-toggle"
-      data-graph-id={graphId}
-      aria-pressed="false"
-      title="Add the shoulder's armor to their health pool and plot against health pool as opposed to just shields. Note that this is only a reasonable metric against single target weapons and weapons that deal equal damage to shields and armor."
-    >
-      <span class="armor-toggle-icon" aria-hidden="true">⊕</span>
-      Include Armor
-    </button>
-  </div>
-
   <div class="chart-legend">
     {
       shoulders.map((shoulder, idx) => {
@@ -119,6 +107,18 @@ const chartDataJson = JSON.stringify(chartData);
         );
       })
     }
+
+    {/* Separator + armor toggle at the right end of the legend row */}
+    <span class="legend-separator" aria-hidden="true" />
+    <button
+      class="armor-mode-toggle"
+      data-graph-id={graphId}
+      aria-pressed="false"
+      title="Use the stats from two of the same shoulder and add the shoulder's armor, showcasing their total health pool as opposed to just shields. Note that this is only a reasonable metric against single target weapons and weapons that deal equal damage to shields and armor."
+    >
+      <span class="armor-toggle-icon" aria-hidden="true">⊕</span>
+      Include Armor
+    </button>
   </div>
 </div>
 
@@ -213,25 +213,30 @@ const chartDataJson = JSON.stringify(chartData);
   }
 
   /* ── Armor mode toggle ───────────────────────────────────── */
-  .chart-controls {
-    display: flex;
-    justify-content: flex-end;
-    margin-bottom: 0.75rem;
+  .legend-separator {
+    /* Pushes the armor toggle to the far right within the flex row */
+    flex: 1 0 0;
+    min-width: 0.5rem;
+    /* Visual divider */
+    border-left: 1px solid #444;
+    align-self: stretch;
+    margin: 2px 4px;
   }
 
   .armor-mode-toggle {
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     font-family: inherit;
     color: #aaa;
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 999px;
-    padding: 4px 12px 4px 9px;
+    padding: 5px 12px 5px 8px;
     cursor: pointer;
     user-select: none;
+    white-space: nowrap;
     transition:
       color 0.15s ease,
       background 0.15s ease,
