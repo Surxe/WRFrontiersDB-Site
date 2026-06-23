@@ -71,6 +71,18 @@ const chartDataJson = JSON.stringify(chartData);
       aria-label="Shield recharge chart for category"></canvas>
   </div>
 
+  <div class="chart-controls">
+    <button
+      class="armor-mode-toggle"
+      data-graph-id={graphId}
+      aria-pressed="false"
+      title="Add the shoulder's armor to their health pool and plot against health pool as opposed to just shields. Note that this is only a reasonable metric against single target weapons and weapons that deal equal damage to shields and armor."
+    >
+      <span class="armor-toggle-icon" aria-hidden="true">⊕</span>
+      Include Armor
+    </button>
+  </div>
+
   <div class="chart-legend">
     {
       shoulders.map((shoulder, idx) => {
@@ -198,5 +210,66 @@ const chartDataJson = JSON.stringify(chartData);
     display: inline-block;
     flex-shrink: 0;
     transition: opacity 0.2s ease;
+  }
+
+  /* ── Armor mode toggle ───────────────────────────────────── */
+  .chart-controls {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 0.75rem;
+  }
+
+  .armor-mode-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    font-family: inherit;
+    color: #aaa;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    padding: 4px 12px 4px 9px;
+    cursor: pointer;
+    user-select: none;
+    transition:
+      color 0.15s ease,
+      background 0.15s ease,
+      border-color 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+
+  .armor-mode-toggle:hover {
+    color: #e0e0e0;
+    background: rgba(255, 255, 255, 0.09);
+    border-color: rgba(255, 255, 255, 0.25);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.04);
+  }
+
+  .armor-mode-toggle:active {
+    transform: scale(0.97);
+  }
+
+  .armor-mode-toggle:focus-visible {
+    outline: 2px solid #81c784;
+    outline-offset: 2px;
+  }
+
+  /* Active / toggled-on state */
+  .armor-mode-toggle[aria-pressed='true'] {
+    color: #81c784;
+    background: rgba(129, 199, 132, 0.1);
+    border-color: rgba(129, 199, 132, 0.35);
+  }
+
+  .armor-mode-toggle[aria-pressed='true']:hover {
+    background: rgba(129, 199, 132, 0.18);
+    border-color: rgba(129, 199, 132, 0.55);
+    box-shadow: 0 0 0 3px rgba(129, 199, 132, 0.08);
+  }
+
+  .armor-toggle-icon {
+    font-size: 1rem;
+    line-height: 1;
   }
 </style>
