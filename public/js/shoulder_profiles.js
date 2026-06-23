@@ -95,7 +95,7 @@ function drawShieldChart(canvas, data) {
     ctx.lineTo(toX(maxTime), toY(0));
     ctx.lineTo(toX(0), toY(0));
     ctx.closePath();
-    
+
     // Parse hex to rgba for fill
     ctx.fillStyle = hexToRgba(color, 0.08);
     ctx.fill();

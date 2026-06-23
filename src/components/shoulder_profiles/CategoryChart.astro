@@ -68,34 +68,37 @@ const chartDataJson = JSON.stringify(chartData);
       data-shoulders={chartDataJson}
       data-max-time={categoryMaxTime}
       data-max-shield={categoryMaxShield}
-      aria-label="Shield recharge chart for category"
-    ></canvas>
+      aria-label="Shield recharge chart for category"></canvas>
   </div>
-  
-  <div class="chart-legend">
-    {shoulders.map((shoulder, idx) => {
-      const moduleId = refToId(shoulder.shoulder_module_ref);
-      const moduleName = moduleNameMap[moduleId] ?? { InvariantString: moduleId };
-      const defaultName = getDefaultString(moduleName) ?? moduleId;
-      const color = COLORS[idx % COLORS.length];
 
-      return (
-        <div class="legend-item">
-          <span class="legend-color" style={`background-color: ${color};`}></span>
-          {moduleName.InvariantString ? (
-            <span class="legend-label">{moduleName.InvariantString}</span>
-          ) : (
-            <span
-              class="legend-label"
-              data-loc-key={moduleName.Key}
-              data-loc-namespace={moduleName.TableNamespace}
-            >
-              {defaultName}
-            </span>
-          )}
-        </div>
-      );
-    })}
+  <div class="chart-legend">
+    {
+      shoulders.map((shoulder, idx) => {
+        const moduleId = refToId(shoulder.shoulder_module_ref);
+        const moduleName = moduleNameMap[moduleId] ?? {
+          InvariantString: moduleId,
+        };
+        const defaultName = getDefaultString(moduleName) ?? moduleId;
+        const color = COLORS[idx % COLORS.length];
+
+        return (
+          <div class="legend-item">
+            <span class="legend-color" style={`background-color: ${color};`} />
+            {moduleName.InvariantString ? (
+              <span class="legend-label">{moduleName.InvariantString}</span>
+            ) : (
+              <span
+                class="legend-label"
+                data-loc-key={moduleName.Key}
+                data-loc-namespace={moduleName.TableNamespace}
+              >
+                {defaultName}
+              </span>
+            )}
+          </div>
+        );
+      })
+    }
   </div>
 </div>
 

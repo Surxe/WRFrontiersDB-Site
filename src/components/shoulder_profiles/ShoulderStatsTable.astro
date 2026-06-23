@@ -50,11 +50,16 @@ const COLUMN_LABELS: Record<string, string> = {
 const COLUMN_DESCRIPTIONS: Record<string, string> = {
   Armor: 'The durability of the shoulder after shields are depleted.',
   ShieldAmount: 'The maximum capacity of the shield.',
-  ShieldDelayReduction: 'A multiplier reduction applied to the base shield recharge delay (10s).',
-  ShieldRegeneration: 'The amount of shield recovered per second once regeneration begins.',
-  RechargeDelay: 'The time in seconds after taking damage before shield regeneration begins.',
-  RechargeTime: 'The time in seconds it takes to fully regenerate the shield from 0 to maximum capacity.',
-  DelayAndRechargeTotal: 'The total time in seconds from taking damage until the shield is fully recharged (RechargeDelay + RechargeTime).',
+  ShieldDelayReduction:
+    'A multiplier reduction applied to the base shield recharge delay (10s).',
+  ShieldRegeneration:
+    'The amount of shield recovered per second once regeneration begins.',
+  RechargeDelay:
+    'The time in seconds after taking damage before shield regeneration begins.',
+  RechargeTime:
+    'The time in seconds it takes to fully regenerate the shield from 0 to maximum capacity.',
+  DelayAndRechargeTotal:
+    'The total time in seconds from taking damage until the shield is fully recharged (RechargeDelay + RechargeTime).',
 };
 
 /** Format numbers: integers stay as integers; floats to 3 decimal places */
@@ -69,17 +74,21 @@ function fmt(value: number): string {
       <tr>
         <th>Shoulder</th>
         <th>Level</th>
-        {STAT_COLUMNS.map((col) => (
-          <th>
-            <div class="th-content">
-              <span>{COLUMN_LABELS[col]}</span>
-              <div class="stat-tooltip-container">
-                <span class="stat-help-icon">?</span>
-                <div class="stat-tooltip-text">{COLUMN_DESCRIPTIONS[col]}</div>
+        {
+          STAT_COLUMNS.map((col) => (
+            <th>
+              <div class="th-content">
+                <span>{COLUMN_LABELS[col]}</span>
+                <div class="stat-tooltip-container">
+                  <span class="stat-help-icon">?</span>
+                  <div class="stat-tooltip-text">
+                    {COLUMN_DESCRIPTIONS[col]}
+                  </div>
+                </div>
               </div>
-            </div>
-          </th>
-        ))}
+            </th>
+          ))
+        }
       </tr>
     </thead>
     <tbody>
@@ -87,7 +96,9 @@ function fmt(value: number): string {
         shoulders.map((shoulder) => {
           const moduleId = refToId(shoulder.shoulder_module_ref);
           const moduleName = moduleNameMap[moduleId];
-          const defaultName = moduleName ? (getDefaultString(moduleName) ?? moduleId) : moduleId;
+          const defaultName = moduleName
+            ? (getDefaultString(moduleName) ?? moduleId)
+            : moduleId;
           const levelKeys = Object.keys(shoulder.levels).sort(
             (a, b) => parseInt(a) - parseInt(b)
           );

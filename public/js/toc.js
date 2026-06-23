@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const link = document.createElement('a');
     link.href = `#${heading.id}`;
     link.textContent = heading.textContent;
-    
+
     listItem.appendChild(link);
     tocList.appendChild(listItem);
   });

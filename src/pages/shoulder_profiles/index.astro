@@ -17,11 +17,10 @@ import LevelSwitcher from '../../components/LevelSwitcher.astro';
 import CategoryChart from '../../components/shoulder_profiles/CategoryChart.astro';
 import ShoulderStatsTable from '../../components/shoulder_profiles/ShoulderStatsTable.astro';
 import TableOfContents from '../../components/TableOfContents.astro';
-import type { ShoulderCategory, ShoulderEntry } from '../../types/shoulder_profile';
+import type { ShoulderCategory } from '../../types/shoulder_profile';
 import type { Module } from '../../types/module';
 import type { LocalizationKey } from '../../types/localization';
 import { getParseObjects } from '../../utils/parse_object';
-import { refToId } from '../../utils/object_reference';
 
 // ---------------------------------------------------------------------------
 // Load data
@@ -70,7 +69,8 @@ function deriveCategoryData(category: ShoulderCategory): CategoryDerivedData {
   let maxShield = 0;
   for (const shoulder of category.shoulders) {
     for (const stats of Object.values(shoulder.levels)) {
-      if (stats.DelayAndRechargeTotal > maxTime) maxTime = stats.DelayAndRechargeTotal;
+      if (stats.DelayAndRechargeTotal > maxTime)
+        maxTime = stats.DelayAndRechargeTotal;
       if (stats.ShieldAmount > maxShield) maxShield = stats.ShieldAmount;
     }
   }
@@ -79,7 +79,8 @@ function deriveCategoryData(category: ShoulderCategory): CategoryDerivedData {
     category.light_slots > 0 ? `Light ×${category.light_slots}` : null;
   const heavyPart =
     category.heavy_slots > 0 ? `Heavy ×${category.heavy_slots}` : null;
-  const slotParts = [lightPart, heavyPart].filter(Boolean).join(', ') || 'No Slots';
+  const slotParts =
+    [lightPart, heavyPart].filter(Boolean).join(', ') || 'No Slots';
   const label = `${slotParts} — Weight ${category.weight_drain}`;
 
   return { maxTime, maxShield, label };
@@ -112,7 +113,10 @@ const INITIAL_LEVEL_INDEX = MAX_LEVEL - 1; // 0-indexed → level 13
             const { maxTime, maxShield, label } = deriveCategoryData(category);
 
             return (
-              <section class="shoulder-category-section" data-category-idx={catIdx}>
+              <section
+                class="shoulder-category-section"
+                data-category-idx={catIdx}
+              >
                 <h2 class="category-heading">{label}</h2>
 
                 {/* Graphs row */}
@@ -333,16 +337,18 @@ const INITIAL_LEVEL_INDEX = MAX_LEVEL - 1; // 0-indexed → level 13
     bottom: 125%;
     left: 50%;
     transform: translateX(-50%);
-    transition: opacity 0.2s, visibility 0.2s;
+    transition:
+      opacity 0.2s,
+      visibility 0.2s;
     font-size: 0.8rem;
     font-weight: normal;
     white-space: normal;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
     pointer-events: none;
   }
 
   :global(.stat-tooltip-text::after) {
-    content: "";
+    content: '';
     position: absolute;
     top: 100%;
     left: 50%;

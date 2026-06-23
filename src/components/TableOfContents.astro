@@ -17,7 +17,11 @@ const { selector = 'h2', title = 'On this page' } = Astro.props;
 
 <aside class="toc-wrapper">
   <div class="toc-header">{title}</div>
-  <nav id="toc-container" data-toc-selector={selector} aria-label="Table of Contents">
+  <nav
+    id="toc-container"
+    data-toc-selector={selector}
+    aria-label="Table of Contents"
+  >
     {/* Populated by JS */}
   </nav>
 </aside>
