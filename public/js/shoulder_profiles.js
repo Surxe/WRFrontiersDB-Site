@@ -11,16 +11,28 @@
  *
  * @typedef {Object} ShieldChartLine
  * @property {string} color           - Hex color string
- * @property {number} shieldAmount    - Full shield capacity at this level
- * @property {number} rechargeDelay   - Seconds before regen begins (shields = 0)
+ * @property {number} armorBase       - Armor floor (0 in shield-only mode)
+ * @property {number} shieldAmount    - Shield capacity at this level (NOT including armor)
+ * @property {number} rechargeDelay   - Seconds before regen begins
  * @property {number} rechargeTime    - Seconds to regen from 0 to shieldAmount
  *
  * @typedef {Object} ShieldChartData
  * Domain model passed into the renderer — decoupled from any library.
  * @property {ShieldChartLine[]} lines - The array of lines to draw
  * @property {number} maxTime         - X axis upper bound (per-category max, seconds)
- * @property {number} maxShield       - Y axis upper bound (per-category max)
+ * @property {number} maxShield       - Y axis upper bound
+ * @property {string} [yLabel]        - Y axis label (default: "Shields")
  */
+
+// ============================================================
+// PER-CANVAS STATE
+// ============================================================
+
+/** @type {Map<string, Set<string>>} Maps canvas ID → disabled shoulder IDs */
+const disabledSets = new Map();
+
+/** @type {Set<string>} Canvas IDs with armor mode active */
+const armorModeSet = new Set();
 
 // ============================================================
 // RENDERING BACKEND — swap this function to change chart library
@@ -29,28 +41,39 @@
 /**
  * Renders multiple shield recharge curves onto a canvas using the native Canvas API.
  *
- * Curve shape:
- *   t ∈ [0, rechargeDelay]                  → shields = 0  (delay flat line)
- *   t ∈ [rechargeDelay, rechargeDelay+rechargeTime] → shields ramp 0→shieldAmount
- *   t > rechargeDelay + rechargeTime          → shields = shieldAmount (plateau)
+ * Normal mode curve shape:
+ *   t ∈ [0, rechargeDelay]                        → y = 0
+ *   t ∈ [rechargeDelay, rechargeDelay+rechargeTime] → y ramps 0→shieldAmount
+ *   t > rechargeDelay + rechargeTime               → y = shieldAmount
+ *
+ * Armor mode shifts everything up by armorBase:
+ *   y at t=0  = armorBase
+ *   y at full = armorBase + shieldAmount
  *
  * @param {HTMLCanvasElement} canvas
  * @param {ShieldChartData}   data
  */
 function drawShieldChart(canvas, data) {
-  const { lines, maxTime, maxShield } = data;
+  const { lines, maxTime, maxShield, yLabel = 'Shields' } = data;
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
 
-  // Pixel dimensions — use the canvas's actual pixel size for sharpness
-  const W = canvas.width;
-  const H = canvas.height;
+  // Resolve canvas crispness and dynamic width
+  const rect = canvas.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  const W = Math.max(rect.width, 100); // fallback if display:none
+  const H = 300; // Fixed height (or use rect.height if we want aspect ratio scaling)
+
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  
+  ctx.save();
+  ctx.scale(dpr, dpr);
 
   const PAD = { top: 24, right: 20, bottom: 44, left: 62 };
   const plotW = W - PAD.left - PAD.right;
   const plotH = H - PAD.top - PAD.bottom;
 
-  // Map domain → canvas pixel
   const toX = (t) => PAD.left + (t / maxTime) * plotW;
   const toY = (s) => PAD.top + plotH - (s / maxShield) * plotH;
 
@@ -82,48 +105,69 @@ function drawShieldChart(canvas, data) {
   }
   ctx.setLineDash([]);
 
-  // ── Draw fills for all lines first (semi-transparent) ────────
+  // ── Draw fills first (semi-transparent, behind strokes) ──────
   for (const line of lines) {
-    const { shieldAmount, rechargeDelay, rechargeTime, color } = line;
+    const { shieldAmount, rechargeDelay, rechargeTime, color, armorBase = 0 } = line;
     const rechargeEnd = rechargeDelay + rechargeTime;
+    const topY = armorBase + shieldAmount;
 
+    // Armor floor band (constant rectangle)
+    if (armorBase > 0) {
+      ctx.fillStyle = hexToRgba(color, 0.05);
+      ctx.fillRect(toX(0), toY(armorBase), plotW, toY(0) - toY(armorBase));
+    }
+
+    // Shield regen area (trapezoid from armorBase up to full)
     ctx.beginPath();
-    ctx.moveTo(toX(0), toY(0));
-    ctx.lineTo(toX(rechargeDelay), toY(0));
-    ctx.lineTo(toX(rechargeEnd), toY(shieldAmount));
-    ctx.lineTo(toX(maxTime), toY(shieldAmount));
-    ctx.lineTo(toX(maxTime), toY(0));
-    ctx.lineTo(toX(0), toY(0));
+    ctx.moveTo(toX(0), toY(armorBase));
+    ctx.lineTo(toX(rechargeDelay), toY(armorBase));
+    ctx.lineTo(toX(rechargeEnd), toY(topY));
+    ctx.lineTo(toX(maxTime), toY(topY));
+    ctx.lineTo(toX(maxTime), toY(armorBase));
+    ctx.lineTo(toX(0), toY(armorBase));
     ctx.closePath();
-
-    // Parse hex to rgba for fill
     ctx.fillStyle = hexToRgba(color, 0.08);
     ctx.fill();
   }
 
-  // ── Draw shield recharge curves ──────────────────────────────
+  // ── Draw curves & armor floor markers ────────────────────────
   for (const line of lines) {
-    const { shieldAmount, rechargeDelay, rechargeTime, color } = line;
+    const { shieldAmount, rechargeDelay, rechargeTime, color, armorBase = 0 } = line;
     const rechargeEnd = rechargeDelay + rechargeTime;
+    const topY = armorBase + shieldAmount;
 
+    // Dashed horizontal armor floor line
+    if (armorBase > 0) {
+      ctx.save();
+      ctx.setLineDash([5, 5]);
+      ctx.strokeStyle = hexToRgba(color, 0.45);
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(toX(0), toY(armorBase));
+      ctx.lineTo(toX(maxTime), toY(armorBase));
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // Shield regen curve
     ctx.beginPath();
-    ctx.moveTo(toX(0), toY(0));
-    ctx.lineTo(toX(rechargeDelay), toY(0));
-    ctx.lineTo(toX(rechargeEnd), toY(shieldAmount));
-    ctx.lineTo(toX(maxTime), toY(shieldAmount));
+    ctx.moveTo(toX(0), toY(armorBase));
+    ctx.lineTo(toX(rechargeDelay), toY(armorBase));
+    ctx.lineTo(toX(rechargeEnd), toY(topY));
+    ctx.lineTo(toX(maxTime), toY(topY));
     ctx.strokeStyle = color;
     ctx.lineWidth = 2;
     ctx.lineJoin = 'round';
     ctx.stroke();
 
-    // Dot at full-shield point
+    // Dot at peak
     ctx.beginPath();
-    ctx.arc(toX(rechargeEnd), toY(shieldAmount), 4, 0, Math.PI * 2);
+    ctx.arc(toX(rechargeEnd), toY(topY), 4, 0, Math.PI * 2);
     ctx.fillStyle = color;
     ctx.fill();
   }
 
-  // ── Y-axis labels (shield values) ────────────────────────────
+  // ── Y-axis labels ────────────────────────────────────────────
   ctx.fillStyle = '#888';
   ctx.font = '10px sans-serif';
   ctx.textAlign = 'right';
@@ -134,7 +178,7 @@ function drawShieldChart(canvas, data) {
     ctx.fillText(formatShieldLabel(val), PAD.left - 6, y);
   }
 
-  // ── X-axis labels (time in seconds) ──────────────────────────
+  // ── X-axis labels ─────────────────────────────────────────────
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
   const xTickCount = 5;
@@ -148,19 +192,18 @@ function drawShieldChart(canvas, data) {
   ctx.fillStyle = '#666';
   ctx.font = '10px sans-serif';
 
-  // X axis title
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
   ctx.fillText('Time (s)', PAD.left + plotW / 2, H - 2);
 
-  // Y axis title (rotated)
   ctx.save();
   ctx.translate(10, PAD.top + plotH / 2);
   ctx.rotate(-Math.PI / 2);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
-  ctx.fillText('Shields', 0, 0);
-  ctx.restore();
+  ctx.fillText(yLabel, 0, 0);
+  ctx.restore(); // restore rotation
+  ctx.restore(); // restore dpr scaling
 }
 
 /**
@@ -182,7 +225,7 @@ function hexToRgba(hex, alpha) {
 // ============================================================
 
 /**
- * Format a shield value for axis display.
+ * Format a shield/health value for axis display.
  * Values ≥ 1000 are shown as "N.Nk"; smaller values as plain integers.
  * @param {number} value
  * @returns {string}
@@ -199,53 +242,85 @@ function formatShieldLabel(value) {
 // ============================================================
 
 /**
- * Render all chart canvases for the given 0-based level index.
- * Reads per-canvas data attributes, extracts the requested level's stats,
- * and calls drawShieldChart.
+ * Render a single chart canvas for the given 0-based level index.
+ * Respects per-canvas disabled shoulder sets and armor mode.
  *
+ * @param {HTMLCanvasElement} canvas
  * @param {number} levelIndex  0-based (level 1 = index 0, level 13 = index 12)
  */
-function renderAllCharts(levelIndex) {
-  const canvases = document.querySelectorAll('.shield-chart-canvas');
-  canvases.forEach((canvas) => {
-    let shouldersData;
-    try {
-      shouldersData = JSON.parse(canvas.dataset.shoulders);
-    } catch {
-      return;
-    }
+function renderChart(canvas, levelIndex) {
+  let shouldersData;
+  try {
+    shouldersData = JSON.parse(canvas.dataset.shoulders);
+  } catch {
+    return;
+  }
 
-    const levelKey = String(levelIndex + 1); // JSON keys are 1-indexed
-    const maxTime = parseFloat(canvas.dataset.maxTime);
-    const maxShield = parseFloat(canvas.dataset.maxShield);
+  const levelKey = String(levelIndex + 1);
+  const maxTime = parseFloat(canvas.dataset.maxTime);
+  const disabled = disabledSets.get(canvas.id) ?? new Set();
+  const isArmorMode = armorModeSet.has(canvas.id);
 
-    const lines = [];
+  // Shield multiplier in armor mode: capacity ×2, regen/s ×2 (so fill time ÷2)
+  const ARMOR_SHIELD_MULT = isArmorMode ? 2 : 1;
+
+  // Compute Y-axis upper bound across ALL shoulders in category (stable axis)
+  let effectiveMaxShield = 0;
+  if (isArmorMode) {
     for (const shoulder of shouldersData) {
       const stats = shoulder.levels[levelKey];
       if (stats) {
-        lines.push({
-          color: shoulder.color,
-          shieldAmount: stats.ShieldAmount,
-          rechargeDelay: stats.RechargeDelay,
-          rechargeTime: stats.RechargeTime,
-        });
+        const total = (stats.Armor ?? 0) + stats.ShieldAmount * ARMOR_SHIELD_MULT;
+        if (total > effectiveMaxShield) effectiveMaxShield = total;
       }
     }
+  } else {
+    effectiveMaxShield = parseFloat(canvas.dataset.maxShield);
+  }
+  if (effectiveMaxShield <= 0) effectiveMaxShield = parseFloat(canvas.dataset.maxShield);
 
-    /** @type {ShieldChartData} */
-    const chartData = {
-      lines,
-      maxTime,
-      maxShield,
-    };
+  // Build visible lines (skip disabled shoulders)
+  const lines = [];
+  for (const shoulder of shouldersData) {
+    if (disabled.has(shoulder.id)) continue;
+    const stats = shoulder.levels[levelKey];
+    if (stats) {
+      lines.push({
+        color: shoulder.color,
+        armorBase: isArmorMode ? (stats.Armor ?? 0) : 0,
+        shieldAmount: stats.ShieldAmount * ARMOR_SHIELD_MULT,
+        rechargeDelay: stats.RechargeDelay,
+        // Regen/s doubles → fill time halves for the original capacity,
+        // but capacity also doubles, so net fill time stays the same.
+        rechargeTime: stats.RechargeTime,
+      });
+    }
+  }
 
-    drawShieldChart(canvas, chartData);
+  /** @type {ShieldChartData} */
+  const chartData = {
+    lines,
+    maxTime,
+    maxShield: effectiveMaxShield,
+    yLabel: isArmorMode ? 'Armor+2xShields' : 'Shields',
+  };
+
+  drawShieldChart(canvas, chartData);
+}
+
+/**
+ * Render all chart canvases for the given 0-based level index.
+ *
+ * @param {number} levelIndex
+ */
+function renderAllCharts(levelIndex) {
+  document.querySelectorAll('.shield-chart-canvas').forEach((canvas) => {
+    renderChart(canvas, levelIndex);
   });
 }
 
 /**
  * Highlight table rows matching the given 1-based level number.
- * Removes highlight from all other rows first.
  *
  * @param {number} levelIndex  0-based level index
  */
@@ -279,13 +354,88 @@ function init() {
     return;
   }
 
-  // Render at the initial level (value is a 0-based index string)
   const initialLevel = parseInt(levelSwitcher.value, 10);
   onLevelChange(initialLevel);
 
-  // Re-render on every change
   levelSwitcher.addEventListener('change', (e) => {
     onLevelChange(parseInt(e.target.value, 10));
+  });
+
+  // ── Legend toggle ─────────────────────────────────────────────
+  /**
+   * Toggle a shoulder line on/off.
+   * @param {HTMLElement} item
+   */
+  function toggleLegendItem(item) {
+    const { shoulderId, graphId } = item.dataset;
+    if (!shoulderId || !graphId) return;
+
+    if (!disabledSets.has(graphId)) disabledSets.set(graphId, new Set());
+    const disabled = disabledSets.get(graphId);
+
+    if (disabled.has(shoulderId)) {
+      disabled.delete(shoulderId);
+      item.classList.remove('legend-item--disabled');
+      item.setAttribute('aria-pressed', 'false');
+    } else {
+      disabled.add(shoulderId);
+      item.classList.add('legend-item--disabled');
+      item.setAttribute('aria-pressed', 'true');
+    }
+
+    const canvas = document.getElementById(graphId);
+    if (canvas) renderChart(canvas, parseInt(levelSwitcher.value, 10));
+  }
+
+  document.querySelectorAll('.legend-item[data-shoulder-id]').forEach((item) => {
+    item.addEventListener('click', () => toggleLegendItem(item));
+    item.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggleLegendItem(item);
+      }
+    });
+  });
+
+  // ── Armor mode toggle ──────────────────────────────────────────
+  /**
+   * Toggle armor mode for a specific chart.
+   * @param {HTMLButtonElement} btn
+   */
+  function toggleArmorMode(btn) {
+    const { graphId } = btn.dataset;
+    if (!graphId) return;
+
+    if (armorModeSet.has(graphId)) {
+      armorModeSet.delete(graphId);
+      btn.setAttribute('aria-pressed', 'false');
+    } else {
+      armorModeSet.add(graphId);
+      btn.setAttribute('aria-pressed', 'true');
+    }
+
+    const canvas = document.getElementById(graphId);
+    if (canvas) renderChart(canvas, parseInt(levelSwitcher.value, 10));
+  }
+
+  document.querySelectorAll('.armor-mode-toggle[data-graph-id]').forEach((btn) => {
+    btn.addEventListener('click', () => toggleArmorMode(btn));
+    btn.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggleArmorMode(btn);
+      }
+    });
+  });
+
+  // ── Window Resize (Redraw for fluid width) ───────────────────
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      const currentLevel = parseInt(levelSwitcher.value, 10);
+      renderAllCharts(currentLevel);
+    }, 150); // debounce 150ms
   });
 }
 
