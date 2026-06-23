@@ -114,10 +114,15 @@ const chartDataJson = JSON.stringify(chartData);
       class="armor-mode-toggle"
       data-graph-id={graphId}
       aria-pressed="false"
-      title="Use the stats from two of the same shoulder and add the shoulder's armor, showcasing their total health pool as opposed to just shields. Note that this is only a reasonable metric against single target weapons and weapons that deal equal damage to shields and armor."
     >
       <span class="armor-toggle-icon" aria-hidden="true">⊕</span>
       Include Armor
+      <div class="stat-tooltip-container" style="margin-left: 2px;">
+        <span class="stat-help-icon">?</span>
+        <div class="stat-tooltip-text" style="white-space: normal;">
+          Use the stats from two of the same shoulder and add the shoulder's armor, showcasing their total health pool as opposed to just shields. Note that this is only a reasonable metric against single target weapons and weapons that deal equal damage to shields and armor.
+        </div>
+      </div>
     </button>
   </div>
 </div>
