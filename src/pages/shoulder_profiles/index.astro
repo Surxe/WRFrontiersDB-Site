@@ -172,7 +172,6 @@ const INITIAL_LEVEL_INDEX = MAX_LEVEL - 1; // 0-indexed → level 13
 
   /* ---- ShoulderStatsTable ---- */
   :global(.shoulder-stats-table-wrapper) {
-    overflow-x: auto;
     border-radius: 6px;
     border: 1px solid #383838;
   }
@@ -181,6 +180,13 @@ const INITIAL_LEVEL_INDEX = MAX_LEVEL - 1; // 0-indexed → level 13
     width: 100%;
     border-collapse: collapse;
     font-size: 0.85rem;
+  }
+
+  :global(.shoulder-stats-table th:first-child) {
+    border-top-left-radius: 5px;
+  }
+  :global(.shoulder-stats-table th:last-child) {
+    border-top-right-radius: 5px;
   }
 
   :global(.shoulder-stats-table th) {
