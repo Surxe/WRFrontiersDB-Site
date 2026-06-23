@@ -13,6 +13,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import Page from '../../components/Page.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
 import LevelSwitcher from '../../components/LevelSwitcher.astro';
 import CategoryChart from '../../components/shoulder_profiles/CategoryChart.astro';
 import ShoulderStatsTable from '../../components/shoulder_profiles/ShoulderStatsTable.astro';
@@ -21,6 +22,7 @@ import type { ShoulderCategory } from '../../types/shoulder_profile';
 import type { Module } from '../../types/module';
 import type { LocalizationKey } from '../../types/localization';
 import { getParseObjects } from '../../utils/parse_object';
+import { getShoulderProfilesBreadcrumbs } from '../../utils/breadcrumb';
 
 // ---------------------------------------------------------------------------
 // Load data
@@ -95,6 +97,7 @@ const INITIAL_LEVEL_INDEX = MAX_LEVEL - 1; // 0-indexed → level 13
   description="Shield recharge comparison charts and stat tables for all shoulder module categories in War Robots Frontiers."
 >
   <main class="shoulder-profiles-page">
+    <Breadcrumb breadcrumbs={getShoulderProfilesBreadcrumbs()} />
     <h1>Shoulder Profiles</h1>
     <p class="page-description">
       Shield recharge curves and stats for each shoulder category. Shields start
