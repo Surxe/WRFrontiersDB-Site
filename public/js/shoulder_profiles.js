@@ -58,8 +58,17 @@ function drawShieldChart(canvas, data) {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
 
-  const W = canvas.width;
-  const H = canvas.height;
+  // Resolve canvas crispness and dynamic width
+  const rect = canvas.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  const W = Math.max(rect.width, 100); // fallback if display:none
+  const H = 300; // Fixed height (or use rect.height if we want aspect ratio scaling)
+
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  
+  ctx.save();
+  ctx.scale(dpr, dpr);
 
   const PAD = { top: 24, right: 20, bottom: 44, left: 62 };
   const plotW = W - PAD.left - PAD.right;
@@ -193,7 +202,8 @@ function drawShieldChart(canvas, data) {
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
   ctx.fillText(yLabel, 0, 0);
-  ctx.restore();
+  ctx.restore(); // restore rotation
+  ctx.restore(); // restore dpr scaling
 }
 
 /**
@@ -416,6 +426,16 @@ function init() {
         toggleArmorMode(btn);
       }
     });
+  });
+
+  // ── Window Resize (Redraw for fluid width) ───────────────────
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      const currentLevel = parseInt(levelSwitcher.value, 10);
+      renderAllCharts(currentLevel);
+    }, 150); // debounce 150ms
   });
 }
 
