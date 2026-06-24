@@ -5,6 +5,7 @@ import '../styles/page_header.css';
 import '../styles/global.css';
 import { localizeText } from '../utils/localization';
 import type { LocalizationKey } from '../types/localization';
+import Footer from './Footer.astro';
 
 // Valid language codes — passed to the inline redirect script via define:vars
 const validLangs = Object.keys(langs);
@@ -218,5 +219,6 @@ const baseUrl = import.meta.env.BASE_URL;
       // Run immediately (DOM is already built for static pages)
       rewriteInternalLinks();
     </script>
+    <Footer />
   </body>
 </html>
