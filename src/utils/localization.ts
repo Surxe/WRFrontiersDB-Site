@@ -61,6 +61,17 @@ export function getDefaultString(
   if (!localizationKey) {
     return undefined;
   }
+  // Prefer the en localization if Key+TableNamespace exist (it is the proper English text).
+  // Only fall back to InvariantString when there is no Key+TableNamespace present.
+  if (localizationKey.Key && localizationKey.TableNamespace) {
+    if (localizationKey.en) {
+      return localizationKey.en;
+    }
+    if (localizationKey.InvariantString) {
+      return localizationKey.InvariantString;
+    }
+    throw new Error('LocalizationKey has no InvariantString or en field');
+  }
   if (localizationKey.InvariantString) {
     return localizationKey.InvariantString;
   }
@@ -86,10 +97,14 @@ export function localizeText(
   return elements
     .map((key) => {
       if (!key) return '';
-      if (key.InvariantString) return key.InvariantString;
-      if (key.Key && key.TableNamespace && locData?.[key.TableNamespace]) {
-        return locData[key.TableNamespace][key.Key] || key.en || '';
+      // Prefer Key+TableNamespace lookup; InvariantString is only used when no key exists.
+      if (key.Key && key.TableNamespace) {
+        if (locData?.[key.TableNamespace]) {
+          return locData[key.TableNamespace][key.Key] || key.en || key.InvariantString || '';
+        }
+        return key.en || key.InvariantString || '';
       }
+      if (key.InvariantString) return key.InvariantString;
       return key.en || '';
     })
     .join(' ');
@@ -166,17 +181,19 @@ export function resolveLocalizedEmbeds(
   locData: Record<string, Record<string, string>>
 ): string {
   let template = '';
-  if (templateKey.InvariantString) {
+  // Prefer Key+TableNamespace lookup; InvariantString is only used when no key exists.
+  if (templateKey.Key && templateKey.TableNamespace) {
+    if (locData[templateKey.TableNamespace]) {
+      template =
+        locData[templateKey.TableNamespace][templateKey.Key] ||
+        templateKey.en ||
+        templateKey.InvariantString ||
+        '';
+    } else {
+      template = templateKey.en || templateKey.InvariantString || '';
+    }
+  } else if (templateKey.InvariantString) {
     template = templateKey.InvariantString;
-  } else if (
-    templateKey.Key &&
-    templateKey.TableNamespace &&
-    locData[templateKey.TableNamespace]
-  ) {
-    template =
-      locData[templateKey.TableNamespace][templateKey.Key] ||
-      templateKey.en ||
-      '';
   } else {
     template = templateKey.en || '';
   }
@@ -187,15 +204,16 @@ export function resolveLocalizedEmbeds(
     if (typeof value === 'string') {
       replacement = value;
     } else {
-      if (value.InvariantString) {
+      // Prefer Key+TableNamespace lookup; InvariantString is only used when no key exists.
+      if (value.Key && value.TableNamespace) {
+        if (locData[value.TableNamespace]) {
+          replacement =
+            locData[value.TableNamespace][value.Key] || value.en || value.InvariantString || '';
+        } else {
+          replacement = value.en || value.InvariantString || '';
+        }
+      } else if (value.InvariantString) {
         replacement = value.InvariantString;
-      } else if (
-        value.Key &&
-        value.TableNamespace &&
-        locData[value.TableNamespace]
-      ) {
-        replacement =
-          locData[value.TableNamespace][value.Key] || value.en || '';
       } else {
         replacement = value.en || '';
       }

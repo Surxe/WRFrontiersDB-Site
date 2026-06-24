@@ -44,16 +44,14 @@ for (const [_, data] of Object.entries(statValueChoices)) {
 
 const namespace = localizationKey.TableNamespace;
 const key = localizationKey.Key;
-const invariantString = localizationKey.InvariantString;
+const hasLocalizableKey = !!(key && namespace);
 const defaultText = getDefaultString(localizationKey);
 ---
 
 <!--
 Creates an html element with localization data attributes and stat replacement data
 -->{
-  invariantString ? (
-    <Tag id={id}>{invariantString}</Tag>
-  ) : (
+  hasLocalizableKey ? (
     <Tag
       id={id}
       data-loc-key={key}
@@ -66,5 +64,7 @@ Creates an html element with localization data attributes and stat replacement d
     >
       {defaultText}
     </Tag>
+  ) : (
+    <Tag id={id}>{defaultText}</Tag>
   )
 }

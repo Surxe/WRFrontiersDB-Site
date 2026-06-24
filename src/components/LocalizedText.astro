@@ -14,7 +14,7 @@ const Tag = tag as any;
 
 const namespace = localizationKey.TableNamespace;
 const key = localizationKey.Key;
-const invariantString = localizationKey.InvariantString;
+const hasLocalizableKey = !!(key && namespace);
 const defaultText = getDefaultString(localizationKey);
 ---
 
@@ -22,12 +22,11 @@ const defaultText = getDefaultString(localizationKey);
 Creates an html element with tag {tag}, e.g. <p> that stores localization data
 necessary to localize it, as well as the default text while the localization lazy-loads
 
-If invariantString is provided, create a non-localization element with just the default text
-otherwise, create a localization element with the necessary data attributes.
+If a Key+TableNamespace exist, always create a localization element so client-side
+localization can resolve the proper text for the current language. InvariantString is
+only used as a static element when no Key+TableNamespace are present.
 -->{
-  invariantString ? (
-    <Tag id={id}>{invariantString}</Tag>
-  ) : (
+  hasLocalizableKey ? (
     <Tag
       id={id}
       data-loc-key={key}
@@ -36,5 +35,7 @@ otherwise, create a localization element with the necessary data attributes.
     >
       {defaultText}
     </Tag>
+  ) : (
+    <Tag id={id}>{defaultText}</Tag>
   )
 }
