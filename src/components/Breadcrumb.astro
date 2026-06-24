@@ -19,13 +19,15 @@ const { breadcrumbs } = Astro.props;
               breadcrumb.label
             ) : (
               <>
-                {breadcrumb.label.InvariantString || (
+                {(breadcrumb.label.Key && breadcrumb.label.TableNamespace) ? (
                   <span
                     data-loc-key={breadcrumb.label.Key}
                     data-loc-namespace={breadcrumb.label.TableNamespace}
                   >
                     {getDefaultString(breadcrumb.label)}
                   </span>
+                ) : (
+                  getDefaultString(breadcrumb.label)
                 )}
               </>
             )}
@@ -36,13 +38,15 @@ const { breadcrumbs } = Astro.props;
               breadcrumb.label
             ) : (
               <>
-                {breadcrumb.label.InvariantString || (
+                {(breadcrumb.label.Key && breadcrumb.label.TableNamespace) ? (
                   <span
                     data-loc-key={breadcrumb.label.Key}
                     data-loc-namespace={breadcrumb.label.TableNamespace}
                   >
                     {getDefaultString(breadcrumb.label)}
                   </span>
+                ) : (
+                  getDefaultString(breadcrumb.label)
                 )}
               </>
             )}

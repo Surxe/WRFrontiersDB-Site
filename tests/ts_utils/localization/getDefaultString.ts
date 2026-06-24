@@ -4,7 +4,7 @@ import type { LocalizationKey } from '../../../src/types/localization';
 
 describe('getDefaultString', () => {
   describe('success cases', () => {
-    it('should return InvariantString when present', () => {
+    it('should return InvariantString when present and no Key+TableNamespace exist', () => {
       const localizationKey: LocalizationKey = {
         InvariantString: 'Constant Text',
         en: 'English Text',
@@ -120,12 +120,23 @@ describe('getDefaultString', () => {
   });
 
   describe('type safety', () => {
-    it('should handle LocalizationKey with all fields', () => {
+    it('should handle LocalizationKey with all fields — en takes priority when Key+TableNamespace exist', () => {
       const localizationKey: LocalizationKey = {
         Key: 'test_key',
         TableNamespace: 'test_namespace',
         InvariantString: 'Constant Text',
         en: 'English Text',
+      };
+
+      const result = getDefaultString(localizationKey);
+      expect(result).toBe('English Text');
+    });
+
+    it('should fall back to InvariantString when Key+TableNamespace exist but en is absent', () => {
+      const localizationKey: LocalizationKey = {
+        Key: 'test_key',
+        TableNamespace: 'test_namespace',
+        InvariantString: 'Constant Text',
       };
 
       const result = getDefaultString(localizationKey);
