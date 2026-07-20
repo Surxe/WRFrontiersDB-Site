@@ -1,21 +1,17 @@
 ---
 /**
- * ShoulderStatsTable.astro
- * Renders a single HTML table for all shoulders in a category, showing
+ * UnifiedShoulderTable.astro
+ * Renders a single HTML table for all shoulders across all profiles, showing
  * all stats from shoulder_profiles.json. One row per shoulder per level.
- *
- * Localization note: shoulder name headings use data-loc-* attributes so
- * the client-side localization JS can translate them. Stat column headers
- * are plain text (localization not required per spec).
+ * Rows are filtered by active profile via client-side JS.
  */
 import type { LocalizationKey } from '../../types/localization';
-import type { ShoulderEntry } from '../../types/shoulder_profile';
 import { getDefaultString } from '../../utils/localization';
 import { refToId } from '../../utils/object_reference';
 
 export interface Props {
-  /** All shoulders in this category */
-  shoulders: ShoulderEntry[];
+  /** All shoulders across all profiles, with .profileId */
+  shoulders: any[];
   /** Map from module ID to its localization key */
   moduleNameMap: Record<string, LocalizationKey>;
   /** Unique id for this table element */
@@ -115,7 +111,7 @@ function fmt(value: number, col: string): string {
             const levelNum = parseInt(levelKey);
 
             return (
-              <tr data-level={levelNum} data-module-id={moduleId}>
+              <tr data-level={levelNum} data-module-id={moduleId} data-profile-id={shoulder.profileId}>
                 {/* Shoulder name cell — duplicated for every row so we can hide inactive levels easily */}
                 <td class="shoulder-name-cell">
                   {moduleName?.InvariantString ? (
@@ -146,3 +142,148 @@ function fmt(value: number, col: string): string {
     </tbody>
   </table>
 </div>
+
+<style>
+  /* ---- ShoulderStatsTable ---- */
+  .shoulder-stats-table-wrapper {
+    border-radius: 6px;
+    border: 1px solid #383838;
+    overflow-x: auto;
+  }
+
+  .shoulder-stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+
+  .shoulder-stats-table th:first-child {
+    border-top-left-radius: 5px;
+  }
+  .shoulder-stats-table th:last-child {
+    border-top-right-radius: 5px;
+  }
+
+  .shoulder-stats-table th {
+    background: #2e2e2e;
+    color: #ccc;
+    padding: 0.5rem 0.75rem;
+    white-space: nowrap;
+    text-align: right;
+    font-weight: 600;
+  }
+
+  .shoulder-stats-table th:first-child,
+  .shoulder-stats-table th:nth-child(2) {
+    text-align: left;
+  }
+
+  .shoulder-stats-table td {
+    padding: 0.4rem 0.75rem;
+    border-top: 1px solid #2e2e2e;
+    color: #ddd;
+    text-align: right;
+  }
+
+  .shoulder-stats-table .shoulder-name-cell {
+    text-align: left;
+    font-weight: 600;
+    color: #e8e8e8;
+    background: #252525;
+    border-right: 1px solid #383838;
+    min-width: 110px;
+    vertical-align: top;
+  }
+
+  .shoulder-stats-table .level-cell {
+    text-align: center;
+    color: #aaa;
+    min-width: 50px;
+  }
+
+  /* Hide all data rows by default */
+  .shoulder-stats-table tr[data-level] {
+    display: none;
+  }
+
+  /* Only display the rows matching the currently selected level AND selected profile */
+  .shoulder-stats-table tr.is-active-level.is-active-profile {
+    display: table-row;
+  }
+
+  /* ---- Tooltips ---- */
+  .th-content {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.4rem;
+  }
+
+  /* Reset the first two columns to left-align */
+  .shoulder-stats-table th:first-child .th-content,
+  .shoulder-stats-table th:nth-child(2) .th-content {
+    justify-content: flex-start;
+  }
+
+  .stat-tooltip-container {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: help;
+  }
+
+  .stat-help-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background-color: #4fc3f7;
+    color: #121212;
+    font-size: 10px;
+    font-weight: bold;
+    line-height: 1;
+  }
+
+  .stat-tooltip-text {
+    visibility: hidden;
+    opacity: 0;
+    width: 220px;
+    background-color: #333;
+    color: #fff;
+    text-align: left;
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    position: absolute;
+    z-index: 100;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    transition:
+      opacity 0.2s,
+      visibility 0.2s;
+    font-size: 0.8rem;
+    font-weight: normal;
+    white-space: normal;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    pointer-events: none;
+  }
+
+  .stat-tooltip-text::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #333 transparent transparent transparent;
+  }
+
+  .stat-tooltip-container:hover .stat-tooltip-text {
+    visibility: visible;
+    opacity: 1;
+  }
+</style>

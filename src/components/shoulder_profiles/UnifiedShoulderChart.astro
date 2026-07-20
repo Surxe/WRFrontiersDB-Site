@@ -1,35 +1,25 @@
 ---
 /**
- * CategoryChart.astro
- * Renders a shield recharge graph for a whole category as a single <canvas> element.
- * All shoulders in the category are plotted as separate lines.
- *
- * All level data is encoded in data-attributes so the client-side chart
- * renderer can access it without any runtime fetch.
+ * UnifiedShoulderChart.astro
+ * Renders a single shield recharge graph for all shoulders across profiles.
+ * The active profile is controlled by client-side JS.
  */
 import type { LocalizationKey } from '../../types/localization';
-import type { ShoulderEntry } from '../../types/shoulder_profile';
 import { getDefaultString } from '../../utils/localization';
 import { refToId } from '../../utils/object_reference';
 
 export interface Props {
-  /** Shoulders array for this category */
-  shoulders: ShoulderEntry[];
+  /** Flattened shoulders array with .profileId injected */
+  shoulders: any[];
   /** Map from module ID to localization key */
   moduleNameMap: Record<string, LocalizationKey>;
-  /** Per-category max DelayAndRechargeTotal – shared X-axis upper bound */
-  categoryMaxTime: number;
-  /** Per-category max ShieldAmount – shared Y-axis upper bound */
-  categoryMaxShield: number;
-  /** Unique canvas id, e.g. "graph-0" */
+  /** Unique canvas id */
   graphId: string;
 }
 
 const {
   shoulders,
   moduleNameMap,
-  categoryMaxTime,
-  categoryMaxShield,
   graphId,
 } = Astro.props;
 
@@ -50,6 +40,7 @@ const chartData = shoulders.map((shoulder, idx) => {
   const moduleId = refToId(shoulder.shoulder_module_ref);
   return {
     id: moduleId,
+    profileId: shoulder.profileId,
     color: COLORS[idx % COLORS.length],
     levels: shoulder.levels,
   };
@@ -66,8 +57,6 @@ const chartDataJson = JSON.stringify(chartData);
       width="800"
       height="300"
       data-shoulders={chartDataJson}
-      data-max-time={categoryMaxTime}
-      data-max-shield={categoryMaxShield}
       aria-label="Shield recharge chart for category"></canvas>
   </div>
 
@@ -87,6 +76,7 @@ const chartDataJson = JSON.stringify(chartData);
             role="button"
             tabindex="0"
             data-shoulder-id={moduleId}
+            data-profile-id={shoulder.profileId}
             data-graph-id={graphId}
             aria-pressed="false"
             title="Click to hide/show this shoulder's line"
@@ -196,7 +186,7 @@ const chartDataJson = JSON.stringify(chartData);
     outline-offset: 2px;
   }
 
-  /* Disabled (hidden) state */
+  /* Disabled (hidden) state from user toggle */
   .legend-item.legend-item--disabled {
     opacity: 0.4;
     border-style: dashed;
@@ -205,6 +195,11 @@ const chartDataJson = JSON.stringify(chartData);
 
   .legend-item.legend-item--disabled .legend-label {
     text-decoration: line-through;
+  }
+
+  /* Hidden state from profile filter */
+  .legend-item.legend-item--hidden {
+    display: none;
   }
 
   .legend-color {
@@ -218,10 +213,8 @@ const chartDataJson = JSON.stringify(chartData);
 
   /* ── Armor mode toggle ───────────────────────────────────── */
   .legend-separator {
-    /* Pushes the armor toggle to the far right within the flex row */
     flex: 1 0 0;
     min-width: 0.5rem;
-    /* Visual divider */
     border-left: 1px solid #444;
     align-self: stretch;
     margin: 2px 4px;
@@ -264,7 +257,6 @@ const chartDataJson = JSON.stringify(chartData);
     outline-offset: 2px;
   }
 
-  /* Active / toggled-on state */
   .armor-mode-toggle[aria-pressed='true'] {
     color: #81c784;
     background: rgba(129, 199, 132, 0.1);

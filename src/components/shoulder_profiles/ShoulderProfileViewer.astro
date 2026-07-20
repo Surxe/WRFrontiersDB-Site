@@ -1,0 +1,171 @@
+---
+/**
+ * ShoulderProfileViewer.astro
+ * Replaces the old shoulder_profiles page.
+ * Loads the categories, creates a dropdown to select a profile,
+ * and passes all data to the UnifiedShoulderChart and UnifiedShoulderTable.
+ */
+import * as fs from 'fs';
+import * as path from 'path';
+import type { ShoulderCategory, ShoulderEntry } from '../../types/shoulder_profile';
+import type { Module } from '../../types/module';
+import type { LocalizationKey } from '../../types/localization';
+import { getParseObjects } from '../../utils/parse_object';
+import LevelSwitcher from '../LevelSwitcher.astro';
+import UnifiedShoulderChart from './UnifiedShoulderChart.astro';
+import UnifiedShoulderTable from './UnifiedShoulderTable.astro';
+
+// ---------------------------------------------------------------------------
+// Load data
+// ---------------------------------------------------------------------------
+const profilesPath = path.join(
+  process.cwd(),
+  'WRFrontiersDB-Data/current/Analysis/shoulder_profiles.json'
+);
+const categories: ShoulderCategory[] = JSON.parse(
+  fs.readFileSync(profilesPath, 'utf-8')
+);
+
+// Sort the categories by Weight, Light Slots, then Heavy Slots
+categories.sort((a, b) => {
+  if (a.weight_drain !== b.weight_drain) {
+    return a.weight_drain - b.weight_drain;
+  }
+  if (a.light_slots !== b.light_slots) {
+    return a.light_slots - b.light_slots;
+  }
+  return a.heavy_slots - b.heavy_slots;
+});
+
+// Build moduleId → LocalizationKey map from Module.json
+const allModules = getParseObjects<Module>('Objects/Module.json');
+const moduleNameMap: Record<string, LocalizationKey> = {};
+for (const [id, module] of Object.entries(allModules)) {
+  if (module.name) {
+    moduleNameMap[id] = module.name as LocalizationKey;
+  }
+}
+
+// Generate an ID for each category and build the list of all shoulders
+const profileOptions = categories.map((cat, idx) => {
+  const lightPart = cat.light_slots > 0 ? `Light ×${cat.light_slots}` : null;
+  const heavyPart = cat.heavy_slots > 0 ? `Heavy ×${cat.heavy_slots}` : null;
+  const slotParts = [lightPart, heavyPart].filter(Boolean).join(', ') || 'No Slots';
+  const label = `${slotParts} — Weight ${cat.weight_drain}`;
+  return { id: `profile-${idx}`, label, category: cat };
+});
+
+// Build a flattened array of all shoulders, tagging them with their profile ID
+const allShouldersWithProfile = profileOptions.flatMap(opt => 
+  opt.category.shoulders.map(shoulder => ({
+    ...shoulder,
+    profileId: opt.id
+  }))
+);
+
+const MAX_LEVEL = 13;
+const INITIAL_LEVEL_INDEX = MAX_LEVEL - 1;
+---
+
+<div class="shoulder-profile-viewer">
+  <h2>Shoulder Profiles</h2>
+  <p class="page-description">
+    Shield recharge curves and stats for shoulder modules. Select a profile below to compare shoulders of the same category.
+  </p>
+
+  <div class="controls-bar">
+    <div class="profile-selector-group">
+      <label for="shoulder-profile-select">Profile:</label>
+      <select id="shoulder-profile-select" class="profile-select">
+        {profileOptions.map(opt => (
+          <option value={opt.id}>{opt.label}</option>
+        ))}
+      </select>
+    </div>
+    <div class="level-switcher-container">
+      <LevelSwitcher maxLevel={MAX_LEVEL} initialLevel={INITIAL_LEVEL_INDEX} />
+    </div>
+  </div>
+
+  <div class="viewer-content">
+    <UnifiedShoulderChart 
+      shoulders={allShouldersWithProfile}
+      moduleNameMap={moduleNameMap}
+      graphId="unified-shoulder-graph"
+    />
+
+    <UnifiedShoulderTable 
+      shoulders={allShouldersWithProfile}
+      moduleNameMap={moduleNameMap}
+      tableId="unified-shoulder-table"
+    />
+  </div>
+</div>
+
+<style>
+  .shoulder-profile-viewer {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .page-description {
+    color: #aaa;
+    margin-bottom: 1.5rem;
+    max-width: 70ch;
+  }
+
+  .controls-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    align-items: center;
+    background: #242424;
+    padding: 1rem;
+    border-radius: 6px;
+    border: 1px solid #383838;
+    margin-bottom: 2rem;
+  }
+
+  .profile-selector-group {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .profile-selector-group label {
+    font-weight: 600;
+    color: #e0e0e0;
+  }
+
+  .profile-select {
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    background: #333;
+    color: #fff;
+    border: 1px solid #555;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+
+  .profile-select:focus {
+    outline: 2px solid #4fc3f7;
+    border-color: #4fc3f7;
+  }
+
+  .level-switcher-container {
+    margin-left: auto;
+  }
+
+  @media (max-width: 768px) {
+    .controls-bar {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .level-switcher-container {
+      margin-left: 0;
+    }
+  }
+</style>
