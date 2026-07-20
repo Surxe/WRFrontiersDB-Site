@@ -19,6 +19,7 @@ import { getDefaultString } from '../../utils/localization';
 import { getObjRefData } from '../../utils/obj_ref';
 import TextElements from '../../components/obj_ref/TextElements.astro';
 import { refToId } from '../../utils/object_reference';
+import ShoulderProfileViewer from '../../components/shoulder_profiles/ShoulderProfileViewer.astro';
 
 export async function getStaticPaths() {
   return generateSlugBasedStaticPaths('ModuleGroup');
@@ -98,6 +99,14 @@ const objRefData = getObjRefData(group);
   <p>Language: <span id="current-lang">en</span></p>
 
   {
+    id === 'non-titan-shoulder' && (
+      <section class="shoulder-profiles-section" style="margin-top: 2rem; margin-bottom: 2rem;">
+        <ShoulderProfileViewer />
+      </section>
+    )
+  }
+
+  {
     filteredModules.length > 0 && (
       <section>
         <h2>Modules in this group</h2>
@@ -115,4 +124,10 @@ const objRefData = getObjRefData(group);
   <ModuleGroupsNavBox />
 
   <ObjectPageScripts objectData={{}} slug={_slug} />
+  
+  {
+    id === 'non-titan-shoulder' && (
+      <script is:inline src="/js/shoulder_profiles.js"></script>
+    )
+  }
 </ParseObjectPage>

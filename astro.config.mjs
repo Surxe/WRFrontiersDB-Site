@@ -11,5 +11,8 @@ const isCustomDomain = process.env.CUSTOM_DOMAIN === 'true';
 export default defineConfig({
     output: 'static',
     site: isCustomDomain ? 'https://wrf-db.info' : 'https://Surxe.github.io',
-    base: '/'
+    base: '/',
+    redirects: {
+        '/shoulder_profiles': '/module_groups/shoulder'
+    }
 });

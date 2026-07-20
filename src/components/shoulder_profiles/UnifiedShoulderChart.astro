@@ -1,0 +1,388 @@
+---
+/**
+ * UnifiedShoulderChart.astro
+ * Renders a single shield recharge graph for all shoulders across profiles.
+ * The legend is grouped by profile. Clicking a profile header selects that group.
+ * Individual items within a group can still be toggled on/off.
+ */
+import type { LocalizationKey } from '../../types/localization';
+import type { ModuleGroup } from '../../types/module_group';
+import { getDefaultString } from '../../utils/localization';
+import { refToId } from '../../utils/object_reference';
+import LocalizedText from '../LocalizedText.astro';
+
+export interface Props {
+  /** Flattened shoulders array with .profileId injected */
+  shoulders: any[];
+  /** Profile options with id and label, in order */
+  profileOptions: { id: string; label: string; category: any }[];
+  /** The profile ID to activate by default */
+  defaultProfileId: string;
+  /** Map from module ID to localization key */
+  moduleNameMap: Record<string, LocalizationKey>;
+  lightWeaponGroup: ModuleGroup;
+  heavyWeaponGroup: ModuleGroup;
+  /** Unique canvas id */
+  graphId: string;
+}
+
+const {
+  shoulders,
+  profileOptions,
+  defaultProfileId,
+  moduleNameMap,
+  lightWeaponGroup,
+  heavyWeaponGroup,
+  graphId,
+} = Astro.props;
+
+// Distinct colors for lines — assigned per-shoulder, globally across all profiles
+const COLORS = [
+  '#4fc3f7', // light blue
+  '#f48fb1', // pink
+  '#81c784', // green
+  '#ffb74d', // orange
+  '#ba68c8', // purple
+  '#4db6ac', // teal
+  '#e57373', // red
+  '#aed581', // light green
+  '#fff176', // yellow
+  '#ff8a65', // deep orange
+  '#80cbc4', // teal lighter
+  '#ce93d8', // light purple
+];
+
+// Build a color map by module id, assigning sequentially
+const colorMap: Record<string, string> = {};
+shoulders.forEach((shoulder, idx) => {
+  const moduleId = refToId(shoulder.shoulder_module_ref);
+  if (!colorMap[moduleId]) {
+    colorMap[moduleId] = COLORS[idx % COLORS.length];
+  }
+});
+
+// Serialize the data for JS — include color in each entry
+const chartData = shoulders.map((shoulder) => {
+  const moduleId = refToId(shoulder.shoulder_module_ref);
+  return {
+    id: moduleId,
+    profileId: shoulder.profileId,
+    color: colorMap[moduleId],
+    levels: shoulder.levels,
+  };
+});
+
+const chartDataJson = JSON.stringify(chartData);
+
+const groupedByProfile = profileOptions.map(opt => ({
+  profileId: opt.id,
+  label: opt.label,
+  category: opt.category,
+  isDefault: opt.id === defaultProfileId,
+  shoulders: shoulders.filter(s => s.profileId === opt.id),
+}));
+---
+
+<div class="category-graph-card">
+  <div class="chart-container">
+    <canvas
+      id={graphId}
+      class="shield-chart-canvas"
+      width="800"
+      height="300"
+      data-shoulders={chartDataJson}
+      data-default-profile={defaultProfileId}
+      aria-label="Shield recharge chart for shoulder profiles"></canvas>
+  </div>
+
+  <div class="chart-legend">
+    {groupedByProfile.map(group => (
+      <div class="legend-group" data-profile-id={group.profileId}>
+        {/* Profile header — clicking selects this profile */}
+        <button
+          class={`legend-group-header${group.isDefault ? ' is-active-profile' : ''}`}
+          data-profile-id={group.profileId}
+          data-graph-id={graphId}
+          aria-pressed={group.isDefault ? 'true' : 'false'}
+          title={`Focus ${group.label}`}
+        >
+          {group.category.light_slots > 0 && (
+            <><LocalizedText tag="span" localizationKey={lightWeaponGroup.name} /> &times;{group.category.light_slots}</>
+          )}
+          {group.category.light_slots > 0 && group.category.heavy_slots > 0 && <span>, </span>}
+          {group.category.heavy_slots > 0 && (
+            <><LocalizedText tag="span" localizationKey={heavyWeaponGroup.name} /> &times;{group.category.heavy_slots}</>
+          )}
+          {group.category.light_slots === 0 && group.category.heavy_slots === 0 && <span>No Slots</span>}
+          <span> &mdash; Weight {group.category.weight_drain}</span>
+        </button>
+
+        {/* Individual module items within the group */}
+        <div class="legend-group-items">
+          {group.shoulders.map((shoulder) => {
+            const moduleId = refToId(shoulder.shoulder_module_ref);
+            const moduleName = moduleNameMap[moduleId] ?? { InvariantString: moduleId };
+            const defaultName = getDefaultString(moduleName) ?? moduleId;
+            const color = colorMap[moduleId];
+            // Shoulders NOT in the default profile start disabled
+            const startsDisabled = group.profileId !== defaultProfileId;
+
+            return (
+              <div
+                class={`legend-item${startsDisabled ? ' legend-item--disabled' : ''}`}
+                role="button"
+                tabindex="0"
+                data-shoulder-id={moduleId}
+                data-profile-id={group.profileId}
+                data-graph-id={graphId}
+                aria-pressed={startsDisabled ? 'true' : 'false'}
+                title="Click to hide/show this shoulder's line"
+              >
+                <span class="legend-color" style={`background-color: ${color};`} />
+                {moduleName.InvariantString ? (
+                  <span class="legend-label">{moduleName.InvariantString}</span>
+                ) : (
+                  <span class="legend-label">
+                    <LocalizedText tag="span" localizationKey={moduleName} />
+                  </span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    ))}
+  </div>
+
+  <div class="chart-controls-bottom">
+    <button
+      class="armor-mode-toggle"
+      data-graph-id={graphId}
+      aria-pressed="false"
+    >
+      <span class="armor-toggle-icon" aria-hidden="true">⊕</span>
+      Include Armor
+      <div class="stat-tooltip-container" style="margin-left: 2px;">
+        <span class="stat-help-icon">?</span>
+        <div class="stat-tooltip-text left-aligned-tooltip">
+          Use the shields from two of the same shoulder and add the shoulder's armor, showcasing their total health pool as opposed to just shields. Note that this is only a reasonable metric against weapons that are single target and deal equal damage to shields and armor.
+        </div>
+      </div>
+    </button>
+  </div>
+</div>
+
+<style>
+  .category-graph-card {
+    background: #242424;
+    border: 1px solid #383838;
+    border-radius: 8px;
+    padding: 1.5rem;
+    width: 100%;
+    margin-bottom: 1.5rem;
+  }
+
+  .chart-container {
+    width: 100%;
+    overflow-x: auto;
+    margin-bottom: 1rem;
+  }
+
+  .shield-chart-canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+    margin: 0 auto;
+  }
+
+  /* ── Grouped Legend ──────────────────────────────────────── */
+  .chart-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #333;
+  }
+
+  .legend-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    /* allow group to expand horizontally when items wrap into columns */
+    flex: 0 1 auto;
+  }
+
+  /* Profile group header button */
+  .legend-group-header {
+    display: block;
+    width: 100%;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #888;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid #383838;
+    padding: 0 0 0.35rem 0;
+    margin-bottom: 0.15rem;
+    cursor: pointer;
+    transition: color 0.15s ease, border-color 0.15s ease;
+    font-family: inherit;
+  }
+
+  .legend-group-header:hover {
+    color: #ccc;
+    border-color: #555;
+  }
+
+  .legend-group-header.is-active-profile {
+    color: #4fc3f7;
+    border-color: #4fc3f7;
+  }
+
+  .legend-group-header:focus-visible {
+    outline: 2px solid #4fc3f7;
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  .legend-group-items {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    /* cap height so long groups spill into a second column instead of growing tall */
+    max-height: 4.8rem;
+    align-content: flex-start;
+    gap: 0.1rem 0.75rem;
+  }
+
+  /* Individual legend items */
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.75rem;
+    color: #e0e0e0;
+    cursor: pointer;
+    user-select: none;
+    padding: 1px 7px 1px 5px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.04);
+    white-space: nowrap;
+    transition:
+      opacity 0.2s ease,
+      background 0.15s ease,
+      border-color 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+
+  .legend-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05);
+  }
+
+  .legend-item:active {
+    background: rgba(255, 255, 255, 0.14);
+    transform: scale(0.97);
+  }
+
+  .legend-item:focus-visible {
+    outline: 2px solid #4fc3f7;
+    outline-offset: 2px;
+  }
+
+  /* Disabled (hidden) state from user toggle */
+  .legend-item.legend-item--disabled {
+    opacity: 0.35;
+    border-style: dashed;
+    background: transparent;
+  }
+
+  .legend-item.legend-item--disabled .legend-label {
+    text-decoration: line-through;
+  }
+
+  .legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    display: inline-block;
+    flex-shrink: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  /* ── Armor mode toggle ───────────────────────────────────── */
+  .chart-controls-bottom {
+    margin-top: 1rem;
+    text-align: left;
+  }
+
+  .armor-mode-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    font-family: inherit;
+    color: #aaa;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    padding: 5px 12px 5px 8px;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+    transition:
+      color 0.15s ease,
+      background 0.15s ease,
+      border-color 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+
+  .armor-mode-toggle:hover {
+    color: #e0e0e0;
+    background: rgba(255, 255, 255, 0.09);
+    border-color: rgba(255, 255, 255, 0.25);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.04);
+  }
+
+  .armor-mode-toggle:active {
+    transform: scale(0.97);
+  }
+
+  .armor-mode-toggle:focus-visible {
+    outline: 2px solid #81c784;
+    outline-offset: 2px;
+  }
+
+  .armor-mode-toggle[aria-pressed='true'] {
+    color: #81c784;
+    background: rgba(129, 199, 132, 0.1);
+    border-color: rgba(129, 199, 132, 0.35);
+  }
+
+  .armor-mode-toggle[aria-pressed='true']:hover {
+    background: rgba(129, 199, 132, 0.18);
+    border-color: rgba(129, 199, 132, 0.55);
+    box-shadow: 0 0 0 3px rgba(129, 199, 132, 0.08);
+  }
+
+  .armor-toggle-icon {
+    font-size: 1rem;
+    line-height: 1;
+  }
+
+  :global(.left-aligned-tooltip) {
+    left: 0 !important;
+    transform: none !important;
+  }
+
+  :global(.left-aligned-tooltip::after) {
+    left: 15px !important;
+  }
+</style>

@@ -7,6 +7,7 @@ import { getDefaultString } from '../../utils/localization';
 import type { Module } from '../../types/module';
 import type { ModuleGroup } from '../../types/module_group';
 import { refToId } from '../../utils/object_reference';
+import slugMap from '../../../public/slug_map.json';
 
 interface Props {
   moduleGroupId: string;
@@ -47,4 +48,4 @@ try {
 }
 ---
 
-<BaseNavBox title={title} objects={filteredModules} />
+<BaseNavBox title={title} titleHref={`/module_groups/${(slugMap as Record<string, string>)[moduleGroupId] || moduleGroupId}`} objects={filteredModules} />
