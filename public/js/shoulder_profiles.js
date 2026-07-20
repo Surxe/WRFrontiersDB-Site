@@ -222,6 +222,16 @@ function calculateBounds(shouldersData, disabled, isArmorMode) {
 // PAGE ORCHESTRATION
 // ============================================================
 
+/**
+ * Returns the union of all disabled shoulder IDs across all canvases.
+ * In practice there is only one canvas, but this keeps the logic generic.
+ */
+function getGlobalDisabled() {
+  const all = new Set();
+  disabledSets.forEach((set) => set.forEach((id) => all.add(id)));
+  return all;
+}
+
 function renderChart(canvas) {
   let shouldersData;
   try {
@@ -276,9 +286,11 @@ function updateLegendVisuals() {
 
 function updateTable() {
   const levelNum = String(currentLevelIndex + 1);
+  const disabled = getGlobalDisabled();
   document.querySelectorAll('.shoulder-stats-table tr[data-level]').forEach((row) => {
     row.classList.toggle('is-active-level', row.dataset.level === levelNum);
     row.classList.toggle('is-active-profile', row.dataset.profileId === currentProfileId);
+    row.classList.toggle('is-legend-visible', !disabled.has(row.dataset.moduleId));
   });
 }
 
@@ -366,6 +378,7 @@ function init() {
     }
 
     updateLegendVisuals();
+    updateTable();
     const targetCanvas = document.getElementById(graphId);
     if (targetCanvas) renderChart(targetCanvas);
   }

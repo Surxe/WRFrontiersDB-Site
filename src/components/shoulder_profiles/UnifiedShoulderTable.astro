@@ -205,8 +205,8 @@ function fmt(value: number, col: string): string {
     display: none;
   }
 
-  /* Only display the rows matching the currently selected level AND selected profile */
-  .shoulder-stats-table tr.is-active-level.is-active-profile {
+  /* Only display the rows matching the currently selected level AND not hidden by legend toggle */
+  .shoulder-stats-table tr.is-active-level.is-legend-visible {
     display: table-row;
   }
 
