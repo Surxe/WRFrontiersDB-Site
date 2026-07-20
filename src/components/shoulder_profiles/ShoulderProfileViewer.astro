@@ -55,6 +55,12 @@ const profileOptions = categories.map((cat, idx) => {
   return { id: `profile-${idx}`, label, category: cat };
 });
 
+// Find default profile (Weight 11, Light x2, Heavy x0)
+const defaultProfile = profileOptions.find(
+  opt => opt.category.weight_drain === 11 && opt.category.light_slots === 2 && opt.category.heavy_slots === 0
+);
+const defaultProfileId = defaultProfile ? defaultProfile.id : (profileOptions[0]?.id || '');
+
 // Build a flattened array of all shoulders, tagging them with their profile ID
 const allShouldersWithProfile = profileOptions.flatMap(opt => 
   opt.category.shoulders.map(shoulder => ({
@@ -73,12 +79,16 @@ const INITIAL_LEVEL_INDEX = MAX_LEVEL - 1;
     Shield recharge curves and stats for shoulder modules. Select a profile below to compare shoulders of the same category.
   </p>
 
+  <p class="page-description" style="font-size: 0.85rem; font-style: italic; margin-top: -0.5rem; margin-bottom: 1.5rem;">
+    Note: Shoulder hitboxes have unique shapes and sizes that are not able to be represented by the following stats and curves.
+  </p>
+
   <div class="controls-bar">
     <div class="profile-selector-group">
       <label for="shoulder-profile-select">Profile:</label>
       <select id="shoulder-profile-select" class="profile-select">
         {profileOptions.map(opt => (
-          <option value={opt.id}>{opt.label}</option>
+          <option value={opt.id} selected={opt.id === defaultProfileId}>{opt.label}</option>
         ))}
       </select>
     </div>
@@ -86,10 +96,6 @@ const INITIAL_LEVEL_INDEX = MAX_LEVEL - 1;
       <LevelSwitcher maxLevel={MAX_LEVEL} initialLevel={INITIAL_LEVEL_INDEX} />
     </div>
   </div>
-
-  <p class="page-description" style="font-size: 0.85rem; font-style: italic;">
-    Note: Shoulder hitboxes have unique shapes and sizes that are not able to be represented by the following stats and curves.
-  </p>
 
   <div class="viewer-content">
     <UnifiedShoulderChart 
@@ -140,29 +146,37 @@ const INITIAL_LEVEL_INDEX = MAX_LEVEL - 1;
     gap: 0.5rem;
   }
 
-  .profile-selector-group label {
-    font-size: 0.9rem;
-    opacity: 0.8;
-    color: #e0e0e0;
+  .profile-selector-group label,
+  :global(.level-switcher-container .level-switcher label) {
+    font-size: 0.9rem !important;
+    opacity: 0.8 !important;
+    color: #e0e0e0 !important;
   }
 
-  .profile-select {
-    background: #1a1a1a;
-    color: white;
-    border: 1px solid #333;
-    padding: 2px 5px;
-    cursor: pointer;
-    font-size: 1rem;
+  .profile-select,
+  :global(.level-switcher-container .level-switcher select) {
+    background: #1a1a1a !important;
+    color: white !important;
+    border: 1px solid #333 !important;
+    padding: 2px 5px !important;
+    cursor: pointer !important;
+    font-size: 0.9rem !important;
+    height: 28px !important;
+    box-sizing: border-box !important;
   }
 
-  .profile-select:focus {
-    outline: 2px solid #4fc3f7;
-    border-color: #4fc3f7;
+  .profile-select:focus,
+  :global(.level-switcher-container .level-switcher select:focus) {
+    outline: 2px solid #4fc3f7 !important;
+    border-color: #4fc3f7 !important;
   }
 
   /* Target the level-switcher inside the container to override its margin-bottom if needed */
   :global(.level-switcher-container .level-switcher) {
     margin-bottom: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
   }
 
   @media (max-width: 768px) {
