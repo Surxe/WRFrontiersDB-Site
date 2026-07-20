@@ -8,6 +8,7 @@
 import type { LocalizationKey } from '../../types/localization';
 import { getDefaultString } from '../../utils/localization';
 import { refToId } from '../../utils/object_reference';
+import LocalizedText from '../LocalizedText.astro';
 
 export interface Props {
   /** All shoulders across all profiles, with .profileId */
@@ -119,12 +120,8 @@ function fmt(value: number, col: string): string {
                       {moduleName.InvariantString}
                     </span>
                   ) : moduleName ? (
-                    <span
-                      class="shoulder-table-name"
-                      data-loc-key={moduleName.Key}
-                      data-loc-namespace={moduleName.TableNamespace}
-                    >
-                      {defaultName}
+                    <span class="shoulder-table-name">
+                      <LocalizedText tag="span" localizationKey={moduleName} />
                     </span>
                   ) : (
                     <span class="shoulder-table-name">{moduleId}</span>

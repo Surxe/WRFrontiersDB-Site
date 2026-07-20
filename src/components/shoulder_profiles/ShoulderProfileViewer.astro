@@ -9,6 +9,7 @@ import * as path from 'path';
 import type { ShoulderCategory, ShoulderEntry } from '../../types/shoulder_profile';
 import type { Module } from '../../types/module';
 import type { LocalizationKey } from '../../types/localization';
+import type { ModuleGroup } from '../../types/module_group';
 import { getParseObjects } from '../../utils/parse_object';
 import LevelSwitcher from '../LevelSwitcher.astro';
 import UnifiedShoulderChart from './UnifiedShoulderChart.astro';
@@ -44,6 +45,10 @@ for (const [id, module] of Object.entries(allModules)) {
     moduleNameMap[id] = module.name as LocalizationKey;
   }
 }
+
+const allModuleGroups = getParseObjects<ModuleGroup>('Objects/ModuleGroup.json');
+const lightWeaponGroup = allModuleGroups['light-weapon'];
+const heavyWeaponGroup = allModuleGroups['heavy-weapon'];
 
 // Generate an ID for each category and build the list of all shoulders
 const profileOptions = categories.map((cat, idx) => {
@@ -94,6 +99,8 @@ const INITIAL_LEVEL_INDEX = MAX_LEVEL - 1;
       profileOptions={profileOptions}
       defaultProfileId={defaultProfileId}
       moduleNameMap={moduleNameMap}
+      lightWeaponGroup={lightWeaponGroup}
+      heavyWeaponGroup={heavyWeaponGroup}
       graphId="unified-shoulder-graph"
     />
 

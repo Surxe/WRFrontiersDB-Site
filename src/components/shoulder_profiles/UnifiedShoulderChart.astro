@@ -6,8 +6,10 @@
  * Individual items within a group can still be toggled on/off.
  */
 import type { LocalizationKey } from '../../types/localization';
+import type { ModuleGroup } from '../../types/module_group';
 import { getDefaultString } from '../../utils/localization';
 import { refToId } from '../../utils/object_reference';
+import LocalizedText from '../LocalizedText.astro';
 
 export interface Props {
   /** Flattened shoulders array with .profileId injected */
@@ -18,6 +20,8 @@ export interface Props {
   defaultProfileId: string;
   /** Map from module ID to localization key */
   moduleNameMap: Record<string, LocalizationKey>;
+  lightWeaponGroup: ModuleGroup;
+  heavyWeaponGroup: ModuleGroup;
   /** Unique canvas id */
   graphId: string;
 }
@@ -27,6 +31,8 @@ const {
   profileOptions,
   defaultProfileId,
   moduleNameMap,
+  lightWeaponGroup,
+  heavyWeaponGroup,
   graphId,
 } = Astro.props;
 
@@ -68,10 +74,10 @@ const chartData = shoulders.map((shoulder) => {
 
 const chartDataJson = JSON.stringify(chartData);
 
-// Group shoulders by profile for the legend
 const groupedByProfile = profileOptions.map(opt => ({
   profileId: opt.id,
   label: opt.label,
+  category: opt.category,
   isDefault: opt.id === defaultProfileId,
   shoulders: shoulders.filter(s => s.profileId === opt.id),
 }));
@@ -100,7 +106,15 @@ const groupedByProfile = profileOptions.map(opt => ({
           aria-pressed={group.isDefault ? 'true' : 'false'}
           title={`Focus ${group.label}`}
         >
-          {group.label}
+          {group.category.light_slots > 0 && (
+            <><LocalizedText tag="span" localizationKey={lightWeaponGroup.name} /> &times;{group.category.light_slots}</>
+          )}
+          {group.category.light_slots > 0 && group.category.heavy_slots > 0 && <span>, </span>}
+          {group.category.heavy_slots > 0 && (
+            <><LocalizedText tag="span" localizationKey={heavyWeaponGroup.name} /> &times;{group.category.heavy_slots}</>
+          )}
+          {group.category.light_slots === 0 && group.category.heavy_slots === 0 && <span>No Slots</span>}
+          <span> &mdash; Weight {group.category.weight_drain}</span>
         </button>
 
         {/* Individual module items within the group */}
@@ -128,12 +142,8 @@ const groupedByProfile = profileOptions.map(opt => ({
                 {moduleName.InvariantString ? (
                   <span class="legend-label">{moduleName.InvariantString}</span>
                 ) : (
-                  <span
-                    class="legend-label"
-                    data-loc-key={moduleName.Key}
-                    data-loc-namespace={moduleName.TableNamespace}
-                  >
-                    {defaultName}
+                  <span class="legend-label">
+                    <LocalizedText tag="span" localizationKey={moduleName} />
                   </span>
                 )}
               </div>
