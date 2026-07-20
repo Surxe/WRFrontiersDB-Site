@@ -13,6 +13,6 @@ export default defineConfig({
     site: isCustomDomain ? 'https://wrf-db.info' : 'https://Surxe.github.io',
     base: '/',
     redirects: {
-        '/shoulder_profiles': '/module_groups/non-titan-shoulder'
+        '/shoulder_profiles': '/module_groups/shoulder'
     }
 });

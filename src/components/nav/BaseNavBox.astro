@@ -3,14 +3,17 @@ import ObjRef from '../obj_ref/ObjRef.astro';
 
 interface Props {
   title: string;
+  titleHref?: string;
   objects: Array<[string, any]>;
 }
 
-const { title, objects } = Astro.props;
+const { title, titleHref, objects } = Astro.props;
 ---
 
 <nav class="nav-box">
-  <h3 class="nav-box-title">{title}</h3>
+  <h3 class="nav-box-title">
+    {titleHref ? <a href={titleHref} class="nav-box-title-link">{title}</a> : title}
+  </h3>
   <div class="nav-box-content">
     {
       objects.map(([_objectId, object]) => (
@@ -38,5 +41,16 @@ const { title, objects } = Astro.props;
   .nav-box-content {
     display: block;
     width: 100%;
+  }
+
+  .nav-box-title-link {
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+
+  .nav-box-title-link:hover {
+    color: #4fc3f7;
+    text-decoration: underline;
   }
 </style>
