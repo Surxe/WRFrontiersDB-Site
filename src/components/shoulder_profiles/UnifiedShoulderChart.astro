@@ -200,7 +200,8 @@ const groupedByProfile = profileOptions.map(opt => ({
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
-    min-width: 160px;
+    /* allow group to expand horizontally when items wrap into columns */
+    flex: 0 1 auto;
   }
 
   /* Profile group header button */
@@ -242,22 +243,27 @@ const groupedByProfile = profileOptions.map(opt => ({
   .legend-group-items {
     display: flex;
     flex-direction: column;
-    gap: 0.3rem;
+    flex-wrap: wrap;
+    /* cap height so long groups spill into a second column instead of growing tall */
+    max-height: 4.8rem;
+    align-content: flex-start;
+    gap: 0.1rem 0.75rem;
   }
 
   /* Individual legend items */
   .legend-item {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    font-size: 0.85rem;
+    gap: 0.35rem;
+    font-size: 0.75rem;
     color: #e0e0e0;
     cursor: pointer;
     user-select: none;
-    padding: 4px 10px 4px 7px;
+    padding: 1px 7px 1px 5px;
     border-radius: 999px;
     border: 1px solid rgba(255, 255, 255, 0.15);
     background: rgba(255, 255, 255, 0.04);
+    white-space: nowrap;
     transition:
       opacity 0.2s ease,
       background 0.15s ease,
