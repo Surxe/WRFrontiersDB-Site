@@ -49,6 +49,7 @@ for (const [id, module] of Object.entries(allModules)) {
 const allModuleGroups = getParseObjects<ModuleGroup>('Objects/ModuleGroup.json');
 const lightWeaponGroup = allModuleGroups['light-weapon'];
 const heavyWeaponGroup = allModuleGroups['heavy-weapon'];
+const shoulderGroup = allModuleGroups['non-titan-shoulder'];
 
 // Generate an ID for each category and build the list of all shoulders
 const profileOptions = categories.map((cat, idx) => {
@@ -107,6 +108,7 @@ const INITIAL_LEVEL_INDEX = MAX_LEVEL - 1;
     <UnifiedShoulderTable
       shoulders={allShouldersWithProfile}
       moduleNameMap={moduleNameMap}
+      shoulderGroup={shoulderGroup}
       tableId="unified-shoulder-table"
     />
   </div>

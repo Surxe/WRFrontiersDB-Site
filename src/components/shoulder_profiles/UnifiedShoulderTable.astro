@@ -6,6 +6,7 @@
  * Rows are filtered by active profile via client-side JS.
  */
 import type { LocalizationKey } from '../../types/localization';
+import type { ModuleGroup } from '../../types/module_group';
 import { getDefaultString } from '../../utils/localization';
 import { refToId } from '../../utils/object_reference';
 import LocalizedText from '../LocalizedText.astro';
@@ -15,11 +16,12 @@ export interface Props {
   shoulders: any[];
   /** Map from module ID to its localization key */
   moduleNameMap: Record<string, LocalizationKey>;
+  shoulderGroup: ModuleGroup;
   /** Unique id for this table element */
   tableId: string;
 }
 
-const { shoulders, moduleNameMap, tableId } = Astro.props;
+const { shoulders, moduleNameMap, shoulderGroup, tableId } = Astro.props;
 
 /** Ordered list of stat keys to display */
 const STAT_COLUMNS = [
@@ -76,7 +78,9 @@ function fmt(value: number, col: string): string {
   <table id={tableId} class="shoulder-stats-table">
     <thead>
       <tr>
-        <th>Shoulder</th>
+        <th>
+          <LocalizedText tag="span" localizationKey={shoulderGroup.name} />
+        </th>
         <th>Level</th>
         {
           STAT_COLUMNS.map((col) => (
