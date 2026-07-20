@@ -186,19 +186,19 @@ function formatShieldLabel(value) {
 // ============================================================
 
 /**
- * Calculates maxTime and maxShield for the currently visible profile across all levels
- * so the axis scale remains stable within the profile.
+ * Calculates maxTime and maxShield based on the shoulders that are CURRENTLY VISIBLE
+ * (i.e. not in disabledSets for this canvas).
  */
-function calculateProfileBounds(shouldersData, profileId, isArmorMode) {
+function calculateProfileBounds(shouldersData, disabled, isArmorMode) {
   let maxTime = 0;
   let maxShield = 0;
 
   const ARMOR_SHIELD_MULT = isArmorMode ? 2 : 1;
 
   for (const shoulder of shouldersData) {
-    if (shoulder.profileId !== profileId) continue;
+    if (disabled.has(shoulder.id)) continue;
     
-    // Check all levels to find global maxes for this profile
+    // Check all levels to find global maxes for the visible shoulders
     for (const levelKey in shoulder.levels) {
       const stats = shoulder.levels[levelKey];
       if (stats.DelayAndRechargeTotal > maxTime) {
@@ -235,12 +235,11 @@ function renderChart(canvas) {
   const isArmorMode = armorModeSet.has(canvas.id);
   const ARMOR_SHIELD_MULT = isArmorMode ? 2 : 1;
 
-  const { maxTime, maxShield } = calculateProfileBounds(shouldersData, currentProfileId, isArmorMode);
+  const { maxTime, maxShield } = calculateProfileBounds(shouldersData, disabled, isArmorMode);
 
   // Build visible lines
   const lines = [];
   for (const shoulder of shouldersData) {
-    if (shoulder.profileId !== currentProfileId) continue;
     if (disabled.has(shoulder.id)) continue;
     
     const stats = shoulder.levels[levelKey];
@@ -268,15 +267,24 @@ function renderChart(canvas) {
 function updateTableAndLegend() {
   const levelNum = String(currentLevelIndex + 1);
   
-  // Update Table
+  // Update Table: Show rows matching the current level AND the current profile
   document.querySelectorAll('.shoulder-stats-table tr[data-level]').forEach((row) => {
     row.classList.toggle('is-active-level', row.dataset.level === levelNum);
     row.classList.toggle('is-active-profile', row.dataset.profileId === currentProfileId);
   });
 
-  // Update Legend
+  // Update Legend visual state based on disabledSets
   document.querySelectorAll('.legend-item').forEach((item) => {
-    item.classList.toggle('legend-item--hidden', item.dataset.profileId !== currentProfileId);
+    const { shoulderId, graphId } = item.dataset;
+    const disabled = disabledSets.get(graphId) ?? new Set();
+    
+    if (disabled.has(shoulderId)) {
+      item.classList.add('legend-item--disabled');
+      item.setAttribute('aria-pressed', 'true'); // true means it is toggled OFF (strikethrough)
+    } else {
+      item.classList.remove('legend-item--disabled');
+      item.setAttribute('aria-pressed', 'false');
+    }
   });
 }
 
@@ -285,6 +293,26 @@ function updateAll() {
   document.querySelectorAll('.shield-chart-canvas').forEach((canvas) => {
     renderChart(canvas);
   });
+}
+
+function updateProfileSelection() {
+  // Disable all shoulders that DO NOT match currentProfileId
+  document.querySelectorAll('.shield-chart-canvas').forEach((canvas) => {
+    const disabled = new Set();
+    let shouldersData = [];
+    try {
+      shouldersData = JSON.parse(canvas.dataset.shoulders);
+    } catch {}
+    
+    for (const shoulder of shouldersData) {
+      if (shoulder.profileId !== currentProfileId) {
+        disabled.add(shoulder.id);
+      }
+    }
+    disabledSets.set(canvas.id, disabled);
+  });
+  
+  updateAll();
 }
 
 // ============================================================
@@ -301,7 +329,9 @@ function init() {
 
   currentLevelIndex = parseInt(levelSwitcher.value, 10);
   currentProfileId = profileSelect.value;
-  updateAll();
+  
+  // Apply initial profile selection to disabledSets
+  updateProfileSelection();
 
   levelSwitcher.addEventListener('change', (e) => {
     currentLevelIndex = parseInt(e.target.value, 10);
@@ -310,7 +340,7 @@ function init() {
 
   profileSelect.addEventListener('change', (e) => {
     currentProfileId = e.target.value;
-    updateAll();
+    updateProfileSelection();
   });
 
   // Legend toggle
@@ -332,7 +362,10 @@ function init() {
     }
 
     const canvas = document.getElementById(graphId);
-    if (canvas) renderChart(canvas);
+    if (canvas) {
+      updateTableAndLegend(); // ensure visuals are synced
+      renderChart(canvas);
+    }
   }
 
   document.querySelectorAll('.legend-item[data-shoulder-id]').forEach((item) => {

@@ -212,7 +212,7 @@ function fmt(value: number, col: string): string {
   }
 
   /* ---- Tooltips ---- */
-  .th-content {
+  :global(.th-content) {
     display: flex;
     align-items: center;
     justify-content: flex-end;
@@ -220,12 +220,12 @@ function fmt(value: number, col: string): string {
   }
 
   /* Reset the first two columns to left-align */
-  .shoulder-stats-table th:first-child .th-content,
-  .shoulder-stats-table th:nth-child(2) .th-content {
+  :global(.shoulder-stats-table th:first-child .th-content),
+  :global(.shoulder-stats-table th:nth-child(2) .th-content) {
     justify-content: flex-start;
   }
 
-  .stat-tooltip-container {
+  :global(.stat-tooltip-container) {
     position: relative;
     display: inline-flex;
     align-items: center;
@@ -233,7 +233,7 @@ function fmt(value: number, col: string): string {
     cursor: help;
   }
 
-  .stat-help-icon {
+  :global(.stat-help-icon) {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -247,7 +247,7 @@ function fmt(value: number, col: string): string {
     line-height: 1;
   }
 
-  .stat-tooltip-text {
+  :global(.stat-tooltip-text) {
     visibility: hidden;
     opacity: 0;
     width: 220px;
@@ -271,7 +271,7 @@ function fmt(value: number, col: string): string {
     pointer-events: none;
   }
 
-  .stat-tooltip-text::after {
+  :global(.stat-tooltip-text::after) {
     content: '';
     position: absolute;
     top: 100%;
@@ -282,7 +282,7 @@ function fmt(value: number, col: string): string {
     border-color: #333 transparent transparent transparent;
   }
 
-  .stat-tooltip-container:hover .stat-tooltip-text {
+  :global(.stat-tooltip-container:hover .stat-tooltip-text) {
     visibility: visible;
     opacity: 1;
   }
