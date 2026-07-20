@@ -2,8 +2,7 @@
 /**
  * ShoulderProfileViewer.astro
  * Replaces the old shoulder_profiles page.
- * Loads the categories, creates a dropdown to select a profile,
- * and passes all data to the UnifiedShoulderChart and UnifiedShoulderTable.
+ * Groups modules by profile in the chart legend (no separate dropdown).
  */
 import * as fs from 'fs';
 import * as path from 'path';
@@ -62,7 +61,7 @@ const defaultProfile = profileOptions.find(
 const defaultProfileId = defaultProfile ? defaultProfile.id : (profileOptions[0]?.id || '');
 
 // Build a flattened array of all shoulders, tagging them with their profile ID
-const allShouldersWithProfile = profileOptions.flatMap(opt => 
+const allShouldersWithProfile = profileOptions.flatMap(opt =>
   opt.category.shoulders.map(shoulder => ({
     ...shoulder,
     profileId: opt.id
@@ -76,7 +75,7 @@ const INITIAL_LEVEL_INDEX = MAX_LEVEL - 1;
 <div class="shoulder-profile-viewer">
   <h2>Shoulder Profiles</h2>
   <p class="page-description">
-    Shield recharge curves and stats for shoulder modules. Select a profile below to compare shoulders of the same category.
+    Shield recharge curves and stats for shoulder modules. Click a profile header in the legend to focus that category.
   </p>
 
   <p class="page-description" style="font-size: 0.85rem; font-style: italic; margin-top: -0.5rem; margin-bottom: 1.5rem;">
@@ -84,27 +83,21 @@ const INITIAL_LEVEL_INDEX = MAX_LEVEL - 1;
   </p>
 
   <div class="controls-bar">
-    <div class="profile-selector-group">
-      <label for="shoulder-profile-select">Profile:</label>
-      <select id="shoulder-profile-select" class="profile-select">
-        {profileOptions.map(opt => (
-          <option value={opt.id} selected={opt.id === defaultProfileId}>{opt.label}</option>
-        ))}
-      </select>
-    </div>
     <div class="level-switcher-container">
       <LevelSwitcher maxLevel={MAX_LEVEL} initialLevel={INITIAL_LEVEL_INDEX} />
     </div>
   </div>
 
   <div class="viewer-content">
-    <UnifiedShoulderChart 
+    <UnifiedShoulderChart
       shoulders={allShouldersWithProfile}
+      profileOptions={profileOptions}
+      defaultProfileId={defaultProfileId}
       moduleNameMap={moduleNameMap}
       graphId="unified-shoulder-graph"
     />
 
-    <UnifiedShoulderTable 
+    <UnifiedShoulderTable
       shoulders={allShouldersWithProfile}
       moduleNameMap={moduleNameMap}
       tableId="unified-shoulder-table"
@@ -140,20 +133,6 @@ const INITIAL_LEVEL_INDEX = MAX_LEVEL - 1;
     margin-bottom: 2rem;
   }
 
-  .profile-selector-group {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .profile-selector-group label,
-  :global(.level-switcher-container .level-switcher label) {
-    font-size: 0.9rem !important;
-    opacity: 0.8 !important;
-    color: #e0e0e0 !important;
-  }
-
-  .profile-select,
   :global(.level-switcher-container .level-switcher select) {
     background: #1a1a1a !important;
     color: white !important;
@@ -165,13 +144,11 @@ const INITIAL_LEVEL_INDEX = MAX_LEVEL - 1;
     box-sizing: border-box !important;
   }
 
-  .profile-select:focus,
   :global(.level-switcher-container .level-switcher select:focus) {
     outline: 2px solid #4fc3f7 !important;
     border-color: #4fc3f7 !important;
   }
 
-  /* Target the level-switcher inside the container to override its margin-bottom if needed */
   :global(.level-switcher-container .level-switcher) {
     margin-bottom: 0 !important;
     display: flex !important;
@@ -179,11 +156,9 @@ const INITIAL_LEVEL_INDEX = MAX_LEVEL - 1;
     gap: 0.5rem !important;
   }
 
-  @media (max-width: 768px) {
-    .controls-bar {
-      flex-direction: column;
-      align-items: center;
-      gap: 1rem;
-    }
+  :global(.level-switcher-container .level-switcher label) {
+    font-size: 0.9rem !important;
+    opacity: 0.8 !important;
+    color: #e0e0e0 !important;
   }
 </style>

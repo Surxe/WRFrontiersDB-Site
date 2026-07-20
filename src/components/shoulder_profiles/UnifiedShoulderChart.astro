@@ -2,7 +2,8 @@
 /**
  * UnifiedShoulderChart.astro
  * Renders a single shield recharge graph for all shoulders across profiles.
- * The active profile is controlled by client-side JS.
+ * The legend is grouped by profile. Clicking a profile header selects that group.
+ * Individual items within a group can still be toggled on/off.
  */
 import type { LocalizationKey } from '../../types/localization';
 import { getDefaultString } from '../../utils/localization';
@@ -11,6 +12,10 @@ import { refToId } from '../../utils/object_reference';
 export interface Props {
   /** Flattened shoulders array with .profileId injected */
   shoulders: any[];
+  /** Profile options with id and label, in order */
+  profileOptions: { id: string; label: string; category: any }[];
+  /** The profile ID to activate by default */
+  defaultProfileId: string;
   /** Map from module ID to localization key */
   moduleNameMap: Record<string, LocalizationKey>;
   /** Unique canvas id */
@@ -19,11 +24,13 @@ export interface Props {
 
 const {
   shoulders,
+  profileOptions,
+  defaultProfileId,
   moduleNameMap,
   graphId,
 } = Astro.props;
 
-// distinct colors for lines
+// Distinct colors for lines — assigned per-shoulder, globally across all profiles
 const COLORS = [
   '#4fc3f7', // light blue
   '#f48fb1', // pink
@@ -33,20 +40,41 @@ const COLORS = [
   '#4db6ac', // teal
   '#e57373', // red
   '#aed581', // light green
+  '#fff176', // yellow
+  '#ff8a65', // deep orange
+  '#80cbc4', // teal lighter
+  '#ce93d8', // light purple
 ];
 
-// Serialize the data for JS
-const chartData = shoulders.map((shoulder, idx) => {
+// Build a color map by module id, assigning sequentially
+const colorMap: Record<string, string> = {};
+shoulders.forEach((shoulder, idx) => {
+  const moduleId = refToId(shoulder.shoulder_module_ref);
+  if (!colorMap[moduleId]) {
+    colorMap[moduleId] = COLORS[idx % COLORS.length];
+  }
+});
+
+// Serialize the data for JS — include color in each entry
+const chartData = shoulders.map((shoulder) => {
   const moduleId = refToId(shoulder.shoulder_module_ref);
   return {
     id: moduleId,
     profileId: shoulder.profileId,
-    color: COLORS[idx % COLORS.length],
+    color: colorMap[moduleId],
     levels: shoulder.levels,
   };
 });
 
 const chartDataJson = JSON.stringify(chartData);
+
+// Group shoulders by profile for the legend
+const groupedByProfile = profileOptions.map(opt => ({
+  profileId: opt.id,
+  label: opt.label,
+  isDefault: opt.id === defaultProfileId,
+  shoulders: shoulders.filter(s => s.profileId === opt.id),
+}));
 ---
 
 <div class="category-graph-card">
@@ -57,46 +85,63 @@ const chartDataJson = JSON.stringify(chartData);
       width="800"
       height="300"
       data-shoulders={chartDataJson}
-      aria-label="Shield recharge chart for category"></canvas>
+      data-default-profile={defaultProfileId}
+      aria-label="Shield recharge chart for shoulder profiles"></canvas>
   </div>
 
   <div class="chart-legend">
-    {
-      shoulders.map((shoulder, idx) => {
-        const moduleId = refToId(shoulder.shoulder_module_ref);
-        const moduleName = moduleNameMap[moduleId] ?? {
-          InvariantString: moduleId,
-        };
-        const defaultName = getDefaultString(moduleName) ?? moduleId;
-        const color = COLORS[idx % COLORS.length];
+    {groupedByProfile.map(group => (
+      <div class="legend-group" data-profile-id={group.profileId}>
+        {/* Profile header — clicking selects this profile */}
+        <button
+          class={`legend-group-header${group.isDefault ? ' is-active-profile' : ''}`}
+          data-profile-id={group.profileId}
+          data-graph-id={graphId}
+          aria-pressed={group.isDefault ? 'true' : 'false'}
+          title={`Focus ${group.label}`}
+        >
+          {group.label}
+        </button>
 
-        return (
-          <div
-            class="legend-item"
-            role="button"
-            tabindex="0"
-            data-shoulder-id={moduleId}
-            data-profile-id={shoulder.profileId}
-            data-graph-id={graphId}
-            aria-pressed="false"
-            title="Click to hide/show this shoulder's line"
-          >
-            <span class="legend-color" style={`background-color: ${color};`} />
-            {moduleName.InvariantString ? (
-              <span class="legend-label">{moduleName.InvariantString}</span>
-            ) : (
-              <span
-                class="legend-label"
-                data-loc-key={moduleName.Key}
-                data-loc-namespace={moduleName.TableNamespace}
+        {/* Individual module items within the group */}
+        <div class="legend-group-items">
+          {group.shoulders.map((shoulder) => {
+            const moduleId = refToId(shoulder.shoulder_module_ref);
+            const moduleName = moduleNameMap[moduleId] ?? { InvariantString: moduleId };
+            const defaultName = getDefaultString(moduleName) ?? moduleId;
+            const color = colorMap[moduleId];
+            // Shoulders NOT in the default profile start disabled
+            const startsDisabled = group.profileId !== defaultProfileId;
+
+            return (
+              <div
+                class={`legend-item${startsDisabled ? ' legend-item--disabled' : ''}`}
+                role="button"
+                tabindex="0"
+                data-shoulder-id={moduleId}
+                data-profile-id={group.profileId}
+                data-graph-id={graphId}
+                aria-pressed={startsDisabled ? 'true' : 'false'}
+                title="Click to hide/show this shoulder's line"
               >
-                {defaultName}
-              </span>
-            )}
-          </div>
-        );
-      })
-    }
+                <span class="legend-color" style={`background-color: ${color};`} />
+                {moduleName.InvariantString ? (
+                  <span class="legend-label">{moduleName.InvariantString}</span>
+                ) : (
+                  <span
+                    class="legend-label"
+                    data-loc-key={moduleName.Key}
+                    data-loc-namespace={moduleName.TableNamespace}
+                  >
+                    {defaultName}
+                  </span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    ))}
   </div>
 
   <div class="chart-controls-bottom">
@@ -110,7 +155,7 @@ const chartDataJson = JSON.stringify(chartData);
       <div class="stat-tooltip-container" style="margin-left: 2px;">
         <span class="stat-help-icon">?</span>
         <div class="stat-tooltip-text left-aligned-tooltip">
-          Use the stats from two of the same shoulder and add the shoulder's armor, showcasing their total health pool as opposed to just shields. Note that this is only a reasonable metric against single target weapons and weapons that deal equal damage to shields and armor.
+          Use the shields from two of the same shoulder and add the shoulder's armor, showcasing their total health pool as opposed to just shields. Note that this is only a reasonable metric against weapons that are single target and deal equal damage to shields and armor.
         </div>
       </div>
     </button>
@@ -141,16 +186,66 @@ const chartDataJson = JSON.stringify(chartData);
     margin: 0 auto;
   }
 
+  /* ── Grouped Legend ──────────────────────────────────────── */
   .chart-legend {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
-    justify-content: center;
+    gap: 1.5rem;
     margin-top: 1rem;
     padding-top: 1rem;
     border-top: 1px solid #333;
   }
 
+  .legend-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    min-width: 160px;
+  }
+
+  /* Profile group header button */
+  .legend-group-header {
+    display: block;
+    width: 100%;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #888;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid #383838;
+    padding: 0 0 0.35rem 0;
+    margin-bottom: 0.15rem;
+    cursor: pointer;
+    transition: color 0.15s ease, border-color 0.15s ease;
+    font-family: inherit;
+  }
+
+  .legend-group-header:hover {
+    color: #ccc;
+    border-color: #555;
+  }
+
+  .legend-group-header.is-active-profile {
+    color: #4fc3f7;
+    border-color: #4fc3f7;
+  }
+
+  .legend-group-header:focus-visible {
+    outline: 2px solid #4fc3f7;
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  .legend-group-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  /* Individual legend items */
   .legend-item {
     display: flex;
     align-items: center;
@@ -159,7 +254,7 @@ const chartDataJson = JSON.stringify(chartData);
     color: #e0e0e0;
     cursor: pointer;
     user-select: none;
-    padding: 5px 12px 5px 8px;
+    padding: 4px 10px 4px 7px;
     border-radius: 999px;
     border: 1px solid rgba(255, 255, 255, 0.15);
     background: rgba(255, 255, 255, 0.04);
@@ -188,7 +283,7 @@ const chartDataJson = JSON.stringify(chartData);
 
   /* Disabled (hidden) state from user toggle */
   .legend-item.legend-item--disabled {
-    opacity: 0.4;
+    opacity: 0.35;
     border-style: dashed;
     background: transparent;
   }
@@ -270,7 +365,7 @@ const chartDataJson = JSON.stringify(chartData);
     left: 0 !important;
     transform: none !important;
   }
-  
+
   :global(.left-aligned-tooltip::after) {
     left: 15px !important;
   }
