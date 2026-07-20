@@ -97,9 +97,9 @@ const chartDataJson = JSON.stringify(chartData);
         );
       })
     }
+  </div>
 
-    {/* Separator + armor toggle at the right end of the legend row */}
-    <span class="legend-separator" aria-hidden="true" />
+  <div class="chart-controls-bottom">
     <button
       class="armor-mode-toggle"
       data-graph-id={graphId}
@@ -109,7 +109,7 @@ const chartDataJson = JSON.stringify(chartData);
       Include Armor
       <div class="stat-tooltip-container" style="margin-left: 2px;">
         <span class="stat-help-icon">?</span>
-        <div class="stat-tooltip-text" style="white-space: normal;">
+        <div class="stat-tooltip-text left-aligned-tooltip">
           Use the stats from two of the same shoulder and add the shoulder's armor, showcasing their total health pool as opposed to just shields. Note that this is only a reasonable metric against single target weapons and weapons that deal equal damage to shields and armor.
         </div>
       </div>
@@ -207,12 +207,9 @@ const chartDataJson = JSON.stringify(chartData);
   }
 
   /* ── Armor mode toggle ───────────────────────────────────── */
-  .legend-separator {
-    flex: 1 0 0;
-    min-width: 0.5rem;
-    border-left: 1px solid #444;
-    align-self: stretch;
-    margin: 2px 4px;
+  .chart-controls-bottom {
+    margin-top: 1rem;
+    text-align: left;
   }
 
   .armor-mode-toggle {
@@ -267,5 +264,14 @@ const chartDataJson = JSON.stringify(chartData);
   .armor-toggle-icon {
     font-size: 1rem;
     line-height: 1;
+  }
+
+  :global(.left-aligned-tooltip) {
+    left: 0 !important;
+    transform: none !important;
+  }
+  
+  :global(.left-aligned-tooltip::after) {
+    left: 15px !important;
   }
 </style>

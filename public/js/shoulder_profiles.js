@@ -129,7 +129,7 @@ function drawShieldChart(canvas, data) {
   }
 
   // Y-axis labels
-  ctx.fillStyle = '#888';
+  ctx.fillStyle = '#bbb';
   ctx.font = '10px sans-serif';
   ctx.textAlign = 'right';
   ctx.textBaseline = 'middle';
@@ -150,7 +150,7 @@ function drawShieldChart(canvas, data) {
   }
 
   // Axis titles
-  ctx.fillStyle = '#666';
+  ctx.fillStyle = '#ddd';
   ctx.font = '10px sans-serif';
 
   ctx.textAlign = 'center';
