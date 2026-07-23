@@ -38,7 +38,8 @@
     "AI_Bots_Description": "Bot builds used by AI when there are not enough players to fill a match.",
     "Factory_Bots_Description": "Pre-configured bot builds created by the game developers.",
     "CharacterClass_Meta_Description": "{name}: {description}",
-    "Faction_Meta_Description": "{name}: View detailed information about this faction in War Robots Frontiers."
+    "Faction_Meta_Description": "{name}: View detailed information about this faction in War Robots Frontiers.",
+    "ModuleStatPattern_Label": "{Label} ({Unit})"
   },
   "ModuleGroups": {
     "GRP_TitanShoulders_Name": "Titan Shoulder"
@@ -47,5 +48,14 @@
     "desc_ArmorBoost": "This stat provides {ArmorBoost} bonus to the pilot",
     "desc_BlinkSpeed": "This stat provides {BlinkSpeed} bonus to the pilot",
     "desc_CastDuration": "This stat provides {CastDuration} bonus to the pilot"
+  },
+  "SyntheticStatKeys": {
+    "Stat_RechargeDelay": "Regen Delay",
+    "Stat_RechargeTime": "Fill Time",
+    "Stat_DelayAndRechargeTotal": "Full Recovery",
+    "Stat_AoeArmor": "AoE Armor",
+    "Stat_AoeNoArmor": "AoE No-Armor Damage",
+    "Stat_TimeBetweenShots": "Time Between Shots",
+    "Stat_Unit_PerSecond": "/s"
   }
 }

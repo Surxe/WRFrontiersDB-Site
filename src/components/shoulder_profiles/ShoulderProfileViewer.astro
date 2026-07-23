@@ -6,7 +6,7 @@
  */
 import * as fs from 'fs';
 import * as path from 'path';
-import type { ShoulderCategory, ShoulderEntry } from '../../types/shoulder_profile';
+import type { ShoulderCategory } from '../../types/shoulder_profile';
 import type { Module } from '../../types/module';
 import type { LocalizationKey } from '../../types/localization';
 import type { ModuleGroup } from '../../types/module_group';
@@ -46,7 +46,9 @@ for (const [id, module] of Object.entries(allModules)) {
   }
 }
 
-const allModuleGroups = getParseObjects<ModuleGroup>('Objects/ModuleGroup.json');
+const allModuleGroups = getParseObjects<ModuleGroup>(
+  'Objects/ModuleGroup.json'
+);
 const lightWeaponGroup = allModuleGroups['light-weapon'];
 const heavyWeaponGroup = allModuleGroups['heavy-weapon'];
 const shoulderGroup = allModuleGroups['non-titan-shoulder'];
@@ -55,22 +57,28 @@ const shoulderGroup = allModuleGroups['non-titan-shoulder'];
 const profileOptions = categories.map((cat, idx) => {
   const lightPart = cat.light_slots > 0 ? `Light ×${cat.light_slots}` : null;
   const heavyPart = cat.heavy_slots > 0 ? `Heavy ×${cat.heavy_slots}` : null;
-  const slotParts = [lightPart, heavyPart].filter(Boolean).join(', ') || 'No Slots';
+  const slotParts =
+    [lightPart, heavyPart].filter(Boolean).join(', ') || 'No Slots';
   const label = `${slotParts} — Weight ${cat.weight_drain}`;
   return { id: `profile-${idx}`, label, category: cat };
 });
 
 // Find default profile (Weight 11, Light x2, Heavy x0)
 const defaultProfile = profileOptions.find(
-  opt => opt.category.weight_drain === 11 && opt.category.light_slots === 2 && opt.category.heavy_slots === 0
+  (opt) =>
+    opt.category.weight_drain === 11 &&
+    opt.category.light_slots === 2 &&
+    opt.category.heavy_slots === 0
 );
-const defaultProfileId = defaultProfile ? defaultProfile.id : (profileOptions[0]?.id || '');
+const defaultProfileId = defaultProfile
+  ? defaultProfile.id
+  : profileOptions[0]?.id || '';
 
 // Build a flattened array of all shoulders, tagging them with their profile ID
-const allShouldersWithProfile = profileOptions.flatMap(opt =>
-  opt.category.shoulders.map(shoulder => ({
+const allShouldersWithProfile = profileOptions.flatMap((opt) =>
+  opt.category.shoulders.map((shoulder) => ({
     ...shoulder,
-    profileId: opt.id
+    profileId: opt.id,
   }))
 );
 
@@ -81,11 +89,17 @@ const INITIAL_LEVEL_INDEX = MAX_LEVEL - 1;
 <div class="shoulder-profile-viewer">
   <h2>Shoulder Profiles</h2>
   <p class="page-description">
-    Shields start broken; the graph shows how shields recover over time. Use the level selector to compare at different upgrade levels. Click a profile header in the legend to focus that category.
+    Shields start broken; the graph shows how shields recover over time. Use the
+    level selector to compare at different upgrade levels. Click a profile
+    header in the legend to focus that category.
   </p>
 
-  <p class="page-description" style="font-size: 0.85rem; font-style: italic; margin-top: -0.5rem; margin-bottom: 1.5rem;">
-    Note: Shoulder hitboxes have unique shapes and sizes that are not able to be represented by the following stats and curves.
+  <p
+    class="page-description"
+    style="font-size: 0.85rem; font-style: italic; margin-top: -0.5rem; margin-bottom: 1.5rem;"
+  >
+    Note: Shoulder hitboxes have unique shapes and sizes that are not able to be
+    represented by the following stats and curves.
   </p>
 
   <div class="controls-bar">

@@ -7,9 +7,15 @@
  */
 import type { LocalizationKey } from '../../types/localization';
 import type { ModuleGroup } from '../../types/module_group';
-import { getDefaultString } from '../../utils/localization';
+import { resolveLocalizationKey } from '../../utils/localization';
 import { refToId } from '../../utils/object_reference';
 import LocalizedText from '../LocalizedText.astro';
+import LocalizedStatValue from '../LocalizedStatValue.astro';
+import LocalizedEmbed from '../LocalizedEmbed.astro';
+import { getStatNameLocalizationKey } from '../../utils/stat_name_localization';
+import { getStatMetadata } from '../../utils/stat';
+import { getParseObjects } from '../../utils/parse_object';
+import { resolveObjectRef } from '../../utils/object_resolver';
 
 export interface Props {
   /** All shoulders across all profiles, with .profileId */
@@ -34,16 +40,14 @@ const STAT_COLUMNS = [
   'DelayAndRechargeTotal',
 ] as const;
 
-/** Human-readable column headers (no localization required per spec) */
-const COLUMN_LABELS: Record<string, string> = {
-  Armor: 'Armor',
-  ShieldAmount: 'Shield Amount',
-  ShieldDelayReduction: 'Delay Reduction (%)',
-  ShieldRegeneration: 'Shield Regen/s',
-  RechargeDelay: 'Regen Delay (s)',
-  RechargeTime: 'Fill Time (s)',
-  DelayAndRechargeTotal: 'Full Recovery (s)',
-};
+/**
+ * Build-time resolution of LocalizationKeys for each stat column.
+ * getStatNameLocalizationKey follows the chain: Stat.id -> ModuleStat.stat_name,
+ * falling back to SYNTHETIC_STAT_LOCALIZATION_MAP for parser-generated stats.
+ */
+const columnLocKeys = Object.fromEntries(
+  STAT_COLUMNS.map((col) => [col, getStatNameLocalizationKey(col)])
+) as Record<string, LocalizationKey | undefined>;
 
 /** Hover descriptions for the question mark tooltips */
 const COLUMN_DESCRIPTIONS: Record<string, string> = {
@@ -61,17 +65,39 @@ const COLUMN_DESCRIPTIONS: Record<string, string> = {
     'The total time in seconds from taking damage until the shield is fully recharged (RechargeDelay + RechargeTime).',
 };
 
-/** Columns whose raw values should be scaled before display */
-const COLUMN_SCALE: Partial<Record<string, number>> = {
-  ShieldDelayReduction: 100,
-};
+const allStats = getParseObjects<any>('Objects/Stat.json');
+const allModuleStats = getParseObjects<any>('Objects/ModuleStat.json');
 
-/** Format numbers: integers stay as integers; floats to 3 decimal places */
-function fmt(value: number, col: string): string {
-  const scale = COLUMN_SCALE[col] ?? 1;
-  const scaled = value * scale;
-  return Number.isInteger(scaled) ? scaled.toString() : scaled.toFixed(3);
-}
+/** Precompute metadata for formatting each stat column */
+const columnMetadata = Object.fromEntries(
+  STAT_COLUMNS.map((col) => {
+    const statId = col;
+    const statObj = allStats[statId];
+    if (statObj && statObj.module_stat_ref) {
+      const moduleStat = resolveObjectRef(
+        statObj.module_stat_ref,
+        allModuleStats
+      );
+      if (moduleStat) {
+        return [
+          col,
+          {
+            ...getStatMetadata(moduleStat),
+            unitScaler: moduleStat.unit_scaler ?? 1,
+          },
+        ];
+      }
+    }
+    // Fallback
+    return [col, { pattern: '{Amount}{Unit}', shortKey: col, unitScaler: 1 }];
+  })
+);
+
+/** Pattern key for rendering a stat label with its unit as "Name (unit)" */
+const LABEL_PATTERN_KEY = resolveLocalizationKey(
+  'ModuleStatPattern_Label',
+  'Web_UI'
+);
 ---
 
 <div class="shoulder-stats-table-wrapper">
@@ -83,19 +109,36 @@ function fmt(value: number, col: string): string {
         </th>
         <th>Level</th>
         {
-          STAT_COLUMNS.map((col) => (
-            <th>
-              <div class="th-content">
-                <span>{COLUMN_LABELS[col]}</span>
-                <div class="stat-tooltip-container">
-                  <span class="stat-help-icon">?</span>
-                  <div class="stat-tooltip-text">
-                    {COLUMN_DESCRIPTIONS[col]}
+          STAT_COLUMNS.map((col) => {
+            const meta = columnMetadata[col];
+            const nameKey = columnLocKeys[col];
+            return (
+              <th>
+                <div class="th-content">
+                  {nameKey && meta.unitName ? (
+                    <LocalizedEmbed
+                      tag="span"
+                      pattern={LABEL_PATTERN_KEY}
+                      embeds={{
+                        Label: nameKey,
+                        Unit: meta.unitName as LocalizationKey,
+                      }}
+                    />
+                  ) : nameKey ? (
+                    <LocalizedText tag="span" localizationKey={nameKey} />
+                  ) : (
+                    <span>{col}</span>
+                  )}
+                  <div class="stat-tooltip-container">
+                    <span class="stat-help-icon">?</span>
+                    <div class="stat-tooltip-text">
+                      {COLUMN_DESCRIPTIONS[col]}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </th>
-          ))
+              </th>
+            );
+          })
         }
       </tr>
     </thead>
@@ -104,9 +147,6 @@ function fmt(value: number, col: string): string {
         shoulders.map((shoulder) => {
           const moduleId = refToId(shoulder.shoulder_module_ref);
           const moduleName = moduleNameMap[moduleId];
-          const defaultName = moduleName
-            ? (getDefaultString(moduleName) ?? moduleId)
-            : moduleId;
           const levelKeys = Object.keys(shoulder.levels).sort(
             (a, b) => parseInt(a) - parseInt(b)
           );
@@ -116,7 +156,11 @@ function fmt(value: number, col: string): string {
             const levelNum = parseInt(levelKey);
 
             return (
-              <tr data-level={levelNum} data-module-id={moduleId} data-profile-id={shoulder.profileId}>
+              <tr
+                data-level={levelNum}
+                data-module-id={moduleId}
+                data-profile-id={shoulder.profileId}
+              >
                 {/* Shoulder name cell — duplicated for every row so we can hide inactive levels easily */}
                 <td class="shoulder-name-cell">
                   {moduleName?.InvariantString ? (
@@ -132,9 +176,26 @@ function fmt(value: number, col: string): string {
                   )}
                 </td>
                 <td class="level-cell">{levelNum}</td>
-                {STAT_COLUMNS.map((col) => (
-                  <td class="stat-cell">{fmt(stats[col], col)}</td>
-                ))}
+                {STAT_COLUMNS.map((col) => {
+                  const meta = columnMetadata[col];
+                  const rawValue = stats[col];
+                  const scaledValue =
+                    rawValue !== undefined
+                      ? rawValue * (meta.unitScaler as number)
+                      : undefined;
+
+                  return (
+                    <td class="stat-cell">
+                      <LocalizedStatValue
+                        value={scaledValue}
+                        pattern={meta.pattern as string}
+                        unitName={meta.unitName as LocalizationKey | undefined}
+                        unitExponent={meta.unitExponent as number | undefined}
+                        decimalPlaces={meta.decimalPlaces as number | undefined}
+                      />
+                    </td>
+                  );
+                })}
               </tr>
             );
           });
@@ -207,7 +268,7 @@ function fmt(value: number, col: string): string {
   }
 
   /* Only display the rows matching the currently selected level AND not hidden by legend toggle */
-  .shoulder-stats-table tr.is-active-level.is-legend-visible {
+  :global(.shoulder-stats-table tr.is-active-level.is-legend-visible) {
     display: table-row;
   }
 
@@ -231,6 +292,11 @@ function fmt(value: number, col: string): string {
     align-items: center;
     justify-content: center;
     cursor: help;
+  }
+
+  :global(.column-unit) {
+    color: #888;
+    font-size: 0.9em;
   }
 
   :global(.stat-help-icon) {

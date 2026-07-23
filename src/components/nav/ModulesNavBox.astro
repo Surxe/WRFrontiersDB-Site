@@ -48,4 +48,8 @@ try {
 }
 ---
 
-<BaseNavBox title={title} titleHref={`/module_groups/${(slugMap as Record<string, string>)[moduleGroupId] || moduleGroupId}`} objects={filteredModules} />
+<BaseNavBox
+  title={title}
+  titleHref={`/module_groups/${(slugMap as Record<string, string>)[moduleGroupId] || moduleGroupId}`}
+  objects={filteredModules}
+/>

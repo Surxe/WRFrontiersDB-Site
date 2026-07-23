@@ -1,3 +1,5 @@
+/* env browser */
+/* global clearTimeout, setTimeout */
 /**
  * shoulder_profiles.js
  * Client-side logic for the Unified Shoulder Profiles view.
@@ -75,7 +77,13 @@ function drawShieldChart(canvas, data) {
 
   // Fills
   for (const line of lines) {
-    const { shieldAmount, rechargeDelay, rechargeTime, color, armorBase = 0 } = line;
+    const {
+      shieldAmount,
+      rechargeDelay,
+      rechargeTime,
+      color,
+      armorBase = 0,
+    } = line;
     const rechargeEnd = rechargeDelay + rechargeTime;
     const topY = armorBase + shieldAmount;
 
@@ -98,7 +106,13 @@ function drawShieldChart(canvas, data) {
 
   // Curves & armor floor markers
   for (const line of lines) {
-    const { shieldAmount, rechargeDelay, rechargeTime, color, armorBase = 0 } = line;
+    const {
+      shieldAmount,
+      rechargeDelay,
+      rechargeTime,
+      color,
+      armorBase = 0,
+    } = line;
     const rechargeEnd = rechargeDelay + rechargeTime;
     const topY = armorBase + shieldAmount;
 
@@ -245,7 +259,11 @@ function renderChart(canvas) {
   const isArmorMode = armorModeSet.has(canvas.id);
   const ARMOR_SHIELD_MULT = isArmorMode ? 2 : 1;
 
-  const { maxTime, maxShield } = calculateBounds(shouldersData, disabled, isArmorMode);
+  const { maxTime, maxShield } = calculateBounds(
+    shouldersData,
+    disabled,
+    isArmorMode
+  );
 
   const lines = [];
   for (const shoulder of shouldersData) {
@@ -263,7 +281,12 @@ function renderChart(canvas) {
     }
   }
 
-  drawShieldChart(canvas, { lines, maxTime, maxShield, yLabel: isArmorMode ? 'Armor+2xShields' : 'Shields' });
+  drawShieldChart(canvas, {
+    lines,
+    maxTime,
+    maxShield,
+    yLabel: isArmorMode ? 'Armor+2xShields' : 'Shields',
+  });
 }
 
 function updateLegendVisuals() {
@@ -287,11 +310,19 @@ function updateLegendVisuals() {
 function updateTable() {
   const levelNum = String(currentLevelIndex + 1);
   const disabled = getGlobalDisabled();
-  document.querySelectorAll('.shoulder-stats-table tr[data-level]').forEach((row) => {
-    row.classList.toggle('is-active-level', row.dataset.level === levelNum);
-    row.classList.toggle('is-active-profile', row.dataset.profileId === currentProfileId);
-    row.classList.toggle('is-legend-visible', !disabled.has(row.dataset.moduleId));
-  });
+  document
+    .querySelectorAll('.shoulder-stats-table tr[data-level]')
+    .forEach((row) => {
+      row.classList.toggle('is-active-level', row.dataset.level === levelNum);
+      row.classList.toggle(
+        'is-active-profile',
+        row.dataset.profileId === currentProfileId
+      );
+      row.classList.toggle(
+        'is-legend-visible',
+        !disabled.has(row.dataset.moduleId)
+      );
+    });
 }
 
 function updateAll() {
@@ -313,7 +344,9 @@ function selectProfile(newProfileId) {
     let shouldersData = [];
     try {
       shouldersData = JSON.parse(canvas.dataset.shoulders);
-    } catch {}
+    } catch {
+      /* ignore */
+    }
 
     const disabled = new Set();
     for (const shoulder of shouldersData) {
@@ -383,15 +416,17 @@ function init() {
     if (targetCanvas) renderChart(targetCanvas);
   }
 
-  document.querySelectorAll('.legend-item[data-shoulder-id]').forEach((item) => {
-    item.addEventListener('click', () => toggleLegendItem(item));
-    item.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        toggleLegendItem(item);
-      }
+  document
+    .querySelectorAll('.legend-item[data-shoulder-id]')
+    .forEach((item) => {
+      item.addEventListener('click', () => toggleLegendItem(item));
+      item.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggleLegendItem(item);
+        }
+      });
     });
-  });
 
   // Armor mode toggle
   function toggleArmorMode(btn) {
@@ -410,15 +445,17 @@ function init() {
     if (targetCanvas) renderChart(targetCanvas);
   }
 
-  document.querySelectorAll('.armor-mode-toggle[data-graph-id]').forEach((btn) => {
-    btn.addEventListener('click', () => toggleArmorMode(btn));
-    btn.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        toggleArmorMode(btn);
-      }
+  document
+    .querySelectorAll('.armor-mode-toggle[data-graph-id]')
+    .forEach((btn) => {
+      btn.addEventListener('click', () => toggleArmorMode(btn));
+      btn.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggleArmorMode(btn);
+        }
+      });
     });
-  });
 
   // Window resize
   let resizeTimer;

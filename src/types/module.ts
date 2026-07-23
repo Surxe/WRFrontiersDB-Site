@@ -4,7 +4,7 @@ import type { ParseObject } from './parse_object';
 export interface ModuleStat extends ParseObject {
   parseObjectClass: 'ModuleStat';
   id: string;
-  stat_name: LocalizationKey;
+  stat_name?: LocalizationKey;
   short_key: string;
   unit_name?: LocalizationKey;
   unit_scaler?: number;

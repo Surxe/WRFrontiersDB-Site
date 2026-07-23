@@ -12,7 +12,15 @@ const { title, titleHref, objects } = Astro.props;
 
 <nav class="nav-box">
   <h3 class="nav-box-title">
-    {titleHref ? <a href={titleHref} class="nav-box-title-link">{title}</a> : title}
+    {
+      titleHref ? (
+        <a href={titleHref} class="nav-box-title-link">
+          {title}
+        </a>
+      ) : (
+        title
+      )
+    }
   </h3>
   <div class="nav-box-content">
     {

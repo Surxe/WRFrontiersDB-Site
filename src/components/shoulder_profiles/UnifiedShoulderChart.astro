@@ -7,9 +7,9 @@
  */
 import type { LocalizationKey } from '../../types/localization';
 import type { ModuleGroup } from '../../types/module_group';
-import { getDefaultString } from '../../utils/localization';
 import { refToId } from '../../utils/object_reference';
 import LocalizedText from '../LocalizedText.astro';
+import { WEIGHT_DRAIN_STAT_NAME_LOCALIZATION_KEY } from '../../utils/stat_name_localization';
 
 export interface Props {
   /** Flattened shoulders array with .profileId injected */
@@ -74,12 +74,12 @@ const chartData = shoulders.map((shoulder) => {
 
 const chartDataJson = JSON.stringify(chartData);
 
-const groupedByProfile = profileOptions.map(opt => ({
+const groupedByProfile = profileOptions.map((opt) => ({
   profileId: opt.id,
   label: opt.label,
   category: opt.category,
   isDefault: opt.id === defaultProfileId,
-  shoulders: shoulders.filter(s => s.profileId === opt.id),
+  shoulders: shoulders.filter((s) => s.profileId === opt.id),
 }));
 ---
 
@@ -96,62 +96,92 @@ const groupedByProfile = profileOptions.map(opt => ({
   </div>
 
   <div class="chart-legend">
-    {groupedByProfile.map(group => (
-      <div class="legend-group" data-profile-id={group.profileId}>
-        {/* Profile header — clicking selects this profile */}
-        <button
-          class={`legend-group-header${group.isDefault ? ' is-active-profile' : ''}`}
-          data-profile-id={group.profileId}
-          data-graph-id={graphId}
-          aria-pressed={group.isDefault ? 'true' : 'false'}
-          title={`Focus ${group.label}`}
-        >
-          {group.category.light_slots > 0 && (
-            <><LocalizedText tag="span" localizationKey={lightWeaponGroup.name} /> &times;{group.category.light_slots}</>
-          )}
-          {group.category.light_slots > 0 && group.category.heavy_slots > 0 && <span>, </span>}
-          {group.category.heavy_slots > 0 && (
-            <><LocalizedText tag="span" localizationKey={heavyWeaponGroup.name} /> &times;{group.category.heavy_slots}</>
-          )}
-          {group.category.light_slots === 0 && group.category.heavy_slots === 0 && <span>No Slots</span>}
-          <span> &mdash; Weight {group.category.weight_drain}</span>
-        </button>
+    {
+      groupedByProfile.map((group) => (
+        <div class="legend-group" data-profile-id={group.profileId}>
+          {/* Profile header — clicking selects this profile */}
+          <button
+            class={`legend-group-header${group.isDefault ? ' is-active-profile' : ''}`}
+            data-profile-id={group.profileId}
+            data-graph-id={graphId}
+            aria-pressed={group.isDefault ? 'true' : 'false'}
+            title={`Focus ${group.label}`}
+          >
+            {group.category.light_slots > 0 && (
+              <>
+                <LocalizedText
+                  tag="span"
+                  localizationKey={lightWeaponGroup.name}
+                />{' '}
+                &times;{group.category.light_slots}
+              </>
+            )}
+            {group.category.light_slots > 0 &&
+              group.category.heavy_slots > 0 && <span>, </span>}
+            {group.category.heavy_slots > 0 && (
+              <>
+                <LocalizedText
+                  tag="span"
+                  localizationKey={heavyWeaponGroup.name}
+                />{' '}
+                &times;{group.category.heavy_slots}
+              </>
+            )}
+            {group.category.light_slots === 0 &&
+              group.category.heavy_slots === 0 && <span>No Slots</span>}
+            <span>
+              {' '}
+              &mdash;{' '}
+              <LocalizedText
+                tag="span"
+                localizationKey={WEIGHT_DRAIN_STAT_NAME_LOCALIZATION_KEY}
+              />{' '}
+              {group.category.weight_drain}
+            </span>
+          </button>
 
-        {/* Individual module items within the group */}
-        <div class="legend-group-items">
-          {group.shoulders.map((shoulder) => {
-            const moduleId = refToId(shoulder.shoulder_module_ref);
-            const moduleName = moduleNameMap[moduleId] ?? { InvariantString: moduleId };
-            const defaultName = getDefaultString(moduleName) ?? moduleId;
-            const color = colorMap[moduleId];
-            // Shoulders NOT in the default profile start disabled
-            const startsDisabled = group.profileId !== defaultProfileId;
+          {/* Individual module items within the group */}
+          <div class="legend-group-items">
+            {group.shoulders.map((shoulder) => {
+              const moduleId = refToId(shoulder.shoulder_module_ref);
+              const moduleName = moduleNameMap[moduleId] ?? {
+                InvariantString: moduleId,
+              };
+              const color = colorMap[moduleId];
+              // Shoulders NOT in the default profile start disabled
+              const startsDisabled = group.profileId !== defaultProfileId;
 
-            return (
-              <div
-                class={`legend-item${startsDisabled ? ' legend-item--disabled' : ''}`}
-                role="button"
-                tabindex="0"
-                data-shoulder-id={moduleId}
-                data-profile-id={group.profileId}
-                data-graph-id={graphId}
-                aria-pressed={startsDisabled ? 'true' : 'false'}
-                title="Click to hide/show this shoulder's line"
-              >
-                <span class="legend-color" style={`background-color: ${color};`} />
-                {moduleName.InvariantString ? (
-                  <span class="legend-label">{moduleName.InvariantString}</span>
-                ) : (
-                  <span class="legend-label">
-                    <LocalizedText tag="span" localizationKey={moduleName} />
-                  </span>
-                )}
-              </div>
-            );
-          })}
+              return (
+                <div
+                  class={`legend-item${startsDisabled ? ' legend-item--disabled' : ''}`}
+                  role="button"
+                  tabindex="0"
+                  data-shoulder-id={moduleId}
+                  data-profile-id={group.profileId}
+                  data-graph-id={graphId}
+                  aria-pressed={startsDisabled ? 'true' : 'false'}
+                  title="Click to hide/show this shoulder's line"
+                >
+                  <span
+                    class="legend-color"
+                    style={`background-color: ${color};`}
+                  />
+                  {moduleName.InvariantString ? (
+                    <span class="legend-label">
+                      {moduleName.InvariantString}
+                    </span>
+                  ) : (
+                    <span class="legend-label">
+                      <LocalizedText tag="span" localizationKey={moduleName} />
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </div>
-    ))}
+      ))
+    }
   </div>
 
   <div class="chart-controls-bottom">
@@ -165,7 +195,10 @@ const groupedByProfile = profileOptions.map(opt => ({
       <div class="stat-tooltip-container" style="margin-left: 2px;">
         <span class="stat-help-icon">?</span>
         <div class="stat-tooltip-text left-aligned-tooltip">
-          Use the shields from two of the same shoulder and add the shoulder's armor, showcasing their total health pool as opposed to just shields. Note that this is only a reasonable metric against weapons that are single target and deal equal damage to shields and armor.
+          Use the shields from two of the same shoulder and add the shoulder's
+          armor, showcasing their total health pool as opposed to just shields.
+          Note that this is only a reasonable metric against weapons that are
+          single target and deal equal damage to shields and armor.
         </div>
       </div>
     </button>
@@ -230,7 +263,9 @@ const groupedByProfile = profileOptions.map(opt => ({
     padding: 0 0 0.35rem 0;
     margin-bottom: 0.15rem;
     cursor: pointer;
-    transition: color 0.15s ease, border-color 0.15s ease;
+    transition:
+      color 0.15s ease,
+      border-color 0.15s ease;
     font-family: inherit;
   }
 
