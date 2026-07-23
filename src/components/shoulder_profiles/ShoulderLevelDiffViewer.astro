@@ -1,0 +1,94 @@
+---
+import * as fs from 'fs';
+import * as path from 'path';
+import type { ShoulderCategory } from '../../types/shoulder_profile';
+import type { Module } from '../../types/module';
+import type { LocalizationKey } from '../../types/localization';
+import type { ModuleGroup } from '../../types/module_group';
+import { getParseObjects } from '../../utils/parse_object';
+import ShoulderLevelDiffControls from './ShoulderLevelDiffControls.astro';
+import ShoulderLevelDiffTable from './ShoulderLevelDiffTable.astro';
+
+const profilesPath = path.join(
+  process.cwd(),
+  'WRFrontiersDB-Data/current/Analysis/shoulder_profiles.json'
+);
+const categories: ShoulderCategory[] = JSON.parse(
+  fs.readFileSync(profilesPath, 'utf-8')
+);
+
+categories.sort((a, b) => {
+  if (a.weight_drain !== b.weight_drain) {
+    return a.weight_drain - b.weight_drain;
+  }
+  if (a.light_slots !== b.light_slots) {
+    return a.light_slots - b.light_slots;
+  }
+  return a.heavy_slots - b.heavy_slots;
+});
+
+const allModules = getParseObjects<Module>('Objects/Module.json');
+const moduleNameMap: Record<string, LocalizationKey> = {};
+for (const [id, module] of Object.entries(allModules)) {
+  if (module.name) {
+    moduleNameMap[id] = module.name as LocalizationKey;
+  }
+}
+
+const allModuleGroups = getParseObjects<ModuleGroup>(
+  'Objects/ModuleGroup.json'
+);
+const shoulderGroup = allModuleGroups['non-titan-shoulder'];
+
+const profileOptions = categories.map((cat, idx) => {
+  return { id: `profile-${idx}`, category: cat };
+});
+
+const allShouldersWithProfile = profileOptions.flatMap((opt) =>
+  opt.category.shoulders.map((shoulder) => ({
+    ...shoulder,
+    profileId: opt.id,
+  }))
+);
+
+const MAX_LEVEL = 13;
+---
+
+<div class="shoulder-level-diff-viewer">
+  <h2>Shoulder Upgrade Gains</h2>
+  <p class="page-description">
+    Use the sliders below to compute the exact stat difference between any two upgrade levels.
+    The table displays the net change from the Min Level to the Max Level.
+  </p>
+
+  <ShoulderLevelDiffControls maxLevel={MAX_LEVEL} />
+
+  <div class="viewer-content">
+    <ShoulderLevelDiffTable
+      shoulders={allShouldersWithProfile}
+      moduleNameMap={moduleNameMap}
+      shoulderGroup={shoulderGroup}
+      tableId="shoulder-diff-table"
+    />
+  </div>
+</div>
+
+<style>
+  .shoulder-level-diff-viewer {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .page-description {
+    color: #aaa;
+    margin-bottom: 1.5rem;
+    max-width: 70ch;
+  }
+
+  .viewer-content {
+    overflow-x: auto;
+  }
+</style>

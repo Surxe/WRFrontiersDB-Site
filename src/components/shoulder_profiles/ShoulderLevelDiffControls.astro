@@ -1,0 +1,109 @@
+---
+export interface Props {
+  maxLevel: number;
+}
+
+const { maxLevel } = Astro.props;
+---
+
+<div class="shoulder-level-diff-controls">
+  <div class="slider-group">
+    <label for="min-level-slider">Min Level: <span id="min-level-display">1</span></label>
+    <input
+      type="range"
+      id="min-level-slider"
+      class="level-slider"
+      min="1"
+      max={maxLevel}
+      value="1"
+    />
+  </div>
+
+  <div class="slider-group">
+    <label for="max-level-slider">Max Level: <span id="max-level-display">{maxLevel}</span></label>
+    <input
+      type="range"
+      id="max-level-slider"
+      class="level-slider"
+      min="1"
+      max={maxLevel}
+      value={maxLevel}
+    />
+  </div>
+</div>
+
+<style>
+  .shoulder-level-diff-controls {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+    justify-content: center;
+    background: #242424;
+    padding: 1rem;
+    border-radius: 6px;
+    border: 1px solid #383838;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .slider-group {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .slider-group label {
+    font-size: 0.95rem;
+    color: #e0e0e0;
+    min-width: 120px;
+  }
+
+  .slider-group span {
+    font-weight: bold;
+    color: #4fc3f7;
+  }
+
+  .level-slider {
+    width: 200px;
+    cursor: pointer;
+  }
+</style>
+
+<script is:inline type="module">
+  import { setStatChoice } from '/js/localization.js';
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const minSlider = document.getElementById('min-level-slider');
+    const maxSlider = document.getElementById('max-level-slider');
+    const minDisplay = document.getElementById('min-level-display');
+    const maxDisplay = document.getElementById('max-level-display');
+
+    if (!minSlider || !maxSlider || !minDisplay || !maxDisplay) return;
+
+    function updateDiffChoice() {
+      let minVal = parseInt(minSlider.value, 10);
+      let maxVal = parseInt(maxSlider.value, 10);
+
+      // Prevent Min from exceeding Max
+      if (minVal > maxVal) {
+        // Decide which one changed and adjust the other
+        if (this === minSlider) {
+          maxVal = minVal;
+          maxSlider.value = maxVal.toString();
+        } else {
+          minVal = maxVal;
+          minSlider.value = minVal.toString();
+        }
+      }
+
+      minDisplay.textContent = minVal.toString();
+      maxDisplay.textContent = maxVal.toString();
+
+      const choiceIndex = minVal * 100 + maxVal;
+      setStatChoice(choiceIndex, 'current', '#shoulder-diff-table [data-stat-value-choices]');
+    }
+
+    minSlider.addEventListener('input', updateDiffChoice);
+    maxSlider.addEventListener('input', updateDiffChoice);
+  });
+</script>

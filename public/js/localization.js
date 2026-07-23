@@ -265,10 +265,15 @@ export async function initializeLocalization(
  * Sets the current stat choice for elements with stat value choices
  * @param {number} choiceIndex - Index of the choice to use (0-based)
  * @param {string} version - Game version for re-localization (ignored, always uses current)
+ * @param {string} scopeSelector - Optional CSS selector to scope the update (default: '[data-stat-value-choices]')
  */
-export async function setStatChoice(choiceIndex, _version) {
+export async function setStatChoice(
+  choiceIndex,
+  _version,
+  scopeSelector = '[data-stat-value-choices]'
+) {
   // Update data-current-choice on all elements with stat choices
-  const elements = document.querySelectorAll('[data-stat-value-choices]');
+  const elements = document.querySelectorAll(scopeSelector);
   elements.forEach((element) => {
     element.dataset.currentChoice = String(choiceIndex);
   });
@@ -277,5 +282,5 @@ export async function setStatChoice(choiceIndex, _version) {
   const currentLang = getCurrentLanguage();
   const locData =
     currentLang === 'en' ? {} : await loadLanguage(currentLang, 'current');
-  updateLocalizedElements(locData || {}, '[data-loc-key]');
+  updateLocalizedElements(locData || {}, scopeSelector);
 }

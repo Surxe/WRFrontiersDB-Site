@@ -1,0 +1,235 @@
+---
+import type { LocalizationKey } from '../../types/localization';
+import type { ModuleGroup } from '../../types/module_group';
+import { resolveLocalizationKey } from '../../utils/localization';
+import { refToId } from '../../utils/object_reference';
+import LocalizedText from '../LocalizedText.astro';
+import LocalizedStatValue from '../LocalizedStatValue.astro';
+import LocalizedEmbed from '../LocalizedEmbed.astro';
+import { getStatNameLocalizationKey } from '../../utils/stat_name_localization';
+import { getStatMetadata } from '../../utils/stat';
+import { getParseObjects } from '../../utils/parse_object';
+import { resolveObjectRef } from '../../utils/object_resolver';
+
+export interface Props {
+  shoulders: any[];
+  moduleNameMap: Record<string, LocalizationKey>;
+  shoulderGroup: ModuleGroup;
+  tableId: string;
+}
+
+const { shoulders, moduleNameMap, shoulderGroup, tableId } = Astro.props;
+
+const STAT_COLUMNS = [
+  'Armor',
+  'ShieldAmount',
+  'ShieldDelayReduction',
+  'ShieldRegeneration',
+  'RechargeDelay',
+  'RechargeTime',
+  'DelayAndRechargeTotal',
+] as const;
+
+const columnLocKeys = Object.fromEntries(
+  STAT_COLUMNS.map((col) => [col, getStatNameLocalizationKey(col)])
+) as Record<string, LocalizationKey | undefined>;
+
+const COLUMN_DESCRIPTIONS: Record<string, string> = {
+  Armor: 'The change in durability of the shoulder after shields are depleted.',
+  ShieldAmount: 'The change in maximum capacity of the shield.',
+  ShieldDelayReduction: 'The change in the multiplier reduction applied to the base shield recharge delay.',
+  ShieldRegeneration: 'The change in shield recovered per second.',
+  RechargeDelay: 'The change in time in seconds after taking damage before shield regeneration begins.',
+  RechargeTime: 'The change in time in seconds it takes to fully regenerate the shield.',
+  DelayAndRechargeTotal: 'The change in total time in seconds from taking damage until the shield is fully recharged.',
+};
+
+const allStats = getParseObjects<any>('Objects/Stat.json');
+const allModuleStats = getParseObjects<any>('Objects/ModuleStat.json');
+
+const columnMetadata = Object.fromEntries(
+  STAT_COLUMNS.map((col) => {
+    const statId = col;
+    const statObj = allStats[statId];
+    if (statObj && statObj.module_stat_ref) {
+      const moduleStat = resolveObjectRef(
+        statObj.module_stat_ref,
+        allModuleStats
+      );
+      if (moduleStat) {
+        return [
+          col,
+          {
+            ...getStatMetadata(moduleStat),
+            unitScaler: moduleStat.unit_scaler ?? 1,
+          },
+        ];
+      }
+    }
+    return [col, { pattern: '{Amount}{Unit}', shortKey: col, unitScaler: 1 }];
+  })
+);
+
+const LABEL_PATTERN_KEY = resolveLocalizationKey(
+  'ModuleStatPattern_Label',
+  'Web_UI'
+);
+
+function getPrecomputedChoices(shoulderLevels: any, col: string, unitScaler: number) {
+  const choices: Record<number, number> = {};
+  for (let min = 1; min <= 13; min++) {
+    for (let max = 1; max <= 13; max++) {
+      const minVal = shoulderLevels[String(min)]?.[col];
+      const maxVal = shoulderLevels[String(max)]?.[col];
+      if (minVal !== undefined && maxVal !== undefined) {
+        choices[min * 100 + max] = (maxVal - minVal) * unitScaler;
+      }
+    }
+  }
+  return choices;
+}
+---
+
+<div class="shoulder-stats-table-wrapper">
+  <table id={tableId} class="shoulder-stats-table">
+    <thead>
+      <tr>
+        <th>
+          <LocalizedText tag="span" localizationKey={shoulderGroup.name} />
+        </th>
+        {
+          STAT_COLUMNS.map((col) => {
+            const meta = columnMetadata[col];
+            const nameKey = columnLocKeys[col];
+            return (
+              <th>
+                <div class="th-content">
+                  {nameKey && meta.unitName ? (
+                    <LocalizedEmbed
+                      tag="span"
+                      pattern={LABEL_PATTERN_KEY}
+                      embeds={{
+                        Label: nameKey,
+                        Unit: meta.unitName as LocalizationKey,
+                      }}
+                    />
+                  ) : nameKey ? (
+                    <LocalizedText tag="span" localizationKey={nameKey} />
+                  ) : (
+                    <span>{col}</span>
+                  )}
+                  <div class="stat-tooltip-container">
+                    <span class="stat-help-icon">?</span>
+                    <div class="stat-tooltip-text">
+                      {COLUMN_DESCRIPTIONS[col]}
+                    </div>
+                  </div>
+                </div>
+              </th>
+            );
+          })
+        }
+      </tr>
+    </thead>
+    <tbody>
+      {
+        shoulders.map((shoulder) => {
+          const moduleId = refToId(shoulder.shoulder_module_ref);
+          const moduleName = moduleNameMap[moduleId];
+
+          return (
+            <tr data-module-id={moduleId} data-profile-id={shoulder.profileId}>
+              <td class="shoulder-name-cell">
+                {moduleName?.InvariantString ? (
+                  <span class="shoulder-table-name">
+                    {moduleName.InvariantString}
+                  </span>
+                ) : moduleName ? (
+                  <span class="shoulder-table-name">
+                    <LocalizedText tag="span" localizationKey={moduleName} />
+                  </span>
+                ) : (
+                  <span class="shoulder-table-name">{moduleId}</span>
+                )}
+              </td>
+              {STAT_COLUMNS.map((col) => {
+                const meta = columnMetadata[col];
+                const unitScaler = (meta.unitScaler as number) || 1;
+                
+                const precomputedChoices = getPrecomputedChoices(shoulder.levels, col, unitScaler);
+
+                return (
+                  <td class="stat-cell">
+                    {Object.keys(precomputedChoices).length > 0 ? (
+                      <LocalizedStatValue
+                        choices={precomputedChoices}
+                        initialChoice={113}
+                        pattern={meta.pattern as string}
+                        unitName={meta.unitName as LocalizationKey | undefined}
+                        unitExponent={meta.unitExponent as number | undefined}
+                        decimalPlaces={meta.decimalPlaces as number | undefined}
+                      />
+                    ) : (
+                      <span>-</span>
+                    )}
+                  </td>
+                );
+              })}
+            </tr>
+          );
+        })
+      }
+    </tbody>
+  </table>
+</div>
+
+<style>
+  /* Use the exact same styles as UnifiedShoulderTable */
+  .shoulder-stats-table-wrapper {
+    border-radius: 6px;
+    border: 1px solid #383838;
+  }
+
+  .shoulder-stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+
+  .shoulder-stats-table th:first-child {
+    border-top-left-radius: 5px;
+  }
+  .shoulder-stats-table th:last-child {
+    border-top-right-radius: 5px;
+  }
+
+  .shoulder-stats-table th {
+    background: #2e2e2e;
+    color: #ccc;
+    padding: 0.5rem 0.75rem;
+    white-space: nowrap;
+    text-align: right;
+    font-weight: 600;
+  }
+
+  .shoulder-stats-table th:first-child {
+    text-align: left;
+  }
+
+  .shoulder-stats-table td {
+    padding: 0.4rem 0.75rem;
+    border-top: 1px solid #2e2e2e;
+    color: #ddd;
+    text-align: right;
+  }
+
+  .shoulder-stats-table .shoulder-name-cell {
+    text-align: left;
+    font-weight: 600;
+    color: #e8e8e8;
+    background: #252525;
+    border-right: 1px solid #383838;
+    min-width: 110px;
+    vertical-align: top;
+  }
+</style>
