@@ -18,38 +18,39 @@ interface RawStat {
  * These synthetic stats are parser-generated (identified by "Synthetic" in their ModuleStat ID)
  * and are covered by the SyntheticStatKeys namespace in public/locales/en.json.
  */
-export const SYNTHETIC_STAT_LOCALIZATION_MAP: Record<string, LocalizationKey> = {
-  RechargeDelay: {
-    Key: 'Stat_RechargeDelay',
-    TableNamespace: 'SyntheticStatKeys',
-    en: 'Regen Delay',
-  },
-  RechargeTime: {
-    Key: 'Stat_RechargeTime',
-    TableNamespace: 'SyntheticStatKeys',
-    en: 'Fill Time',
-  },
-  DelayAndRechargeTotal: {
-    Key: 'Stat_DelayAndRechargeTotal',
-    TableNamespace: 'SyntheticStatKeys',
-    en: 'Full Recovery',
-  },
-  AoeArmor: {
-    Key: 'Stat_AoeArmor',
-    TableNamespace: 'SyntheticStatKeys',
-    en: 'AoE Armor',
-  },
-  AoeNoArmor: {
-    Key: 'Stat_AoeNoArmor',
-    TableNamespace: 'SyntheticStatKeys',
-    en: 'AoE No-Armor Damage',
-  },
-  TimeBetweenShots: {
-    Key: 'Stat_TimeBetweenShots',
-    TableNamespace: 'SyntheticStatKeys',
-    en: 'Time Between Shots',
-  },
-};
+export const SYNTHETIC_STAT_LOCALIZATION_MAP: Record<string, LocalizationKey> =
+  {
+    RechargeDelay: {
+      Key: 'Stat_RechargeDelay',
+      TableNamespace: 'SyntheticStatKeys',
+      en: 'Regen Delay',
+    },
+    RechargeTime: {
+      Key: 'Stat_RechargeTime',
+      TableNamespace: 'SyntheticStatKeys',
+      en: 'Fill Time',
+    },
+    DelayAndRechargeTotal: {
+      Key: 'Stat_DelayAndRechargeTotal',
+      TableNamespace: 'SyntheticStatKeys',
+      en: 'Full Recovery',
+    },
+    AoeArmor: {
+      Key: 'Stat_AoeArmor',
+      TableNamespace: 'SyntheticStatKeys',
+      en: 'AoE Armor',
+    },
+    AoeNoArmor: {
+      Key: 'Stat_AoeNoArmor',
+      TableNamespace: 'SyntheticStatKeys',
+      en: 'AoE No-Armor Damage',
+    },
+    TimeBetweenShots: {
+      Key: 'Stat_TimeBetweenShots',
+      TableNamespace: 'SyntheticStatKeys',
+      en: 'Time Between Shots',
+    },
+  };
 
 /**
  * Hardcoded LocalizationKey for the WeightDrain stat name.
@@ -77,24 +78,64 @@ export interface StatUnitInfo {
  */
 export const MODULE_STAT_UNIT_FALLBACK_MAP: Record<string, StatUnitInfo> = {
   ShieldRegen: {
-    unitName: { Key: 'Stat_Unit_PerSecond', TableNamespace: 'SyntheticStatKeys', en: '/s' },
-    unitPattern: { Key: 'ModuleStatPattern_Default', TableNamespace: 'ModuleStatKeys', en: '{Amount}{Unit}' },
+    unitName: {
+      Key: 'Stat_Unit_PerSecond',
+      TableNamespace: 'SyntheticStatKeys',
+      en: '/s',
+    },
+    unitPattern: {
+      Key: 'ModuleStatPattern_Default',
+      TableNamespace: 'ModuleStatKeys',
+      en: '{Amount}{Unit}',
+    },
   },
   RechargeDelay: {
-    unitName: { Key: 'ModuleStat_Unit_Seconds', TableNamespace: 'ModuleStatKeys', en: 's' },
-    unitPattern: { Key: 'ModuleStatPattern_Default', TableNamespace: 'ModuleStatKeys', en: '{Amount}{Unit}' },
+    unitName: {
+      Key: 'ModuleStat_Unit_Seconds',
+      TableNamespace: 'ModuleStatKeys',
+      en: 's',
+    },
+    unitPattern: {
+      Key: 'ModuleStatPattern_Default',
+      TableNamespace: 'ModuleStatKeys',
+      en: '{Amount}{Unit}',
+    },
   },
   RechargeTime: {
-    unitName: { Key: 'ModuleStat_Unit_Seconds', TableNamespace: 'ModuleStatKeys', en: 's' },
-    unitPattern: { Key: 'ModuleStatPattern_Default', TableNamespace: 'ModuleStatKeys', en: '{Amount}{Unit}' },
+    unitName: {
+      Key: 'ModuleStat_Unit_Seconds',
+      TableNamespace: 'ModuleStatKeys',
+      en: 's',
+    },
+    unitPattern: {
+      Key: 'ModuleStatPattern_Default',
+      TableNamespace: 'ModuleStatKeys',
+      en: '{Amount}{Unit}',
+    },
   },
   DelayAndRechargeTotal: {
-    unitName: { Key: 'ModuleStat_Unit_Seconds', TableNamespace: 'ModuleStatKeys', en: 's' },
-    unitPattern: { Key: 'ModuleStatPattern_Default', TableNamespace: 'ModuleStatKeys', en: '{Amount}{Unit}' },
+    unitName: {
+      Key: 'ModuleStat_Unit_Seconds',
+      TableNamespace: 'ModuleStatKeys',
+      en: 's',
+    },
+    unitPattern: {
+      Key: 'ModuleStatPattern_Default',
+      TableNamespace: 'ModuleStatKeys',
+      en: '{Amount}{Unit}',
+    },
   },
   TimeBetweenShots: {
-    unitName: { Key: 'ModuleStat_Unit_Seconds', TableNamespace: 'ModuleStatKeys', en: 's' },
-    unitPattern: { Key: 'ModuleStatPattern_Default', TableNamespace: 'ModuleStatKeys', en: '{Amount}{Unit}' },
+    unitName: {
+      Key: 'ModuleStat_Unit_Seconds',
+      TableNamespace: 'ModuleStatKeys',
+      en: 's',
+    },
+    unitPattern: {
+      Key: 'ModuleStatPattern_Default',
+      TableNamespace: 'ModuleStatKeys',
+      en: '{Amount}{Unit}',
+    },
   },
 };
 
@@ -119,7 +160,8 @@ export function getStatNameLocalizationKey(
   allModuleStats?: Record<string, ModuleStat>
 ): LocalizationKey | undefined {
   const stats =
-    allStats ?? (getParseObjects<RawStat>('Objects/Stat.json') as Record<string, RawStat>);
+    allStats ??
+    (getParseObjects<RawStat>('Objects/Stat.json') as Record<string, RawStat>);
   const moduleStats =
     allModuleStats ?? getParseObjects<ModuleStat>('Objects/ModuleStat.json');
 

@@ -7,7 +7,10 @@
  */
 import type { LocalizationKey } from '../../types/localization';
 import type { ModuleGroup } from '../../types/module_group';
-import { getDefaultString, resolveLocalizationKey } from '../../utils/localization';
+import {
+  getDefaultString,
+  resolveLocalizationKey,
+} from '../../utils/localization';
 import { refToId } from '../../utils/object_reference';
 import LocalizedText from '../LocalizedText.astro';
 import LocalizedStatValue from '../LocalizedStatValue.astro';
@@ -74,7 +77,10 @@ const columnMetadata = Object.fromEntries(
     const statId = col;
     const statObj = allStats[statId];
     if (statObj && statObj.module_stat_ref) {
-      const moduleStat = resolveObjectRef(statObj.module_stat_ref, allModuleStats);
+      const moduleStat = resolveObjectRef(
+        statObj.module_stat_ref,
+        allModuleStats
+      );
       if (moduleStat) {
         return [
           col,
@@ -91,7 +97,10 @@ const columnMetadata = Object.fromEntries(
 );
 
 /** Pattern key for rendering a stat label with its unit as "Name (unit)" */
-const LABEL_PATTERN_KEY = resolveLocalizationKey('ModuleStatPattern_Label', 'Web_UI');
+const LABEL_PATTERN_KEY = resolveLocalizationKey(
+  'ModuleStatPattern_Label',
+  'Web_UI'
+);
 ---
 
 <div class="shoulder-stats-table-wrapper">
@@ -113,7 +122,10 @@ const LABEL_PATTERN_KEY = resolveLocalizationKey('ModuleStatPattern_Label', 'Web
                     <LocalizedEmbed
                       tag="span"
                       pattern={LABEL_PATTERN_KEY}
-                      embeds={{ Label: nameKey, Unit: meta.unitName as LocalizationKey }}
+                      embeds={{
+                        Label: nameKey,
+                        Unit: meta.unitName as LocalizationKey,
+                      }}
                     />
                   ) : nameKey ? (
                     <LocalizedText tag="span" localizationKey={nameKey} />
@@ -150,7 +162,11 @@ const LABEL_PATTERN_KEY = resolveLocalizationKey('ModuleStatPattern_Label', 'Web
             const levelNum = parseInt(levelKey);
 
             return (
-              <tr data-level={levelNum} data-module-id={moduleId} data-profile-id={shoulder.profileId}>
+              <tr
+                data-level={levelNum}
+                data-module-id={moduleId}
+                data-profile-id={shoulder.profileId}
+              >
                 {/* Shoulder name cell — duplicated for every row so we can hide inactive levels easily */}
                 <td class="shoulder-name-cell">
                   {moduleName?.InvariantString ? (

@@ -166,8 +166,17 @@ export function updateLocalizedElements(locData, selectors) {
               let replacement = '';
               if (typeof embedValue === 'string') {
                 replacement = embedValue;
-              } else if (embedValue && embedValue.Key && embedValue.TableNamespace) {
-                replacement = getLocalizedText(locData, embedValue.TableNamespace, embedValue.Key, embedValue.InvariantString || embedValue.en || '');
+              } else if (
+                embedValue &&
+                embedValue.Key &&
+                embedValue.TableNamespace
+              ) {
+                replacement = getLocalizedText(
+                  locData,
+                  embedValue.TableNamespace,
+                  embedValue.Key,
+                  embedValue.InvariantString || embedValue.en || ''
+                );
               } else if (embedValue && embedValue.InvariantString) {
                 replacement = embedValue.InvariantString;
               } else if (embedValue && embedValue.en) {

@@ -19,7 +19,7 @@ const { breadcrumbs } = Astro.props;
               breadcrumb.label
             ) : (
               <>
-                {(breadcrumb.label.Key && breadcrumb.label.TableNamespace) ? (
+                {breadcrumb.label.Key && breadcrumb.label.TableNamespace ? (
                   <span
                     data-loc-key={breadcrumb.label.Key}
                     data-loc-namespace={breadcrumb.label.TableNamespace}
@@ -38,7 +38,7 @@ const { breadcrumbs } = Astro.props;
               breadcrumb.label
             ) : (
               <>
-                {(breadcrumb.label.Key && breadcrumb.label.TableNamespace) ? (
+                {breadcrumb.label.Key && breadcrumb.label.TableNamespace ? (
                   <span
                     data-loc-key={breadcrumb.label.Key}
                     data-loc-namespace={breadcrumb.label.TableNamespace}

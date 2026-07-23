@@ -100,7 +100,12 @@ export function localizeText(
       // Prefer Key+TableNamespace lookup; InvariantString is only used when no key exists.
       if (key.Key && key.TableNamespace) {
         if (locData?.[key.TableNamespace]) {
-          return locData[key.TableNamespace][key.Key] || key.en || key.InvariantString || '';
+          return (
+            locData[key.TableNamespace][key.Key] ||
+            key.en ||
+            key.InvariantString ||
+            ''
+          );
         }
         return key.en || key.InvariantString || '';
       }
@@ -208,7 +213,10 @@ export function resolveLocalizedEmbeds(
       if (value.Key && value.TableNamespace) {
         if (locData[value.TableNamespace]) {
           replacement =
-            locData[value.TableNamespace][value.Key] || value.en || value.InvariantString || '';
+            locData[value.TableNamespace][value.Key] ||
+            value.en ||
+            value.InvariantString ||
+            '';
         } else {
           replacement = value.en || value.InvariantString || '';
         }
