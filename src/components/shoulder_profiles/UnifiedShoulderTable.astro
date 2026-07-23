@@ -104,16 +104,15 @@ const columnMetadata = Object.fromEntries(
             return (
               <th>
                 <div class="th-content">
-                  {columnLocKeys[col] ? (
-                    <LocalizedText tag="span" localizationKey={columnLocKeys[col]!} />
-                  ) : (
-                    <span>{col}</span>
-                  )}
-                  {meta.unitName && (
-                    <span class="column-unit">
-                      <LocalizedText tag="span" localizationKey={meta.unitName as LocalizationKey} />
-                    </span>
-                  )}
+                  <span class="column-name-wrapper">
+                    {columnLocKeys[col] ? (
+                      <LocalizedText tag="span" localizationKey={columnLocKeys[col]!} />
+                    ) : (
+                      <span>{col}</span>
+                    )}{meta.unitName && (
+                      <span class="column-unit"><LocalizedText tag="span" localizationKey={meta.unitName as LocalizationKey} /></span>
+                    )}
+                  </span>
                   <div class="stat-tooltip-container">
                     <span class="stat-help-icon">?</span>
                     <div class="stat-tooltip-text">
@@ -281,7 +280,6 @@ const columnMetadata = Object.fromEntries(
   :global(.column-unit) {
     color: #888;
     font-size: 0.9em;
-    margin-left: 2px;
   }
 
   :global(.stat-help-icon) {
