@@ -10,6 +10,7 @@ import type { ModuleGroup } from '../../types/module_group';
 import { getDefaultString } from '../../utils/localization';
 import { refToId } from '../../utils/object_reference';
 import LocalizedText from '../LocalizedText.astro';
+import { getStatNameLocalizationKey } from '../../utils/stat_name_localization';
 
 export interface Props {
   /** All shoulders across all profiles, with .profileId */
@@ -34,16 +35,14 @@ const STAT_COLUMNS = [
   'DelayAndRechargeTotal',
 ] as const;
 
-/** Human-readable column headers (no localization required per spec) */
-const COLUMN_LABELS: Record<string, string> = {
-  Armor: 'Armor',
-  ShieldAmount: 'Shield Amount',
-  ShieldDelayReduction: 'Delay Reduction (%)',
-  ShieldRegeneration: 'Shield Regen/s',
-  RechargeDelay: 'Regen Delay (s)',
-  RechargeTime: 'Fill Time (s)',
-  DelayAndRechargeTotal: 'Full Recovery (s)',
-};
+/**
+ * Build-time resolution of LocalizationKeys for each stat column.
+ * getStatNameLocalizationKey follows the chain: Stat.id -> ModuleStat.stat_name,
+ * falling back to SYNTHETIC_STAT_LOCALIZATION_MAP for parser-generated stats.
+ */
+const columnLocKeys = Object.fromEntries(
+  STAT_COLUMNS.map((col) => [col, getStatNameLocalizationKey(col)])
+) as Record<string, LocalizationKey | undefined>;
 
 /** Hover descriptions for the question mark tooltips */
 const COLUMN_DESCRIPTIONS: Record<string, string> = {
@@ -86,7 +85,11 @@ function fmt(value: number, col: string): string {
           STAT_COLUMNS.map((col) => (
             <th>
               <div class="th-content">
-                <span>{COLUMN_LABELS[col]}</span>
+                {columnLocKeys[col] ? (
+                  <LocalizedText tag="span" localizationKey={columnLocKeys[col]!} />
+                ) : (
+                  <span>{col}</span>
+                )}
                 <div class="stat-tooltip-container">
                   <span class="stat-help-icon">?</span>
                   <div class="stat-tooltip-text">

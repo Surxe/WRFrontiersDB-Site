@@ -10,6 +10,7 @@ import type { ModuleGroup } from '../../types/module_group';
 import { getDefaultString } from '../../utils/localization';
 import { refToId } from '../../utils/object_reference';
 import LocalizedText from '../LocalizedText.astro';
+import { WEIGHT_DRAIN_STAT_NAME_LOCALIZATION_KEY } from '../../utils/stat_name_localization';
 
 export interface Props {
   /** Flattened shoulders array with .profileId injected */
@@ -114,7 +115,7 @@ const groupedByProfile = profileOptions.map(opt => ({
             <><LocalizedText tag="span" localizationKey={heavyWeaponGroup.name} /> &times;{group.category.heavy_slots}</>
           )}
           {group.category.light_slots === 0 && group.category.heavy_slots === 0 && <span>No Slots</span>}
-          <span> &mdash; Weight {group.category.weight_drain}</span>
+          <span> &mdash; <LocalizedText tag="span" localizationKey={WEIGHT_DRAIN_STAT_NAME_LOCALIZATION_KEY} /> {group.category.weight_drain}</span>
         </button>
 
         {/* Individual module items within the group */}
