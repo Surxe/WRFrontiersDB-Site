@@ -64,6 +64,41 @@ export const WEIGHT_DRAIN_STAT_NAME_LOCALIZATION_KEY: LocalizationKey = {
 };
 
 /**
+ * Information for falling back to missing units and unit patterns on ModuleStats.
+ */
+export interface StatUnitInfo {
+  unitName?: LocalizationKey;
+  unitPattern?: LocalizationKey;
+}
+
+/**
+ * Fallback map keyed by ModuleStat.short_key to provide missing unit definitions.
+ * Used by getStatMetadata() in src/utils/stat.ts.
+ */
+export const MODULE_STAT_UNIT_FALLBACK_MAP: Record<string, StatUnitInfo> = {
+  ShieldRegen: {
+    unitName: { Key: 'Stat_Unit_PerSecond', TableNamespace: 'SyntheticStatKeys', en: '/s' },
+    unitPattern: { Key: 'ModuleStatPattern_Default', TableNamespace: 'ModuleStatKeys', en: '{Amount}{Unit}' },
+  },
+  RechargeDelay: {
+    unitName: { Key: 'ModuleStat_Unit_Seconds', TableNamespace: 'ModuleStatKeys', en: 's' },
+    unitPattern: { Key: 'ModuleStatPattern_Default', TableNamespace: 'ModuleStatKeys', en: '{Amount}{Unit}' },
+  },
+  RechargeTime: {
+    unitName: { Key: 'ModuleStat_Unit_Seconds', TableNamespace: 'ModuleStatKeys', en: 's' },
+    unitPattern: { Key: 'ModuleStatPattern_Default', TableNamespace: 'ModuleStatKeys', en: '{Amount}{Unit}' },
+  },
+  DelayAndRechargeTotal: {
+    unitName: { Key: 'ModuleStat_Unit_Seconds', TableNamespace: 'ModuleStatKeys', en: 's' },
+    unitPattern: { Key: 'ModuleStatPattern_Default', TableNamespace: 'ModuleStatKeys', en: '{Amount}{Unit}' },
+  },
+  TimeBetweenShots: {
+    unitName: { Key: 'ModuleStat_Unit_Seconds', TableNamespace: 'ModuleStatKeys', en: 's' },
+    unitPattern: { Key: 'ModuleStatPattern_Default', TableNamespace: 'ModuleStatKeys', en: '{Amount}{Unit}' },
+  },
+};
+
+/**
  * Resolve the display-name LocalizationKey for a stat by its Stat.json id (e.g. "ShieldAmount").
  *
  * Resolution chain:

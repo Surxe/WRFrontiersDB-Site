@@ -54,6 +54,7 @@
     "Stat_DelayAndRechargeTotal": "Full Recovery",
     "Stat_AoeArmor": "AoE Armor",
     "Stat_AoeNoArmor": "AoE No-Armor Damage",
-    "Stat_TimeBetweenShots": "Time Between Shots"
+    "Stat_TimeBetweenShots": "Time Between Shots",
+    "Stat_Unit_PerSecond": "/s"
   }
 }

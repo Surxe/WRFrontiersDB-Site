@@ -4,6 +4,7 @@ import type { CharacterModule } from '../types/character_module';
 import type { Ability } from '../types/ability';
 import { getDefaultString } from './localization';
 import { resolveObjectRef } from './object_resolver';
+import { MODULE_STAT_UNIT_FALLBACK_MAP } from './stat_name_localization';
 
 /**
  * Builds StatValueChoices from a stats array and ModuleStat objects.
@@ -47,9 +48,13 @@ export function getStatValueChoices(
  * @returns Metadata for StatValueChoices
  */
 export function getStatMetadata(statObject: ModuleStat) {
+  const fallback = MODULE_STAT_UNIT_FALLBACK_MAP[statObject.short_key];
+  const unitName = statObject.unit_name ?? fallback?.unitName;
+  const unitPattern = statObject.unit_pattern ?? fallback?.unitPattern;
+
   return {
-    pattern: getDefaultString(statObject.unit_pattern) || '{Amount}{Unit}',
-    unitName: statObject.unit_name,
+    pattern: getDefaultString(unitPattern) || '{Amount}{Unit}',
+    unitName: unitName,
     unitExponent: statObject.unit_exponent,
     decimalPlaces: statObject.decimal_places,
     shortKey: statObject.short_key,
