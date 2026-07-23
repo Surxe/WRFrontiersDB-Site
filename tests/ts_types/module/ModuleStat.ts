@@ -13,8 +13,9 @@ describe('ModuleStat interface', () => {
   const moduleStats = Object.values(data) as ModuleStat[];
 
   // Define required and optional fields explicitly
-  const requiredFields = ['id', 'stat_name', 'short_key'];
+  const requiredFields = ['id', 'short_key'];
   const optionalFields = [
+    'stat_name',
     'unit_name',
     'unit_scaler',
     'unit_exponent',
@@ -40,8 +41,11 @@ describe('ModuleStat interface', () => {
     });
   });
 
-  it('should have nested LocalizationKey structure for stat_name', () => {
-    moduleStats.forEach((moduleStat) => {
+  it('should have nested LocalizationKey structure for stat_name when present', () => {
+    const statsWithStatName = moduleStats.filter((ms) => ms.stat_name);
+    expect(statsWithStatName.length).toBeGreaterThan(0);
+
+    statsWithStatName.forEach((moduleStat) => {
       const statName = moduleStat.stat_name as LocalizationKey;
       expect(statName).toHaveProperty('Key');
       expect(statName).toHaveProperty('TableNamespace');

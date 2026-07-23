@@ -7,7 +7,6 @@
  */
 import type { LocalizationKey } from '../../types/localization';
 import type { ModuleGroup } from '../../types/module_group';
-import { getDefaultString } from '../../utils/localization';
 import { refToId } from '../../utils/object_reference';
 import LocalizedText from '../LocalizedText.astro';
 import { WEIGHT_DRAIN_STAT_NAME_LOCALIZATION_KEY } from '../../utils/stat_name_localization';
@@ -148,7 +147,6 @@ const groupedByProfile = profileOptions.map((opt) => ({
               const moduleName = moduleNameMap[moduleId] ?? {
                 InvariantString: moduleId,
               };
-              const defaultName = getDefaultString(moduleName) ?? moduleId;
               const color = colorMap[moduleId];
               // Shoulders NOT in the default profile start disabled
               const startsDisabled = group.profileId !== defaultProfileId;

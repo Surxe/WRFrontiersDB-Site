@@ -8,7 +8,6 @@
 import type { LocalizationKey } from '../../types/localization';
 import type { ModuleGroup } from '../../types/module_group';
 import {
-  getDefaultString,
   resolveLocalizationKey,
 } from '../../utils/localization';
 import { refToId } from '../../utils/object_reference';
@@ -150,9 +149,6 @@ const LABEL_PATTERN_KEY = resolveLocalizationKey(
         shoulders.map((shoulder) => {
           const moduleId = refToId(shoulder.shoulder_module_ref);
           const moduleName = moduleNameMap[moduleId];
-          const defaultName = moduleName
-            ? (getDefaultString(moduleName) ?? moduleId)
-            : moduleId;
           const levelKeys = Object.keys(shoulder.levels).sort(
             (a, b) => parseInt(a) - parseInt(b)
           );
@@ -274,7 +270,7 @@ const LABEL_PATTERN_KEY = resolveLocalizationKey(
   }
 
   /* Only display the rows matching the currently selected level AND not hidden by legend toggle */
-  .shoulder-stats-table tr.is-active-level.is-legend-visible {
+  :global(.shoulder-stats-table tr.is-active-level.is-legend-visible) {
     display: table-row;
   }
 

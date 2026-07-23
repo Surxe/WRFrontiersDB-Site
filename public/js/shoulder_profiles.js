@@ -1,3 +1,5 @@
+/* env browser */
+/* global clearTimeout, setTimeout */
 /**
  * shoulder_profiles.js
  * Client-side logic for the Unified Shoulder Profiles view.
@@ -342,7 +344,9 @@ function selectProfile(newProfileId) {
     let shouldersData = [];
     try {
       shouldersData = JSON.parse(canvas.dataset.shoulders);
-    } catch {}
+    } catch {
+      /* ignore */
+    }
 
     const disabled = new Set();
     for (const shoulder of shouldersData) {
