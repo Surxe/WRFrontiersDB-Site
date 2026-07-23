@@ -10,7 +10,11 @@ import type { ModuleGroup } from '../../types/module_group';
 import { getDefaultString } from '../../utils/localization';
 import { refToId } from '../../utils/object_reference';
 import LocalizedText from '../LocalizedText.astro';
+import LocalizedStatValue from '../LocalizedStatValue.astro';
 import { getStatNameLocalizationKey } from '../../utils/stat_name_localization';
+import { getStatMetadata } from '../../utils/stat';
+import { getParseObjects } from '../../utils/parse_object';
+import { resolveObjectRef } from '../../utils/object_resolver';
 
 export interface Props {
   /** All shoulders across all profiles, with .profileId */
@@ -60,17 +64,30 @@ const COLUMN_DESCRIPTIONS: Record<string, string> = {
     'The total time in seconds from taking damage until the shield is fully recharged (RechargeDelay + RechargeTime).',
 };
 
-/** Columns whose raw values should be scaled before display */
-const COLUMN_SCALE: Partial<Record<string, number>> = {
-  ShieldDelayReduction: 100,
-};
+const allStats = getParseObjects<any>('Objects/Stat.json');
+const allModuleStats = getParseObjects<any>('Objects/ModuleStat.json');
 
-/** Format numbers: integers stay as integers; floats to 3 decimal places */
-function fmt(value: number, col: string): string {
-  const scale = COLUMN_SCALE[col] ?? 1;
-  const scaled = value * scale;
-  return Number.isInteger(scaled) ? scaled.toString() : scaled.toFixed(3);
-}
+/** Precompute metadata for formatting each stat column */
+const columnMetadata = Object.fromEntries(
+  STAT_COLUMNS.map((col) => {
+    const statId = col;
+    const statObj = allStats[statId];
+    if (statObj && statObj.module_stat_ref) {
+      const moduleStat = resolveObjectRef(statObj.module_stat_ref, allModuleStats);
+      if (moduleStat) {
+        return [
+          col,
+          {
+            ...getStatMetadata(moduleStat),
+            unitScaler: moduleStat.unit_scaler ?? 1,
+          },
+        ];
+      }
+    }
+    // Fallback
+    return [col, { pattern: '{Amount}{Unit}', shortKey: col, unitScaler: 1 }];
+  })
+);
 ---
 
 <div class="shoulder-stats-table-wrapper">
@@ -82,23 +99,31 @@ function fmt(value: number, col: string): string {
         </th>
         <th>Level</th>
         {
-          STAT_COLUMNS.map((col) => (
-            <th>
-              <div class="th-content">
-                {columnLocKeys[col] ? (
-                  <LocalizedText tag="span" localizationKey={columnLocKeys[col]!} />
-                ) : (
-                  <span>{col}</span>
-                )}
-                <div class="stat-tooltip-container">
-                  <span class="stat-help-icon">?</span>
-                  <div class="stat-tooltip-text">
-                    {COLUMN_DESCRIPTIONS[col]}
+          STAT_COLUMNS.map((col) => {
+            const meta = columnMetadata[col];
+            return (
+              <th>
+                <div class="th-content">
+                  {columnLocKeys[col] ? (
+                    <LocalizedText tag="span" localizationKey={columnLocKeys[col]!} />
+                  ) : (
+                    <span>{col}</span>
+                  )}
+                  {meta.unitName && (
+                    <span class="column-unit">
+                      <LocalizedText tag="span" localizationKey={meta.unitName as LocalizationKey} />
+                    </span>
+                  )}
+                  <div class="stat-tooltip-container">
+                    <span class="stat-help-icon">?</span>
+                    <div class="stat-tooltip-text">
+                      {COLUMN_DESCRIPTIONS[col]}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </th>
-          ))
+              </th>
+            );
+          })
         }
       </tr>
     </thead>
@@ -135,9 +160,26 @@ function fmt(value: number, col: string): string {
                   )}
                 </td>
                 <td class="level-cell">{levelNum}</td>
-                {STAT_COLUMNS.map((col) => (
-                  <td class="stat-cell">{fmt(stats[col], col)}</td>
-                ))}
+                {STAT_COLUMNS.map((col) => {
+                  const meta = columnMetadata[col];
+                  const rawValue = stats[col];
+                  const scaledValue =
+                    rawValue !== undefined
+                      ? rawValue * (meta.unitScaler as number)
+                      : undefined;
+
+                  return (
+                    <td class="stat-cell">
+                      <LocalizedStatValue
+                        value={scaledValue}
+                        pattern={meta.pattern as string}
+                        unitName={meta.unitName as LocalizationKey | undefined}
+                        unitExponent={meta.unitExponent as number | undefined}
+                        decimalPlaces={meta.decimalPlaces as number | undefined}
+                      />
+                    </td>
+                  );
+                })}
               </tr>
             );
           });
@@ -234,6 +276,12 @@ function fmt(value: number, col: string): string {
     align-items: center;
     justify-content: center;
     cursor: help;
+  }
+
+  :global(.column-unit) {
+    color: #888;
+    font-size: 0.9em;
+    margin-left: 2px;
   }
 
   :global(.stat-help-icon) {
