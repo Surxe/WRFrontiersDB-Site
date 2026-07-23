@@ -157,6 +157,30 @@ export function updateLocalizedElements(locData, selectors) {
           }
         }
 
+        // Handle generic localized string embeds if data-loc-embeds exists
+        const locEmbeds = element.dataset.locEmbeds;
+        if (locEmbeds) {
+          try {
+            const embedsMap = JSON.parse(locEmbeds);
+            for (const [embedKey, embedValue] of Object.entries(embedsMap)) {
+              let replacement = '';
+              if (typeof embedValue === 'string') {
+                replacement = embedValue;
+              } else if (embedValue && embedValue.Key && embedValue.TableNamespace) {
+                replacement = getLocalizedText(locData, embedValue.TableNamespace, embedValue.Key, embedValue.InvariantString || embedValue.en || '');
+              } else if (embedValue && embedValue.InvariantString) {
+                replacement = embedValue.InvariantString;
+              } else if (embedValue && embedValue.en) {
+                replacement = embedValue.en;
+              }
+              const regex = new RegExp(`\\{${embedKey}\\}`, 'g');
+              localizedText = localizedText.replace(regex, replacement);
+            }
+          } catch (error) {
+            console.warn('Failed to parse loc embeds:', error);
+          }
+        }
+
         // Apply color markup stripping if requested
         const shouldStripColorMarkup =
           element.dataset.stripColorMarkup === 'true';

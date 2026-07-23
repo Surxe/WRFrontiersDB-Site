@@ -7,10 +7,11 @@
  */
 import type { LocalizationKey } from '../../types/localization';
 import type { ModuleGroup } from '../../types/module_group';
-import { getDefaultString } from '../../utils/localization';
+import { getDefaultString, resolveLocalizationKey } from '../../utils/localization';
 import { refToId } from '../../utils/object_reference';
 import LocalizedText from '../LocalizedText.astro';
 import LocalizedStatValue from '../LocalizedStatValue.astro';
+import LocalizedEmbed from '../LocalizedEmbed.astro';
 import { getStatNameLocalizationKey } from '../../utils/stat_name_localization';
 import { getStatMetadata } from '../../utils/stat';
 import { getParseObjects } from '../../utils/parse_object';
@@ -88,6 +89,9 @@ const columnMetadata = Object.fromEntries(
     return [col, { pattern: '{Amount}{Unit}', shortKey: col, unitScaler: 1 }];
   })
 );
+
+/** Pattern key for rendering a stat label with its unit as "Name (unit)" */
+const LABEL_PATTERN_KEY = resolveLocalizationKey('ModuleStatPattern_Label', 'Web_UI');
 ---
 
 <div class="shoulder-stats-table-wrapper">
@@ -101,18 +105,21 @@ const columnMetadata = Object.fromEntries(
         {
           STAT_COLUMNS.map((col) => {
             const meta = columnMetadata[col];
+            const nameKey = columnLocKeys[col];
             return (
               <th>
                 <div class="th-content">
-                  <span class="column-name-wrapper">
-                    {columnLocKeys[col] ? (
-                      <LocalizedText tag="span" localizationKey={columnLocKeys[col]!} />
-                    ) : (
-                      <span>{col}</span>
-                    )}{meta.unitName && (
-                      <span class="column-unit"><LocalizedText tag="span" localizationKey={meta.unitName as LocalizationKey} /></span>
-                    )}
-                  </span>
+                  {nameKey && meta.unitName ? (
+                    <LocalizedEmbed
+                      tag="span"
+                      pattern={LABEL_PATTERN_KEY}
+                      embeds={{ Label: nameKey, Unit: meta.unitName as LocalizationKey }}
+                    />
+                  ) : nameKey ? (
+                    <LocalizedText tag="span" localizationKey={nameKey} />
+                  ) : (
+                    <span>{col}</span>
+                  )}
                   <div class="stat-tooltip-container">
                     <span class="stat-help-icon">?</span>
                     <div class="stat-tooltip-text">

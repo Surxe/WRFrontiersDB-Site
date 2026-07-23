@@ -1,0 +1,28 @@
+---
+import type { LocalizationKey } from '../types/localization';
+import { resolveLocalizedEmbeds, loadLocalizationData } from '../utils/localization';
+
+export interface Props {
+  tag?: string;
+  class?: string;
+  pattern: LocalizationKey;
+  embeds: Record<string, string | LocalizationKey>;
+}
+
+const { tag = 'span', class: className, pattern, embeds } = Astro.props;
+const Tag = tag as any;
+
+// Calculate default text at build time
+const defaultLocData = loadLocalizationData('en') || {};
+const defaultText = resolveLocalizedEmbeds(pattern, embeds, defaultLocData);
+---
+
+<Tag
+  class={className}
+  data-loc-key={pattern.Key}
+  data-loc-namespace={pattern.TableNamespace}
+  data-loc-embeds={JSON.stringify(embeds)}
+  data-loc-fallback={pattern.InvariantString || pattern.en}
+>
+  {defaultText}
+</Tag>
