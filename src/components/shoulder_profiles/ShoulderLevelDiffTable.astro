@@ -88,6 +88,24 @@ function getPrecomputedChoices(shoulderLevels: any, col: string, unitScaler: num
   }
   return choices;
 }
+
+function getPrecomputedPercentChoices(shoulderLevels: any, col: string) {
+  const choices: Record<number, number> = {};
+  for (let min = 1; min <= 13; min++) {
+    for (let max = 1; max <= 13; max++) {
+      const minVal = shoulderLevels[String(min)]?.[col];
+      const maxVal = shoulderLevels[String(max)]?.[col];
+      if (minVal !== undefined && maxVal !== undefined) {
+        if (minVal !== 0) {
+          choices[min * 100 + max] = ((maxVal - minVal) / Math.abs(minVal)) * 100;
+        } else if (maxVal === 0) {
+          choices[min * 100 + max] = 0;
+        }
+      }
+    }
+  }
+  return choices;
+}
 ---
 
 <div class="shoulder-stats-table-wrapper">
@@ -157,18 +175,31 @@ function getPrecomputedChoices(shoulderLevels: any, col: string, unitScaler: num
                 const unitScaler = (meta.unitScaler as number) || 1;
                 
                 const precomputedChoices = getPrecomputedChoices(shoulder.levels, col, unitScaler);
+                const precomputedPercentChoices = getPrecomputedPercentChoices(shoulder.levels, col);
 
                 return (
                   <td class="stat-cell">
                     {Object.keys(precomputedChoices).length > 0 ? (
-                      <LocalizedStatValue
-                        choices={precomputedChoices}
-                        initialChoice={113}
-                        pattern={meta.pattern as string}
-                        unitName={meta.unitName as LocalizationKey | undefined}
-                        unitExponent={meta.unitExponent as number | undefined}
-                        decimalPlaces={meta.decimalPlaces as number | undefined}
-                      />
+                      <div class="diff-values" style="display: flex; justify-content: flex-end; gap: 0.4rem; align-items: center;">
+                        <LocalizedStatValue
+                          choices={precomputedChoices}
+                          initialChoice={113}
+                          pattern={meta.pattern as string}
+                          unitName={meta.unitName as LocalizationKey | undefined}
+                          unitExponent={meta.unitExponent as number | undefined}
+                          decimalPlaces={meta.decimalPlaces as number | undefined}
+                        />
+                        {Object.keys(precomputedPercentChoices).length > 0 && (
+                          <span class="diff-percent" style="color: #aaa; font-size: 0.9em;">
+                            (<LocalizedStatValue
+                              choices={precomputedPercentChoices}
+                              initialChoice={113}
+                              pattern="{Amount}%"
+                              decimalPlaces={1}
+                            />)
+                          </span>
+                        )}
+                      </div>
                     ) : (
                       <span>-</span>
                     )}
