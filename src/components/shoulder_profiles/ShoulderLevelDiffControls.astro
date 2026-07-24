@@ -68,8 +68,62 @@ const { maxLevel } = Astro.props;
   }
 
   .level-slider {
+    -webkit-appearance: none;
+    appearance: none;
     width: 200px;
+    height: 6px;
+    background: #383838;
+    border-radius: 4px;
+    outline: none;
     cursor: pointer;
+    transition: background 0.3s;
+  }
+
+  .level-slider:hover {
+    background: #4a4a4a;
+  }
+
+  .level-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #4fc3f7;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3), 0 0 5px rgba(79, 195, 247, 0.4);
+    transition: transform 0.15s ease, background 0.15s ease;
+  }
+
+  .level-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    background: #73d5ff;
+  }
+
+  .level-slider::-webkit-slider-thumb:active {
+    transform: scale(0.95);
+    background: #29b6f6;
+  }
+
+  .level-slider::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border: none;
+    border-radius: 50%;
+    background: #4fc3f7;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3), 0 0 5px rgba(79, 195, 247, 0.4);
+    transition: transform 0.15s ease, background 0.15s ease;
+  }
+
+  .level-slider::-moz-range-thumb:hover {
+    transform: scale(1.2);
+    background: #73d5ff;
+  }
+
+  .level-slider::-moz-range-thumb:active {
+    transform: scale(0.95);
+    background: #29b6f6;
   }
 </style>
 
