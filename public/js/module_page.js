@@ -17,7 +17,7 @@ async function initializeModulePage() {
       // Import setStatChoice dynamically
       const { setStatChoice } = await import('./localization.js');
 
-      levelSwitcher.addEventListener('change', (e) => {
+      levelSwitcher.addEventListener('input', (e) => {
         const levelIndex = parseInt(e.target.value, 10);
         setStatChoice(levelIndex);
       });

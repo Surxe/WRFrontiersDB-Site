@@ -4,7 +4,9 @@ import { formatStatValue } from '../../public/js/stat_formatting.js';
 
 export interface Props {
   tag?: string;
-  value: number | undefined;
+  value?: number;
+  choices?: Record<number, number>;
+  initialChoice?: number;
   pattern: string;
   unitName?: LocalizationKey;
   decimalPlaces?: number;
@@ -14,6 +16,8 @@ export interface Props {
 const {
   tag = 'span',
   value,
+  choices,
+  initialChoice = 0,
   pattern,
   unitName,
   decimalPlaces,
@@ -24,27 +28,29 @@ const Tag = tag as any;
 // By default, match the old fmt behavior of limiting to 1 decimal place if not specified
 const finalDecimalPlaces = decimalPlaces ?? 1;
 
+const finalChoices = choices ?? (value !== undefined ? { 0: value } : {});
+const hasChoices = Object.keys(finalChoices).length > 0;
+
 // Prepare the choice map for the client-side localization engine.
-// We use a dummy key "Val" and choice index 0 to simulate a StatEmbed replacement.
-const choiceMap =
-  value !== undefined
-    ? {
-        Val: {
-          pattern,
-          unitName,
-          decimalPlaces: finalDecimalPlaces,
-          unitExponent,
-          choices: { 0: value },
-        },
-      }
-    : undefined;
+// We use a dummy key "Val" to simulate a StatEmbed replacement.
+const choiceMap = hasChoices
+  ? {
+      Val: {
+        pattern,
+        unitName,
+        decimalPlaces: finalDecimalPlaces,
+        unitExponent,
+        choices: finalChoices,
+      },
+    }
+  : undefined;
 
 // Calculate the default English text for the static server HTML
 // An empty object {} for locData is fine because formatStatValue falls back to unitName.en
 const defaultText =
-  value !== undefined
+  hasChoices && finalChoices[initialChoice] !== undefined
     ? formatStatValue(
-        value,
+        finalChoices[initialChoice],
         pattern,
         unitName,
         unitExponent,
@@ -55,14 +61,14 @@ const defaultText =
 ---
 
 {
-  value === undefined ? (
+  !hasChoices ? (
     <Tag>-</Tag>
   ) : (
     <Tag
       data-loc-key="none"
       data-loc-namespace="none"
       data-stat-value-choices={JSON.stringify(choiceMap)}
-      data-current-choice="0"
+      data-current-choice={initialChoice.toString()}
       data-number-format="true"
       data-loc-fallback="{Val}"
     >

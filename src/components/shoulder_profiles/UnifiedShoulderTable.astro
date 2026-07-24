@@ -129,9 +129,9 @@ const LABEL_PATTERN_KEY = resolveLocalizationKey(
                   ) : (
                     <span>{col}</span>
                   )}
-                  <div class="stat-tooltip-container">
-                    <span class="stat-help-icon">?</span>
-                    <div class="stat-tooltip-text">
+                  <div class="info-tooltip">
+                    <span class="info-tooltip-icon">?</span>
+                    <div class="info-tooltip-text">
                       {COLUMN_DESCRIPTIONS[col]}
                     </div>
                   </div>
@@ -284,72 +284,5 @@ const LABEL_PATTERN_KEY = resolveLocalizationKey(
   :global(.shoulder-stats-table th:first-child .th-content),
   :global(.shoulder-stats-table th:nth-child(2) .th-content) {
     justify-content: flex-start;
-  }
-
-  :global(.stat-tooltip-container) {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: help;
-  }
-
-  :global(.column-unit) {
-    color: #888;
-    font-size: 0.9em;
-  }
-
-  :global(.stat-help-icon) {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background-color: #4fc3f7;
-    color: #121212;
-    font-size: 10px;
-    font-weight: bold;
-    line-height: 1;
-  }
-
-  :global(.stat-tooltip-text) {
-    visibility: hidden;
-    opacity: 0;
-    width: 220px;
-    background-color: #333;
-    color: #fff;
-    text-align: left;
-    border-radius: 6px;
-    padding: 0.5rem 0.75rem;
-    position: absolute;
-    z-index: 100;
-    bottom: 125%;
-    left: 50%;
-    transform: translateX(-50%);
-    transition:
-      opacity 0.2s,
-      visibility 0.2s;
-    font-size: 0.8rem;
-    font-weight: normal;
-    white-space: normal;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-    pointer-events: none;
-  }
-
-  :global(.stat-tooltip-text::after) {
-    content: '';
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    margin-left: -5px;
-    border-width: 5px;
-    border-style: solid;
-    border-color: #333 transparent transparent transparent;
-  }
-
-  :global(.stat-tooltip-container:hover .stat-tooltip-text) {
-    visibility: visible;
-    opacity: 1;
   }
 </style>

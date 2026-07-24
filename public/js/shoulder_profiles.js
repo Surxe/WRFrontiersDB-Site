@@ -378,7 +378,7 @@ function init() {
   selectProfile(currentProfileId);
 
   // Level switcher
-  levelSwitcher.addEventListener('change', (e) => {
+  levelSwitcher.addEventListener('input', (e) => {
     currentLevelIndex = parseInt(e.target.value, 10);
     updateAll();
   });

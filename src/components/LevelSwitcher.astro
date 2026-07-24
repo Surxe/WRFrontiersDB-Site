@@ -8,19 +8,116 @@ const { maxLevel, initialLevel = 0 } = Astro.props;
 ---
 
 <div class="level-switcher" style="margin-bottom: 1rem;">
-  <label for="level-switcher" style="font-size: 0.9rem; opacity: 0.8;">
-    Item Level:{' '}
-  </label>
-  <select
-    id="level-switcher"
-    style="background: #1a1a1a; color: white; border: 1px solid #333; padding: 2px 5px; cursor: pointer;"
-  >
-    {
-      Array.from({ length: maxLevel }).map((_, i) => (
-        <option value={i} selected={i === initialLevel}>
-          Level {i + 1}
-        </option>
-      ))
-    }
-  </select>
+  <div class="slider-group">
+    <label for="level-switcher">
+      Item Level: <span id="level-display">{initialLevel + 1}</span>
+    </label>
+    <input
+      type="range"
+      id="level-switcher"
+      class="level-slider"
+      min="0"
+      max={maxLevel - 1}
+      value={initialLevel}
+    />
+  </div>
 </div>
+
+<style>
+  .slider-group {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .slider-group label {
+    font-size: 0.95rem;
+    color: #e0e0e0;
+    min-width: 100px;
+  }
+
+  .slider-group span {
+    font-weight: bold;
+    color: #4fc3f7;
+  }
+
+  .level-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 200px;
+    height: 6px;
+    background: #383838;
+    border-radius: 4px;
+    outline: none;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+
+  .level-slider:hover {
+    background: #4a4a4a;
+  }
+
+  .level-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #4fc3f7;
+    cursor: pointer;
+    box-shadow:
+      0 2px 5px rgba(0, 0, 0, 0.3),
+      0 0 5px rgba(79, 195, 247, 0.4);
+    transition:
+      transform 0.15s ease,
+      background 0.15s ease;
+  }
+
+  .level-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    background: #73d5ff;
+  }
+
+  .level-slider::-webkit-slider-thumb:active {
+    transform: scale(0.95);
+    background: #29b6f6;
+  }
+
+  .level-slider::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border: none;
+    border-radius: 50%;
+    background: #4fc3f7;
+    cursor: pointer;
+    box-shadow:
+      0 2px 5px rgba(0, 0, 0, 0.3),
+      0 0 5px rgba(79, 195, 247, 0.4);
+    transition:
+      transform 0.15s ease,
+      background 0.15s ease;
+  }
+
+  .level-slider::-moz-range-thumb:hover {
+    transform: scale(1.2);
+    background: #73d5ff;
+  }
+
+  .level-slider::-moz-range-thumb:active {
+    transform: scale(0.95);
+    background: #29b6f6;
+  }
+</style>
+
+<script is:inline>
+  document.addEventListener('DOMContentLoaded', () => {
+    const levelSwitcher = document.getElementById('level-switcher');
+    const levelDisplay = document.getElementById('level-display');
+
+    if (levelSwitcher && levelDisplay) {
+      levelSwitcher.addEventListener('input', (e) => {
+        levelDisplay.textContent = parseInt(e.target.value, 10) + 1;
+      });
+    }
+  });
+</script>

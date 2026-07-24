@@ -20,6 +20,7 @@ import { getObjRefData } from '../../utils/obj_ref';
 import TextElements from '../../components/obj_ref/TextElements.astro';
 import { refToId } from '../../utils/object_reference';
 import ShoulderProfileViewer from '../../components/shoulder_profiles/ShoulderProfileViewer.astro';
+import ShoulderLevelDiffViewer from '../../components/shoulder_profiles/ShoulderLevelDiffViewer.astro';
 
 export async function getStaticPaths() {
   return generateSlugBasedStaticPaths('ModuleGroup');
@@ -100,12 +101,21 @@ const objRefData = getObjRefData(group);
 
   {
     id === 'non-titan-shoulder' && (
-      <section
-        class="shoulder-profiles-section"
-        style="margin-top: 2rem; margin-bottom: 2rem;"
-      >
-        <ShoulderProfileViewer />
-      </section>
+      <>
+        <section
+          class="shoulder-profiles-section"
+          style="margin-top: 2rem; margin-bottom: 2rem;"
+        >
+          <ShoulderProfileViewer />
+        </section>
+
+        <section
+          class="shoulder-level-diffs-section"
+          style="margin-top: 2rem; margin-bottom: 2rem;"
+        >
+          <ShoulderLevelDiffViewer />
+        </section>
+      </>
     )
   }
 
