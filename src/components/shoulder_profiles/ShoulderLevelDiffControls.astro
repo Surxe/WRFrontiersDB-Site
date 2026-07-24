@@ -8,7 +8,9 @@ const { maxLevel } = Astro.props;
 
 <div class="shoulder-level-diff-controls">
   <div class="slider-group">
-    <label for="min-level-slider">Min Level: <span id="min-level-display">1</span></label>
+    <label for="min-level-slider"
+      >Min Level: <span id="min-level-display">1</span></label
+    >
     <input
       type="range"
       id="min-level-slider"
@@ -20,7 +22,9 @@ const { maxLevel } = Astro.props;
   </div>
 
   <div class="slider-group">
-    <label for="max-level-slider">Max Level: <span id="max-level-display">{maxLevel}</span></label>
+    <label for="max-level-slider"
+      >Max Level: <span id="max-level-display">{maxLevel}</span></label
+    >
     <input
       type="range"
       id="max-level-slider"
@@ -100,7 +104,11 @@ const { maxLevel } = Astro.props;
       maxDisplay.textContent = maxVal.toString();
 
       const choiceIndex = minVal * 100 + maxVal;
-      setStatChoice(choiceIndex, 'current', '#shoulder-diff-table [data-stat-value-choices]');
+      setStatChoice(
+        choiceIndex,
+        'current',
+        '#shoulder-diff-table [data-stat-value-choices]'
+      );
     }
 
     minSlider.addEventListener('input', updateDiffChoice);
