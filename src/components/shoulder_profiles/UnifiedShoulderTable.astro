@@ -262,8 +262,12 @@ const LABEL_PATTERN_KEY = resolveLocalizationKey(
     min-width: 50px;
   }
 
-  /* Hide all data rows by default */
-  .shoulder-stats-table tr[data-level] {
+  
+  /* Hide all data rows by default.
+    Uses :global so Astro does not append the component scope attributes,
+    which would otherwise raise this rule's specificity above the :global
+    show rule below and keep every row hidden. */
+  :global(.shoulder-stats-table tr[data-level]) {
     display: none;
   }
 
