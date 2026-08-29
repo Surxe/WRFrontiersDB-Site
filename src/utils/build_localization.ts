@@ -108,22 +108,18 @@ export function generatePilotTalentLocalizedMetaDescriptions(
 }
 
 /**
- * Generate localized pilot descriptions using the embedment system
+ * Build the shared pilot-talent embed set used by both the pilot meta
+ * description and the pilot share text.
+ *
+ * Extracts the first talent of levels 1-5 (keyed talent1..talent5) plus the
+ * pilot name, and — for hero pilots — the level-5 talent type (talent5_type).
  */
-export function generatePilotLocalizedMetaDescriptions(
+function buildPilotTalentEmbeds(
   pilot: Pilot,
   pilotTalents: Record<string, PilotTalent>,
-  pilotTalentTypes: Record<string, PilotTalentType>,
-  _defaultName: string
-): { lang: string; description: string }[] {
-  const supportedLangs = Object.keys(langs);
-  const results: { lang: string; description: string }[] = [];
-
+  pilotTalentTypes: Record<string, PilotTalentType>
+): { embeds: Record<string, LocalizationKey>; isHero: boolean } {
   const isHero = pilot.pilot_type_ref === PILOT_TYPE_LEGENDARY_REF;
-  const templateKey = resolveLocalizationKey(
-    isHero ? 'Pilot_Meta_Description_Hero' : 'Pilot_Meta_Description_Standard',
-    'Web_UI'
-  );
 
   const embeds: Record<string, LocalizationKey> = {
     pilot_name: pilot.first_name,
@@ -153,6 +149,31 @@ export function generatePilotLocalizedMetaDescriptions(
     }
   }
 
+  return { embeds, isHero };
+}
+
+/**
+ * Generate localized pilot descriptions using the embedment system
+ */
+export function generatePilotLocalizedMetaDescriptions(
+  pilot: Pilot,
+  pilotTalents: Record<string, PilotTalent>,
+  pilotTalentTypes: Record<string, PilotTalentType>,
+  _defaultName: string
+): { lang: string; description: string }[] {
+  const supportedLangs = Object.keys(langs);
+  const results: { lang: string; description: string }[] = [];
+
+  const { embeds, isHero } = buildPilotTalentEmbeds(
+    pilot,
+    pilotTalents,
+    pilotTalentTypes
+  );
+  const templateKey = resolveLocalizationKey(
+    isHero ? 'Pilot_Meta_Description_Hero' : 'Pilot_Meta_Description_Standard',
+    'Web_UI'
+  );
+
   for (const lang of supportedLangs) {
     const locData = loadLocalizationData(lang);
     if (!locData) continue;
@@ -168,6 +189,50 @@ export function generatePilotLocalizedMetaDescriptions(
     }
 
     results.push({ lang, description });
+  }
+
+  return results;
+}
+
+/**
+ * Generate a per-language pilot "share text" — a shorthand of the pilot's
+ * talents — using the embedment system. Pre-generated for every supported
+ * language, mirroring the meta description approach, so the share button can
+ * pick the right text for the user's selected language client-side.
+ */
+export function generatePilotLocalizedShareTexts(
+  pilot: Pilot,
+  pilotTalents: Record<string, PilotTalent>,
+  pilotTalentTypes: Record<string, PilotTalentType>
+): { lang: string; text: string }[] {
+  const supportedLangs = Object.keys(langs);
+  const results: { lang: string; text: string }[] = [];
+
+  const { embeds, isHero } = buildPilotTalentEmbeds(
+    pilot,
+    pilotTalents,
+    pilotTalentTypes
+  );
+  const templateKey = resolveLocalizationKey(
+    isHero ? 'Pilot_Share_Text_Hero' : 'Pilot_Share_Text_Standard',
+    'Web_UI'
+  );
+
+  for (const lang of supportedLangs) {
+    const locData = loadLocalizationData(lang);
+    if (!locData) continue;
+
+    let text = resolveLocalizedEmbeds(templateKey, embeds, locData);
+
+    // Fallback to English template if localized template is empty or not found
+    if (!text && lang !== 'en') {
+      const enLocData = loadLocalizationData('en');
+      if (enLocData) {
+        text = resolveLocalizedEmbeds(templateKey, embeds, enLocData);
+      }
+    }
+
+    results.push({ lang, text });
   }
 
   return results;
