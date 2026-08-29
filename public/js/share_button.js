@@ -29,16 +29,18 @@ function initShareButton(button) {
   if (button.dataset.shareBound === 'true') return;
   button.dataset.shareBound = 'true';
 
-  const textsByLang = readShareTexts(button);
   const labelEl = button.querySelector('.share-button__label') || button;
   const defaultLabel = labelEl.textContent.trim() || 'Share';
   const copiedLabel = button.dataset.copiedLabel || 'Copied!';
   const failedLabel = button.dataset.failedLabel || 'Copy failed';
 
   button.addEventListener('click', async () => {
+    // Read the share texts on click (not at init) so the JSON island is
+    // guaranteed to be in the DOM regardless of script execution order.
+    const textsByLang = readShareTexts(button);
     const lang = getCurrentLanguage();
-    const shorthand = textsByLang[lang] || textsByLang.en || '';
-    const payload = buildSharePayload(shorthand);
+    const shareText = textsByLang[lang] || textsByLang.en || '';
+    const payload = buildSharePayload(shareText);
 
     const ok = await copyToClipboard(payload);
     flashLabel(labelEl, ok ? copiedLabel : failedLabel, defaultLabel);
@@ -57,11 +59,25 @@ function readShareTexts(button) {
     : null;
   if (!dataEl) return {};
   try {
-    return JSON.parse(dataEl.textContent || '{}');
+    // Inside a <script> element the browser does not decode HTML entities, so
+    // the JSON (HTML-escaped at build time by Astro's set:text) must be decoded
+    // before parsing — otherwise &quot; etc. break JSON.parse.
+    return JSON.parse(decodeHtmlEntities(dataEl.textContent || '{}'));
   } catch (error) {
     console.warn('Failed to parse share texts:', error);
     return {};
   }
+}
+
+/**
+ * Decode HTML entities (e.g. &quot;, &amp;) using the browser's own parser.
+ * @param {string} text
+ * @returns {string}
+ */
+function decodeHtmlEntities(text) {
+  const textarea = document.createElement('textarea');
+  textarea.innerHTML = text;
+  return textarea.value;
 }
 
 /**
