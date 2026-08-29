@@ -85,6 +85,7 @@ export default [
       globals: {
         document: 'readonly',
         window: 'readonly',
+        navigator: 'readonly',
         console: 'readonly',
         localStorage: 'readonly',
         fetch: 'readonly',

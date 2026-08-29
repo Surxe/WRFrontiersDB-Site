@@ -1,0 +1,43 @@
+---
+/**
+ * Presentational unit for a single pilot talent: its ObjRef (name + link) and,
+ * in "full" mode, its localized description with stat-value replacements.
+ *
+ * Extracted from TalentCell so it can be reused outside a table cell — e.g. the
+ * pilot detail page renders it in its own Levels table. TalentCell wraps this
+ * in a <td>.
+ */
+import ObjRef from '../obj_ref/ObjRef.astro';
+import StatEmbedLocalizedText from '../StatEmbedLocalizedText.astro';
+import type { PilotTalent } from '../../types/pilot';
+import type { StatValueChoices } from '../../types/stat';
+
+interface Props {
+  talent: PilotTalent;
+  statValueChoices: StatValueChoices;
+  fullOrOnHover?: 'full' | 'onHover';
+}
+
+const { talent, statValueChoices, fullOrOnHover = 'full' } = Astro.props;
+---
+
+{
+  talent && (
+    <>
+      <ObjRef
+        obj={talent}
+        useOnHover={fullOrOnHover === 'onHover'}
+        onHoverStatChoices={statValueChoices}
+      />
+      {fullOrOnHover === 'full' && (
+        <div>
+          <StatEmbedLocalizedText
+            tag="span"
+            localizationKey={talent.description}
+            statValueChoices={statValueChoices}
+          />
+        </div>
+      )}
+    </>
+  )
+}

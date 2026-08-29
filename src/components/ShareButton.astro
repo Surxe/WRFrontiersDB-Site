@@ -1,0 +1,112 @@
+---
+/**
+ * A reusable share button.
+ *
+ * Renders a button plus a JSON island holding pre-generated share text for
+ * every supported language. On click (handled in /js/share_button.js) it copies
+ * the current page URL wrapped in <> followed by the shorthand text for the
+ * user's selected language.
+ *
+ * The per-language texts are pre-generated at build time (see
+ * generatePilotLocalizedShareTexts in utils/build_localization.ts), mirroring
+ * how localized meta descriptions are produced.
+ */
+export interface Props {
+  /** Unique id for this button on the page (used to link its JSON data). */
+  id: string;
+  /** Pre-generated share text per language. */
+  texts: { lang: string; text: string }[];
+  /** Visible button label. */
+  label?: string;
+  /** Label shown briefly after a successful copy. */
+  copiedLabel?: string;
+}
+
+const { id, texts, label = 'Share', copiedLabel = 'Copied!' } = Astro.props;
+
+// Collapse the per-language list into a { lang: text } map for the client.
+const textsByLang = Object.fromEntries(
+  texts.map(({ lang, text }) => [lang, text])
+);
+---
+
+<div class="share-button-wrapper">
+  <button
+    type="button"
+    class="share-button"
+    data-share-id={id}
+    data-copied-label={copiedLabel}
+    aria-label={label}
+  >
+    <svg
+      class="share-button__icon"
+      viewBox="0 0 24 24"
+      width="16"
+      height="16"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M16 6l-4-4-4 4M12 2v13"
+      ></path>
+    </svg>
+    <span class="share-button__label">{label}</span>
+  </button>
+
+  <script
+    type="application/json"
+    id={`share-data-${id}`}
+    set:text={JSON.stringify(textsByLang)}
+  />
+</div>
+
+<style>
+  .share-button-wrapper {
+    margin: 1rem 0;
+  }
+
+  .share-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.9rem;
+    font-size: 0.95rem;
+    color: #e0e0e0;
+    background: #383838;
+    border: 1px solid #4a4a4a;
+    border-radius: 6px;
+    cursor: pointer;
+    transition:
+      background 0.15s ease,
+      border-color 0.15s ease,
+      transform 0.1s ease;
+  }
+
+  .share-button:hover {
+    background: #4a4a4a;
+    border-color: #4fc3f7;
+  }
+
+  .share-button:active {
+    transform: scale(0.97);
+  }
+
+  .share-button__icon {
+    color: #4fc3f7;
+    flex-shrink: 0;
+  }
+
+  .share-button__label {
+    font-weight: 600;
+  }
+</style>
+
+<script type="module">
+  const { initShareButtons } = await import('/js/share_button.js');
+  initShareButtons();
+</script>

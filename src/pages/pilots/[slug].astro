@@ -20,13 +20,17 @@ import {
   generateSlugBasedStaticPaths,
 } from '../../utils/parse_object';
 import { getDefaultString } from '../../utils/localization';
-import { getStatValueChoices } from '../../utils/stat';
+import { getTalentStatChoices } from '../../utils/stat';
 import { resolveObjectRef } from '../../utils/object_resolver';
 import { refToId } from '../../utils/object_reference';
-import type { ModuleStat } from '../../types/module';
 import ObjRef from '../../components/obj_ref/ObjRef.astro';
+import TalentDisplay from '../../components/pilot/TalentDisplay.astro';
 import CurrencyAmount from '../../components/CurrencyAmount.astro';
-import { generatePilotLocalizedMetaDescriptions } from '../../utils/build_localization';
+import {
+  generatePilotLocalizedMetaDescriptions,
+  generatePilotLocalizedShareTexts,
+} from '../../utils/build_localization';
+import ShareButton from '../../components/ShareButton.astro';
 import PilotsNavBox from '../../components/nav/PilotsNavBox.astro';
 import { PILOT_TYPE_LEGENDARY_REF } from '../../utils/constants';
 import { getPilotDetailBreadcrumbs } from '../../utils/breadcrumb';
@@ -46,8 +50,6 @@ const pilotTalentTypes = getParseObjects<PilotTalentType>(
   'Objects/PilotTalentType.json'
 );
 const pilotTypes = getParseObjects<PilotType>('Objects/PilotType.json');
-// Load ModuleStats for stat replacements
-const moduleStats = getParseObjects<ModuleStat>('Objects/ModuleStat.json');
 
 const rarity =
   pilotTypes && pilot.pilot_type_ref
@@ -84,6 +86,11 @@ const localizedDescriptions = generatePilotLocalizedMetaDescriptions(
   defaultName
 );
 
+const localizedShareTexts = generatePilotLocalizedShareTexts(
+  pilot,
+  pilotTalents
+);
+
 const objRefData = getObjRefData(pilot);
 ---
 
@@ -101,6 +108,8 @@ const objRefData = getObjRefData(pilot);
         : [objRefData.text]}
     />
   </h1>
+
+  <ShareButton id={pilot.id} texts={localizedShareTexts} />
 
   <LocalizedText id="pilot-bio" tag="p" localizationKey={pilot.bio} />
 
@@ -137,20 +146,17 @@ const objRefData = getObjRefData(pilot);
               <ObjRef obj={pilotTalentTypes[refToId(level.talent_type_ref)]} />
             </td>
             <td>
-              <div>
-                {level.talents_refs?.map((talent_ref) => (
-                  <span>
-                    <ObjRef
-                      obj={pilotTalents[refToId(talent_ref)]}
-                      useOnHover={true}
-                      onHoverStatChoices={getStatValueChoices(
-                        pilotTalents[refToId(talent_ref)].stats,
-                        moduleStats
-                      )}
-                    />
-                  </span>
-                ))}
-              </div>
+              {level.talents_refs?.map((talent_ref) => (
+                <div class="pilot-talent-entry">
+                  <TalentDisplay
+                    talent={pilotTalents[refToId(talent_ref)]}
+                    statValueChoices={getTalentStatChoices(
+                      pilotTalents[refToId(talent_ref)]
+                    )}
+                    fullOrOnHover="full"
+                  />
+                </div>
+              ))}
             </td>
           </tr>
         ))
@@ -181,3 +187,14 @@ const objRefData = getObjRefData(pilot);
 
   <ObjectPageScripts objectData={pilot} slug={_slug} />
 </ParseObjectPage>
+
+<style>
+  /* Space out each talent (name + description) stacked within a level cell. */
+  .pilot-talent-entry {
+    padding: 0.5rem 0;
+  }
+
+  .pilot-talent-entry + .pilot-talent-entry {
+    border-top: 1px solid #383838;
+  }
+</style>
