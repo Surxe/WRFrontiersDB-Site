@@ -2,8 +2,10 @@ import type { Module, ModuleStat, ModuleStatsTable } from '../types/module';
 import type { StatValueChoices } from '../types/stat';
 import type { CharacterModule } from '../types/character_module';
 import type { Ability } from '../types/ability';
+import type { PilotTalent } from '../types/pilot';
 import { getDefaultString } from './localization';
 import { resolveObjectRef } from './object_resolver';
+import { getParseObjects } from './parse_object';
 import { MODULE_STAT_UNIT_FALLBACK_MAP } from './stat_name_localization';
 
 /**
@@ -39,6 +41,19 @@ export function getStatValueChoices(
   });
 
   return statValueChoices;
+}
+
+/**
+ * Convenience wrapper: builds the StatValueChoices for a pilot talent, loading
+ * the ModuleStat objects itself so callers don't have to. Shared by the pilot
+ * talent tables and the pilot detail page.
+ *
+ * @param talent - The pilot talent
+ * @returns StatValueChoices for use with StatEmbedLocalizedText / TalentDisplay
+ */
+export function getTalentStatChoices(talent: PilotTalent): StatValueChoices {
+  const moduleStats = getParseObjects<ModuleStat>('Objects/ModuleStat.json');
+  return getStatValueChoices(talent.stats, moduleStats);
 }
 
 /**
