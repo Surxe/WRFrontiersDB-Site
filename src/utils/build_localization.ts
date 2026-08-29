@@ -5,6 +5,7 @@ import {
   resolveLocalizedEmbeds,
   resolveLocalizationKey,
   loadLocalizationData,
+  localizeText,
 } from './localization';
 import type { Pilot, PilotTalent, PilotTalentType } from '../types/pilot';
 import type { CharacterPreset } from '../types/character_preset';
@@ -194,48 +195,57 @@ export function generatePilotLocalizedMetaDescriptions(
   return results;
 }
 
+/** Separator between talents within a single level's line. */
+const SHARE_TALENT_SEPARATOR = ', ';
+
 /**
- * Generate a per-language pilot "share text" — a shorthand of the pilot's
- * talents — using the embedment system. Pre-generated for every supported
- * language, mirroring the meta description approach, so the share button can
- * pick the right text for the user's selected language client-side.
+ * Build the localized pilot share text for a single language: the pilot's full
+ * name followed by one line per level listing that level's talents.
+ *
+ * Standard pilots yield 5 lines of talents (one talent each); legendary pilots
+ * yield the full set (e.g. 3 talents on levels 1-4 and 1 on level 5).
+ */
+function buildPilotShareText(
+  pilot: Pilot,
+  pilotTalents: Record<string, PilotTalent>,
+  lang: string
+): string {
+  // Full display name (first + optional second), matching the page heading.
+  const nameKeys = [pilot.first_name, pilot.second_name].filter(
+    (key): key is LocalizationKey => Boolean(key)
+  );
+  const name = localizeText(nameKeys, lang);
+
+  const levelLines = (pilot.levels ?? [])
+    .map((level) =>
+      (level.talents_refs ?? [])
+        .map((ref) => {
+          const talent = pilotTalents[refToId(ref)];
+          return talent ? localizeText(talent.name, lang) : '';
+        })
+        .filter((talentName) => talentName)
+        .join(SHARE_TALENT_SEPARATOR)
+    )
+    .filter((line) => line);
+
+  return [name, ...levelLines].join('\n');
+}
+
+/**
+ * Generate a per-language pilot "share text" — the pilot's name plus every
+ * talent, grouped by level. Pre-generated for every supported language (talent
+ * and pilot names localized from game data), mirroring how meta descriptions
+ * are pre-generated, so the share button can pick the text for the user's
+ * selected language client-side.
  */
 export function generatePilotLocalizedShareTexts(
   pilot: Pilot,
-  pilotTalents: Record<string, PilotTalent>,
-  pilotTalentTypes: Record<string, PilotTalentType>
+  pilotTalents: Record<string, PilotTalent>
 ): { lang: string; text: string }[] {
-  const supportedLangs = Object.keys(langs);
-  const results: { lang: string; text: string }[] = [];
-
-  const { embeds, isHero } = buildPilotTalentEmbeds(
-    pilot,
-    pilotTalents,
-    pilotTalentTypes
-  );
-  const templateKey = resolveLocalizationKey(
-    isHero ? 'Pilot_Share_Text_Hero' : 'Pilot_Share_Text_Standard',
-    'Web_UI'
-  );
-
-  for (const lang of supportedLangs) {
-    const locData = loadLocalizationData(lang);
-    if (!locData) continue;
-
-    let text = resolveLocalizedEmbeds(templateKey, embeds, locData);
-
-    // Fallback to English template if localized template is empty or not found
-    if (!text && lang !== 'en') {
-      const enLocData = loadLocalizationData('en');
-      if (enLocData) {
-        text = resolveLocalizedEmbeds(templateKey, embeds, enLocData);
-      }
-    }
-
-    results.push({ lang, text });
-  }
-
-  return results;
+  return Object.keys(langs).map((lang) => ({
+    lang,
+    text: buildPilotShareText(pilot, pilotTalents, lang),
+  }));
 }
 
 /**
