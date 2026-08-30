@@ -7,8 +7,8 @@
   visibility: hidden;
   position: absolute;
   z-index: 1000;
-  background-color: #333;
-  color: #fff;
+  background-color: var(--wrf-surface-2);
+  color: var(--wrf-text);
   padding: 8px 12px;
   border-radius: 6px;
   font-size: 14px;
@@ -32,7 +32,7 @@
   margin-left: -5px;
   border-width: 5px;
   border-style: solid;
-  border-color: #333 transparent transparent transparent;
+  border-color: var(--wrf-surface-2) transparent transparent transparent;
 }
 
 .page-ref-wrapper:hover .hover-tooltip {

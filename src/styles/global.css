@@ -219,41 +219,6 @@ div[style*="background: #ffffff"] {
   background-color: var(--wrf-bg);
 }
 
-/* Override hardcoded light theme styles in components */
-.nav-box {
-  background-color: var(--wrf-surface) !important;
-  border: 1px solid var(--wrf-border) !important;
-}
-
-.nav-box-title {
-  color: var(--wrf-text) !important;
-}
-
-.bots-table {
-  background-color: var(--wrf-surface) !important;
-}
-
-/* Override switcher buttons light theme */
-.switcher-buttons {
-  background: var(--wrf-surface) !important;
-  border: 1px solid var(--wrf-border) !important;
-}
-
-.switcher-btn {
-  color: var(--wrf-text) !important;
-}
-
-.switcher-btn:hover {
-  background: var(--wrf-surface-2) !important;
-  color: var(--wrf-text) !important;
-}
-
-/* Override highlighted talent light theme */
-.highlighted-talent {
-  background-color: rgba(255, 193, 7, 0.2) !important;
-  border: 2px solid var(--wrf-warning) !important;
-}
-
 /* Hover Tooltips */
 .info-tooltip {
   position: relative;

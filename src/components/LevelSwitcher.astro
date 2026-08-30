@@ -32,13 +32,13 @@ const { maxLevel, initialLevel = 0 } = Astro.props;
 
   .slider-group label {
     font-size: 0.95rem;
-    color: #e0e0e0;
+    color: var(--wrf-text);
     min-width: 100px;
   }
 
   .slider-group span {
     font-weight: bold;
-    color: #4fc3f7;
+    color: var(--wrf-accent);
   }
 
   .level-slider {
@@ -46,7 +46,7 @@ const { maxLevel, initialLevel = 0 } = Astro.props;
     appearance: none;
     width: 200px;
     height: 6px;
-    background: #383838;
+    background: var(--wrf-surface-2);
     border-radius: 4px;
     outline: none;
     cursor: pointer;
@@ -54,7 +54,7 @@ const { maxLevel, initialLevel = 0 } = Astro.props;
   }
 
   .level-slider:hover {
-    background: #4a4a4a;
+    background: var(--wrf-border);
   }
 
   .level-slider::-webkit-slider-thumb {
@@ -63,7 +63,7 @@ const { maxLevel, initialLevel = 0 } = Astro.props;
     width: 18px;
     height: 18px;
     border-radius: 50%;
-    background: #4fc3f7;
+    background: var(--wrf-accent);
     cursor: pointer;
     box-shadow:
       0 2px 5px rgba(0, 0, 0, 0.3),
@@ -80,7 +80,7 @@ const { maxLevel, initialLevel = 0 } = Astro.props;
 
   .level-slider::-webkit-slider-thumb:active {
     transform: scale(0.95);
-    background: #29b6f6;
+    background: var(--wrf-accent-hover);
   }
 
   .level-slider::-moz-range-thumb {
@@ -88,7 +88,7 @@ const { maxLevel, initialLevel = 0 } = Astro.props;
     height: 18px;
     border: none;
     border-radius: 50%;
-    background: #4fc3f7;
+    background: var(--wrf-accent);
     cursor: pointer;
     box-shadow:
       0 2px 5px rgba(0, 0, 0, 0.3),
@@ -105,7 +105,7 @@ const { maxLevel, initialLevel = 0 } = Astro.props;
 
   .level-slider::-moz-range-thumb:active {
     transform: scale(0.95);
-    background: #29b6f6;
+    background: var(--wrf-accent-hover);
   }
 </style>
 
