@@ -18,8 +18,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      # Checkout site repo (uses GITHUB_TOKEN)
+      # Checkout site repo (uses GITHUB_TOKEN); submodules pulls WRFrontiersDB-Design
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       # Checkout data repo into public directory (uses PAT ONLY for this step)
       - name: Checkout Data Repo
