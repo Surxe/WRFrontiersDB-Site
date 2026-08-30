@@ -4,8 +4,9 @@
  * Each share button carries a `data-share-id` that points at a sibling
  * `<script type="application/json" id="share-data-{id}">` holding the
  * pre-generated share text for every supported language. On click the button
- * copies the current page URL (wrapped in <> to suppress link unfurling in
- * chat apps) followed by the shorthand text for the user's selected language.
+ * copies the shorthand text for the user's selected language followed by a
+ * "Full descriptions" link to the page URL (wrapped in <> to suppress link
+ * unfurling in chat apps).
  */
 
 import { getCurrentLanguage } from './localization.js';
@@ -80,14 +81,19 @@ function decodeHtmlEntities(text) {
   return textarea.value;
 }
 
+/** Label prefixing the page-URL link at the end of the share payload. */
+const SHARE_LINK_LABEL = 'Full descriptions:';
+
 /**
- * Build the clipboard payload: the page URL wrapped in <> then the shorthand.
+ * Build the clipboard payload: the shorthand followed by a "Full descriptions"
+ * link to the page URL (wrapped in <> to suppress unfurling in chat apps). The
+ * link goes last so it reads as "go here to see the full descriptions".
  * @param {string} shorthand
  * @returns {string}
  */
 export function buildSharePayload(shorthand) {
-  const url = shareUrl();
-  return shorthand ? `<${url}>\n${shorthand}` : `<${url}>`;
+  const link = `${SHARE_LINK_LABEL} <${shareUrl()}>`;
+  return shorthand ? `${shorthand}\n${link}` : link;
 }
 
 /**
