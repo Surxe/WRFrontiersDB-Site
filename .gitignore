@@ -25,6 +25,7 @@ pnpm-debug.log*
 
 # Personal
 notes.md
+personal/
 
 # Per-tool agent dirs (mirrors of .agents/, recreated by .agents/setup-symlinks.sh)
 .claude/
