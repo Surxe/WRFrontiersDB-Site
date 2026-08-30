@@ -246,7 +246,7 @@ function getPrecomputedPercentChoices(shoulderLevels: any, col: string) {
   /* Use the exact same styles as UnifiedShoulderTable */
   .shoulder-stats-table-wrapper {
     border-radius: 6px;
-    border: 1px solid #383838;
+    border: 1px solid var(--wrf-surface-2);
   }
 
   .shoulder-stats-table {
@@ -263,8 +263,8 @@ function getPrecomputedPercentChoices(shoulderLevels: any, col: string) {
   }
 
   .shoulder-stats-table th {
-    background: #2e2e2e;
-    color: #ccc;
+    background: var(--wrf-surface);
+    color: var(--wrf-text-muted);
     padding: 0.5rem 0.75rem;
     white-space: nowrap;
     text-align: right;
@@ -277,17 +277,17 @@ function getPrecomputedPercentChoices(shoulderLevels: any, col: string) {
 
   .shoulder-stats-table td {
     padding: 0.4rem 0.75rem;
-    border-top: 1px solid #2e2e2e;
-    color: #ddd;
+    border-top: 1px solid var(--wrf-surface);
+    color: var(--wrf-text-muted);
     text-align: right;
   }
 
   .shoulder-stats-table .shoulder-name-cell {
     text-align: left;
     font-weight: 600;
-    color: #e8e8e8;
-    background: #252525;
-    border-right: 1px solid #383838;
+    color: var(--wrf-text);
+    background: var(--wrf-surface);
+    border-right: 1px solid var(--wrf-surface-2);
     min-width: 110px;
     vertical-align: top;
   }

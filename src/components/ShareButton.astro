@@ -76,9 +76,9 @@ const textsByLang = Object.fromEntries(
     gap: 0.5rem;
     padding: 0.5rem 0.9rem;
     font-size: 0.95rem;
-    color: #e0e0e0;
-    background: #383838;
-    border: 1px solid #4a4a4a;
+    color: var(--wrf-text);
+    background: var(--wrf-surface-2);
+    border: 1px solid var(--wrf-border);
     border-radius: 6px;
     cursor: pointer;
     transition:
@@ -88,8 +88,8 @@ const textsByLang = Object.fromEntries(
   }
 
   .share-button:hover {
-    background: #4a4a4a;
-    border-color: #4fc3f7;
+    background: var(--wrf-border);
+    border-color: var(--wrf-accent);
   }
 
   .share-button:active {
@@ -97,7 +97,7 @@ const textsByLang = Object.fromEntries(
   }
 
   .share-button__icon {
-    color: #4fc3f7;
+    color: var(--wrf-accent);
     flex-shrink: 0;
   }
 

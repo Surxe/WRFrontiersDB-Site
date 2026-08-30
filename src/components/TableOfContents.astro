@@ -30,8 +30,8 @@ const { selector = 'h2', title = 'On this page' } = Astro.props;
 
 <style>
   .toc-wrapper {
-    background: #1e1e1e;
-    border: 1px solid #333;
+    background: var(--wrf-bg);
+    border: 1px solid var(--wrf-surface-2);
     border-radius: 6px;
     padding: 1.25rem;
     position: sticky;
@@ -45,7 +45,7 @@ const { selector = 'h2', title = 'On this page' } = Astro.props;
     font-size: 0.8rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: #888;
+    color: var(--wrf-text-muted);
     margin-bottom: 1rem;
     font-weight: 600;
   }
@@ -65,7 +65,7 @@ const { selector = 'h2', title = 'On this page' } = Astro.props;
   }
 
   :global(.toc-list a) {
-    color: #ccc;
+    color: var(--wrf-text-muted);
     text-decoration: none;
     font-size: 0.9rem;
     transition: color 0.15s ease;
@@ -73,6 +73,6 @@ const { selector = 'h2', title = 'On this page' } = Astro.props;
   }
 
   :global(.toc-list a:hover) {
-    color: #4fc3f7;
+    color: var(--wrf-accent);
   }
 </style>

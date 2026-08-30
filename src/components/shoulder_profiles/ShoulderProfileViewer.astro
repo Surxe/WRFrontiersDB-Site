@@ -130,15 +130,15 @@ const INITIAL_LEVEL_INDEX = MAX_LEVEL - 1;
 
 <style>
   .shoulder-profile-viewer {
-    background: #1a1a1a;
-    border: 1px solid #333;
+    background: var(--wrf-bg);
+    border: 1px solid var(--wrf-surface-2);
     border-radius: 8px;
     padding: 1.5rem;
     margin-bottom: 2rem;
   }
 
   .page-description {
-    color: #aaa;
+    color: var(--wrf-text-muted);
     margin-bottom: 1.5rem;
     max-width: 70ch;
   }
@@ -149,17 +149,17 @@ const INITIAL_LEVEL_INDEX = MAX_LEVEL - 1;
     justify-content: center;
     gap: 2rem;
     align-items: center;
-    background: #242424;
+    background: var(--wrf-surface);
     padding: 1rem;
     border-radius: 6px;
-    border: 1px solid #383838;
+    border: 1px solid var(--wrf-surface-2);
     margin-bottom: 2rem;
   }
 
   :global(.level-switcher-container .level-switcher select) {
-    background: #1a1a1a !important;
+    background: var(--wrf-bg) !important;
     color: white !important;
-    border: 1px solid #333 !important;
+    border: 1px solid var(--wrf-surface-2) !important;
     padding: 2px 5px !important;
     cursor: pointer !important;
     font-size: 0.9rem !important;
@@ -168,8 +168,8 @@ const INITIAL_LEVEL_INDEX = MAX_LEVEL - 1;
   }
 
   :global(.level-switcher-container .level-switcher select:focus) {
-    outline: 2px solid #4fc3f7 !important;
-    border-color: #4fc3f7 !important;
+    outline: 2px solid var(--wrf-accent) !important;
+    border-color: var(--wrf-accent) !important;
   }
 
   :global(.level-switcher-container .level-switcher) {
@@ -182,6 +182,6 @@ const INITIAL_LEVEL_INDEX = MAX_LEVEL - 1;
   :global(.level-switcher-container .level-switcher label) {
     font-size: 0.9rem !important;
     opacity: 0.8 !important;
-    color: #e0e0e0 !important;
+    color: var(--wrf-text) !important;
   }
 </style>

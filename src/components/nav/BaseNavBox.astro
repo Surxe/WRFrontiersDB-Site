@@ -33,17 +33,17 @@ const { title, titleHref, objects } = Astro.props;
 
 <style>
   .nav-box {
-    border: 1px solid #ddd;
+    border: 1px solid var(--wrf-border);
     padding: 8px;
     margin: 12px 0;
-    background: #fff;
+    background: var(--wrf-surface);
   }
 
   .nav-box-title {
     margin: 0 0 8px 0;
     font-size: 14px;
     font-weight: 600;
-    color: #333;
+    color: var(--wrf-text);
   }
 
   .nav-box-content {
@@ -58,7 +58,7 @@ const { title, titleHref, objects } = Astro.props;
   }
 
   .nav-box-title-link:hover {
-    color: #4fc3f7;
+    color: var(--wrf-accent);
     text-decoration: underline;
   }
 </style>
