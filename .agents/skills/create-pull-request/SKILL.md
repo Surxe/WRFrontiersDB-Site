@@ -1,6 +1,6 @@
 ---
 name: create-pull-request
-description: Creates a pull request for the current feature branch
+description: Open a GitHub pull request for the current feature branch against dev. Use when asked to create or open a PR. Runs the format, build, lint, and test preflight and writes a concise PR body that summarizes the branch's commits (with good and bad examples).
 ---
 
 # Creating a pull request

@@ -1,6 +1,6 @@
 ---
 name: support-new-object-type
-description: Adds support for a new object type to the WRFrontiersDB-Site
+description: End-to-end checklist to add a new parse-object type to the site, covering the interface, ObjRef wiring, list and detail pages, slug generation, breadcrumbs, and homepage link. Use when adding support for a new object type such as Weapon or Faction. Gathers the required answers first.
 ---
 
 ## Prerequisites

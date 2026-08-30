@@ -1,6 +1,6 @@
 ---
 name: interface-reviewer
-description: Guided review process for comparing TypeScript interfaces against WRFrontiersDB-Data structure using AI analysis
+description: Qualitative design review of a src/types interface against its WRFrontiersDB-Data JSON, surfacing fields missing from the interface, wrong optional or required flags, and unused fields as discussion questions. Use when refining or auditing an interface's design rather than getting exact counts (use interface-data-validator for counts).
 ---
 
 # Interface-Data Reviewer for WRFrontiersDB-Site

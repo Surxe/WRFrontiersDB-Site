@@ -1,6 +1,6 @@
 ---
 name: non-playwright-test-suite
-description: Run comprehensive test suite without browser automation, fixing simple issues and reporting complex ones
+description: Run the full non-browser verification pass over dev server, lint, format, vitest, and build, auto-fixing trivial issues and reporting complex ones. Use for a quick pre-PR health check that needs no browser.
 ---
 
 # Non-Browser Test Suite for WRFrontiersDB-Site
