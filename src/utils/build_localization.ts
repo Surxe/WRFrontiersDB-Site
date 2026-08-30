@@ -200,10 +200,13 @@ const SHARE_TALENT_SEPARATOR = ', ';
 
 /**
  * Build the localized pilot share text for a single language: the pilot's full
- * name followed by one line per level listing that level's talents.
+ * name (bold) followed by one `L#:` line per level listing that level's
+ * talents. The page URL is appended client-side as a "Full descriptions" link
+ * (see buildSharePayload in public/js/share_button.js), so this text is
+ * names-only and stays compact even for legendary pilots.
  *
- * Standard pilots yield 5 lines of talents (one talent each); legendary pilots
- * yield the full set (e.g. 3 talents on levels 1-4 and 1 on level 5).
+ * Standard pilots yield 5 level lines (one talent each); legendary pilots yield
+ * the full set (e.g. 3 talents on levels 1-4 and 1 on level 5).
  */
 function buildPilotShareText(
   pilot: Pilot,
@@ -216,19 +219,23 @@ function buildPilotShareText(
   );
   const name = localizeText(nameKeys, lang);
 
+  // One line per level, labelled by its 1-based level number so the grouping is
+  // explicit. Levels without talents are dropped, but the label reflects the
+  // pilot's actual level, not the filtered position.
   const levelLines = (pilot.levels ?? [])
-    .map((level) =>
-      (level.talents_refs ?? [])
+    .map((level, i) => {
+      const talents = (level.talents_refs ?? [])
         .map((ref) => {
           const talent = pilotTalents[refToId(ref)];
           return talent ? localizeText(talent.name, lang) : '';
         })
         .filter((talentName) => talentName)
-        .join(SHARE_TALENT_SEPARATOR)
-    )
+        .join(SHARE_TALENT_SEPARATOR);
+      return talents ? `L${i + 1}: ${talents}` : '';
+    })
     .filter((line) => line);
 
-  return [name, ...levelLines].join('\n');
+  return [`**${name}**`, ...levelLines].join('\n');
 }
 
 /**
