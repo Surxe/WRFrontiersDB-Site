@@ -1,6 +1,11 @@
-# Important Components for Agents
+---
+name: core-components
+description: Catalog of the core reusable Astro components (ObjRef, LocalizedText, Page, ParseObjectPage, StatEmbedLocalizedText, nav, Icon) and when to use each. Load before building or editing a page or component so you reuse these instead of hand-rolling icons, links, localized text, or layouts.
+---
 
-This document outlines the most important components that agents should consider using when working with the WRFrontiersDB-Site codebase.
+# Core Components
+
+This document outlines the most important components to reuse when working in the WRFrontiersDB-Site codebase.
 
 ## Core Infrastructure Components
 
