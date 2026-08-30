@@ -203,10 +203,10 @@ The skill will ask questions like:
 
 ```bash
 # Check for missing required fields
-node .windsurf/skills/interface-data-validator/validate.cjs Module faction_ref
+node .agents/skills/interface-data-validator/validate.cjs Module faction_ref
 
 # Check nested attribute presence
-node .windsurf/skills/interface-data-validator/validate.cjs Module "module_scalars.primary_stat_ref"
+node .agents/skills/interface-data-validator/validate.cjs Module "module_scalars.primary_stat_ref"
 ```
 
 **Step 2: Comprehensive Review with interface-reviewer**

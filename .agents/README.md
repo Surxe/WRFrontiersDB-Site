@@ -1,10 +1,52 @@
-Source of truth for all agent related documentation.
+# Agent documentation
 
-Create symbolic links to gitignore'd `.windsurf/`, `.cursor/`, etc. to keep them in sync.
+`.agents/` is the single source of truth for all agent-facing documentation:
 
-1. Open Command Prompt as Administrator
-2. Run the following commands for `.windsurf/` and any other IDE-specific agent directories you use: Note that `/D` creates a directory junction (symbolic link) as opposed to a file link
-   - `mklink /D "d:\Repositories\WRFrontiersDB-Site\.windsurf\skills" "d:\Repositories\WRFrontiersDB-Site\.agents\skills"`
-   - `mklink /D "d:\Repositories\WRFrontiersDB-Site\.windsurf\rules" "d:\Repositories\WRFrontiersDB-Site\.agents\rules"`
+- `rules/` - always-relevant constraints (see below for how each tool loads them)
+- `skills/` - on-demand procedures and knowledge, one directory per skill, each
+  with a `SKILL.md` whose frontmatter `name` + `description` is the only part a
+  tool preloads. The full body loads only when the tool judges the skill
+  relevant, so keep the `description` a sharp trigger.
 
-Project-wide IDE-independent documentation for agents is still within `.github/`
+## Per-tool setup
+
+Each AI tool discovers skills (and rules, where supported) from its own
+directory. Rather than duplicate content, those directories are **symlinks back
+into `.agents/`**. They are gitignored and must be recreated per checkout.
+
+### Linux / macOS / git-bash / WSL
+
+```bash
+bash .agents/setup-symlinks.sh
+```
+
+Idempotent - run it after any fresh clone. It creates:
+
+| Link                | Target          | Used by      |
+| ------------------- | --------------- | ------------ |
+| `.claude/skills`    | `.agents/skills` | Claude Code  |
+| `.windsurf/skills`  | `.agents/skills` | Windsurf     |
+| `.windsurf/rules`   | `.agents/rules`  | Windsurf     |
+| `.cursor/skills`    | `.agents/skills` | Cursor       |
+| `.cursor/rules`     | `.agents/rules`  | Cursor       |
+
+### Windows (plain Command Prompt)
+
+`ln -s` is unavailable, so use directory junctions instead. Open Command Prompt
+as Administrator and run, for each tool dir you use (`/D` makes a directory
+junction):
+
+```bat
+mklink /D "%CD%\.claude\skills"   "%CD%\.agents\skills"
+mklink /D "%CD%\.windsurf\skills" "%CD%\.agents\skills"
+mklink /D "%CD%\.windsurf\rules"  "%CD%\.agents\rules"
+```
+
+## Notes
+
+- Claude Code discovers skills only from `.claude/skills/<name>/SKILL.md`. A
+  skill whose instruction file is named anything else will not be loaded, so
+  every skill's agent file is `SKILL.md`.
+- Claude Code does not auto-load `rules/`; only skills are symlinked into
+  `.claude/`. Rules reach Claude only if promoted into a repo-root `CLAUDE.md`
+  (deliberately out of scope here).
