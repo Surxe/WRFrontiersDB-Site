@@ -1,6 +1,6 @@
 ---
 name: module-group-knowledge
-description: Module Type, Category, and Group knowledge distinctions
+description: Explains how Module Category (slot type), Module Type (specific variant), and Module Group (user-facing grouping) differ and map to each other. Load when working with module classification, grouping, navigation, or the type-to-group mapping.
 ---
 
 # Module Type, Category, and Group Analysis

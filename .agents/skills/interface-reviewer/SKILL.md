@@ -1,6 +1,6 @@
 ---
 name: interface-reviewer
-description: Guided review process for comparing TypeScript interfaces against WRFrontiersDB-Data structure using AI analysis
+description: Qualitative design review of a src/types interface against its WRFrontiersDB-Data JSON, surfacing fields missing from the interface, wrong optional or required flags, and unused fields as discussion questions. Use when refining or auditing an interface's design rather than getting exact counts (use interface-data-validator for counts).
 ---
 
 # Interface-Data Reviewer for WRFrontiersDB-Site
@@ -49,24 +49,10 @@ For precise, data-driven validation of missing attributes, use the **interface-d
 
 ### Interface to Data File Mappings
 
-**Important:** Each interface in `src/types/` maps to a specific data file in `WRFrontiersDB-Data/current/Objects/`:
-
-| Interface          | Data File               | Example                                                |
-| ------------------ | ----------------------- | ------------------------------------------------------ |
-| `PilotTalentType`  | `PilotTalentType.json`  | `src/types/pilot.ts` → `Objects/PilotTalentType.json`  |
-| `PilotPersonality` | `PilotPersonality.json` | `src/types/pilot.ts` → `Objects/PilotPersonality.json` |
-| `PilotClass`       | `PilotClass.json`       | `src/types/pilot.ts` → `Objects/PilotClass.json`       |
-| `PilotTalent`      | `PilotTalent.json`      | `src/types/pilot.ts` → `Objects/PilotTalent.json`      |
-| `Pilot`            | `Pilot.json`            | `src/types/pilot.ts` → `Objects/Pilot.json`            |
-| `PilotType`        | `PilotType.json`        | `src/types/pilot.ts` → `Objects/PilotType.json`        |
-| `Module`           | `Module.json`           | `src/types/module.ts` → `Objects/Module.json`          |
-| `ModuleStat`       | `ModuleStat.json`       | `src/types/module.ts` → `Objects/ModuleStat.json`      |
-| `ModuleCategory`   | `ModuleCategory.json`   | `src/types/module.ts` → `Objects/ModuleCategory.json`  |
-| `ModuleType`       | `ModuleType.json`       | `src/types/module.ts` → `Objects/ModuleType.json`      |
-| `ModuleRarity`     | `ModuleRarity.json`     | `src/types/module.ts` → `Objects/ModuleRarity.json`    |
-| `Rarity`           | `Rarity.json`           | `src/types/rarity.ts` → `Objects/Rarity.json`          |
-
-**Key Point:** The `PilotTalentType` interface maps to `PilotTalentType.json`, NOT `Pilot.json`. Each interface typically maps to a data file with the same name as the interface.
+For which `Objects/*.json` file backs each interface, load the
+**interface-data-map** skill. In short: each interface maps to a data file of
+the same name (`PilotTalentType` -> `PilotTalentType.json`, NOT `Pilot.json`),
+regardless of which `src/types/*.ts` file declares it.
 
 ### 2. AI-Powered Analysis
 
@@ -203,10 +189,10 @@ The skill will ask questions like:
 
 ```bash
 # Check for missing required fields
-node .windsurf/skills/interface-data-validator/validate.cjs Module faction_ref
+node .agents/skills/interface-data-validator/validate.cjs Module faction_ref
 
 # Check nested attribute presence
-node .windsurf/skills/interface-data-validator/validate.cjs Module "module_scalars.primary_stat_ref"
+node .agents/skills/interface-data-validator/validate.cjs Module "module_scalars.primary_stat_ref"
 ```
 
 **Step 2: Comprehensive Review with interface-reviewer**

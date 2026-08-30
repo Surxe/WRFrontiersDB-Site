@@ -1,6 +1,6 @@
 ---
 name: add-test
-description: Adds a test for a specific file or function
+description: Add a Vitest unit or integration test for a util, type, component, or page. Use when asked to write or add a test. Covers the tests/ directory layout, naming convention, and what not to test (no Astro rendering, no parse-object interface tests).
 ---
 
 # Testing

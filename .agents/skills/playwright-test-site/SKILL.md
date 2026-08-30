@@ -1,6 +1,6 @@
 ---
 name: playwright-test-site
-description: Test the WRFrontiersDB-Site with Playwright by checking list pages, detail pages, and errors
+description: Browser-drive the built site with Playwright to load each list page and spot-check detail pages for blank data, broken images, and console or Astro errors, comparing dev against preview. Use to verify rendered pages rather than unit tests, respecting the known gaps in rules/not_implemented.md.
 ---
 
 # WRFrontiersDB Site Testing with Playwright

@@ -1,6 +1,6 @@
 ---
 name: interface-data-validator
-description: Validates TypeScript interfaces against WRFrontiersDB-Data structure to find missing attributes and answer data completeness questions
+description: Run the validate.cjs tool to check, with exact counts and file and line references, whether any WRFrontiersDB-Data objects are missing a given interface attribute (supports nested and array paths). Use for data-completeness questions such as whether any Modules are missing faction_ref.
 ---
 
 # Interface-Data Validator for WRFrontiersDB-Site

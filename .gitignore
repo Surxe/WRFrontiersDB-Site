@@ -26,8 +26,10 @@ pnpm-debug.log*
 # Personal
 notes.md
 
-# IDE
+# Per-tool agent dirs (mirrors of .agents/, recreated by .agents/setup-symlinks.sh)
 .claude/
+.windsurf/
+.cursor/
 
 # Application
 WRFrontiersDB-Data
