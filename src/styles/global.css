@@ -31,21 +31,8 @@ p {
   color: var(--wrf-text);
 }
 
-/* Links */
-a {
-  color: var(--wrf-accent);
-  text-decoration: none;
-  transition: color var(--wrf-transition);
-}
-
-a:hover {
-  color: var(--wrf-accent-hover);
-  text-decoration: underline;
-}
-
-a:visited {
-  color: #7986cb;
-}
+/* Links, scrollbars and text selection are provided by the shared design system
+   (vendor/wrf-design/elements.css) - links use the dotted-underline treatment. */
 
 /* Form elements */
 select, input, textarea, button {
@@ -178,35 +165,6 @@ section, article, main {
 
 .bg-light {
   background-color: var(--wrf-surface);
-}
-
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--wrf-bg);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--wrf-border);
-  border-radius: var(--wrf-radius-sm);
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #555;
-}
-
-/* Selection color */
-::selection {
-  background-color: var(--wrf-accent);
-  color: var(--wrf-bg);
-}
-
-::-moz-selection {
-  background-color: var(--wrf-accent);
-  color: var(--wrf-bg);
 }
 
 /* Only override explicit light theme styles, but don't interfere with component colors */
