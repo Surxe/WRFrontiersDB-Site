@@ -33,7 +33,7 @@ const textsByLang = Object.fromEntries(
 <div class="share-button-wrapper">
   <button
     type="button"
-    class="share-button"
+    class="wrf-btn wrf-btn--secondary share-button"
     data-share-id={id}
     data-copied-label={copiedLabel}
     aria-label={label}
@@ -66,43 +66,14 @@ const textsByLang = Object.fromEntries(
 </div>
 
 <style>
+  /* Base button look comes from the shared .wrf-btn--secondary (elements.css). */
   .share-button-wrapper {
     margin: 1rem 0;
-  }
-
-  .share-button {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 0.9rem;
-    font-size: 0.95rem;
-    color: var(--wrf-text);
-    background: var(--wrf-surface-2);
-    border: 1px solid var(--wrf-border);
-    border-radius: 6px;
-    cursor: pointer;
-    transition:
-      background 0.15s ease,
-      border-color 0.15s ease,
-      transform 0.1s ease;
-  }
-
-  .share-button:hover {
-    background: var(--wrf-border);
-    border-color: var(--wrf-accent);
-  }
-
-  .share-button:active {
-    transform: scale(0.97);
   }
 
   .share-button__icon {
     color: var(--wrf-accent);
     flex-shrink: 0;
-  }
-
-  .share-button__label {
-    font-weight: 600;
   }
 </style>
 
