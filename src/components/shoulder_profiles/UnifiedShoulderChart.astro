@@ -194,7 +194,7 @@ const groupedByProfile = profileOptions.map((opt) => ({
       Include Armor
       <div class="wrf-tooltip" style="margin-left: 2px;">
         <span class="wrf-tooltip__icon">?</span>
-        <div class="wrf-tooltip__bubble left-aligned-tooltip">
+        <div class="wrf-tooltip__bubble">
           Use the shields from two of the same shoulder and add the shoulder's
           armor, showcasing their total health pool as opposed to just shields.
           Note that this is only a reasonable metric against weapons that are
@@ -412,9 +412,4 @@ const groupedByProfile = profileOptions.map((opt) => ({
     line-height: 1;
   }
 
-  /* Left-align the shared .wrf-tooltip bubble when it sits near the left edge. */
-  :global(.left-aligned-tooltip) {
-    left: 0 !important;
-    transform: none !important;
-  }
 </style>
