@@ -85,3 +85,10 @@ Simple icon display component:
 - Use `LocalizedText` for UI text localization
 - Use `StatEmbedLocalizedText` for stat formatting
 - Use navigation components for consistent site navigation
+
+## Styling
+
+These components already carry the shared visual language (colors, links,
+tooltips) from the WRFrontiersDB-Design submodule. When writing or editing any CSS
+or `<style>` block, load the **`styling`** skill first - use the `--wrf-*` tokens
+and `.wrf-*` element classes, never raw chrome hex.
