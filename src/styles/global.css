@@ -11,7 +11,8 @@
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   background-color: var(--wrf-bg);
   color: var(--wrf-text);
   margin: 0;
@@ -21,7 +22,12 @@ html, body {
 }
 
 /* Typography - only apply to elements without explicit color styling */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   color: var(--wrf-text);
   margin: 1rem 0;
   font-weight: 600;
@@ -35,7 +41,10 @@ p {
    (vendor/wrf-design/elements.css) - links use the dotted-underline treatment. */
 
 /* Form elements */
-select, input, textarea, button {
+select,
+input,
+textarea,
+button {
   background-color: var(--wrf-surface);
   color: var(--wrf-text);
   border: 1px solid var(--wrf-border);
@@ -49,7 +58,10 @@ select option {
   color: var(--wrf-text);
 }
 
-select:focus, input:focus, textarea:focus, button:focus {
+select:focus,
+input:focus,
+textarea:focus,
+button:focus {
   outline: 2px solid var(--wrf-accent);
   outline-offset: 2px;
 }
@@ -62,7 +74,8 @@ table {
   width: 100%;
 }
 
-th, td {
+th,
+td {
   background-color: var(--wrf-surface);
   color: var(--wrf-text);
   border: 1px solid var(--wrf-border);
@@ -76,7 +89,8 @@ th {
 }
 
 /* Code blocks */
-code, pre {
+code,
+pre {
   background-color: var(--wrf-surface);
   color: var(--wrf-text);
   border: 1px solid var(--wrf-border);
@@ -111,7 +125,8 @@ hr {
 }
 
 /* Lists */
-ul, ol {
+ul,
+ol {
   padding-left: 2rem;
   margin: 1rem 0;
 }
@@ -128,7 +143,11 @@ img {
 }
 
 /* Cards and containers */
-.card, .box, .container, .content, .wrapper {
+.card,
+.box,
+.container,
+.content,
+.wrapper {
   background-color: var(--wrf-surface);
   border: 1px solid var(--wrf-border);
   border-radius: var(--wrf-radius-md);
@@ -137,7 +156,9 @@ img {
 }
 
 /* Sections */
-section, article, main {
+section,
+article,
+main {
   background-color: var(--wrf-bg);
   color: var(--wrf-text);
 }
@@ -145,36 +166,6 @@ section, article, main {
 /* Utility classes */
 .text-muted {
   color: var(--wrf-text-muted);
-}
-
-.text-primary {
-  color: var(--wrf-accent);
-}
-
-.text-secondary {
-  color: #666;
-}
-
-.bg-dark {
-  background-color: var(--wrf-bg);
-}
-
-.bg-darker {
-  background-color: #0f0f0f;
-}
-
-.bg-light {
-  background-color: var(--wrf-surface);
-}
-
-/* Only override explicit light theme styles, but don't interfere with component colors */
-div[style*="background-color: white"],
-div[style*="background-color: #fff"],
-div[style*="background-color: #ffffff"],
-div[style*="background: white"],
-div[style*="background: #fff"],
-div[style*="background: #ffffff"] {
-  background-color: var(--wrf-bg);
 }
 
 /* Tooltips (.wrf-tooltip) are provided by the shared design system (elements.css). */

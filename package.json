@@ -11,6 +11,7 @@
     "preview": "astro preview",
     "astro": "astro",
     "lint": "eslint . --ext .js,.ts,.astro --max-warnings 0",
+    "lint:styles": "node vendor/wrf-design/lint-styles.cjs --config .wrf-lint.json",
     "format:check": "prettier --check \"**/*.{js,ts,astro,json,md}\"",
     "vitest": "vitest run",
     "vitest:heavy": "set HEAVY_TESTS=1 && vitest run",
