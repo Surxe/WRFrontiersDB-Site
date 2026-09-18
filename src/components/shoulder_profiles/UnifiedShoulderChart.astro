@@ -243,8 +243,9 @@ const groupedByProfile = profileOptions.map((opt) => ({
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
-    /* allow group to expand horizontally when items wrap into columns */
+    /* cap width so multi-item groups tile neatly, and never exceed the card */
     flex: 0 1 auto;
+    max-width: min(26rem, 100%);
   }
 
   /* Profile group header button */
@@ -286,13 +287,15 @@ const groupedByProfile = profileOptions.map((opt) => ({
   }
 
   .legend-group-items {
+    /* Row-wrap is width-driven: items flow left-to-right and wrap onto new
+       rows to fit the available width, collapsing to a single column on
+       narrow viewports. This avoids the flex `column wrap` + max-height
+       pattern, whose column count is not sized to the container and so
+       overflowed the card (overlapping pills) on small screens. */
     display: flex;
-    flex-direction: column;
-    flex-wrap: wrap;
-    /* cap height so long groups spill into a second column instead of growing tall */
-    max-height: 4.8rem;
+    flex-flow: row wrap;
     align-content: flex-start;
-    gap: 0.1rem 0.75rem;
+    gap: 0.25rem 0.5rem;
   }
 
   /* Individual legend items */
