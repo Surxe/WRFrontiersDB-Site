@@ -45,6 +45,7 @@ export class ModelViewer {
   private models = new Map<string, ModuleModel>();
   private status: HTMLElement;
   private container: HTMLElement;
+  private framed = false;
 
   constructor(container: HTMLElement, status: HTMLElement) {
     this.container = container;
@@ -195,6 +196,7 @@ export class ModelViewer {
     }
 
     this.reportBuild(opts.preset, loaded, missing);
+    this.frameToRobot();
   }
 
   private addPlacement(
@@ -222,5 +224,20 @@ export class ModelViewer {
       `Preset ${preset.id}: ${loaded} models loaded (${verts.toLocaleString()} verts)` +
         (missing > 0 ? `, ${missing} missing` : ''),
     );
+  }
+
+  /** On the first build, lift the camera and its aim point up by half the
+   * assembled robot's height so the opening frame centers on the robot's
+   * vertical midpoint instead of its feet (the origin). Only runs once per page
+   * load so later orbit/zoom stays with the user. */
+  private frameToRobot(): void {
+    if (this.framed) return;
+    const box = new THREE.Box3().setFromObject(this.root);
+    if (box.isEmpty()) return; // nothing rendered yet — retry on a later build
+    const halfHeight = (box.max.y - box.min.y) / 2;
+    this.camera.position.set(900, 700 + halfHeight, 1400);
+    this.controls.target.set(0, halfHeight, 0);
+    this.controls.update();
+    this.framed = true;
   }
 }
