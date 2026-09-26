@@ -13,8 +13,10 @@ import {
   MOUNT_ORIENTATION,
   WEAPON_ROTATION_OVERRIDE,
 } from './constants';
-import { refToId } from './data';
-import type { Module, ModuleModel, ObjectTable, PresetModule, Vec3 } from './types';
+import { refToId } from '../../utils/object_reference';
+import type { CharacterPresetModule } from '../../types/character_preset';
+import type { Module } from '../../types/module';
+import type { ModuleModel, Vec3 } from './types';
 
 export interface ModulePlacement {
   module_id: string;
@@ -26,8 +28,8 @@ export interface ModulePlacement {
 
 export function modelIdForModule(
   moduleId: string,
-  modules: ObjectTable<Module>,
-  charModules: ObjectTable<unknown>,
+  modules: Record<string, Module>,
+  charModules: Record<string, unknown>,
   mountWay?: string | null,
 ): string | null {
   const module = modules[moduleId];
@@ -35,12 +37,12 @@ export function modelIdForModule(
   const mounts = module.character_module_mounts ?? [];
   for (const mount of mounts) {
     if (mountWay != null && mount.mount === mountWay) {
-      const id = refToId(mount.character_module_ref ?? '');
+      const id = refToId(mount.character_module_ref);
       if (id && charModules[id]) return id;
     }
   }
   for (const mount of mounts) {
-    const id = refToId(mount.character_module_ref ?? '');
+    const id = refToId(mount.character_module_ref);
     if (id && charModules[id]) return id;
   }
   return null;
@@ -49,13 +51,13 @@ export function modelIdForModule(
 export function socketTypeOf(
   moduleId: string,
   socketName: string,
-  modules: ObjectTable<Module>,
+  modules: Record<string, Module>,
 ): 'Weapon' | 'WeaponHeavy' | null {
   const module = modules[moduleId];
   if (!module) return null;
   for (const sock of module.sockets ?? []) {
     if (sock.name !== socketName) continue;
-    const ref = refToId(sock.socket_type_ref ?? '');
+    const ref = refToId(sock.socket_type_ref);
     if (ref.includes('WeaponHeavy')) return 'WeaponHeavy';
     if (ref.includes('Weapon')) return 'Weapon';
   }
@@ -95,7 +97,7 @@ function mountBoneFrame(model: ModuleModel, boneName: string): Mat4 | null {
   return dist2ToBox(pi, box) < dist2ToBox(pf, box) ? ident : full;
 }
 
-function isWeaponModule(moduleId: string, modules: ObjectTable<Module>): boolean {
+function isWeaponModule(moduleId: string, modules: Record<string, Module>): boolean {
   const module = modules[moduleId];
   if (!module?.module_type_ref) return false;
   return refToId(module.module_type_ref).includes('Weapon');
@@ -109,7 +111,7 @@ function adapterOffsetFor(model: ModuleModel, mountWay: string): Vec3 | null {
 }
 
 /** Left/Right for a weapon, from its parent shoulder's socket suffix, else null. */
-function weaponMountSide(presetModules: PresetModule[], i: number): string | null {
+function weaponMountSide(presetModules: CharacterPresetModule[], i: number): string | null {
   const parent = presetModules[i].parent_socket_index;
   if (parent < 0) return null;
   const ps = presetModules[parent].socket_name ?? '';
@@ -130,8 +132,8 @@ function adapterMountWay(model: ModuleModel | undefined, side: string | null): s
 
 export function resolveWeaponModel(
   weaponName: string,
-  modules: ObjectTable<Module>,
-  charModules: ObjectTable<unknown>,
+  modules: Record<string, Module>,
+  charModules: Record<string, unknown>,
 ): string | null {
   const wanted = `Weapon_${weaponName}`;
   for (const moduleId of Object.keys(modules).sort()) {
@@ -150,9 +152,9 @@ export function sideForSocket(socketName: string): 'Left' | 'Right' | null {
 }
 
 export function computeModuleWorlds(
-  presetModules: PresetModule[],
-  modules: ObjectTable<Module>,
-  charModules: ObjectTable<unknown>,
+  presetModules: CharacterPresetModule[],
+  modules: Record<string, Module>,
+  charModules: Record<string, unknown>,
   models: Map<string, ModuleModel>,
 ): ModulePlacement[] {
   const worlds: Mat4[] = new Array(presetModules.length);

@@ -1,12 +1,11 @@
 /**
- * Data-schema types for the model viewer.
+ * Geometry-schema types for the model viewer.
  *
- * These mirror the parser's `Models/<CharacterModuleId>.json` schema plus the
- * subset of the object tables (Module / CharacterModule / CharacterPreset /
- * VirtualBot) the viewer reads. They are intentionally separate from the site's
- * `src/types/*` ParseObject models: those describe the fully-parsed site data,
- * while these describe the raw per-module model exports the viewer fetches at
- * runtime.
+ * These mirror the parser's `Models/<CharacterModuleId>.json` export (bones,
+ * sockets, collision primitives and untextured meshes) — geometry the site's
+ * `src/types/*` ParseObject models do not describe. The object-table shapes the
+ * viewer reads (Module / CharacterPreset / VirtualBot) are imported from
+ * `src/types/*` rather than redefined here.
  */
 
 export type Vec3 = [number, number, number];
@@ -73,42 +72,3 @@ export interface ModuleModel {
   spheres: Sphere[];
   meshes: ModelMesh[];
 }
-
-export interface PresetModule {
-  module_ref: string;
-  socket_name: string | null;
-  parent_socket_index: number;
-  level?: number;
-}
-
-export interface CharacterPreset {
-  id: string;
-  modules?: PresetModule[];
-  name?: { Key?: string };
-}
-
-export interface ModuleSocketDef {
-  name: string;
-  socket_type_ref: string;
-  mount_way?: string;
-}
-
-export interface ModuleMount {
-  mount?: string;
-  character_module_ref?: string;
-}
-
-export interface Module {
-  id: string;
-  sockets?: ModuleSocketDef[];
-  character_module_mounts?: ModuleMount[];
-  module_type_ref?: string;
-}
-
-export interface VirtualBot {
-  id: string;
-  name?: { Key?: string };
-  factory_preset_refs?: string[];
-}
-
-export type ObjectTable<T> = Record<string, T>;

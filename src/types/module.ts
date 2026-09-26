@@ -33,6 +33,11 @@ export interface Module extends ParseObject {
     character_module_ref: string;
     mount: string;
   }>;
+  sockets?: Array<{
+    name: string;
+    socket_type_ref: string;
+    mount_way?: string;
+  }>;
   module_tags_refs?: string[];
   name?: LocalizationKey; // TODO InvariantString support
   description?: LocalizationKey;

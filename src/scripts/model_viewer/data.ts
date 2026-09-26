@@ -1,5 +1,7 @@
 /**
- * Runtime JSON fetching (with a shared promise cache) and object-ref helpers.
+ * Runtime JSON fetching with a shared promise cache.
+ *
+ * (Object-ref parsing uses the shared `refToId` from `src/utils/object_reference`.)
  */
 
 const cache = new Map<string, Promise<unknown>>();
@@ -14,8 +16,4 @@ export function fetchJSON<T>(path: string): Promise<T> {
     });
   cache.set(path, promise);
   return promise;
-}
-
-export function refToId(ref: string): string {
-  return ref.includes('::') ? ref.split('::')[1] : ref;
 }

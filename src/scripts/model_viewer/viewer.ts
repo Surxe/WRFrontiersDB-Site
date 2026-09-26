@@ -6,7 +6,8 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import type { Mat4 } from './math';
 import { MODEL_COLORS } from './constants';
-import { fetchJSON, refToId } from './data';
+import { fetchJSON } from './data';
+import { refToId } from '../../utils/object_reference';
 import {
   computeModuleWorlds,
   modelIdForModule,
@@ -17,11 +18,10 @@ import {
 import { addModel, createTrack, type TrackedResources } from './scene';
 import type {
   CharacterPreset,
-  Module,
-  ModuleModel,
-  ObjectTable,
-  PresetModule,
-} from './types';
+  CharacterPresetModule,
+} from '../../types/character_preset';
+import type { Module } from '../../types/module';
+import type { ModuleModel } from './types';
 
 export type WeaponMode = 'auto' | 'punisher' | 'hefty';
 export type ShoulderSide = 'L' | 'R' | 'Both';
@@ -137,9 +137,9 @@ export class ModelViewer {
   /** Every model file this build will need, resolved up front so the world
    * transforms can be computed with all parent skeletons already cached. */
   private neededModels(
-    presetModules: PresetModule[],
-    modules: ObjectTable<Module>,
-    charModules: ObjectTable<unknown>,
+    presetModules: CharacterPresetModule[],
+    modules: Record<string, Module>,
+    charModules: Record<string, unknown>,
     weaponMode: WeaponMode,
   ): Set<string> {
     const needed = new Set<string>();
@@ -169,8 +169,8 @@ export class ModelViewer {
 
   async build(opts: BuildOptions): Promise<void> {
     this.setStatus('Loading data...');
-    const modules = await fetchJSON<ObjectTable<Module>>('/data/Objects/Module.json');
-    const charModules = await fetchJSON<ObjectTable<unknown>>(
+    const modules = await fetchJSON<Record<string, Module>>('/data/Objects/Module.json');
+    const charModules = await fetchJSON<Record<string, unknown>>(
       '/data/Objects/CharacterModule.json',
     );
 
@@ -245,8 +245,8 @@ export class ModelViewer {
     placements: ReturnType<typeof computeModuleWorlds>,
     shoulderIndex: number,
     shoulderModuleId: string,
-    modules: ObjectTable<Module>,
-    charModules: ObjectTable<unknown>,
+    modules: Record<string, Module>,
+    charModules: Record<string, unknown>,
     loadedBase: number,
     opts: BuildOptions,
     onMissing: (n: number) => void,

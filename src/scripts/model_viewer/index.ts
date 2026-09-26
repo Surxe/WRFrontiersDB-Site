@@ -13,14 +13,16 @@
  * This entry module wires the /models page controls to a {@link ModelViewer};
  * the geometry, mount math and data loading live in the sibling modules.
  */
-import { fetchJSON, refToId } from './data';
+import { fetchJSON } from './data';
+import { refToId } from '../../utils/object_reference';
 import { el, populateSelect } from './dom';
 import {
   ModelViewer,
   type ShoulderSide,
   type WeaponMode,
 } from './viewer';
-import type { CharacterPreset, ObjectTable, VirtualBot } from './types';
+import type { CharacterPreset } from '../../types/character_preset';
+import type { VirtualBot } from '../../types/virtual_bot';
 
 async function init(): Promise<void> {
   const loading = document.getElementById('model-loading');
@@ -41,8 +43,8 @@ async function init(): Promise<void> {
     const skeletonBox = el<HTMLInputElement>('model-skeleton');
 
     status.textContent = 'Loading tables...';
-    const bots = await fetchJSON<ObjectTable<VirtualBot>>('/data/Objects/VirtualBot.json');
-    const presets = await fetchJSON<ObjectTable<CharacterPreset>>(
+    const bots = await fetchJSON<Record<string, VirtualBot>>('/data/Objects/VirtualBot.json');
+    const presets = await fetchJSON<Record<string, CharacterPreset>>(
       '/data/Objects/CharacterPreset.json',
     );
 
