@@ -7,7 +7,7 @@
  * boundary where geometry is actually built.
  */
 import * as THREE from 'three';
-import type { Bone, Vec3 } from './types';
+import type { Bone, Vec3 } from '../../types/model';
 
 export type Mat4 = [
   [number, number, number, number],

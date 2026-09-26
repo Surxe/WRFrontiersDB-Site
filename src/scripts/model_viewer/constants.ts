@@ -4,7 +4,7 @@
  * The mount tables encode corrections the game applies at runtime but the export
  * does not serialize (see the WRFrontiersDB-Models repo, docs/weapon_mount_findings.md).
  */
-import type { Vec3 } from './types';
+import type { Vec3 } from '../../types/model';
 
 /** Runtime mount correction applied to a mounted weapon, keyed by socket type
  * ("Weapon" / "WeaponHeavy") then mount way ("Left" / "Right" / "Standard").

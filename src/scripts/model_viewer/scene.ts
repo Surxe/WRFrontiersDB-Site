@@ -4,7 +4,7 @@
 import * as THREE from 'three';
 import { IDENTITY, boneWorlds, eulerMat, mapply, mmul, toThree, type Mat4 } from './math';
 import { isFxMesh } from './mesh';
-import type { ModuleModel, Vec3 } from './types';
+import type { ModuleModel, Vec3 } from '../../types/model';
 
 /** Tracks the disposable three.js resources a build creates so the viewer can
  * tear them down before the next build. */

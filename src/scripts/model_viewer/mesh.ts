@@ -4,7 +4,7 @@
  * Shared by mount resolution (which uses the AABB to disambiguate baked root
  * bones) and scene building (which skips FX meshes when adding geometry).
  */
-import type { ModelMesh, ModuleModel, Vec3 } from './types';
+import type { ModelMesh, ModuleModel, Vec3 } from '../../types/model';
 
 /** Cosmetic FX/effect mesh components (SK_*_Effect / *_FX) are separate "Effect"
  * components in the module BP, not the visible body -- in-game they show only as

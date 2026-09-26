@@ -21,7 +21,7 @@ import type {
   CharacterPresetModule,
 } from '../../types/character_preset';
 import type { Module } from '../../types/module';
-import type { ModuleModel } from './types';
+import type { ModuleModel } from '../../types/model';
 
 export type WeaponMode = 'auto' | 'punisher' | 'hefty';
 export type ShoulderSide = 'L' | 'R' | 'Both';

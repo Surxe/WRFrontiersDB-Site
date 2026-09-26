@@ -1,12 +1,7 @@
-/**
- * Geometry-schema types for the model viewer.
- *
- * These mirror the parser's `Models/<CharacterModuleId>.json` export (bones,
- * sockets, collision primitives and untextured meshes) — geometry the site's
- * `src/types/*` ParseObject models do not describe. The object-table shapes the
- * viewer reads (Module / CharacterPreset / VirtualBot) are imported from
- * `src/types/*` rather than redefined here.
- */
+// Geometry schema for the parser's `Models/<CharacterModuleId>.json` export
+// (bones, sockets, collision primitives and untextured meshes). Unlike the
+// other files here these are not ParseObjects — they describe the raw per-module
+// model files the 3D viewer fetches at runtime, not the parsed site data.
 
 export type Vec3 = [number, number, number];
 

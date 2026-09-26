@@ -16,7 +16,7 @@ import {
 import { refToId } from '../../utils/object_reference';
 import type { CharacterPresetModule } from '../../types/character_preset';
 import type { Module } from '../../types/module';
-import type { ModuleModel, Vec3 } from './types';
+import type { ModuleModel, Vec3 } from '../../types/model';
 
 export interface ModulePlacement {
   module_id: string;
