@@ -1,5 +1,5 @@
 /**
- * Mount resolution: port of wrf_models/combine.py.
+ * Mount resolution.
  *
  * Resolves the module world transforms for a preset:
  *   world(module) = world(parent) x socketFrame(parent, socketName)

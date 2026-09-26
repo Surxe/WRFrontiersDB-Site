@@ -6,7 +6,7 @@
  * chain + adapter offsets + the runtime mount roll), and renders shoulder +
  * weapon combinations in three.js.
  *
- * Mount resolution mirrors WRFrontiersDB-Models (wrf_models/combine.py):
+ * Mount resolution (see mount.ts):
  *   world(module) = world(parent) x socketFrame(parent, socketName)
  *                   x T(adapterOffset) x R(mountRoll)
  *

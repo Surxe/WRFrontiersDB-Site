@@ -2,9 +2,9 @@
  * 4x4 matrix math for module world transforms.
  *
  * UE conventions throughout: centimeters, X forward / Y right / Z up. These are
- * plain nested-array matrices (not three.js Matrix4) so the mount-resolution
- * port stays a direct mirror of wrf_models/combine.py; `toThree` converts at the
- * boundary where geometry is actually built.
+ * plain nested-array matrices (not three.js Matrix4) so the mount-resolution math
+ * stays independent of the renderer; `toThree` converts at the boundary where
+ * geometry is actually built.
  */
 import * as THREE from 'three';
 import type { Bone, Vec3 } from '../../types/model';

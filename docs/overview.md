@@ -14,6 +14,7 @@ Static Astro site displaying War Robots Frontiers game data from WRFrontiersDB-D
 - [Character Preset Modules Logic](character_preset_modules_logic.md) - Module integration in character presets
 - [Ability Relationships](ability_relationships.md) - Ability system connections and dependencies
 - [Browser Data Access](browser-data-access.md) - Testing data accessibility and patterns
+- [Weapon Mount Findings](weapon_mount_findings.md) - Source investigation behind the /models mount-correction constants
 
 ## Critical Rules
 

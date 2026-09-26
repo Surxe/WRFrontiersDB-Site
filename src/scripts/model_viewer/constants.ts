@@ -2,7 +2,7 @@
  * Runtime mount corrections and render constants.
  *
  * The mount tables encode corrections the game applies at runtime but the export
- * does not serialize (see the WRFrontiersDB-Models repo, docs/weapon_mount_findings.md).
+ * does not serialize (see docs/weapon_mount_findings.md for the source investigation).
  */
 import type { Vec3 } from '../../types/model';
 
