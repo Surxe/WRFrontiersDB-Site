@@ -4,8 +4,7 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
-    "build": "npm run sync:models && astro build",
-    "sync:models": "node scripts/sync-model-data.mjs",
+    "build": "astro build",
     "build:custom-domain": "CUSTOM_DOMAIN=true astro build",
     "build:github-pages": "astro build",
     "build:slugs": "tsx scripts/build-slugs.ts",

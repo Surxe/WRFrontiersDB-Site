@@ -26,8 +26,9 @@ Ground-truth reference (a hand-built, in-game-correct Typhon): read-only at
 
 - Parsed models: `/srv/dev/repos/WRFrontiersDB-Data/current/`
   (`Objects/*.json`, `Models/<CharacterModuleId>.json`).
-- Site's copy: `public/data/` (synced via `npm run sync:models`; `build` runs it).
-  Confirm it matches `current/` before blaming the code.
+- The site serves these live via the `public/WRFrontiersDB-Data` symlink (data
+  repo root), so `/models` fetches `/WRFrontiersDB-Data/current/...` directly.
+  Confirm `current/` is populated before blaming the code.
 - Raw CUE4Parse/FModel exports (source of truth for asset data): `/srv/dev/wrf/data/exports/WRFrontiers/Content/Sparrow/`
   (weapon/adapter BPs, `SKEL_*`/`SK_*`/`PHYS_*`). Use these to confirm whether a
   problem is in the asset or the parser.

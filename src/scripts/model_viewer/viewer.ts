@@ -125,7 +125,9 @@ export class ModelViewer {
     const existing = this.models.get(cmId);
     if (existing) return existing;
     try {
-      const model = await fetchJSON<ModuleModel>(`/data/Models/${cmId}.json`);
+      const model = await fetchJSON<ModuleModel>(
+        `/WRFrontiersDB-Data/current/Models/${cmId}.json`,
+      );
       this.models.set(cmId, model);
       return model;
     } catch (err) {
@@ -169,9 +171,11 @@ export class ModelViewer {
 
   async build(opts: BuildOptions): Promise<void> {
     this.setStatus('Loading data...');
-    const modules = await fetchJSON<Record<string, Module>>('/data/Objects/Module.json');
+    const modules = await fetchJSON<Record<string, Module>>(
+      '/WRFrontiersDB-Data/current/Objects/Module.json',
+    );
     const charModules = await fetchJSON<Record<string, unknown>>(
-      '/data/Objects/CharacterModule.json',
+      '/WRFrontiersDB-Data/current/Objects/CharacterModule.json',
     );
 
     const presetModules = opts.preset.modules ?? [];

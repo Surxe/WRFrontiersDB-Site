@@ -43,14 +43,16 @@ async function init(): Promise<void> {
     const skeletonBox = el<HTMLInputElement>('model-skeleton');
 
     status.textContent = 'Loading tables...';
-    const bots = await fetchJSON<Record<string, VirtualBot>>('/data/Objects/VirtualBot.json');
+    const bots = await fetchJSON<Record<string, VirtualBot>>(
+      '/WRFrontiersDB-Data/current/Objects/VirtualBot.json',
+    );
     const presets = await fetchJSON<Record<string, CharacterPreset>>(
-      '/data/Objects/CharacterPreset.json',
+      '/WRFrontiersDB-Data/current/Objects/CharacterPreset.json',
     );
 
     if (Object.keys(bots).length === 0 && Object.keys(presets).length === 0) {
       status.textContent =
-        'No model data found. Run `npm run sync:models` (or the parser) to populate public/data/.';
+        'No model data found. Run the parser to populate WRFrontiersDB-Data/current/.';
       hideLoading();
       return;
     }
