@@ -97,10 +97,28 @@ function mountBoneFrame(model: ModuleModel, boneName: string): Mat4 | null {
   return dist2ToBox(pi, box) < dist2ToBox(pf, box) ? ident : full;
 }
 
-function isWeaponModule(moduleId: string, modules: Record<string, Module>): boolean {
+/** Broad module classification from the module's `module_type_ref` id. Used to
+ * decide render behavior per mode (structural vs weapon vs supply/cycle gear). */
+export type ModuleKind =
+  | 'chassis'
+  | 'shoulder'
+  | 'torso'
+  | 'weapon'
+  | 'ability'
+  | 'other';
+
+export function moduleKindOf(
+  moduleId: string,
+  modules: Record<string, Module>,
+): ModuleKind {
   const module = modules[moduleId];
-  if (!module?.module_type_ref) return false;
-  return refToId(module.module_type_ref).includes('Weapon');
+  const typeRef = module?.module_type_ref ? refToId(module.module_type_ref) : '';
+  if (typeRef.includes('Ability')) return 'ability';
+  if (typeRef.includes('Weapon')) return 'weapon';
+  if (typeRef.includes('Chassis')) return 'chassis';
+  if (typeRef.includes('Shoulder')) return 'shoulder';
+  if (typeRef.includes('Torso')) return 'torso';
+  return 'other';
 }
 
 function adapterOffsetFor(model: ModuleModel, mountWay: string): Vec3 | null {
@@ -128,20 +146,6 @@ function adapterMountWay(model: ModuleModel | undefined, side: string | null): s
   if (side && ways.has(side)) return side;
   if (ways.has('Standard')) return 'Standard';
   return side;
-}
-
-export function resolveWeaponModel(
-  weaponName: string,
-  modules: Record<string, Module>,
-  charModules: Record<string, unknown>,
-): string | null {
-  const wanted = `Weapon_${weaponName}`;
-  for (const moduleId of Object.keys(modules).sort()) {
-    if (!moduleId.includes(wanted)) continue;
-    const cmId = modelIdForModule(moduleId, modules, charModules);
-    if (cmId) return cmId;
-  }
-  return null;
 }
 
 /** Side ("Left"/"Right") a preset socket suffix implies, else null. */
@@ -176,7 +180,7 @@ export function computeModuleWorlds(
       : IDENTITY;
 
     let stype = socketTypeOf(parentModuleId, socketName, modules);
-    const isWeapon = isWeaponModule(moduleId, modules);
+    const isWeapon = moduleKindOf(moduleId, modules) === 'weapon';
     if (!stype && isWeapon) stype = 'Weapon'; // weapon on an untyped socket (Torso_Weapon_*)
     if (stype && MOUNT_ORIENTATION[stype] && isWeapon) {
       // Mirrored light weapons carry Left/Right adapters (use the parent shoulder

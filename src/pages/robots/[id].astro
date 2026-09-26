@@ -44,6 +44,12 @@ const localizedDescriptions = generateRobotLocalizedMetaDescriptions(
   bot,
   getDefaultString(bot.name) || bot.id
 );
+
+// Deep link into the 3D viewer: resolve the robot's first factory preset (the
+// mount resolver needs the preset graph), render structural modules only.
+const firstFactoryPresetId = bot.factory_preset_refs?.[0]
+  ? refToId(bot.factory_preset_refs[0])
+  : undefined;
 ---
 
 <ParseObjectPage
@@ -66,6 +72,16 @@ const localizedDescriptions = generateRobotLocalizedMetaDescriptions(
 
   <LocalizedText id="robot-name" tag="h1" localizationKey={bot.name} />
   <p><strong>Type:</strong> {bot.character_type}</p>
+
+  {
+    firstFactoryPresetId && (
+      <p style="margin-top: 1rem;">
+        <a href={`/models?preset=${encodeURIComponent(firstFactoryPresetId)}&mode=robot`}>
+          View this robot in the 3D model viewer →
+        </a>
+      </p>
+    )
+  }
 
   <section style="margin-top: 2rem;">
     <h2>Core Modules</h2>

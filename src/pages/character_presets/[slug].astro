@@ -71,6 +71,12 @@ const localizedDescriptions = preset
           />
         </h1>
 
+        <p>
+          <a href={`/models?preset=${encodeURIComponent(id)}&mode=preset`}>
+            View this loadout in the 3D model viewer →
+          </a>
+        </p>
+
         <BotItem preset={preset} modules={modules} pilots={pilots} />
       </div>
     ) : (

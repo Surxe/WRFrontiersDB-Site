@@ -11,11 +11,11 @@ import { refToId } from '../../utils/object_reference';
 import {
   computeModuleWorlds,
   modelIdForModule,
-  resolveWeaponModel,
+  moduleKindOf,
   sideForSocket,
-  socketTypeOf,
 } from './mount';
 import { addModel, createTrack, type TrackedResources } from './scene';
+import type { RenderMode, ShoulderSide } from './params';
 import type {
   CharacterPreset,
   CharacterPresetModule,
@@ -23,26 +23,12 @@ import type {
 import type { Module } from '../../types/module';
 import type { ModuleModel } from '../../types/model';
 
-export type WeaponMode = 'auto' | 'punisher' | 'hefty';
-export type ShoulderSide = 'L' | 'R' | 'Both';
-
 export interface BuildOptions {
   preset: CharacterPreset;
   side: ShoulderSide;
-  weaponMode: WeaponMode;
+  mode: RenderMode;
   hitbox: boolean;
   skeleton: boolean;
-}
-
-/** The weapon model name a socket should fill with: honor an explicit mode, else
- * auto-pick from the socket type (heavy slot -> Hefty, light slot -> Punisher). */
-function weaponNameFor(
-  mode: WeaponMode,
-  socketType: 'Weapon' | 'WeaponHeavy' | null,
-): 'Punisher' | 'Hefty' {
-  if (mode === 'hefty') return 'Hefty';
-  if (mode === 'punisher') return 'Punisher';
-  return socketType === 'WeaponHeavy' ? 'Hefty' : 'Punisher';
 }
 
 function isShoulderSocket(socketName: string): boolean {
@@ -142,29 +128,19 @@ export class ModelViewer {
     presetModules: CharacterPresetModule[],
     modules: Record<string, Module>,
     charModules: Record<string, unknown>,
-    weaponMode: WeaponMode,
+    mode: RenderMode,
   ): Set<string> {
     const needed = new Set<string>();
     presetModules.forEach((entry) => {
+      const moduleId = refToId(entry.module_ref);
+      if (mode === 'robot' && moduleKindOf(moduleId, modules) === 'weapon') return;
       const cmId = modelIdForModule(
-        refToId(entry.module_ref),
+        moduleId,
         modules,
         charModules,
         sideForSocket(entry.socket_name ?? ''),
       );
       if (cmId) needed.add(cmId);
-    });
-    presetModules.forEach((entry, i) => {
-      if (!isShoulderSocket(entry.socket_name ?? '')) return;
-      const shoulderModuleId = refToId(entry.module_ref);
-      for (const w of presetModules) {
-        if (w.parent_socket_index !== i) continue;
-        const wSocket = w.socket_name ?? '';
-        if (!wSocket.startsWith('Shoulder_Weapon')) continue;
-        const stype = socketTypeOf(shoulderModuleId, wSocket, modules);
-        const wm = resolveWeaponModel(weaponNameFor(weaponMode, stype), modules, charModules);
-        if (wm) needed.add(wm);
-      }
     });
     return needed;
   }
@@ -182,7 +158,7 @@ export class ModelViewer {
 
     // 1) Resolve + load every model this build needs BEFORE computing world
     //    transforms (socket frames come from the parent module's skeleton).
-    const needed = this.neededModels(presetModules, modules, charModules, opts.weaponMode);
+    const needed = this.neededModels(presetModules, modules, charModules, opts.mode);
     let missing = 0;
     await Promise.all(
       [...needed].map(async (id) => {
@@ -205,6 +181,7 @@ export class ModelViewer {
         const side = socketName.endsWith('_L') ? 'L' : 'R';
         if (side !== opts.side) continue;
       }
+      if (opts.mode === 'robot' && moduleKindOf(placement.module_id, modules) === 'weapon') continue;
       if (!placement.model_id) continue;
 
       const model = this.models.get(placement.model_id) ?? null;
@@ -215,12 +192,6 @@ export class ModelViewer {
 
       this.addPlacement(model, placement.world, loaded, opts);
       loaded += 1;
-
-      if (isShoulder) {
-        loaded += this.addShoulderWeapons(placements, i, placement.module_id, modules, charModules, loaded, opts, (n) => {
-          missing += n;
-        });
-      }
     }
 
     this.reportBuild(opts.preset, loaded, missing);
@@ -240,52 +211,6 @@ export class ModelViewer {
       { hitbox: opts.hitbox, skeleton: opts.skeleton },
       this.track,
     );
-  }
-
-  /** Add the weapons mounted on the shoulder at preset index `shoulderIndex`.
-   * Returns how many weapon models were added; reports any missing models via
-   * `onMissing`. */
-  private addShoulderWeapons(
-    placements: ReturnType<typeof computeModuleWorlds>,
-    shoulderIndex: number,
-    shoulderModuleId: string,
-    modules: Record<string, Module>,
-    charModules: Record<string, unknown>,
-    loadedBase: number,
-    opts: BuildOptions,
-    onMissing: (n: number) => void,
-  ): number {
-    let added = 0;
-    for (let j = 0; j < placements.length; j++) {
-      const w = placements[j];
-      if (w.parent_socket_index !== shoulderIndex) continue;
-      const wSocket = w.socket_name ?? '';
-      if (!wSocket.startsWith('Shoulder_Weapon')) continue;
-
-      const stype = socketTypeOf(shoulderModuleId, wSocket, modules);
-      const weaponName = weaponNameFor(opts.weaponMode, stype);
-      const weaponModelId = resolveWeaponModel(weaponName, modules, charModules);
-      if (!weaponModelId) {
-        onMissing(1);
-        this.setStatus(`No model data for ${weaponName} — run the parser with weapon exports.`);
-        continue;
-      }
-      const weaponModel = this.models.get(weaponModelId) ?? null;
-      if (!weaponModel) {
-        onMissing(1);
-        continue;
-      }
-      addModel(
-        this.root,
-        weaponModel,
-        w.world,
-        MODEL_COLORS[(MODEL_COLORS.length + loadedBase + added) % MODEL_COLORS.length],
-        { hitbox: opts.hitbox, skeleton: opts.skeleton },
-        this.track,
-      );
-      added += 1;
-    }
-    return added;
   }
 
   private reportBuild(preset: CharacterPreset, loaded: number, missing: number): void {

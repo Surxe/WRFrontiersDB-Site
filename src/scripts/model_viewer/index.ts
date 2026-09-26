@@ -10,17 +10,21 @@
  *   world(module) = world(parent) x socketFrame(parent, socketName)
  *                   x T(adapterOffset) x R(mountRoll)
  *
- * This entry module wires the /models page controls to a {@link ModelViewer};
- * the geometry, mount math and data loading live in the sibling modules.
+ * This entry module wires the /models page controls to a {@link ModelViewer}
+ * and to the URL query params (see params.ts); the geometry, mount math and data
+ * loading live in the sibling modules.
  */
 import { fetchJSON } from './data';
 import { refToId } from '../../utils/object_reference';
 import { el, populateSelect } from './dom';
+import { ModelViewer } from './viewer';
 import {
-  ModelViewer,
+  parseModelParams,
+  writeModelParams,
+  type ModelQueryParams,
+  type RenderMode,
   type ShoulderSide,
-  type WeaponMode,
-} from './viewer';
+} from './params';
 import type { CharacterPreset } from '../../types/character_preset';
 import type { VirtualBot } from '../../types/virtual_bot';
 
@@ -38,7 +42,6 @@ async function init(): Promise<void> {
     const botSelect = el<HTMLSelectElement>('model-bot');
     const presetSelect = el<HTMLSelectElement>('model-preset');
     const sideSelect = el<HTMLSelectElement>('model-side');
-    const weaponSelect = el<HTMLSelectElement>('model-weapon');
     const hitboxBox = el<HTMLInputElement>('model-hitbox');
     const skeletonBox = el<HTMLInputElement>('model-skeleton');
 
@@ -57,23 +60,60 @@ async function init(): Promise<void> {
       return;
     }
 
+    const initial = parseModelParams(window.location.search);
+    // `mode` has no control yet — it arrives from the deep link (or defaults).
+    const mode: RenderMode = initial.mode ?? 'preset';
+
     populateSelect(
       botSelect,
       Object.entries(bots).map(([id, bot]) => ({ value: id, label: bot.name?.Key ?? id })),
     );
 
     // A bot's factory presets when it declares any, else the full preset list.
-    const presetsFor = (botId: string): { value: string; label: string }[] => {
-      const refs = (bots[botId]?.factory_preset_refs ?? []).map(refToId).filter((id) => presets[id]);
-      const ids = refs.length > 0 ? refs : Object.keys(presets);
-      return ids.map((id) => ({ value: id, label: id }));
+    const presetsFor = (botId: string): string[] => {
+      const refs = (bots[botId]?.factory_preset_refs ?? [])
+        .map(refToId)
+        .filter((id) => presets[id]);
+      return refs.length > 0 ? refs : Object.keys(presets);
     };
 
-    const rebuildPresetList = (): void => {
-      populateSelect(presetSelect, presetsFor(botSelect.value));
+    // The bot whose factory presets include this preset, if any (lets a
+    // preset-only link select the right bot in the control bar).
+    const botForPreset = (presetId: string): string | undefined => {
+      for (const [id, bot] of Object.entries(bots)) {
+        if ((bot.factory_preset_refs ?? []).some((r) => refToId(r) === presetId)) {
+          return id;
+        }
+      }
+      return undefined;
     };
-    botSelect.addEventListener('change', rebuildPresetList);
-    rebuildPresetList();
+
+    const resolveInitialBot = (): string => {
+      if (initial.bot && bots[initial.bot]) return initial.bot;
+      if (initial.preset) {
+        const derived = botForPreset(initial.preset);
+        if (derived) return derived;
+      }
+      return botSelect.options[0]?.value ?? '';
+    };
+    botSelect.value = resolveInitialBot();
+
+    const populatePresets = (preferred?: string): void => {
+      const options = presetsFor(botSelect.value);
+      // A deep-linked preset must be selectable even when it is not one of the
+      // selected bot's factory presets (e.g. a non-factory / AI preset).
+      if (preferred && presets[preferred] && !options.includes(preferred)) {
+        options.unshift(preferred);
+      }
+      populateSelect(presetSelect, options.map((id) => ({ value: id, label: id })));
+      presetSelect.value =
+        preferred && options.includes(preferred) ? preferred : options[0] ?? '';
+    };
+    populatePresets(initial.preset);
+
+    sideSelect.value = initial.side ?? 'Both';
+    hitboxBox.checked = initial.hitbox ?? true;
+    skeletonBox.checked = initial.skeleton ?? false;
 
     const rebuild = async (): Promise<void> => {
       const preset = presets[presetSelect.value];
@@ -85,7 +125,7 @@ async function init(): Promise<void> {
         await viewer.build({
           preset,
           side: sideSelect.value as ShoulderSide,
-          weaponMode: weaponSelect.value as WeaponMode,
+          mode,
           hitbox: hitboxBox.checked,
           skeleton: skeletonBox.checked,
         });
@@ -95,10 +135,33 @@ async function init(): Promise<void> {
       }
     };
 
-    for (const control of [presetSelect, sideSelect, weaponSelect, hitboxBox, skeletonBox]) {
-      control.addEventListener('change', () => void rebuild());
+    const syncUrl = (): void => {
+      const state: ModelQueryParams = {
+        bot: botSelect.value || undefined,
+        preset: presetSelect.value || undefined,
+        mode,
+        side: sideSelect.value as ShoulderSide,
+        hitbox: hitboxBox.checked,
+        skeleton: skeletonBox.checked,
+      };
+      writeModelParams(state);
+    };
+
+    botSelect.addEventListener('change', () => {
+      populatePresets();
+      syncUrl();
+      void rebuild();
+    });
+    for (const control of [presetSelect, sideSelect, hitboxBox, skeletonBox]) {
+      control.addEventListener('change', () => {
+        syncUrl();
+        void rebuild();
+      });
     }
 
+    // Reflect the resolved state back into the URL so the landing view — deep
+    // linked or default — is immediately shareable.
+    syncUrl();
     await rebuild();
   } catch (err) {
     console.error('model viewer init failed:', err);
