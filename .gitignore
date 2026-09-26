@@ -35,3 +35,5 @@ personal/
 # Application
 WRFrontiersDB-Data
 public/WRFrontiersDB-Data
+# Generated at build time by scripts/sync-model-data.mjs
+public/data/

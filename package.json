@@ -4,7 +4,8 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "npm run sync:models && astro build",
+    "sync:models": "node scripts/sync-model-data.mjs",
     "build:custom-domain": "CUSTOM_DOMAIN=true astro build",
     "build:github-pages": "astro build",
     "build:slugs": "tsx scripts/build-slugs.ts",
@@ -18,9 +19,11 @@
     "format:fix": "prettier --write \"**/*.{js,ts,astro,json,md}\""
   },
   "dependencies": {
-    "astro": "^5.16.6"
+    "astro": "^5.16.6",
+    "three": "^0.186.1"
   },
   "devDependencies": {
+    "@types/three": "^0.186.0",
     "@typescript-eslint/eslint-plugin": "^8.52.0",
     "@typescript-eslint/parser": "^8.52.0",
     "@vitest/ui": "^4.0.16",
