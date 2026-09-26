@@ -1,0 +1,67 @@
+---
+// Control bar for the 3D model viewer. The element ids here are read by
+// src/scripts/model_viewer to drive rebuilds.
+---
+
+<section class="model-controls" aria-label="Model controls">
+  <label>
+    Bot
+    <select id="model-bot"></select>
+  </label>
+  <label>
+    Preset
+    <select id="model-preset"></select>
+  </label>
+  <label>
+    Shoulder
+    <select id="model-side">
+      <option value="Both">Both</option>
+      <option value="L">Left</option>
+      <option value="R">Right</option>
+    </select>
+  </label>
+  <label>
+    Weapon
+    <select id="model-weapon">
+      <option value="auto">Auto (light: Punisher, heavy: Hefty)</option>
+      <option value="punisher">Punisher</option>
+      <option value="hefty">Hefty</option>
+    </select>
+  </label>
+  <label class="model-check">
+    <input type="checkbox" id="model-hitbox" checked />
+    Hitbox
+  </label>
+  <label class="model-check">
+    <input type="checkbox" id="model-skeleton" />
+    Skeleton
+  </label>
+</section>
+
+<style>
+  .model-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 0.75rem;
+  }
+
+  .model-controls label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    font-size: 0.85rem;
+  }
+
+  .model-controls select,
+  .model-controls input[type='checkbox'] {
+    padding: 0.3rem;
+  }
+
+  .model-check {
+    flex-direction: row !important;
+    align-items: center;
+    gap: 0.35rem !important;
+  }
+</style>
