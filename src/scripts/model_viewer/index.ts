@@ -81,6 +81,7 @@ async function init(): Promise<void> {
     }
 
     const builderEl = el<HTMLElement>('model-builder');
+    const meshBox = el<HTMLInputElement>('model-mesh');
     const hitboxBox = el<HTMLInputElement>('model-hitbox');
     const areaEl = el<HTMLElement>('hitbox-area-pools');
     const compareBox = el<HTMLInputElement>('model-compare');
@@ -131,10 +132,15 @@ async function init(): Promise<void> {
     const compare = new CompareStore(store, tables, index);
 
     const view = parseViewParams(window.location.search);
+    meshBox.checked = view.mesh ?? true;
     hitboxBox.checked = view.hitbox ?? true;
 
     const syncUrl = (build: ResolvedBuild): void => {
-      writeModelUrl(build.selection, { hitbox: hitboxBox.checked }, isSlotKey);
+      writeModelUrl(
+        build.selection,
+        { mesh: meshBox.checked, hitbox: hitboxBox.checked },
+        isSlotKey
+      );
     };
 
     // Hitbox areas of the last build, and the camera: 3D or flat 2D, looking
@@ -255,6 +261,7 @@ async function init(): Promise<void> {
           label: cmp
             ? `A: ${summarizeBuild(cmp.a, tables)} vs B: ${summarizeBuild(cmp.b, tables)}`
             : summarizeBuild(build, tables),
+          mesh: meshBox.checked,
           hitbox: hitboxBox.checked,
           // The bone overlay stays off in the UI (the viewer still supports it).
           skeleton: false,
@@ -329,10 +336,12 @@ async function init(): Promise<void> {
     el<HTMLButtonElement>('model-compare-reset').addEventListener('click', () =>
       compare.reset()
     );
-    hitboxBox.addEventListener('change', () => {
-      syncUrl(store.current);
-      void rebuild();
-    });
+    for (const box of [meshBox, hitboxBox]) {
+      box.addEventListener('change', () => {
+        syncUrl(store.current);
+        void rebuild();
+      });
+    }
 
     // Reflect the resolved state back into the URL so the landing view — deep
     // linked or default — is immediately shareable.

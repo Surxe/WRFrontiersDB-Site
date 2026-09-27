@@ -171,12 +171,14 @@ export function addModel(
   model: ModuleModel,
   world: Mat4,
   colorOf: ZoneColorFn,
-  opts: { hitbox: boolean; skeleton: boolean; meshOpacity?: number },
+  opts: { mesh: boolean; hitbox: boolean; skeleton: boolean; meshOpacity?: number },
   track: TrackedResources,
 ): void {
   // The skeleton overlay shares the mesh's component space (root at origin).
   const boneWorld = boneWorlds(model.bones ?? [], true);
-  addModuleMeshes(group, model, toThree(world), colorOf, opts.meshOpacity ?? 1, track);
+  if (opts.mesh) {
+    addModuleMeshes(group, model, toThree(world), colorOf, opts.meshOpacity ?? 1, track);
+  }
   if (opts.hitbox) addHitboxes(group, model, world, colorOf, track);
   if (opts.skeleton) addSkeleton(group, model, world, boneWorld, track);
 }

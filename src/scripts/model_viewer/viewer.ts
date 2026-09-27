@@ -50,6 +50,7 @@ export interface BuildOptions {
   zoneColors: Record<string, number>;
   /** Short description of what is being rendered, for the status line. */
   label: string;
+  mesh: boolean;
   hitbox: boolean;
   skeleton: boolean;
   /** Compare against build B (`modules` is then build A): both are drawn
@@ -480,7 +481,12 @@ export class ModelViewer {
       model,
       world,
       colorOf,
-      { hitbox: opts.hitbox, skeleton: opts.skeleton, meshOpacity },
+      {
+        mesh: opts.mesh,
+        hitbox: opts.hitbox,
+        skeleton: opts.skeleton,
+        meshOpacity,
+      },
       this.track,
     );
   }

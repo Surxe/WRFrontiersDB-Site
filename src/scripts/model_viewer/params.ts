@@ -24,6 +24,7 @@
  *
  * ## View params
  *
+ *   mesh       0 | 1 — render the module meshes. Default 1.
  *   hitbox     0 | 1 — render collision hitboxes. Default 1.
  *
  * Unknown params are preserved on write.
@@ -32,6 +33,7 @@ import { writeSelection, type SlotKeyMatcher } from './build/params';
 import type { BuildSelection } from './build/types';
 
 export interface ModelViewParams {
+  mesh?: boolean;
   hitbox?: boolean;
 }
 
@@ -44,6 +46,8 @@ function readFlag(sp: URLSearchParams, key: string): boolean | undefined {
 export function parseViewParams(search: string): ModelViewParams {
   const sp = new URLSearchParams(search);
   const params: ModelViewParams = {};
+  const mesh = readFlag(sp, 'mesh');
+  if (mesh !== undefined) params.mesh = mesh;
   const hitbox = readFlag(sp, 'hitbox');
   if (hitbox !== undefined) params.hitbox = hitbox;
   return params;
@@ -58,6 +62,8 @@ export function writeModelUrl(
   const url = new URL(window.location.href);
   const sp = url.searchParams;
   writeSelection(sp, selection, isSlotKey);
+  sp.delete('mesh');
+  if (view.mesh !== undefined) sp.set('mesh', view.mesh ? '1' : '0');
   sp.delete('hitbox');
   if (view.hitbox !== undefined) sp.set('hitbox', view.hitbox ? '1' : '0');
   history.replaceState(null, '', url);
