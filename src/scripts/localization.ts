@@ -12,7 +12,12 @@ type LocalizationModule = typeof import('../../public/js/localization.js');
 const LOCALIZATION_MODULE_URL = '/js/localization.js';
 
 function loadLocalizationModule(): Promise<LocalizationModule> {
-  return import(/* @vite-ignore */ LOCALIZATION_MODULE_URL);
+  // An absolute URL: in dev, Vite rewrites a root-relative dynamic import to
+  // `/js/localization.js?import`, which it then refuses to serve from public/.
+  // The browser keys modules by absolute URL, so this is still the same module
+  // instance the site's inline scripts import.
+  const url = new URL(LOCALIZATION_MODULE_URL, window.location.origin).href;
+  return import(/* @vite-ignore */ url);
 }
 
 /**
