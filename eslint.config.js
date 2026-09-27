@@ -41,6 +41,9 @@ export default [
     },
     rules: {
       ...tsPlugin.configs.recommended.rules,
+      // TypeScript already checks undefined identifiers (with the right DOM /
+      // Node globals per file); typescript-eslint recommends disabling this.
+      'no-undef': 'off',
       '@typescript-eslint/no-unused-vars': [
         'warn',
         {
@@ -107,6 +110,15 @@ export default [
           varsIgnorePattern: '^_',
         },
       ],
+    },
+  },
+
+  // TypeScript: @typescript-eslint/no-unused-vars (above) replaces the base
+  // rule, which misreads parameter names in function types as unused.
+  {
+    files: ['**/*.ts'],
+    rules: {
+      'no-unused-vars': 'off',
     },
   },
 ];

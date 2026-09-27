@@ -7,7 +7,14 @@
  *                   x T(adapterOffset) x R(mountRoll)
  * plus the runtime weapon-rotation overrides the export does not serialize.
  */
-import { IDENTITY, boneWorlds, eulerMat, mmul, withWorldRotation, type Mat4 } from './math';
+import {
+  IDENTITY,
+  boneWorlds,
+  eulerMat,
+  mmul,
+  withWorldRotation,
+  type Mat4,
+} from './math';
 import { dist2ToBox, meshAabb } from './mesh';
 import {
   APPLY_ADAPTER_OFFSET,
@@ -32,7 +39,7 @@ export function modelIdForModule(
   moduleId: string,
   modules: Record<string, Module>,
   charModules: Record<string, unknown>,
-  mountWay?: string | null,
+  mountWay?: string | null
 ): string | null {
   const module = modules[moduleId];
   if (!module) return null;
@@ -53,7 +60,7 @@ export function modelIdForModule(
 export function socketTypeOf(
   moduleId: string,
   socketName: string,
-  modules: Record<string, Module>,
+  modules: Record<string, Module>
 ): 'Weapon' | 'WeaponHeavy' | null {
   const module = modules[moduleId];
   if (!module) return null;
@@ -107,7 +114,10 @@ function adapterOffsetFor(model: ModuleModel, mountWay: string): Vec3 | null {
 }
 
 /** Left/Right for a weapon, from its parent shoulder's socket suffix, else null. */
-function weaponMountSide(presetModules: CharacterPresetModule[], i: number): string | null {
+function weaponMountSide(
+  presetModules: CharacterPresetModule[],
+  i: number
+): string | null {
   const parent = presetModules[i].parent_socket_index;
   if (parent < 0) return null;
   const ps = presetModules[parent].socket_name ?? '';
@@ -118,7 +128,10 @@ function weaponMountSide(presetModules: CharacterPresetModule[], i: number): str
 
 /** The adapter mount way a weapon actually exposes for the given side: mirrored
  * light weapons carry per-side adapters, single titan weapons only Standard. */
-function adapterMountWay(model: ModuleModel | undefined, side: string | null): string | null {
+function adapterMountWay(
+  model: ModuleModel | undefined,
+  side: string | null
+): string | null {
   if (!model) return side;
   const ways = new Set((model.adapters ?? []).map((a) => a.mount_way));
   if (side && ways.has(side)) return side;
@@ -138,7 +151,7 @@ export function computeModuleWorlds(
   modules: Record<string, Module>,
   moduleTypes: Record<string, ModuleType>,
   charModules: Record<string, unknown>,
-  models: Map<string, ModuleModel>,
+  models: Map<string, ModuleModel>
 ): ModulePlacement[] {
   const worlds: Mat4[] = new Array(presetModules.length);
   presetModules.forEach((entry, i) => {
@@ -152,20 +165,32 @@ export function computeModuleWorlds(
     const parentEntry = presetModules[parent];
     const parentModuleId = refToId(parentEntry.module_ref);
     const parentWay = sideForSocket(parentEntry.socket_name ?? '');
-    const parentModelId = modelIdForModule(parentModuleId, modules, charModules, parentWay);
+    const parentModelId = modelIdForModule(
+      parentModuleId,
+      modules,
+      charModules,
+      parentWay
+    );
     const parentModel = parentModelId ? models.get(parentModelId) : undefined;
-    let local: Mat4 = parentModel && socketName
-      ? socketFrame(parentModel, socketName) ?? IDENTITY
-      : IDENTITY;
+    let local: Mat4 =
+      parentModel && socketName
+        ? (socketFrame(parentModel, socketName) ?? IDENTITY)
+        : IDENTITY;
 
     let stype = socketTypeOf(parentModuleId, socketName, modules);
-    const isWeapon = kindOfModule(moduleId, { modules, moduleTypes }) === 'weapon';
+    const isWeapon =
+      kindOfModule(moduleId, { modules, moduleTypes }) === 'weapon';
     if (!stype && isWeapon) stype = 'Weapon'; // weapon on an untyped socket (Torso_Weapon_*)
     if (stype && MOUNT_ORIENTATION[stype] && isWeapon) {
       // Mirrored light weapons carry Left/Right adapters (use the parent shoulder
       // side); single titan weapons carry only Standard.
       const side = weaponMountSide(presetModules, i);
-      const weaponModelId = modelIdForModule(moduleId, modules, charModules, side);
+      const weaponModelId = modelIdForModule(
+        moduleId,
+        modules,
+        charModules,
+        side
+      );
       const model = weaponModelId ? models.get(weaponModelId) : undefined;
       const mountWay = adapterMountWay(model, side);
       if (APPLY_ADAPTER_OFFSET && mountWay === 'Standard' && model) {
@@ -178,7 +203,12 @@ export function computeModuleWorlds(
         {};
       local = mmul(
         local,
-        eulerMat(conv.pitch_deg ?? 0, conv.yaw_deg ?? 0, conv.roll_deg ?? 0, conv.offset ?? [0, 0, 0]),
+        eulerMat(
+          conv.pitch_deg ?? 0,
+          conv.yaw_deg ?? 0,
+          conv.roll_deg ?? 0,
+          conv.offset ?? [0, 0, 0]
+        )
       );
     }
     worlds[i] = mmul(worlds[parent], local);
@@ -197,9 +227,11 @@ export function computeModuleWorlds(
       refToId(parentEntry.module_ref),
       modules,
       charModules,
-      parentWay,
+      parentWay
     );
-    const rot = parentModelId ? WEAPON_ROTATION_OVERRIDE[`${parentModelId}|${socketName}`] : undefined;
+    const rot = parentModelId
+      ? WEAPON_ROTATION_OVERRIDE[`${parentModelId}|${socketName}`]
+      : undefined;
     if (rot) {
       worlds[i] = withWorldRotation(worlds[i], rot);
     }
@@ -214,7 +246,12 @@ export function computeModuleWorlds(
     const side = sideForSocket(entry.socket_name ?? '');
     return {
       module_id: refToId(entry.module_ref),
-      model_id: modelIdForModule(refToId(entry.module_ref), modules, charModules, side),
+      model_id: modelIdForModule(
+        refToId(entry.module_ref),
+        modules,
+        charModules,
+        side
+      ),
       socket_name: entry.socket_name,
       parent_socket_index: entry.parent_socket_index,
       world: worlds[i],

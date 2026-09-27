@@ -40,6 +40,7 @@ Raw exports read from `/srv/dev/wrf/data/exports/WRFrontiers/Content/Sparrow`.
 ```
 Chassis -> Torso @ "Root" -> ShoulderR @ "Shoulder_R" -> Weapon @ "Shoulder_Weapon_0"
 ```
+
 `DA_Preset_Titan_Alpha` mounts `DA_Module_Weapon_Callisto`; `DA_Preset_Titan_Alpha_Bayonet`
 mounts `DA_Module_Weapon_Bayonet`. Both mount ONE weapon at `Shoulder_Weapon_0` on the right
 shoulder (no mirrored pair). Typhon mounts a Punisher/Shocktrain at BOTH `Shoulder_Weapon_0`
@@ -47,27 +48,27 @@ and `_1` on each of `Shoulder_L`/`Shoulder_R`.
 
 ## The decisive difference: mount way + adapters
 
-| Weapon | class | `CharacterModules` mount way | Adapters present | `Adapter` socket offset |
-|---|---|---|---|---|
-| Punisher | light | Left / Right / Standard | L, R, Standard | L `(0,-90.98,-65.39)`, R `(19.3,133.3,-65.2)`, Std `(0,0,15)` |
-| Shocktrain | light | Left / Right / Standard | L, R, Standard | L `(0,-90.9,-62.29)`, R `(0,90.9,-62.29)`, Std `(0,0,15)` |
-| Callisto (Alpha) | titan | **Standard only** | Standard only | `(0,0,0)` |
-| Bayonet (Alpha) | titan | **Standard only** | Standard only | `(0,0,30)` |
+| Weapon           | class | `CharacterModules` mount way | Adapters present | `Adapter` socket offset                                       |
+| ---------------- | ----- | ---------------------------- | ---------------- | ------------------------------------------------------------- |
+| Punisher         | light | Left / Right / Standard      | L, R, Standard   | L `(0,-90.98,-65.39)`, R `(19.3,133.3,-65.2)`, Std `(0,0,15)` |
+| Shocktrain       | light | Left / Right / Standard      | L, R, Standard   | L `(0,-90.9,-62.29)`, R `(0,90.9,-62.29)`, Std `(0,0,15)`     |
+| Callisto (Alpha) | titan | **Standard only**            | Standard only    | `(0,0,0)`                                                     |
+| Bayonet (Alpha)  | titan | **Standard only**            | Standard only    | `(0,0,30)`                                                    |
 
 Light weapons expose a per-side adapter, so the game mirrors them L/R. Titan weapons expose
 only `ESCharacterModuleMountWay::Standard` — a single centered mount. The socket suffix
-`_R`/`_L` on `Shoulder_Weapon_0` is the *hardpoint* name, NOT the weapon's mount way.
+`_R`/`_L` on `Shoulder_Weapon_0` is the _hardpoint_ name, NOT the weapon's mount way.
 
 ## Weapon-local geometry convention also differs
 
 Reference-pose `Base` bone (child of `Root`) and imported bounds origin:
 
-| Weapon | Base bone (local) | bounds origin | bounds extent X |
-|---|---|---|---|
-| Punisher | `(0,0,+77.1)` | `(127,-8,70)` | 294 |
-| Shocktrain | `(0,0,+100.9)` | `(126,0,87)` | 281 |
-| Bayonet | `(0,0,-75.2)` | `(70,21,-229)` | 498 |
-| Callisto | `(0,0,-100.0)` | `(153,-1.5,-172)` | 714 |
+| Weapon     | Base bone (local) | bounds origin     | bounds extent X |
+| ---------- | ----------------- | ----------------- | --------------- |
+| Punisher   | `(0,0,+77.1)`     | `(127,-8,70)`     | 294             |
+| Shocktrain | `(0,0,+100.9)`    | `(126,0,87)`      | 281             |
+| Bayonet    | `(0,0,-75.2)`     | `(70,21,-229)`    | 498             |
+| Callisto   | `(0,0,-100.0)`    | `(153,-1.5,-172)` | 714             |
 
 Light-weapon bodies sit ABOVE the root (+Z); titan-weapon bodies hang BELOW the root (-Z)
 and are ~2-3x larger. So even the "root at hardpoint + roll" rule that is correct for light
@@ -94,7 +95,7 @@ convention + the (unserialized) runtime attach transform, not the hardpoint.
   no attach socket.
 - `SWeaponModuleScaler`/`STitanWeaponModuleScaler`: gameplay stats only (damage, spread, reload).
 - grep for `RelativeLocation|RelativeRotation|RelativeScale3D|Offset*|MountTransform|
-  AttachSocketName|SocketOverride` across all four BPs: **zero hits.**
+AttachSocketName|SocketOverride` across all four BPs: **zero hits.**
 
 ## Recommended pipeline changes
 

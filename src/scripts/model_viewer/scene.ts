@@ -19,7 +19,10 @@ export function createTrack(): TrackedResources {
   return { geos: [], mats: [], objs: [] };
 }
 
-function buildCapsuleGeometry(radius: number, length: number): THREE.BufferGeometry {
+function buildCapsuleGeometry(
+  radius: number,
+  length: number
+): THREE.BufferGeometry {
   // Parametric capsule along local Z (UE convention), 24 segments x 10 rings.
   const segments = 24;
   const rings = 10;
@@ -43,7 +46,10 @@ function buildCapsuleGeometry(radius: number, length: number): THREE.BufferGeome
   for (let i = 0; i < rings; i++) {
     for (let j = 0; j < segments; j++) {
       const j2 = (j + 1) % segments;
-      const a = rows[i][j], b = rows[i][j2], c = rows[i + 1][j2], d = rows[i + 1][j];
+      const a = rows[i][j],
+        b = rows[i][j2],
+        c = rows[i + 1][j2],
+        d = rows[i + 1][j];
       indices.push(a, b, c, a, c, d);
     }
   }
@@ -69,13 +75,16 @@ function addModuleMeshes(
   worldMatrix: THREE.Matrix4,
   colorOf: ZoneColorFn,
   opacity: number,
-  track: TrackedResources,
+  track: TrackedResources
 ): void {
   for (const mesh of model.meshes ?? []) {
     if (isFxMesh(mesh)) continue;
     const color = colorOf(mesh.armor_zone);
     const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.Float32BufferAttribute(mesh.verts, 3));
+    geo.setAttribute(
+      'position',
+      new THREE.Float32BufferAttribute(mesh.verts, 3)
+    );
     geo.setIndex(mesh.indices);
     geo.computeVertexNormals();
     geo.applyMatrix4(worldMatrix);
@@ -110,7 +119,7 @@ function addHitboxes(
   model: ModuleModel,
   world: Mat4,
   colorOf: ZoneColorFn,
-  track: TrackedResources,
+  track: TrackedResources
 ): void {
   const mats = new Map<number, THREE.Material>();
   const hitMat = (color: number): THREE.Material => {
@@ -145,13 +154,16 @@ function addSkeleton(
   model: ModuleModel,
   world: Mat4,
   boneWorld: Mat4[],
-  track: TrackedResources,
+  track: TrackedResources
 ): void {
   const points: number[] = [];
   model.bones.forEach((bone) => {
     if (bone.parent < 0) return;
     const idx = model.bones.indexOf(bone);
-    const p1 = mapply(mmul(world, boneWorld[bone.parent] ?? IDENTITY), [0, 0, 0]);
+    const p1 = mapply(
+      mmul(world, boneWorld[bone.parent] ?? IDENTITY),
+      [0, 0, 0]
+    );
     const p2 = mapply(mmul(world, boneWorld[idx] ?? IDENTITY), [0, 0, 0]);
     points.push(p1[0], p1[1], p1[2], p2[0], p2[1], p2[2]);
   });
@@ -171,13 +183,25 @@ export function addModel(
   model: ModuleModel,
   world: Mat4,
   colorOf: ZoneColorFn,
-  opts: { mesh: boolean; hitbox: boolean; skeleton: boolean; meshOpacity?: number },
-  track: TrackedResources,
+  opts: {
+    mesh: boolean;
+    hitbox: boolean;
+    skeleton: boolean;
+    meshOpacity?: number;
+  },
+  track: TrackedResources
 ): void {
   // The skeleton overlay shares the mesh's component space (root at origin).
   const boneWorld = boneWorlds(model.bones ?? [], true);
   if (opts.mesh) {
-    addModuleMeshes(group, model, toThree(world), colorOf, opts.meshOpacity ?? 1, track);
+    addModuleMeshes(
+      group,
+      model,
+      toThree(world),
+      colorOf,
+      opts.meshOpacity ?? 1,
+      track
+    );
   }
   if (opts.hitbox) addHitboxes(group, model, world, colorOf, track);
   if (opts.skeleton) addSkeleton(group, model, world, boneWorld, track);

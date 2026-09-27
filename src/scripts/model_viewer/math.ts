@@ -46,19 +46,28 @@ export function mapply(m: Mat4, p: Vec3): [number, number, number] {
 export function quatToMat(
   q: [number, number, number, number],
   pos: Vec3,
-  scale: Vec3 = [1, 1, 1],
+  scale: Vec3 = [1, 1, 1]
 ): Mat4 {
   let [x, y, z, w] = q;
   const n = Math.sqrt(x * x + y * y + z * z + w * w) || 1;
-  x /= n; y /= n; z /= n; w /= n;
+  x /= n;
+  y /= n;
+  z /= n;
+  w /= n;
   const [sx, sy, sz] = scale;
-  const xx = x * x, yy = y * y, zz = z * z;
-  const xy = x * y, xz = x * z, yz = y * z;
-  const wx = w * x, wy = w * y, wz = w * z;
+  const xx = x * x,
+    yy = y * y,
+    zz = z * z;
+  const xy = x * y,
+    xz = x * z,
+    yz = y * z;
+  const wx = w * x,
+    wy = w * y,
+    wz = w * z;
   return [
-    [(1 - 2 * (yy + zz)) * sx, (2 * (xy - wz)) * sy, (2 * (xz + wy)) * sz, pos[0]],
-    [(2 * (xy + wz)) * sx, (1 - 2 * (xx + zz)) * sy, (2 * (yz - wx)) * sz, pos[1]],
-    [(2 * (xz - wy)) * sx, (2 * (yz + wx)) * sy, (1 - 2 * (xx + yy)) * sz, pos[2]],
+    [(1 - 2 * (yy + zz)) * sx, 2 * (xy - wz) * sy, 2 * (xz + wy) * sz, pos[0]],
+    [2 * (xy + wz) * sx, (1 - 2 * (xx + zz)) * sy, 2 * (yz - wx) * sz, pos[1]],
+    [2 * (xz - wy) * sx, 2 * (yz + wx) * sy, (1 - 2 * (xx + yy)) * sz, pos[2]],
     [0, 0, 0, 1],
   ];
 }
@@ -68,18 +77,39 @@ export function eulerMat(
   pitch: number,
   yaw: number,
   roll: number,
-  center: Vec3 = [0, 0, 0],
+  center: Vec3 = [0, 0, 0]
 ): Mat4 {
   const d = Math.PI / 180;
-  const p = pitch * d, y = yaw * d, r = roll * d;
-  const cp = Math.cos(p), sp = Math.sin(p);
-  const cy = Math.cos(y), sy = Math.sin(y);
-  const cr = Math.cos(r), sr = Math.sin(r);
-  const rz = [[cy, -sy, 0], [sy, cy, 0], [0, 0, 1]];
-  const ry = [[cp, 0, sp], [0, 1, 0], [-sp, 0, cp]];
-  const rx = [[1, 0, 0], [0, cr, -sr], [0, sr, cr]];
+  const p = pitch * d,
+    y = yaw * d,
+    r = roll * d;
+  const cp = Math.cos(p),
+    sp = Math.sin(p);
+  const cy = Math.cos(y),
+    sy = Math.sin(y);
+  const cr = Math.cos(r),
+    sr = Math.sin(r);
+  const rz = [
+    [cy, -sy, 0],
+    [sy, cy, 0],
+    [0, 0, 1],
+  ];
+  const ry = [
+    [cp, 0, sp],
+    [0, 1, 0],
+    [-sp, 0, cp],
+  ];
+  const rx = [
+    [1, 0, 0],
+    [0, cr, -sr],
+    [0, sr, cr],
+  ];
   const mul3 = (a: number[][], b: number[][]) =>
-    a.map((row) => [0, 1, 2].map((j) => row[0] * b[0][j] + row[1] * b[1][j] + row[2] * b[2][j]));
+    a.map((row) =>
+      [0, 1, 2].map(
+        (j) => row[0] * b[0][j] + row[1] * b[1][j] + row[2] * b[2][j]
+      )
+    );
   const r3 = mul3(rz, mul3(ry, rx));
   return [
     [r3[0][0], r3[0][1], r3[0][2], center[0]],
@@ -100,9 +130,14 @@ export function boneWorlds(bones: Bone[], rootIdentity = false): Mat4[] {
   const world: Mat4[] = new Array(bones.length);
   bones.forEach((bone, i) => {
     if (bone.parent < 0) {
-      world[i] = rootIdentity ? IDENTITY : quatToMat(bone.rot, bone.pos, bone.scale ?? [1, 1, 1]);
+      world[i] = rootIdentity
+        ? IDENTITY
+        : quatToMat(bone.rot, bone.pos, bone.scale ?? [1, 1, 1]);
     } else {
-      world[i] = mmul(world[bone.parent], quatToMat(bone.rot, bone.pos, bone.scale ?? [1, 1, 1]));
+      world[i] = mmul(
+        world[bone.parent],
+        quatToMat(bone.rot, bone.pos, bone.scale ?? [1, 1, 1])
+      );
     }
   });
   return world;
@@ -111,10 +146,22 @@ export function boneWorlds(bones: Bone[], rootIdentity = false): Mat4[] {
 export function toThree(m: Mat4): THREE.Matrix4 {
   const t = new THREE.Matrix4();
   t.set(
-    m[0][0], m[0][1], m[0][2], m[0][3],
-    m[1][0], m[1][1], m[1][2], m[1][3],
-    m[2][0], m[2][1], m[2][2], m[2][3],
-    m[3][0], m[3][1], m[3][2], m[3][3],
+    m[0][0],
+    m[0][1],
+    m[0][2],
+    m[0][3],
+    m[1][0],
+    m[1][1],
+    m[1][2],
+    m[1][3],
+    m[2][0],
+    m[2][1],
+    m[2][2],
+    m[2][3],
+    m[3][0],
+    m[3][1],
+    m[3][2],
+    m[3][3]
   );
   return t;
 }

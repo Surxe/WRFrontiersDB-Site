@@ -5,7 +5,12 @@
 // from view_labels.ts), hence the :global styles.
 ---
 
-<div id="model-canvas" class="model-canvas" role="img" aria-label="3D model viewer">
+<div
+  id="model-canvas"
+  class="model-canvas"
+  role="img"
+  aria-label="3D model viewer"
+>
   <div id="model-loading" class="model-canvas-loading">Loading viewer...</div>
 </div>
 <div id="model-status" class="model-status">Initializing...</div>
@@ -20,7 +25,7 @@
     background: #14161a;
   }
 
-  .model-canvas canvas {
+  .model-canvas :global(canvas) {
     display: block;
   }
 

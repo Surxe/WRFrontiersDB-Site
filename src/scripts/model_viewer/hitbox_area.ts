@@ -45,7 +45,13 @@ export const VIEWS: Record<ViewName, ViewDef> = {
   top: { label: 'Top', dir: [0, 0, -1], u: [0, 1, 0], v: [1, 0, 0] },
 };
 
-export const VIEW_ORDER: readonly ViewName[] = ['front', 'back', 'left', 'right', 'top'];
+export const VIEW_ORDER: readonly ViewName[] = [
+  'front',
+  'back',
+  'left',
+  'right',
+  'top',
+];
 
 /** One health pool: a chassis zone (pelvis / leg), the torso or a shoulder
  * (with its mounted weapons). */
@@ -108,7 +114,9 @@ export function viewApplies(pool: HitboxPool, view: ViewName): boolean {
   return true;
 }
 
-function sideOfSocket(socketName: string | null | undefined): 'left' | 'right' | null {
+function sideOfSocket(
+  socketName: string | null | undefined
+): 'left' | 'right' | null {
   if (!socketName) return null;
   if (socketName.endsWith('_L')) return 'left';
   if (socketName.endsWith('_R')) return 'right';
@@ -123,7 +131,7 @@ function sideOfSocket(socketName: string | null | undefined): 'left' | 'right' |
  */
 export function assignPools(
   presetModules: readonly CharacterPresetModule[],
-  kindOf: (index: number) => ModuleKind,
+  kindOf: (index: number) => ModuleKind
 ): { pools: HitboxPool[]; poolOf: (number | null)[]; weapon: boolean[] } {
   const pools: HitboxPool[] = [];
   const poolOf: (number | null)[] = new Array(presetModules.length).fill(null);
@@ -136,20 +144,34 @@ export function assignPools(
         kind === 'chassis'
           ? 'Chassis'
           : kind === 'torso'
-          ? 'Torso'
-          : side === 'left'
-            ? 'Left Shoulder'
-            : side === 'right'
-              ? 'Right Shoulder'
-              : 'Shoulder';
+            ? 'Torso'
+            : side === 'left'
+              ? 'Left Shoulder'
+              : side === 'right'
+                ? 'Right Shoulder'
+                : 'Shoulder';
       poolOf[i] = pools.length;
       const key = kind === 'shoulder' ? `shoulder:${side ?? i}` : kind;
-      pools.push({ key, label, kind, side, zone: null, moduleIndex: i, moduleId: refToId(entry.module_ref), weaponIds: [], weaponIndices: [] });
+      pools.push({
+        key,
+        label,
+        kind,
+        side,
+        zone: null,
+        moduleIndex: i,
+        moduleId: refToId(entry.module_ref),
+        weaponIds: [],
+        weaponIndices: [],
+      });
       return;
     }
     if (kind !== 'weapon') return;
     weapon[i] = true;
-    for (let p = entry.parent_socket_index; p >= 0; p = presetModules[p].parent_socket_index) {
+    for (
+      let p = entry.parent_socket_index;
+      p >= 0;
+      p = presetModules[p].parent_socket_index
+    ) {
       const pool = poolOf[p];
       if (pool !== null) {
         poolOf[i] = pool;
@@ -163,7 +185,10 @@ export function assignPools(
 }
 
 /** The chassis's armor zones, in display order. */
-const CHASSIS_ZONES: Record<string, { label: string; side: 'left' | 'right' | null }> = {
+const CHASSIS_ZONES: Record<
+  string,
+  { label: string; side: 'left' | 'right' | null }
+> = {
   'DA_ArmorZone_Pelvis.0': { label: 'Pelvis', side: null },
   'DA_ArmorZone_LeftLeg.0': { label: 'Left Leg', side: 'left' },
   'DA_ArmorZone_RightLeg.0': { label: 'Right Leg', side: 'right' },
@@ -177,7 +202,10 @@ const zoneRank = (zone: string | null): number => {
 /** A pool per armor zone of a chassis whose hitboxes span several zones
  * (pelvis first; the first pool also takes any weapon mounted on the
  * chassis). Hitboxes with no zone get a plain "Chassis" pool. */
-function splitChassis(pool: HitboxPool, zones: (string | null)[]): HitboxPool[] {
+function splitChassis(
+  pool: HitboxPool,
+  zones: (string | null)[]
+): HitboxPool[] {
   return [...zones]
     .sort((a, b) => zoneRank(a) - zoneRank(b))
     .map((zone, n) => ({
@@ -197,13 +225,19 @@ export function collectBodies(
   presetModules: readonly CharacterPresetModule[],
   placements: readonly ModulePlacement[],
   models: ReadonlyMap<string, ModuleModel>,
-  tables: Pick<BuildTables, 'modules' | 'moduleTypes'>,
+  tables: Pick<BuildTables, 'modules' | 'moduleTypes'>
 ): { pools: HitboxPool[]; bodies: HitboxBody[] } {
-  const { pools: modulePools, poolOf, weapon } = assignPools(presetModules, (i) =>
-    kindOfModule(placements[i].module_id, tables),
+  const {
+    pools: modulePools,
+    poolOf,
+    weapon,
+  } = assignPools(presetModules, (i) =>
+    kindOfModule(placements[i].module_id, tables)
   );
   const primitives = placements.map((placement) => {
-    const model = placement.model_id ? models.get(placement.model_id) : undefined;
+    const model = placement.model_id
+      ? models.get(placement.model_id)
+      : undefined;
     return model ? hitboxPrimitives(model, placement.world) : [];
   });
 
@@ -213,7 +247,9 @@ export function collectBodies(
   const zonePool = new Map<number, Map<string | null, number>>(); // chassis module pool -> zone -> final pool
   modulePools.forEach((pool, p) => {
     firstPool[p] = pools.length;
-    const zones = new Set(primitives[pool.moduleIndex].map((prim) => prim.zone ?? null));
+    const zones = new Set(
+      primitives[pool.moduleIndex].map((prim) => prim.zone ?? null)
+    );
     if (pool.kind !== 'chassis' || zones.size < 2) {
       pools.push(pool);
       return;
@@ -242,7 +278,9 @@ export function collectBodies(
     }
     for (const [zone, pool] of byZone) {
       bodies.push({
-        primitives: primitives[i].filter((prim) => (prim.zone ?? null) === zone),
+        primitives: primitives[i].filter(
+          (prim) => (prim.zone ?? null) === zone
+        ),
         moduleIndex: i,
         zone,
         pool,
@@ -267,9 +305,15 @@ function affineInverse(m: Mat4): Float64Array {
   const C = d * h - e * g;
   const det = a * A + b * B + c * C;
   const inv = [
-    A, c * h - b * k, b * f - c * e,
-    B, a * k - c * g, c * d - a * f,
-    C, b * g - a * h, a * e - b * d,
+    A,
+    c * h - b * k,
+    b * f - c * e,
+    B,
+    a * k - c * g,
+    c * d - a * f,
+    C,
+    b * g - a * h,
+    a * e - b * d,
   ].map((x) => x / det);
   const t = [m[0][3], m[1][3], m[2][3]];
   const out = new Float64Array(12);
@@ -277,16 +321,24 @@ function affineInverse(m: Mat4): Float64Array {
     out[r * 4] = inv[r * 3];
     out[r * 4 + 1] = inv[r * 3 + 1];
     out[r * 4 + 2] = inv[r * 3 + 2];
-    out[r * 4 + 3] = -(inv[r * 3] * t[0] + inv[r * 3 + 1] * t[1] + inv[r * 3 + 2] * t[2]);
+    out[r * 4 + 3] = -(
+      inv[r * 3] * t[0] +
+      inv[r * 3 + 1] * t[1] +
+      inv[r * 3 + 2] * t[2]
+    );
   }
   return out;
 }
 
 /** Nearest t >= 0 where ro + t*rd enters a sphere (center c, radius r), else Infinity. */
 function hitSphere(
-  ox: number, oy: number, oz: number,
-  dx: number, dy: number, dz: number,
-  r: number,
+  ox: number,
+  oy: number,
+  oz: number,
+  dx: number,
+  dy: number,
+  dz: number,
+  r: number
 ): number {
   const a = dx * dx + dy * dy + dz * dz;
   const b = ox * dx + oy * dy + oz * dz;
@@ -299,14 +351,19 @@ function hitSphere(
 
 /** Capsule along local Z: a cylinder of `length` capped by two spheres. */
 function hitCapsule(
-  ox: number, oy: number, oz: number,
-  dx: number, dy: number, dz: number,
-  r: number, length: number,
+  ox: number,
+  oy: number,
+  oz: number,
+  dx: number,
+  dy: number,
+  dz: number,
+  r: number,
+  length: number
 ): number {
   const half = length / 2;
   let best = Math.min(
     hitSphere(ox, oy, oz - half, dx, dy, dz, r),
-    hitSphere(ox, oy, oz + half, dx, dy, dz, r),
+    hitSphere(ox, oy, oz + half, dx, dy, dz, r)
   );
   // Infinite cylinder x^2 + y^2 = r^2, clipped to |z| <= half.
   const a = dx * dx + dy * dy;
@@ -325,9 +382,15 @@ function hitCapsule(
 
 /** Axis-aligned box of half-size (hx, hy, hz) centered at the origin. */
 function hitBox(
-  ox: number, oy: number, oz: number,
-  dx: number, dy: number, dz: number,
-  hx: number, hy: number, hz: number,
+  ox: number,
+  oy: number,
+  oz: number,
+  dx: number,
+  dy: number,
+  dz: number,
+  hx: number,
+  hy: number,
+  hz: number
 ): number {
   let tmin = 0;
   let tmax = Infinity;
@@ -340,7 +403,8 @@ function hitBox(
     if (t2 < tmax) tmax = t2;
     return tmin <= tmax;
   };
-  if (!slab(ox, dx, hx) || !slab(oy, dy, hy) || !slab(oz, dz, hz)) return Infinity;
+  if (!slab(ox, dx, hx) || !slab(oy, dy, hy) || !slab(oz, dz, hz))
+    return Infinity;
   return tmin;
 }
 
@@ -353,8 +417,10 @@ interface PreparedPrim {
 }
 
 function localHalfSize(p: HitboxPrimitive): Vec3 {
-  if (p.kind === 'box') return [p.extent[0] / 2, p.extent[1] / 2, p.extent[2] / 2];
-  if (p.kind === 'capsule') return [p.radius, p.radius, p.length / 2 + p.radius];
+  if (p.kind === 'box')
+    return [p.extent[0] / 2, p.extent[1] / 2, p.extent[2] / 2];
+  if (p.kind === 'capsule')
+    return [p.radius, p.radius, p.length / 2 + p.radius];
   return [p.radius, p.radius, p.radius];
 }
 
@@ -368,17 +434,24 @@ function hitPrim(pp: PreparedPrim, o: Vec3, d: Vec3): number {
   const dz = m[8] * d[0] + m[9] * d[1] + m[10] * d[2];
   const p = pp.prim;
   if (p.kind === 'sphere') return hitSphere(ox, oy, oz, dx, dy, dz, p.radius);
-  if (p.kind === 'capsule') return hitCapsule(ox, oy, oz, dx, dy, dz, p.radius, p.length);
+  if (p.kind === 'capsule')
+    return hitCapsule(ox, oy, oz, dx, dy, dz, p.radius, p.length);
   return hitBox(ox, oy, oz, dx, dy, dz, pp.half[0], pp.half[1], pp.half[2]);
 }
 
 /** Range of the primitive's world-space bounding box projected onto `axis`. */
-function projectRange(p: HitboxPrimitive, half: Vec3, axis: Vec3): [number, number] {
+function projectRange(
+  p: HitboxPrimitive,
+  half: Vec3,
+  axis: Vec3
+): [number, number] {
   const m = p.m;
   const center = m[0][3] * axis[0] + m[1][3] * axis[1] + m[2][3] * axis[2];
   let extent = 0;
   for (let k = 0; k < 3; k++) {
-    extent += Math.abs(m[0][k] * axis[0] + m[1][k] * axis[1] + m[2][k] * axis[2]) * half[k];
+    extent +=
+      Math.abs(m[0][k] * axis[0] + m[1][k] * axis[1] + m[2][k] * axis[2]) *
+      half[k];
   }
   return [center - extent, center + extent];
 }
@@ -403,13 +476,21 @@ interface PreparedView {
 
 /** Pooled primitives of `bodies`, ready to intersect, with their projected
  * bounds in `view`. */
-function prepareView(bodies: readonly HitboxBody[], view: ViewName): PreparedView {
+function prepareView(
+  bodies: readonly HitboxBody[],
+  view: ViewName
+): PreparedView {
   const { dir, u, v } = VIEWS[view];
   const prepared: PreparedPrim[] = [];
   bodies.forEach((body, b) => {
     if (body.pool === null) return;
     for (const prim of body.primitives) {
-      prepared.push({ inv: affineInverse(prim.m), prim, body: b, half: localHalfSize(prim) });
+      prepared.push({
+        inv: affineInverse(prim.m),
+        prim,
+        body: b,
+        half: localHalfSize(prim),
+      });
     }
   });
   const rects = prepared.map((pp) => ({
@@ -421,7 +502,11 @@ function prepareView(bodies: readonly HitboxBody[], view: ViewName): PreparedVie
 }
 
 /** The grid covering every prepared set (null when all are empty). */
-function gridFor(sets: readonly PreparedView[], view: ViewName, cell: number): ViewGrid | null {
+function gridFor(
+  sets: readonly PreparedView[],
+  view: ViewName,
+  cell: number
+): ViewGrid | null {
   const rects = sets.flatMap((set) => set.rects);
   if (rects.length === 0) return null;
   const u0 = Math.min(...rects.map((r) => r.u[0]));
@@ -448,7 +533,11 @@ interface PoolMasks {
   front: Int8Array;
 }
 
-function rasterize(bodies: readonly HitboxBody[], set: PreparedView, grid: ViewGrid): PoolMasks {
+function rasterize(
+  bodies: readonly HitboxBody[],
+  set: PreparedView,
+  grid: ViewGrid
+): PoolMasks {
   const { dir, u, v } = VIEWS[grid.view];
   const { cell, u0, v0, nu, nv, start } = grid;
   const own = new Uint32Array(nu * nv);
@@ -489,7 +578,11 @@ function rasterize(bodies: readonly HitboxBody[], set: PreparedView, grid: ViewG
 /** Each pool's label anchor (see ViewAreas.anchors): the candidate cell
  * nearest the candidates' centroid, candidates being the cells where the
  * pool's own hitboxes are frontmost, or failing that every cell they cover. */
-function poolAnchors(masks: PoolMasks, grid: ViewGrid, poolCount: number): (Vec3 | null)[] {
+function poolAnchors(
+  masks: PoolMasks,
+  grid: ViewGrid,
+  poolCount: number
+): (Vec3 | null)[] {
   const { own, front } = masks;
   const { nu } = grid;
   const visible = (p: number, c: number): boolean => front[c] === p * 2;
@@ -511,7 +604,7 @@ function poolAnchors(masks: PoolMasks, grid: ViewGrid, poolCount: number): (Vec3
     let bestD = Infinity;
     for (let c = 0; c < own.length; c++) {
       if (!has(p, c)) continue;
-      const d = (c % nu - ci) ** 2 + (Math.floor(c / nu) - cj) ** 2;
+      const d = ((c % nu) - ci) ** 2 + (Math.floor(c / nu) - cj) ** 2;
       if (d < bestD) {
         bestD = d;
         best = c;
@@ -524,14 +617,23 @@ function poolAnchors(masks: PoolMasks, grid: ViewGrid, poolCount: number): (Vec3
     let c = pick(p, visible);
     if (c < 0) c = pick(p, covered);
     if (c < 0) return null;
-    const su = grid.u0 + (c % nu + 0.5) * grid.cell;
+    const su = grid.u0 + ((c % nu) + 0.5) * grid.cell;
     const sv = grid.v0 + (Math.floor(c / nu) + 0.5) * grid.cell;
-    return [0, 1, 2].map((k) => u[k] * su + v[k] * sv + dir[k] * grid.start) as Vec3;
+    return [0, 1, 2].map(
+      (k) => u[k] * su + v[k] * sv + dir[k] * grid.start
+    ) as Vec3;
   });
 }
 
-function sumAreas(masks: PoolMasks | null, grid: ViewGrid | null, poolCount: number): ViewAreas {
-  const pools = Array.from({ length: poolCount }, () => ({ alone: 0, withWeapons: 0 }));
+function sumAreas(
+  masks: PoolMasks | null,
+  grid: ViewGrid | null,
+  poolCount: number
+): ViewAreas {
+  const pools = Array.from({ length: poolCount }, () => ({
+    alone: 0,
+    withWeapons: 0,
+  }));
   const total = { alone: 0, withWeapons: 0 };
   const anchors: (Vec3 | null)[] = new Array(poolCount).fill(null);
   if (!masks || !grid) return { pools, total, anchors };
@@ -564,7 +666,7 @@ export function measureView(
   bodies: readonly HitboxBody[],
   poolCount: number,
   view: ViewName,
-  cell = 1,
+  cell = 1
 ): ViewAreas {
   checkPoolCount(poolCount);
   const set = prepareView(bodies, view);
@@ -603,7 +705,7 @@ export interface ComparisonView {
 export function measureComparison(
   a: MeasuredBuild,
   b: MeasuredBuild,
-  cell = 1,
+  cell = 1
 ): Record<ViewName, ComparisonView> {
   checkPoolCount(a.pools.length);
   checkPoolCount(b.pools.length);
@@ -643,9 +745,10 @@ export function measureComparison(
 export function measureBuild(
   bodies: readonly HitboxBody[],
   poolCount: number,
-  cell = 1,
+  cell = 1
 ): Record<ViewName, ViewAreas> {
   const out = {} as Record<ViewName, ViewAreas>;
-  for (const view of VIEW_ORDER) out[view] = measureView(bodies, poolCount, view, cell);
+  for (const view of VIEW_ORDER)
+    out[view] = measureView(bodies, poolCount, view, cell);
   return out;
 }

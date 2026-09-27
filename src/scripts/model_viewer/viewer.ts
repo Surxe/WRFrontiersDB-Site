@@ -36,7 +36,12 @@ import { toThree, type Mat4 } from './math';
 import type { ModulePlacement } from './mount';
 import { diffPlacements } from './placement_diff';
 import { DIFF_COLORS } from './colors';
-import { LABEL_GUTTER_PX, LabelOverlay, type ScreenPoint, type ViewLabel } from './label_overlay';
+import {
+  LABEL_GUTTER_PX,
+  LabelOverlay,
+  type ScreenPoint,
+  type ViewLabel,
+} from './label_overlay';
 import type { CharacterPresetModule } from '../../types/character_preset';
 import type { Module, ModuleType } from '../../types/module';
 import type { ModuleModel, Vec3 } from '../../types/model';
@@ -78,7 +83,11 @@ const AREA_CELL_CM = 2;
 function fromFront(yawDeg: number, pitchDeg: number): Vec3 {
   const yaw = THREE.MathUtils.degToRad(yawDeg);
   const pitch = THREE.MathUtils.degToRad(pitchDeg);
-  return [Math.cos(pitch) * Math.cos(yaw), Math.cos(pitch) * Math.sin(yaw), Math.sin(pitch)];
+  return [
+    Math.cos(pitch) * Math.cos(yaw),
+    Math.cos(pitch) * Math.sin(yaw),
+    Math.sin(pitch),
+  ];
 }
 
 /** Opening camera direction (robot toward camera): nearly head-on, for a
@@ -121,7 +130,8 @@ export class ModelViewer {
   /** Per-view A vs B silhouette diffs, once measured. */
   private diffRasters: Partial<Record<ViewName, DiffRaster>> | null = null;
   /** The diff image shown in an axis view while comparing. */
-  private diffPlane: { mesh: THREE.Mesh; texture: THREE.DataTexture } | null = null;
+  private diffPlane: { mesh: THREE.Mesh; texture: THREE.DataTexture } | null =
+    null;
   private track: TrackedResources = createTrack();
   private models = new Map<string, ModuleModel>();
   private status: HTMLElement;
@@ -145,7 +155,7 @@ export class ModelViewer {
       55,
       container.clientWidth / Math.max(1, container.clientHeight),
       1,
-      100000,
+      100000
     );
     this.camera.position.set(900, 700, 1400);
 
@@ -200,7 +210,7 @@ export class ModelViewer {
     // UE -> scene, as the silhouettes group maps it.
     this.silhouettes.updateMatrixWorld();
     this.labelAnchors = labels.map(({ anchor }) =>
-      this.silhouettes.localToWorld(new THREE.Vector3(...anchor)),
+      this.silhouettes.localToWorld(new THREE.Vector3(...anchor))
     );
     // Make room for the label columns (or give it back); only on a change,
     // as refitting drops the user's zoom and pan.
@@ -229,7 +239,8 @@ export class ModelViewer {
     for (const mat of this.track.mats) mat.dispose();
     this.track = createTrack();
     this.disposeDiffPlane();
-    while (this.root.children.length > 0) this.root.remove(this.root.children[0]);
+    while (this.root.children.length > 0)
+      this.root.remove(this.root.children[0]);
     while (this.silhouettes.children.length > 0) {
       this.silhouettes.remove(this.silhouettes.children[0]);
     }
@@ -240,7 +251,7 @@ export class ModelViewer {
     if (existing) return existing;
     try {
       const model = await fetchJSON<ModuleModel>(
-        `/WRFrontiersDB-Data/current/Models/${cmId}.json`,
+        `/WRFrontiersDB-Data/current/Models/${cmId}.json`
       );
       this.models.set(cmId, model);
       return model;
@@ -255,7 +266,7 @@ export class ModelViewer {
   private neededModels(
     presetModules: CharacterPresetModule[],
     modules: Record<string, Module>,
-    charModules: Record<string, unknown>,
+    charModules: Record<string, unknown>
   ): Set<string> {
     const needed = new Set<string>();
     presetModules.forEach((entry) => {
@@ -264,7 +275,7 @@ export class ModelViewer {
         moduleId,
         modules,
         charModules,
-        sideForSocket(entry.socket_name ?? ''),
+        sideForSocket(entry.socket_name ?? '')
       );
       if (cmId) needed.add(cmId);
     });
@@ -276,13 +287,13 @@ export class ModelViewer {
     const generation = ++this.generation;
     this.setStatus('Loading data...');
     const modules = await fetchJSON<Record<string, Module>>(
-      '/WRFrontiersDB-Data/current/Objects/Module.json',
+      '/WRFrontiersDB-Data/current/Objects/Module.json'
     );
     const moduleTypes = await fetchJSON<Record<string, ModuleType>>(
-      '/WRFrontiersDB-Data/current/Objects/ModuleType.json',
+      '/WRFrontiersDB-Data/current/Objects/ModuleType.json'
     );
     const charModules = await fetchJSON<Record<string, unknown>>(
-      '/WRFrontiersDB-Data/current/Objects/CharacterModule.json',
+      '/WRFrontiersDB-Data/current/Objects/CharacterModule.json'
     );
 
     const presetModules = opts.modules;
@@ -292,7 +303,11 @@ export class ModelViewer {
     //    transforms (socket frames come from the parent module's skeleton).
     const needed = this.neededModels(presetModules, modules, charModules);
     if (compareModules) {
-      for (const id of this.neededModels(compareModules, modules, charModules)) {
+      for (const id of this.neededModels(
+        compareModules,
+        modules,
+        charModules
+      )) {
         needed.add(id);
       }
     }
@@ -301,7 +316,7 @@ export class ModelViewer {
       [...needed].map(async (id) => {
         const model = await this.loadModel(id);
         if (!model) missing += 1;
-      }),
+      })
     );
     if (generation !== this.generation) return;
 
@@ -315,7 +330,12 @@ export class ModelViewer {
     this.disposeTracked();
     this.setLabels([]); // until the new build is measured
     this.diffRasters = null;
-    this.hitboxes = collectBodies(presetModules, placements, this.models, tables);
+    this.hitboxes = collectBodies(
+      presetModules,
+      placements,
+      this.models,
+      tables
+    );
     this.hitboxesB =
       compareModules && placementsB
         ? collectBodies(compareModules, placementsB, this.models, tables)
@@ -324,7 +344,7 @@ export class ModelViewer {
     const draw = (
       placement: ModulePlacement,
       colorOf: ZoneColorFn,
-      meshOpacity = 1,
+      meshOpacity = 1
     ): void => {
       if (!placement.model_id) return;
       const model = this.models.get(placement.model_id);
@@ -343,14 +363,18 @@ export class ModelViewer {
       // The axis views show the measured diff image instead (see
       // measureComparison), so no per-module silhouettes are built.
       const { sharedA, sharedB } = diffPlacements(placements, placementsB);
-      const flat = (color: number): ZoneColorFn => () => color;
+      const flat =
+        (color: number): ZoneColorFn =>
+        () =>
+          color;
       placements.forEach((placement, i) =>
         sharedA[i]
           ? draw(placement, flat(DIFF_COLORS.shared))
-          : draw(placement, flat(DIFF_COLORS.aOnly), CHANGED_MESH_OPACITY),
+          : draw(placement, flat(DIFF_COLORS.aOnly), CHANGED_MESH_OPACITY)
       );
       placementsB.forEach((placement, i) => {
-        if (!sharedB[i]) draw(placement, flat(DIFF_COLORS.bOnly), CHANGED_MESH_OPACITY);
+        if (!sharedB[i])
+          draw(placement, flat(DIFF_COLORS.bOnly), CHANGED_MESH_OPACITY);
       });
     }
 
@@ -364,7 +388,11 @@ export class ModelViewer {
    * the axis views. */
   measureComparison(): ComparisonMeasurement | null {
     if (!this.hitboxes || !this.hitboxesB) return null;
-    const views = measureComparison(this.hitboxes, this.hitboxesB, AREA_CELL_CM);
+    const views = measureComparison(
+      this.hitboxes,
+      this.hitboxesB,
+      AREA_CELL_CM
+    );
     this.diffRasters = {};
     for (const view of VIEW_ORDER) {
       const diff = views[view].diff;
@@ -443,7 +471,8 @@ export class ModelViewer {
     const box = new THREE.Box3().setFromObject(this.root);
     if (box.isEmpty()) return false;
     const sphere = box.getBoundingSphere(new THREE.Sphere());
-    const dist = sphere.radius / Math.sin(THREE.MathUtils.degToRad(this.camera.fov / 2));
+    const dist =
+      sphere.radius / Math.sin(THREE.MathUtils.degToRad(this.camera.fov / 2));
     // UE (X fwd, Y right, Z up) -> this scene is (x, z, y); see the root transform.
     const dir = new THREE.Vector3(from[0], from[2], from[1]).normalize();
     this.camera.position.copy(sphere.center).addScaledVector(dir, dist);
@@ -488,8 +517,11 @@ export class ModelViewer {
     const w = this.container.clientWidth;
     const h = Math.max(1, this.container.clientHeight);
     // With labels, shrink the robot to fit between their columns.
-    const gutter = this.labels.isEmpty ? 0 : Math.min(LABEL_GUTTER_PX, w * 0.25);
-    const r = sphere.radius * 1.05 * Math.max(1, h / Math.max(1, w - 2 * gutter));
+    const gutter = this.labels.isEmpty
+      ? 0
+      : Math.min(LABEL_GUTTER_PX, w * 0.25);
+    const r =
+      sphere.radius * 1.05 * Math.max(1, h / Math.max(1, w - 2 * gutter));
     // UE (X fwd, Y right, Z up) -> this scene is (x, z, y); see the root transform.
     const [dx, dy, dz] = VIEWS[this.view].dir;
     const dir = new THREE.Vector3(dx, dz, dy);
@@ -514,7 +546,7 @@ export class ModelViewer {
     world: Mat4,
     colorOf: ZoneColorFn,
     opts: BuildOptions,
-    meshOpacity: number,
+    meshOpacity: number
   ): void {
     addModel(
       this.root,
@@ -527,7 +559,7 @@ export class ModelViewer {
         skeleton: opts.skeleton,
         meshOpacity,
       },
-      this.track,
+      this.track
     );
   }
 
@@ -566,7 +598,12 @@ export class ModelViewer {
       const px = palette[state];
       if (px) data.set(px, c * 4);
     });
-    const texture = new THREE.DataTexture(data, grid.nu, grid.nv, THREE.RGBAFormat);
+    const texture = new THREE.DataTexture(
+      data,
+      grid.nu,
+      grid.nv,
+      THREE.RGBAFormat
+    );
     texture.magFilter = THREE.NearestFilter;
     texture.minFilter = THREE.NearestFilter;
     texture.colorSpace = THREE.SRGBColorSpace;
@@ -587,10 +624,13 @@ export class ModelViewer {
           ...corner(u1, v1),
           ...corner(grid.u0, v1),
         ],
-        3,
-      ),
+        3
+      )
     );
-    geo.setAttribute('uv', new THREE.Float32BufferAttribute([0, 0, 1, 0, 1, 1, 0, 1], 2));
+    geo.setAttribute(
+      'uv',
+      new THREE.Float32BufferAttribute([0, 0, 1, 0, 1, 1, 0, 1], 2)
+    );
     geo.setIndex([0, 1, 2, 0, 2, 3]);
     const mat = new THREE.MeshBasicMaterial({
       map: texture,
