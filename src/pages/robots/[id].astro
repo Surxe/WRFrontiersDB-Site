@@ -7,10 +7,12 @@ import ObjRef from '../../components/obj_ref/ObjRef.astro';
 import { getParseObjects } from '../../utils/parse_object';
 import { getAllVirtualBots, getVirtualBotById } from '../../utils/bot_modules';
 import type { CharacterPreset } from '../../types/character_preset';
-import type { Module } from '../../types/module';
+import type { Module, ModuleType } from '../../types/module';
 import { getDefaultString } from '../../utils/localization';
 import { generateRobotLocalizedMetaDescriptions } from '../../utils/build_localization';
 import { refToId } from '../../utils/object_reference';
+import { selectionQuery } from '../../scripts/model_viewer/build/params';
+import { isRootModuleType } from '../../scripts/model_viewer/build/classify';
 
 export async function getStaticPaths() {
   const virtualBotsMap = getAllVirtualBots();
@@ -31,6 +33,7 @@ const presets = getParseObjects<CharacterPreset>(
   'Objects/CharacterPreset.json'
 );
 const modules = getParseObjects<Module>('Objects/Module.json');
+const moduleTypes = getParseObjects<ModuleType>('Objects/ModuleType.json');
 
 export function getRobotDetailBreadcrumbs(botName: string) {
   return [
@@ -45,11 +48,13 @@ const localizedDescriptions = generateRobotLocalizedMetaDescriptions(
   getDefaultString(bot.name) || bot.id
 );
 
-// Deep link into the 3D viewer: resolve the robot's first factory preset (the
-// mount resolver needs the preset graph), render structural modules only.
-const firstFactoryPresetId = bot.factory_preset_refs?.[0]
-  ? refToId(bot.factory_preset_refs[0])
-  : undefined;
+// Deep link into the 3D viewer: the chassis alone is enough -- the viewer fills
+// the required torso and shoulders with this bot's own core modules and leaves
+// the weapon slots empty.
+const chassisId = bot.core_module_refs.map(refToId).find((mId) => {
+  const typeRef = modules[mId]?.module_type_ref;
+  return typeRef ? isRootModuleType(refToId(typeRef), { moduleTypes }) : false;
+});
 ---
 
 <ParseObjectPage
@@ -74,9 +79,9 @@ const firstFactoryPresetId = bot.factory_preset_refs?.[0]
   <p><strong>Type:</strong> {bot.character_type}</p>
 
   {
-    firstFactoryPresetId && (
+    chassisId && (
       <p style="margin-top: 1rem;">
-        <a href={`/models?preset=${encodeURIComponent(firstFactoryPresetId)}&mode=robot`}>
+        <a href={`/models?${selectionQuery({ chassis: chassisId })}`}>
           View this robot in the 3D model viewer →
         </a>
       </p>

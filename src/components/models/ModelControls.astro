@@ -1,59 +1,86 @@
 ---
-// Control bar for the 3D model viewer. The element ids here are read by
-// src/scripts/model_viewer to drive rebuilds.
+// Build panel for the 3D model viewer. src/scripts/model_viewer renders the
+// cascading part dropdowns into #model-builder (build/ui.ts) and reads the
+// view toggles by id.
 ---
 
-<section class="model-controls" aria-label="Model controls">
-  <label>
-    Bot
-    <select id="model-bot"></select>
-  </label>
-  <label>
-    Preset
-    <select id="model-preset"></select>
-  </label>
-  <label>
-    Shoulder
-    <select id="model-side">
-      <option value="Both">Both</option>
-      <option value="L">Left</option>
-      <option value="R">Right</option>
-    </select>
-  </label>
-  <label class="model-check">
-    <input type="checkbox" id="model-hitbox" checked />
-    Hitbox
-  </label>
-  <label class="model-check">
-    <input type="checkbox" id="model-skeleton" />
-    Skeleton
-  </label>
-</section>
+<aside class="model-controls" aria-label="Robot build">
+  <h2>Build</h2>
+  <div id="model-builder" class="model-builder" aria-live="polite">
+    <p class="builder-placeholder">Loading parts...</p>
+  </div>
+  <div class="model-view-toggles">
+    <label class="model-check">
+      <input type="checkbox" id="model-hitbox" checked />
+      Hitbox
+    </label>
+  </div>
+</aside>
 
 <style>
   .model-controls {
     display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    align-items: center;
-    margin-bottom: 0.75rem;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border: 1px solid var(--wrf-border);
+    border-radius: var(--wrf-radius-md);
+    background: var(--wrf-surface);
   }
 
-  .model-controls label {
+  .model-controls h2 {
+    margin: 0;
+    font-size: 1rem;
+  }
+
+  .model-builder {
     display: flex;
     flex-direction: column;
-    gap: 0.2rem;
+    gap: 0.5rem;
+  }
+
+  .builder-placeholder {
+    margin: 0;
+    color: var(--wrf-text-muted);
     font-size: 0.85rem;
   }
 
-  .model-controls select,
-  .model-controls input[type='checkbox'] {
+  /* Rows are created at runtime by build/ui.ts, hence :global. */
+  .model-builder :global(.builder-row) {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding-left: calc(var(--depth, 0) * 0.9rem);
+  }
+
+  .model-builder :global(.builder-row label) {
+    display: flex;
+    gap: 0.4rem;
+    align-items: baseline;
+    font-size: 0.85rem;
+  }
+
+  .model-builder :global(.builder-hint) {
+    color: var(--wrf-text-muted);
+    font-size: 0.75rem;
+  }
+
+  .model-builder :global(select) {
+    width: 100%;
     padding: 0.3rem;
   }
 
+  .model-view-toggles {
+    display: flex;
+    gap: 1rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--wrf-border);
+  }
+
   .model-check {
-    flex-direction: row !important;
+    display: flex;
     align-items: center;
-    gap: 0.35rem !important;
+    gap: 0.35rem;
+    font-size: 0.85rem;
   }
 </style>

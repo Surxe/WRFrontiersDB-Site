@@ -91,10 +91,11 @@ function addHitboxes(
   model: ModuleModel,
   world: Mat4,
   boneWorld: Mat4[],
+  color: number,
   track: TrackedResources,
 ): void {
   const hitMat = new THREE.MeshStandardMaterial({
-    color: 0xf08a2a,
+    color,
     roughness: 0.6,
     transparent: true,
     opacity: 0.32,
@@ -165,6 +166,6 @@ export function addModel(
   // Hitboxes + skeleton overlay share the mesh's component space (root at origin).
   const boneWorld = boneWorlds(model.bones ?? [], true);
   addModuleMeshes(group, model, toThree(world), color, track);
-  if (opts.hitbox) addHitboxes(group, model, world, boneWorld, track);
+  if (opts.hitbox) addHitboxes(group, model, world, boneWorld, color, track);
   if (opts.skeleton) addSkeleton(group, model, world, boneWorld, track);
 }

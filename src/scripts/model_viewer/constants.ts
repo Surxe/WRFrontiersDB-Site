@@ -48,8 +48,3 @@ export const WEAPON_ROTATION_OVERRIDE: Record<string, Vec3> = {
   'BP_Module_Norna_ShoulderR.0|Shoulder_Weapon_0': [0, 28, 0],
   'BP_Module_Spire_ShoulderR.0|Shoulder_Weapon_0': [0, 28, 0],
 };
-
-/** Per-module base colors cycled across the loaded models in a build. */
-export const MODEL_COLORS = [
-  0x9aa0a6, 0x4c8fd6, 0xd68a3c, 0x8a6bd6, 0x4cb08a, 0xd64c6b,
-];

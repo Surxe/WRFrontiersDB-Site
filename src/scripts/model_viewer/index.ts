@@ -1,32 +1,48 @@
 /**
  * Live 3D construction of hitbox + untextured module models.
  *
- * Loads per-module model JSONs (current/Models/<CharacterModuleId>.json) plus
- * the mount-graph tables, resolves the module world transforms (preset socket
- * chain + adapter offsets + the runtime mount roll), and renders shoulder +
- * weapon combinations in three.js.
+ * The /models page is a free-form robot builder: the user picks a chassis,
+ * then each part that mounts on it (torso, shoulders, per-slot weapons, gear),
+ * cascading like the in-game hangar. The build logic lives in the three.js-free
+ * `build/` layer; this entry module wires it to the page:
+ *
+ *   URL params --> BuildStore --> dropdowns (build/ui.ts)
+ *                            \--> URL (params.ts)
+ *                             \-> ModelViewer (flattened via toPresetModules)
  *
  * Mount resolution (see mount.ts):
  *   world(module) = world(parent) x socketFrame(parent, socketName)
  *                   x T(adapterOffset) x R(mountRoll)
- *
- * This entry module wires the /models page controls to a {@link ModelViewer}
- * and to the URL query params (see params.ts); the geometry, mount math and data
- * loading live in the sibling modules.
  */
 import { fetchJSON } from './data';
-import { refToId } from '../../utils/object_reference';
-import { el, populateSelect } from './dom';
+import { el } from './dom';
 import { ModelViewer } from './viewer';
-import {
-  parseModelParams,
-  writeModelParams,
-  type ModelQueryParams,
-  type RenderMode,
-  type ShoulderSide,
-} from './params';
-import type { CharacterPreset } from '../../types/character_preset';
+import { parseViewParams, writeModelUrl } from './params';
+import { buildCompatibilityIndex } from './build/compatibility';
+import { toPresetModules } from './build/graph';
+import { readSelection, slotKeyMatcher } from './build/params';
+import { BuildStore } from './build/store';
+import { renderBuilder } from './build/ui';
+import { summarizeBuild } from './build/classify';
+import { buildModuleColors } from './colors';
+import type { BuildTables, ResolvedBuild } from './build/types';
+import type { Module, ModuleType } from '../../types/module';
+import type { ModuleSocketType } from '../../types/module_socket_type';
 import type { VirtualBot } from '../../types/virtual_bot';
+
+const OBJECTS = '/WRFrontiersDB-Data/current/Objects';
+
+async function loadTables(): Promise<BuildTables> {
+  const [modules, moduleTypes, socketTypes, bots] = await Promise.all([
+    fetchJSON<Record<string, Module>>(`${OBJECTS}/Module.json`),
+    fetchJSON<Record<string, ModuleType>>(`${OBJECTS}/ModuleType.json`),
+    fetchJSON<Record<string, ModuleSocketType>>(
+      `${OBJECTS}/ModuleSocketType.json`
+    ),
+    fetchJSON<Record<string, VirtualBot>>(`${OBJECTS}/VirtualBot.json`),
+  ]);
+  return { modules, moduleTypes, socketTypes, bots };
+}
 
 async function init(): Promise<void> {
   const loading = document.getElementById('model-loading');
@@ -36,98 +52,55 @@ async function init(): Promise<void> {
 
   const status = el<HTMLElement>('model-status');
   try {
-    const container = el<HTMLElement>('model-canvas');
-    const viewer = new ModelViewer(container, status);
+    // Without WebGL the builder (and its shareable URL) still works.
+    let viewer: ModelViewer | null = null;
+    try {
+      viewer = new ModelViewer(el<HTMLElement>('model-canvas'), status);
+    } catch (err) {
+      console.error('WebGL unavailable:', err);
+    }
 
-    const botSelect = el<HTMLSelectElement>('model-bot');
-    const presetSelect = el<HTMLSelectElement>('model-preset');
-    const sideSelect = el<HTMLSelectElement>('model-side');
+    const builderEl = el<HTMLElement>('model-builder');
     const hitboxBox = el<HTMLInputElement>('model-hitbox');
-    const skeletonBox = el<HTMLInputElement>('model-skeleton');
 
     status.textContent = 'Loading tables...';
-    const bots = await fetchJSON<Record<string, VirtualBot>>(
-      '/WRFrontiersDB-Data/current/Objects/VirtualBot.json',
-    );
-    const presets = await fetchJSON<Record<string, CharacterPreset>>(
-      '/WRFrontiersDB-Data/current/Objects/CharacterPreset.json',
-    );
-
-    if (Object.keys(bots).length === 0 && Object.keys(presets).length === 0) {
+    const tables = await loadTables();
+    if (Object.keys(tables.modules).length === 0) {
       status.textContent =
         'No model data found. Run the parser to populate WRFrontiersDB-Data/current/.';
       hideLoading();
       return;
     }
 
-    const initial = parseModelParams(window.location.search);
-    // `mode` has no control yet — it arrives from the deep link (or defaults).
-    const mode: RenderMode = initial.mode ?? 'preset';
-
-    populateSelect(
-      botSelect,
-      Object.entries(bots).map(([id, bot]) => ({ value: id, label: bot.name?.Key ?? id })),
+    const index = buildCompatibilityIndex(tables);
+    const isSlotKey = slotKeyMatcher(index.socketNames);
+    const search = new URLSearchParams(window.location.search);
+    const store = new BuildStore(
+      tables,
+      index,
+      readSelection(search, isSlotKey)
     );
 
-    // A bot's factory presets when it declares any, else the full preset list.
-    const presetsFor = (botId: string): string[] => {
-      const refs = (bots[botId]?.factory_preset_refs ?? [])
-        .map(refToId)
-        .filter((id) => presets[id]);
-      return refs.length > 0 ? refs : Object.keys(presets);
+    const view = parseViewParams(window.location.search);
+    hitboxBox.checked = view.hitbox ?? true;
+
+    const syncUrl = (build: ResolvedBuild): void => {
+      writeModelUrl(build.selection, { hitbox: hitboxBox.checked }, isSlotKey);
     };
 
-    // The bot whose factory presets include this preset, if any (lets a
-    // preset-only link select the right bot in the control bar).
-    const botForPreset = (presetId: string): string | undefined => {
-      for (const [id, bot] of Object.entries(bots)) {
-        if ((bot.factory_preset_refs ?? []).some((r) => refToId(r) === presetId)) {
-          return id;
-        }
-      }
-      return undefined;
-    };
-
-    const resolveInitialBot = (): string => {
-      if (initial.bot && bots[initial.bot]) return initial.bot;
-      if (initial.preset) {
-        const derived = botForPreset(initial.preset);
-        if (derived) return derived;
-      }
-      return botSelect.options[0]?.value ?? '';
-    };
-    botSelect.value = resolveInitialBot();
-
-    const populatePresets = (preferred?: string): void => {
-      const options = presetsFor(botSelect.value);
-      // A deep-linked preset must be selectable even when it is not one of the
-      // selected bot's factory presets (e.g. a non-factory / AI preset).
-      if (preferred && presets[preferred] && !options.includes(preferred)) {
-        options.unshift(preferred);
-      }
-      populateSelect(presetSelect, options.map((id) => ({ value: id, label: id })));
-      presetSelect.value =
-        preferred && options.includes(preferred) ? preferred : options[0] ?? '';
-    };
-    populatePresets(initial.preset);
-
-    sideSelect.value = initial.side ?? 'Both';
-    hitboxBox.checked = initial.hitbox ?? true;
-    skeletonBox.checked = initial.skeleton ?? false;
-
-    const rebuild = async (): Promise<void> => {
-      const preset = presets[presetSelect.value];
-      if (!preset) {
-        status.textContent = 'No preset selected.';
+    const rebuild = async (build: ResolvedBuild): Promise<void> => {
+      if (!viewer) {
+        status.textContent = `${summarizeBuild(build, tables)} (3D view unavailable: WebGL could not start)`;
         return;
       }
       try {
         await viewer.build({
-          preset,
-          side: sideSelect.value as ShoulderSide,
-          mode,
+          modules: toPresetModules(build),
+          colors: buildModuleColors(build),
+          label: summarizeBuild(build, tables),
           hitbox: hitboxBox.checked,
-          skeleton: skeletonBox.checked,
+          // The bone overlay stays off in the UI (the viewer still supports it).
+          skeleton: false,
         });
       } catch (err) {
         console.error('model build failed:', err);
@@ -135,34 +108,28 @@ async function init(): Promise<void> {
       }
     };
 
-    const syncUrl = (): void => {
-      const state: ModelQueryParams = {
-        bot: botSelect.value || undefined,
-        preset: presetSelect.value || undefined,
-        mode,
-        side: sideSelect.value as ShoulderSide,
-        hitbox: hitboxBox.checked,
-        skeleton: skeletonBox.checked,
-      };
-      writeModelParams(state);
+    const render = (build: ResolvedBuild): void => {
+      renderBuilder(builderEl, build, {
+        tables,
+        onSelect: (key, moduleId) => store.select(key, moduleId),
+      });
     };
 
-    botSelect.addEventListener('change', () => {
-      populatePresets();
-      syncUrl();
-      void rebuild();
+    store.subscribe((build) => {
+      render(build);
+      syncUrl(build);
+      void rebuild(build);
     });
-    for (const control of [presetSelect, sideSelect, hitboxBox, skeletonBox]) {
-      control.addEventListener('change', () => {
-        syncUrl();
-        void rebuild();
-      });
-    }
+    hitboxBox.addEventListener('change', () => {
+      syncUrl(store.current);
+      void rebuild(store.current);
+    });
 
     // Reflect the resolved state back into the URL so the landing view — deep
     // linked or default — is immediately shareable.
-    syncUrl();
-    await rebuild();
+    render(store.current);
+    syncUrl(store.current);
+    await rebuild(store.current);
   } catch (err) {
     console.error('model viewer init failed:', err);
     status.textContent =

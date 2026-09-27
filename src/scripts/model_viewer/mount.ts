@@ -1,7 +1,8 @@
 /**
  * Mount resolution.
  *
- * Resolves the module world transforms for a preset:
+ * Resolves the module world transforms for a module list (a preset's, or a
+ * flattened build's -- see build/graph.ts `toPresetModules`):
  *   world(module) = world(parent) x socketFrame(parent, socketName)
  *                   x T(adapterOffset) x R(mountRoll)
  * plus the runtime weapon-rotation overrides the export does not serialize.
@@ -15,7 +16,8 @@ import {
 } from './constants';
 import { refToId } from '../../utils/object_reference';
 import type { CharacterPresetModule } from '../../types/character_preset';
-import type { Module } from '../../types/module';
+import { kindOfModule } from './build/classify';
+import type { Module, ModuleType } from '../../types/module';
 import type { ModuleModel, Vec3 } from '../../types/model';
 
 export interface ModulePlacement {
@@ -97,30 +99,6 @@ function mountBoneFrame(model: ModuleModel, boneName: string): Mat4 | null {
   return dist2ToBox(pi, box) < dist2ToBox(pf, box) ? ident : full;
 }
 
-/** Broad module classification from the module's `module_type_ref` id. Used to
- * decide render behavior per mode (structural vs weapon vs supply/cycle gear). */
-export type ModuleKind =
-  | 'chassis'
-  | 'shoulder'
-  | 'torso'
-  | 'weapon'
-  | 'ability'
-  | 'other';
-
-export function moduleKindOf(
-  moduleId: string,
-  modules: Record<string, Module>,
-): ModuleKind {
-  const module = modules[moduleId];
-  const typeRef = module?.module_type_ref ? refToId(module.module_type_ref) : '';
-  if (typeRef.includes('Ability')) return 'ability';
-  if (typeRef.includes('Weapon')) return 'weapon';
-  if (typeRef.includes('Chassis')) return 'chassis';
-  if (typeRef.includes('Shoulder')) return 'shoulder';
-  if (typeRef.includes('Torso')) return 'torso';
-  return 'other';
-}
-
 function adapterOffsetFor(model: ModuleModel, mountWay: string): Vec3 | null {
   for (const adapter of model.adapters ?? []) {
     if (adapter.mount_way === mountWay) return adapter.offset;
@@ -158,6 +136,7 @@ export function sideForSocket(socketName: string): 'Left' | 'Right' | null {
 export function computeModuleWorlds(
   presetModules: CharacterPresetModule[],
   modules: Record<string, Module>,
+  moduleTypes: Record<string, ModuleType>,
   charModules: Record<string, unknown>,
   models: Map<string, ModuleModel>,
 ): ModulePlacement[] {
@@ -180,7 +159,7 @@ export function computeModuleWorlds(
       : IDENTITY;
 
     let stype = socketTypeOf(parentModuleId, socketName, modules);
-    const isWeapon = moduleKindOf(moduleId, modules) === 'weapon';
+    const isWeapon = kindOfModule(moduleId, { modules, moduleTypes }) === 'weapon';
     if (!stype && isWeapon) stype = 'Weapon'; // weapon on an untyped socket (Torso_Weapon_*)
     if (stype && MOUNT_ORIENTATION[stype] && isWeapon) {
       // Mirrored light weapons carry Left/Right adapters (use the parent shoulder

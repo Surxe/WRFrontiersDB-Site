@@ -5,20 +5,27 @@ import ModelViewport from '../components/models/ModelViewport.astro';
 import ModelNotes from '../components/models/ModelNotes.astro';
 ---
 
-<Page title="3D Models" description="Live hitbox + untextured model construction for War Robots: Frontiers loadouts.">
+<Page
+  title="3D Models"
+  description="Build any War Robots: Frontiers robot part by part and view its live hitbox + untextured model."
+>
   <main class="model-page">
     <header class="model-header">
       <h1>3D Models</h1>
       <p>
-        Live-constructed hitbox + untextured models. Pick a bot preset and a
-        shoulder to render its real modules and equipped weapons. Your current
-        view is always reflected in the URL, so you can copy it to share an
-        exact loadout.
+        Build any robot part by part: pick a chassis, then its torso, each
+        shoulder, and a weapon for every mount slot. Each part's slots appear
+        once the part is placed, just like in the hangar. Your build is always
+        reflected in the URL, so you can copy it to share an exact loadout.
       </p>
     </header>
 
-    <ModelControls />
-    <ModelViewport />
+    <div class="model-layout">
+      <ModelControls />
+      <div class="model-stage">
+        <ModelViewport />
+      </div>
+    </div>
     <ModelNotes />
   </main>
 </Page>
@@ -29,7 +36,7 @@ import ModelNotes from '../components/models/ModelNotes.astro';
 
 <style>
   .model-page {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
     padding: 1rem;
   }
@@ -41,5 +48,22 @@ import ModelNotes from '../components/models/ModelNotes.astro';
   .model-header p {
     margin: 0 0 1rem;
     opacity: 0.85;
+  }
+
+  .model-layout {
+    display: grid;
+    grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
+    gap: 1rem;
+    align-items: start;
+  }
+
+  .model-stage {
+    min-width: 0;
+  }
+
+  @media (max-width: 800px) {
+    .model-layout {
+      grid-template-columns: minmax(0, 1fr);
+    }
   }
 </style>

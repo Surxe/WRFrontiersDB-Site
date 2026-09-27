@@ -98,6 +98,12 @@ export interface ModuleType extends ParseObject {
   blueprint_name: LocalizationKey;
   tag_color?: string;
   tag_background_color?: string;
+  /** Chassis types: the root of a robot's module tree. */
+  is_root_module?: boolean;
+  /** `"Titan"` for titan-only types; absent for standard robots. */
+  character_type?: string;
+  /** The one socket type modules of this type plug into. */
+  exclusive_module_socket_type_ref?: string;
 }
 
 export interface ModuleRarity extends ParseObject {

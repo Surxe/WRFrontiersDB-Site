@@ -1,0 +1,408 @@
+{
+  "modules": {
+    "DA_Module_ChassisTyphon.0": {
+      "id": "DA_Module_ChassisTyphon.0",
+      "module_type_ref": "OBJID_ModuleType::DA_ModuleType_Chassis.0",
+      "name": {
+        "en": "Typhon"
+      },
+      "character_module_mounts": [],
+      "production_status": "Ready",
+      "sockets": [
+        {
+          "name": "Root",
+          "socket_type_ref": "OBJID_ModuleSocketType::DA_ModuleSocketType_Torso.0",
+          "mount_way": "Standard"
+        }
+      ]
+    },
+    "DA_Module_ChassisAres.0": {
+      "id": "DA_Module_ChassisAres.0",
+      "module_type_ref": "OBJID_ModuleType::DA_ModuleType_Chassis.0",
+      "name": {
+        "en": "Ares"
+      },
+      "character_module_mounts": [],
+      "production_status": "Ready",
+      "sockets": [
+        {
+          "name": "Root",
+          "socket_type_ref": "OBJID_ModuleSocketType::DA_ModuleSocketType_Torso.0",
+          "mount_way": "Standard"
+        }
+      ]
+    },
+    "DA_Module_ChassisAlpha.0": {
+      "id": "DA_Module_ChassisAlpha.0",
+      "module_type_ref": "OBJID_ModuleType::DA_ModuleType_TitanAlphaChassis.0",
+      "name": {
+        "en": "Alpha"
+      },
+      "character_module_mounts": [],
+      "production_status": "Ready",
+      "sockets": [
+        {
+          "name": "Root",
+          "socket_type_ref": "OBJID_ModuleSocketType::DA_ModuleSocketType_TitanAlphaTorso.0",
+          "mount_way": "Standard"
+        }
+      ]
+    },
+    "DA_Module_TorsoAres.0": {
+      "id": "DA_Module_TorsoAres.0",
+      "module_type_ref": "OBJID_ModuleType::DA_ModuleType_Torso.0",
+      "name": {
+        "en": "Ares"
+      },
+      "character_module_mounts": [],
+      "production_status": "Ready",
+      "sockets": [
+        {
+          "name": "Shoulder_L",
+          "socket_type_ref": "OBJID_ModuleSocketType::DA_ModuleSocketType_ShoulderL.0",
+          "mount_way": "Left"
+        },
+        {
+          "name": "Shoulder_R",
+          "socket_type_ref": "OBJID_ModuleSocketType::DA_ModuleSocketType_ShoulderR.0",
+          "mount_way": "Right"
+        }
+      ]
+    },
+    "DA_Module_TorsoTyphon.0": {
+      "id": "DA_Module_TorsoTyphon.0",
+      "module_type_ref": "OBJID_ModuleType::DA_ModuleType_Torso.0",
+      "name": {
+        "en": "Typhon"
+      },
+      "character_module_mounts": [],
+      "production_status": "Ready",
+      "sockets": [
+        {
+          "name": "Shoulder_L",
+          "socket_type_ref": "OBJID_ModuleSocketType::DA_ModuleSocketType_ShoulderL.0",
+          "mount_way": "Left"
+        },
+        {
+          "name": "Shoulder_R",
+          "socket_type_ref": "OBJID_ModuleSocketType::DA_ModuleSocketType_ShoulderR.0",
+          "mount_way": "Right"
+        },
+        {
+          "name": "Torso_Weapon_0",
+          "socket_type_ref": "OBJID_ModuleSocketType::DA_ModuleSocketType_WeaponHeavy.0",
+          "mount_way": "Standard"
+        },
+        {
+          "name": "Ability",
+          "socket_type_ref": "OBJID_ModuleSocketType::DA_ModuleSocketType_Ability3.0",
+          "mount_way": "Standard"
+        }
+      ]
+    },
+    "DA_Module_TorsoAlpha.0": {
+      "id": "DA_Module_TorsoAlpha.0",
+      "module_type_ref": "OBJID_ModuleType::DA_ModuleType_TitanAlphaTorso.0",
+      "name": {
+        "en": "Alpha"
+      },
+      "character_module_mounts": [],
+      "production_status": "Ready",
+      "sockets": [
+        {
+          "name": "Shoulder_L",
+          "socket_type_ref": "OBJID_ModuleSocketType::DA_ModuleSocketType_TitanAlphaShoulderL.0",
+          "mount_way": "Standard"
+        },
+        {
+          "name": "Shoulder_R",
+          "socket_type_ref": "OBJID_ModuleSocketType::DA_ModuleSocketType_TitanAlphaShoulderR.0",
+          "mount_way": "Standard"
+        }
+      ]
+    },
+    "DA_Module_ShoulderTwin.0": {
+      "id": "DA_Module_ShoulderTwin.0",
+      "module_type_ref": "OBJID_ModuleType::DA_ModuleType_Shoulder.0",
+      "name": {
+        "en": "Twin"
+      },
+      "character_module_mounts": [],
+      "production_status": "Ready",
+      "sockets": [
+        {
+          "name": "Shoulder_Weapon_0",
+          "socket_type_ref": "OBJID_ModuleSocketType::DA_ModuleSocketType_WeaponHeavy.0",
+          "mount_way": "Inherited"
+        },
+        {
+          "name": "Shoulder_Weapon_1",
+          "socket_type_ref": "OBJID_ModuleSocketType::DA_ModuleSocketType_Weapon.0",
+          "mount_way": "Standard"
+        }
+      ]
+    },
+    "DA_Module_ShoulderBare.0": {
+      "id": "DA_Module_ShoulderBare.0",
+      "module_type_ref": "OBJID_ModuleType::DA_ModuleType_Shoulder.0",
+      "name": {
+        "en": "Bare"
+      },
+      "character_module_mounts": [],
+      "production_status": "Ready"
+    },
+    "DA_Module_ShoulderLAlpha.0": {
+      "id": "DA_Module_ShoulderLAlpha.0",
+      "module_type_ref": "OBJID_ModuleType::DA_ModuleType_TitanAlphaShoulderL.0",
+      "name": {
+        "en": "Alpha"
+      },
+      "character_module_mounts": [],
+      "production_status": "Ready"
+    },
+    "DA_Module_ShoulderRAlpha.0": {
+      "id": "DA_Module_ShoulderRAlpha.0",
+      "module_type_ref": "OBJID_ModuleType::DA_ModuleType_TitanAlphaShoulderR.0",
+      "name": {
+        "en": "Alpha"
+      },
+      "character_module_mounts": [],
+      "production_status": "Ready",
+      "sockets": [
+        {
+          "name": "Shoulder_Weapon_0",
+          "socket_type_ref": "OBJID_ModuleSocketType::DA_ModuleSocketType_TitanWeaponTactican.0",
+          "mount_way": "Standard"
+        }
+      ]
+    },
+    "DA_Module_WeaponLight.0": {
+      "id": "DA_Module_WeaponLight.0",
+      "module_type_ref": "OBJID_ModuleType::DA_ModuleType_Weapon.0",
+      "name": {
+        "en": "Light Gun"
+      },
+      "character_module_mounts": [],
+      "production_status": "Ready"
+    },
+    "DA_Module_WeaponHeavy.0": {
+      "id": "DA_Module_WeaponHeavy.0",
+      "module_type_ref": "OBJID_ModuleType::DA_ModuleType_WeaponHeavy.0",
+      "name": {
+        "en": "Heavy Gun"
+      },
+      "character_module_mounts": [],
+      "production_status": "Ready"
+    },
+    "DA_Module_WeaponSecret.0": {
+      "id": "DA_Module_WeaponSecret.0",
+      "module_type_ref": "OBJID_ModuleType::DA_ModuleType_Weapon.0",
+      "name": {
+        "en": "Secret Gun"
+      },
+      "character_module_mounts": []
+    },
+    "DA_Module_WeaponTitan.0": {
+      "id": "DA_Module_WeaponTitan.0",
+      "module_type_ref": "OBJID_ModuleType::DA_ModuleType_TitanWeaponTactician.0",
+      "name": {
+        "en": "Titan Gun"
+      },
+      "character_module_mounts": [],
+      "production_status": "Ready"
+    },
+    "DA_Module_AbilityDash.0": {
+      "id": "DA_Module_AbilityDash.0",
+      "module_type_ref": "OBJID_ModuleType::DA_ModuleType_Ability3.0",
+      "name": {
+        "en": "Dash"
+      },
+      "character_module_mounts": [],
+      "production_status": "Ready"
+    }
+  },
+  "moduleTypes": {
+    "DA_ModuleType_Chassis.0": {
+      "id": "DA_ModuleType_Chassis.0",
+      "module_category_ref": "OBJID_ModuleCategory::DA_ModuleCategory_Chassis.0",
+      "is_root_module": true
+    },
+    "DA_ModuleType_TitanAlphaChassis.0": {
+      "id": "DA_ModuleType_TitanAlphaChassis.0",
+      "module_category_ref": "OBJID_ModuleCategory::DA_ModuleCategory_Chassis.0",
+      "is_root_module": true,
+      "character_type": "Titan"
+    },
+    "DA_ModuleType_Torso.0": {
+      "id": "DA_ModuleType_Torso.0",
+      "module_category_ref": "OBJID_ModuleCategory::DA_ModuleCategory_Torso.0"
+    },
+    "DA_ModuleType_TitanAlphaTorso.0": {
+      "id": "DA_ModuleType_TitanAlphaTorso.0",
+      "module_category_ref": "OBJID_ModuleCategory::DA_ModuleCategory_Torso.0",
+      "character_type": "Titan"
+    },
+    "DA_ModuleType_Shoulder.0": {
+      "id": "DA_ModuleType_Shoulder.0",
+      "module_category_ref": "OBJID_ModuleCategory::DA_ModuleCategory_Shoulder.0"
+    },
+    "DA_ModuleType_TitanAlphaShoulderL.0": {
+      "id": "DA_ModuleType_TitanAlphaShoulderL.0",
+      "module_category_ref": "OBJID_ModuleCategory::DA_ModuleCategory_Shoulder.0",
+      "character_type": "Titan"
+    },
+    "DA_ModuleType_TitanAlphaShoulderR.0": {
+      "id": "DA_ModuleType_TitanAlphaShoulderR.0",
+      "module_category_ref": "OBJID_ModuleCategory::DA_ModuleCategory_Shoulder.0",
+      "character_type": "Titan"
+    },
+    "DA_ModuleType_Weapon.0": {
+      "id": "DA_ModuleType_Weapon.0",
+      "module_category_ref": "OBJID_ModuleCategory::DA_ModuleCategory_Weapon.0"
+    },
+    "DA_ModuleType_WeaponHeavy.0": {
+      "id": "DA_ModuleType_WeaponHeavy.0",
+      "module_category_ref": "OBJID_ModuleCategory::DA_ModuleCategory_Weapon.0"
+    },
+    "DA_ModuleType_TitanWeaponTactician.0": {
+      "id": "DA_ModuleType_TitanWeaponTactician.0",
+      "module_category_ref": "OBJID_ModuleCategory::DA_ModuleCategory_Weapon.0",
+      "character_type": "Titan"
+    },
+    "DA_ModuleType_Ability3.0": {
+      "id": "DA_ModuleType_Ability3.0",
+      "module_category_ref": "OBJID_ModuleCategory::DA_ModuleCategory_Ability.0"
+    }
+  },
+  "socketTypes": {
+    "DA_ModuleSocketType_Torso.0": {
+      "id": "DA_ModuleSocketType_Torso.0",
+      "name": {
+        "en": "Torso"
+      },
+      "compatible_module_types_refs": [
+        "OBJID_ModuleType::DA_ModuleType_Torso.0"
+      ],
+      "exclusive_module_type_ref": "OBJID_ModuleType::DA_ModuleType_Torso.0",
+      "required": true
+    },
+    "DA_ModuleSocketType_ShoulderL.0": {
+      "id": "DA_ModuleSocketType_ShoulderL.0",
+      "name": {
+        "en": "Left Shoulder"
+      },
+      "compatible_module_types_refs": [
+        "OBJID_ModuleType::DA_ModuleType_Shoulder.0"
+      ],
+      "exclusive_module_type_ref": "OBJID_ModuleType::DA_ModuleType_Shoulder.0",
+      "required": true
+    },
+    "DA_ModuleSocketType_ShoulderR.0": {
+      "id": "DA_ModuleSocketType_ShoulderR.0",
+      "name": {
+        "en": "Right Shoulder"
+      },
+      "compatible_module_types_refs": [
+        "OBJID_ModuleType::DA_ModuleType_Shoulder.0"
+      ],
+      "exclusive_module_type_ref": "OBJID_ModuleType::DA_ModuleType_Shoulder.0",
+      "required": true
+    },
+    "DA_ModuleSocketType_Weapon.0": {
+      "id": "DA_ModuleSocketType_Weapon.0",
+      "name": {
+        "en": "Light Weapon"
+      },
+      "compatible_module_types_refs": [
+        "OBJID_ModuleType::DA_ModuleType_Weapon.0"
+      ],
+      "exclusive_module_type_ref": "OBJID_ModuleType::DA_ModuleType_Weapon.0"
+    },
+    "DA_ModuleSocketType_WeaponHeavy.0": {
+      "id": "DA_ModuleSocketType_WeaponHeavy.0",
+      "name": {
+        "en": "Any weapon"
+      },
+      "compatible_module_types_refs": [
+        "OBJID_ModuleType::DA_ModuleType_Weapon.0",
+        "OBJID_ModuleType::DA_ModuleType_WeaponHeavy.0"
+      ],
+      "exclusive_module_type_ref": "OBJID_ModuleType::DA_ModuleType_WeaponHeavy.0"
+    },
+    "DA_ModuleSocketType_Ability3.0": {
+      "id": "DA_ModuleSocketType_Ability3.0",
+      "name": {
+        "en": "Supply Gear"
+      },
+      "compatible_module_types_refs": [
+        "OBJID_ModuleType::DA_ModuleType_Ability3.0"
+      ],
+      "exclusive_module_type_ref": "OBJID_ModuleType::DA_ModuleType_Ability3.0"
+    },
+    "DA_ModuleSocketType_TitanAlphaTorso.0": {
+      "id": "DA_ModuleSocketType_TitanAlphaTorso.0",
+      "name": {
+        "en": "Torso"
+      },
+      "compatible_module_types_refs": [
+        "OBJID_ModuleType::DA_ModuleType_TitanAlphaTorso.0"
+      ],
+      "exclusive_module_type_ref": "OBJID_ModuleType::DA_ModuleType_TitanAlphaTorso.0",
+      "required": true,
+      "b_can_be_changed_by_user": false
+    },
+    "DA_ModuleSocketType_TitanAlphaShoulderL.0": {
+      "id": "DA_ModuleSocketType_TitanAlphaShoulderL.0",
+      "name": {
+        "en": "Left Shoulder"
+      },
+      "compatible_module_types_refs": [
+        "OBJID_ModuleType::DA_ModuleType_TitanAlphaShoulderL.0"
+      ],
+      "exclusive_module_type_ref": "OBJID_ModuleType::DA_ModuleType_TitanAlphaShoulderL.0",
+      "required": true,
+      "b_can_be_changed_by_user": false
+    },
+    "DA_ModuleSocketType_TitanAlphaShoulderR.0": {
+      "id": "DA_ModuleSocketType_TitanAlphaShoulderR.0",
+      "name": {
+        "en": "Right Shoulder"
+      },
+      "compatible_module_types_refs": [
+        "OBJID_ModuleType::DA_ModuleType_TitanAlphaShoulderR.0"
+      ],
+      "exclusive_module_type_ref": "OBJID_ModuleType::DA_ModuleType_TitanAlphaShoulderR.0",
+      "required": true,
+      "b_can_be_changed_by_user": false
+    },
+    "DA_ModuleSocketType_TitanWeaponTactican.0": {
+      "id": "DA_ModuleSocketType_TitanWeaponTactican.0",
+      "name": {
+        "en": "Light Weapon"
+      },
+      "compatible_module_types_refs": [
+        "OBJID_ModuleType::DA_ModuleType_TitanWeaponTactician.0"
+      ],
+      "exclusive_module_type_ref": "OBJID_ModuleType::DA_ModuleType_TitanWeaponTactician.0"
+    }
+  },
+  "bots": {
+    "typhon": {
+      "id": "typhon",
+      "core_module_refs": [
+        "OBJID_Module::DA_Module_ChassisTyphon.0",
+        "OBJID_Module::DA_Module_TorsoTyphon.0",
+        "OBJID_Module::DA_Module_ShoulderTwin.0"
+      ]
+    },
+    "alpha": {
+      "id": "alpha",
+      "core_module_refs": [
+        "OBJID_Module::DA_Module_ChassisAlpha.0",
+        "OBJID_Module::DA_Module_TorsoAlpha.0",
+        "OBJID_Module::DA_Module_ShoulderLAlpha.0",
+        "OBJID_Module::DA_Module_ShoulderRAlpha.0"
+      ]
+    }
+  }
+}

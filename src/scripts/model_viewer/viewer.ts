@@ -1,39 +1,32 @@
 /**
  * The ModelViewer: owns the three.js scene/camera/renderer and rebuilds the
- * module geometry for a chosen preset on demand.
+ * module geometry for a module list on demand. The list has the preset shape
+ * (`CharacterPresetModule[]`); the /models page produces it from the user's
+ * build (build/graph.ts `toPresetModules`).
  */
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import type { Mat4 } from './math';
-import { MODEL_COLORS } from './constants';
 import { fetchJSON } from './data';
 import { refToId } from '../../utils/object_reference';
-import {
-  computeModuleWorlds,
-  modelIdForModule,
-  moduleKindOf,
-  sideForSocket,
-} from './mount';
+import { computeModuleWorlds, modelIdForModule, sideForSocket } from './mount';
 import { addModel, createTrack, type TrackedResources } from './scene';
-import type { RenderMode, ShoulderSide } from './params';
-import type {
-  CharacterPreset,
-  CharacterPresetModule,
-} from '../../types/character_preset';
-import type { Module } from '../../types/module';
+import type { CharacterPresetModule } from '../../types/character_preset';
+import type { Module, ModuleType } from '../../types/module';
 import type { ModuleModel } from '../../types/model';
 
 export interface BuildOptions {
-  preset: CharacterPreset;
-  side: ShoulderSide;
-  mode: RenderMode;
+  /** The module tree to render, parents before children. */
+  modules: CharacterPresetModule[];
+  /** One unique color per entry of `modules`; its hitbox uses it too. */
+  colors: number[];
+  /** Short description of what is being rendered, for the status line. */
+  label: string;
   hitbox: boolean;
   skeleton: boolean;
 }
 
-function isShoulderSocket(socketName: string): boolean {
-  return socketName === 'Shoulder_L' || socketName === 'Shoulder_R';
-}
+const FALLBACK_COLOR = 0x9aa0a6;
 
 export class ModelViewer {
   private renderer: THREE.WebGLRenderer;
@@ -46,6 +39,7 @@ export class ModelViewer {
   private status: HTMLElement;
   private container: HTMLElement;
   private framed = false;
+  private generation = 0;
 
   constructor(container: HTMLElement, status: HTMLElement) {
     this.container = container;
@@ -129,12 +123,10 @@ export class ModelViewer {
     presetModules: CharacterPresetModule[],
     modules: Record<string, Module>,
     charModules: Record<string, unknown>,
-    mode: RenderMode,
   ): Set<string> {
     const needed = new Set<string>();
     presetModules.forEach((entry) => {
       const moduleId = refToId(entry.module_ref);
-      if (mode === 'robot' && moduleKindOf(moduleId, modules) === 'weapon') return;
       const cmId = modelIdForModule(
         moduleId,
         modules,
@@ -147,19 +139,24 @@ export class ModelViewer {
   }
 
   async build(opts: BuildOptions): Promise<void> {
+    // Rapid changes start overlapping builds; only the latest may touch the scene.
+    const generation = ++this.generation;
     this.setStatus('Loading data...');
     const modules = await fetchJSON<Record<string, Module>>(
       '/WRFrontiersDB-Data/current/Objects/Module.json',
+    );
+    const moduleTypes = await fetchJSON<Record<string, ModuleType>>(
+      '/WRFrontiersDB-Data/current/Objects/ModuleType.json',
     );
     const charModules = await fetchJSON<Record<string, unknown>>(
       '/WRFrontiersDB-Data/current/Objects/CharacterModule.json',
     );
 
-    const presetModules = opts.preset.modules ?? [];
+    const presetModules = opts.modules;
 
     // 1) Resolve + load every model this build needs BEFORE computing world
     //    transforms (socket frames come from the parent module's skeleton).
-    const needed = this.neededModels(presetModules, modules, charModules, opts.mode);
+    const needed = this.neededModels(presetModules, modules, charModules);
     let missing = 0;
     await Promise.all(
       [...needed].map(async (id) => {
@@ -167,22 +164,22 @@ export class ModelViewer {
         if (!model) missing += 1;
       }),
     );
+    if (generation !== this.generation) return;
 
     // 2) Now that the models are cached, resolve the module world transforms.
-    const placements = computeModuleWorlds(presetModules, modules, charModules, this.models);
+    const placements = computeModuleWorlds(
+      presetModules,
+      modules,
+      moduleTypes,
+      charModules,
+      this.models,
+    );
 
     this.disposeTracked();
     let loaded = 0;
 
     for (let i = 0; i < placements.length; i++) {
       const placement = placements[i];
-      const socketName = placement.socket_name ?? '';
-      const isShoulder = isShoulderSocket(socketName);
-      if (isShoulder && opts.side !== 'Both') {
-        const side = socketName.endsWith('_L') ? 'L' : 'R';
-        if (side !== opts.side) continue;
-      }
-      if (opts.mode === 'robot' && moduleKindOf(placement.module_id, modules) === 'weapon') continue;
       if (!placement.model_id) continue;
 
       const model = this.models.get(placement.model_id) ?? null;
@@ -191,37 +188,37 @@ export class ModelViewer {
         continue;
       }
 
-      this.addPlacement(model, placement.world, loaded, opts);
+      this.addPlacement(model, placement.world, opts.colors[i] ?? FALLBACK_COLOR, opts);
       loaded += 1;
     }
 
-    this.reportBuild(opts.preset, loaded, missing);
+    this.reportBuild(opts.label, loaded, missing);
     this.frameToRobot();
   }
 
   private addPlacement(
     model: ModuleModel,
     world: Mat4,
-    loaded: number,
+    color: number,
     opts: BuildOptions,
   ): void {
     addModel(
       this.root,
       model,
       world,
-      MODEL_COLORS[loaded % MODEL_COLORS.length],
+      color,
       { hitbox: opts.hitbox, skeleton: opts.skeleton },
       this.track,
     );
   }
 
-  private reportBuild(preset: CharacterPreset, loaded: number, missing: number): void {
+  private reportBuild(label: string, loaded: number, missing: number): void {
     const verts = this.track.geos.reduce(
       (sum, g) => sum + (g.getAttribute('position')?.count ?? 0),
       0,
     );
     this.setStatus(
-      `Preset ${preset.id}: ${loaded} models loaded (${verts.toLocaleString()} verts)` +
+      `${label}: ${loaded} models loaded (${verts.toLocaleString()} verts)` +
         (missing > 0 ? `, ${missing} missing` : ''),
     );
   }

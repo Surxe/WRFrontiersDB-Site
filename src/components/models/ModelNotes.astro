@@ -5,14 +5,26 @@
 <section class="model-notes">
   <h2>Notes</h2>
   <ul>
-    <li>Units are Unreal centimeters (X forward, Y right, Z up); the scene is shown with Z-up.</li>
+    <li>
+      Units are Unreal centimeters (X forward, Y right, Z up); the scene is
+      shown with Z-up.
+    </li>
     <li>Drag to orbit, scroll to zoom, right-drag to pan.</li>
     <li>
-      The URL always reflects the current view (bot, preset, mode, shoulder,
-      hitbox and skeleton), so copy the address bar to share an exact loadout.
+      Parts cascade like the in-game hangar: a part's sockets (shoulders, weapon
+      slots, gear) only appear once it is placed. Shoulders have zero, one or
+      two weapon slots; titan torsos and shoulders are fixed by their chassis.
+      Unreleased parts only appear when a link selects them.
     </li>
     <li>
-      Weapon placement uses the preset socket chain plus the runtime mount
+      The URL always reflects the current build: one parameter per filled slot,
+      named by where it mounts (e.g. <code>chassis</code>,
+      <code>torso</code>, <code>Shoulder_L</code>,
+      <code>Shoulder_L.Shoulder_Weapon_0</code>), plus <code>hitbox</code>. Copy
+      the address bar to share an exact loadout.
+    </li>
+    <li>
+      Weapon placement uses the build's socket chain plus the runtime mount
       rotation applied by the game (see docs/weapon_mount_findings.md).
     </li>
   </ul>

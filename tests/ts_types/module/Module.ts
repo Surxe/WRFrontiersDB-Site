@@ -180,6 +180,7 @@ describe('Module interface', () => {
         'inventory_icon_path',
         'module_rarity_ref',
         'character_module_mounts',
+        'sockets',
         'module_tags_refs',
         'name',
         'description',
