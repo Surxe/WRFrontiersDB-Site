@@ -96,6 +96,16 @@ export function buildZoneColors(build: ResolvedBuild): Record<string, number> {
   );
 }
 
+/** Build comparison colors (A = the live build, B = the compared one): a
+ * fixed, colorblind-safe set used instead of per-module colors, so any number
+ * of swapped parts reads the same. Grey is area both builds cover; orange is
+ * area only A has (lost by switching); blue is area only B has (gained). */
+export const DIFF_COLORS = {
+  shared: 0x8a9099,
+  aOnly: 0xf28e2b,
+  bOnly: 0x4e79a7,
+} as const;
+
 /** `0xrrggbb` -> `#rrggbb`. */
 export function cssHex(color: number): string {
   return `#${color.toString(16).padStart(6, '0')}`;

@@ -50,6 +50,9 @@ export const VIEW_ORDER: readonly ViewName[] = ['front', 'back', 'left', 'right'
 /** One health pool: a chassis zone (pelvis / leg), the torso or a shoulder
  * (with its mounted weapons). */
 export interface HitboxPool {
+  /** Stable identity across builds (`torso`, `shoulder:left`,
+   * `chassis:<zone>`, ...), for matching pools between two builds. */
+  key: string;
   label: string;
   kind: 'chassis' | 'torso' | 'shoulder';
   /** Which side a shoulder or leg sits on; its inner-side view is not
@@ -135,7 +138,8 @@ export function assignPools(
               ? 'Right Shoulder'
               : 'Shoulder';
       poolOf[i] = pools.length;
-      pools.push({ label, kind, side, zone: null, moduleIndex: i, moduleId: refToId(entry.module_ref), weaponIds: [], weaponIndices: [] });
+      const key = kind === 'shoulder' ? `shoulder:${side ?? i}` : kind;
+      pools.push({ key, label, kind, side, zone: null, moduleIndex: i, moduleId: refToId(entry.module_ref), weaponIds: [], weaponIndices: [] });
       return;
     }
     if (kind !== 'weapon') return;
@@ -173,6 +177,7 @@ function splitChassis(pool: HitboxPool, zones: (string | null)[]): HitboxPool[] 
     .sort((a, b) => zoneRank(a) - zoneRank(b))
     .map((zone, n) => ({
       ...pool,
+      key: `chassis:${zone ?? 'other'}`,
       label: (zone ? CHASSIS_ZONES[zone]?.label : undefined) ?? 'Chassis',
       side: (zone ? CHASSIS_ZONES[zone]?.side : undefined) ?? null,
       zone,
@@ -373,17 +378,27 @@ function projectRange(p: HitboxPrimitive, half: Vec3, axis: Vec3): [number, numb
   return [center - extent, center + extent];
 }
 
-/**
- * Per-pool and whole-robot areas (cm^2) for one view. `cell` is the ray grid
- * spacing in cm; each hit cell contributes cell^2.
- */
-export function measureView(
-  bodies: readonly HitboxBody[],
-  poolCount: number,
-  view: ViewName,
-  cell = 1,
-): ViewAreas {
-  if (poolCount > 32) throw new Error(`too many hitbox pools (${poolCount})`);
+/** A view's ray grid: `nu` x `nv` cells of `cell` cm, the first centered at
+ * (u0, v0) + cell/2 in the view plane; rays start `start` cm along the view
+ * direction (in front of everything). Shared by builds that are compared. */
+export interface ViewGrid {
+  view: ViewName;
+  cell: number;
+  u0: number;
+  v0: number;
+  nu: number;
+  nv: number;
+  start: number;
+}
+
+interface PreparedView {
+  prepared: PreparedPrim[];
+  rects: { u: [number, number]; v: [number, number]; d: [number, number] }[];
+}
+
+/** Pooled primitives of `bodies`, ready to intersect, with their projected
+ * bounds in `view`. */
+function prepareView(bodies: readonly HitboxBody[], view: ViewName): PreparedView {
   const { dir, u, v } = VIEWS[view];
   const prepared: PreparedPrim[] = [];
   bodies.forEach((body, b) => {
@@ -392,32 +407,50 @@ export function measureView(
       prepared.push({ inv: affineInverse(prim.m), prim, body: b, half: localHalfSize(prim) });
     }
   });
-  const pools = Array.from({ length: poolCount }, () => ({ alone: 0, withWeapons: 0 }));
-  const total = { alone: 0, withWeapons: 0 };
-  const result = { pools, total };
-  if (prepared.length === 0) return result;
-
   const rects = prepared.map((pp) => ({
     u: projectRange(pp.prim, pp.half, u),
     v: projectRange(pp.prim, pp.half, v),
     d: projectRange(pp.prim, pp.half, dir),
   }));
+  return { prepared, rects };
+}
+
+/** The grid covering every prepared set (null when all are empty). */
+function gridFor(sets: readonly PreparedView[], view: ViewName, cell: number): ViewGrid | null {
+  const rects = sets.flatMap((set) => set.rects);
+  if (rects.length === 0) return null;
   const u0 = Math.min(...rects.map((r) => r.u[0]));
   const v0 = Math.min(...rects.map((r) => r.v[0]));
   const u1 = Math.max(...rects.map((r) => r.u[1]));
   const v1 = Math.max(...rects.map((r) => r.v[1]));
-  const start = Math.min(...rects.map((r) => r.d[0])) - 1;
-  const nu = Math.max(1, Math.ceil((u1 - u0) / cell));
-  const nv = Math.max(1, Math.ceil((v1 - v0) / cell));
+  return {
+    view,
+    cell,
+    u0,
+    v0,
+    nu: Math.max(1, Math.ceil((u1 - u0) / cell)),
+    nv: Math.max(1, Math.ceil((v1 - v0) / cell)),
+    start: Math.min(...rects.map((r) => r.d[0])) - 1,
+  };
+}
 
-  const own = new Uint32Array(nu * nv); // pools whose own module is hit
-  const any = new Uint32Array(nu * nv); // pools hit by module or weapons
+/** Per-cell bitmasks of the pools hit: `own` by a pool module's own
+ * hitboxes, `any` by the module or its weapons. */
+interface PoolMasks {
+  own: Uint32Array;
+  any: Uint32Array;
+}
 
+function rasterize(bodies: readonly HitboxBody[], set: PreparedView, grid: ViewGrid): PoolMasks {
+  const { dir, u, v } = VIEWS[grid.view];
+  const { cell, u0, v0, nu, nv, start } = grid;
+  const own = new Uint32Array(nu * nv);
+  const any = new Uint32Array(nu * nv);
   const o: Vec3 = [0, 0, 0];
-  prepared.forEach((pp, idx) => {
+  set.prepared.forEach((pp, idx) => {
     const body = bodies[pp.body];
     const bit = 1 << body.pool!;
-    const r = rects[idx];
+    const r = set.rects[idx];
     const i0 = Math.max(0, Math.floor((r.u[0] - u0) / cell));
     const i1 = Math.min(nu - 1, Math.floor((r.u[1] - u0) / cell));
     const j0 = Math.max(0, Math.floor((r.v[0] - v0) / cell));
@@ -437,9 +470,16 @@ export function measureView(
       }
     }
   });
+  return { own, any };
+}
 
-  const area = cell * cell;
-  for (let c = 0; c < nu * nv; c++) {
+function sumAreas(masks: PoolMasks | null, grid: ViewGrid | null, poolCount: number): ViewAreas {
+  const pools = Array.from({ length: poolCount }, () => ({ alone: 0, withWeapons: 0 }));
+  const total = { alone: 0, withWeapons: 0 };
+  if (!masks || !grid) return { pools, total };
+  const area = grid.cell * grid.cell;
+  const { own, any } = masks;
+  for (let c = 0; c < any.length; c++) {
     const a = any[c];
     if (a === 0) continue;
     const s = own[c];
@@ -451,7 +491,94 @@ export function measureView(
       if (s & bit) pools[p].alone += area;
     }
   }
-  return result;
+  return { pools, total };
+}
+
+function checkPoolCount(poolCount: number): void {
+  if (poolCount > 32) throw new Error(`too many hitbox pools (${poolCount})`);
+}
+
+/**
+ * Per-pool and whole-robot areas (cm^2) for one view. `cell` is the ray grid
+ * spacing in cm; each hit cell contributes cell^2.
+ */
+export function measureView(
+  bodies: readonly HitboxBody[],
+  poolCount: number,
+  view: ViewName,
+  cell = 1,
+): ViewAreas {
+  checkPoolCount(poolCount);
+  const set = prepareView(bodies, view);
+  const grid = gridFor([set], view, cell);
+  return sumAreas(grid && rasterize(bodies, set, grid), grid, poolCount);
+}
+
+/** Per-cell state of a two-build diff (whole robot, weapons included). */
+export const DIFF_NONE = 0;
+export const DIFF_SHARED = 1;
+export const DIFF_A_ONLY = 2;
+export const DIFF_B_ONLY = 3;
+
+/** Where A's and B's silhouettes differ in one view: a DIFF_* per grid cell
+ * (row-major, `j * nu + i`). */
+export interface DiffRaster {
+  grid: ViewGrid;
+  states: Uint8Array;
+}
+
+/** A build's hitboxes, as `collectBodies` returns them. */
+export interface MeasuredBuild {
+  pools: readonly HitboxPool[];
+  bodies: readonly HitboxBody[];
+}
+
+export interface ComparisonView {
+  a: ViewAreas;
+  b: ViewAreas;
+  /** Null when neither build has hitboxes. */
+  diff: DiffRaster | null;
+}
+
+/** Areas of builds A and B from every view, rasterized on one shared grid per
+ * view so their silhouettes can be diffed cell for cell. */
+export function measureComparison(
+  a: MeasuredBuild,
+  b: MeasuredBuild,
+  cell = 1,
+): Record<ViewName, ComparisonView> {
+  checkPoolCount(a.pools.length);
+  checkPoolCount(b.pools.length);
+  const out = {} as Record<ViewName, ComparisonView>;
+  for (const view of VIEW_ORDER) {
+    const setA = prepareView(a.bodies, view);
+    const setB = prepareView(b.bodies, view);
+    const grid = gridFor([setA, setB], view, cell);
+    const masksA = grid && rasterize(a.bodies, setA, grid);
+    const masksB = grid && rasterize(b.bodies, setB, grid);
+    let diff: DiffRaster | null = null;
+    if (grid && masksA && masksB) {
+      const states = new Uint8Array(grid.nu * grid.nv);
+      for (let c = 0; c < states.length; c++) {
+        const inA = masksA.any[c] !== 0;
+        const inB = masksB.any[c] !== 0;
+        states[c] = inA
+          ? inB
+            ? DIFF_SHARED
+            : DIFF_A_ONLY
+          : inB
+            ? DIFF_B_ONLY
+            : DIFF_NONE;
+      }
+      diff = { grid, states };
+    }
+    out[view] = {
+      a: sumAreas(masksA, grid, a.pools.length),
+      b: sumAreas(masksB, grid, b.pools.length),
+      diff,
+    };
+  }
+  return out;
 }
 
 /** Every view's per-pool and whole-robot areas. */

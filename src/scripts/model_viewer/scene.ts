@@ -68,6 +68,7 @@ function addModuleMeshes(
   model: ModuleModel,
   worldMatrix: THREE.Matrix4,
   colorOf: ZoneColorFn,
+  opacity: number,
   track: TrackedResources,
 ): void {
   for (const mesh of model.meshes ?? []) {
@@ -83,6 +84,11 @@ function addModuleMeshes(
       roughness: 0.85,
       metalness: 0.1,
       side: THREE.DoubleSide,
+      // Translucent meshes (compare mode's changed parts) let overlapping A
+      // and B parts show through each other.
+      transparent: opacity < 1,
+      opacity,
+      depthWrite: opacity >= 1,
     });
     const obj = new THREE.Mesh(geo, mat);
     group.add(obj);
@@ -165,12 +171,12 @@ export function addModel(
   model: ModuleModel,
   world: Mat4,
   colorOf: ZoneColorFn,
-  opts: { hitbox: boolean; skeleton: boolean },
+  opts: { hitbox: boolean; skeleton: boolean; meshOpacity?: number },
   track: TrackedResources,
 ): void {
   // The skeleton overlay shares the mesh's component space (root at origin).
   const boneWorld = boneWorlds(model.bones ?? [], true);
-  addModuleMeshes(group, model, toThree(world), colorOf, track);
+  addModuleMeshes(group, model, toThree(world), colorOf, opts.meshOpacity ?? 1, track);
   if (opts.hitbox) addHitboxes(group, model, world, colorOf, track);
   if (opts.skeleton) addSkeleton(group, model, world, boneWorld, track);
 }

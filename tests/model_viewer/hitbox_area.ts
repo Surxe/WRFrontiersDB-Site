@@ -4,7 +4,11 @@ import path from 'path';
 import {
   assignPools,
   collectBodies,
+  DIFF_A_ONLY,
+  DIFF_B_ONLY,
+  DIFF_SHARED,
   measureBuild,
+  measureComparison,
   measureView,
   VIEW_ORDER,
   viewApplies,
@@ -26,6 +30,8 @@ import {
   sideForSocket,
 } from '../../src/scripts/model_viewer/mount';
 import { refToId } from '../../src/utils/object_reference';
+import { resolveComparison } from '../../src/scripts/model_viewer/build/compare';
+import { diffPlacements } from '../../src/scripts/model_viewer/placement_diff';
 
 const sphere = (
   radius: number,
@@ -127,6 +133,44 @@ describe('measureView: whole robot', () => {
   });
 });
 
+describe('measureComparison', () => {
+  const pool = { key: 'torso' } as never;
+  const build = (bodies: HitboxBody[]) => ({ pools: [pool], bodies });
+  const count = (states: Uint8Array, state: number): number =>
+    states.reduce((n, s) => n + (s === state ? 1 : 0), 0);
+
+  it('identical builds are all shared, with equal areas', () => {
+    const bodies = [body([sphere(40, [0, 0, 0])], 0)];
+    const result = measureComparison(build(bodies), build(bodies));
+    for (const view of VIEW_ORDER) {
+      const { a, b, diff } = result[view];
+      expect(b).toEqual(a);
+      expect(count(diff!.states, DIFF_A_ONLY)).toBe(0);
+      expect(count(diff!.states, DIFF_B_ONLY)).toBe(0);
+    }
+  });
+
+  it('splits two offset discs into A-only, B-only and shared', () => {
+    const r = 40;
+    const a = [body([sphere(r, [0, 0, 0])], 0)];
+    const b = [body([sphere(r, [0, r, 0])], 0)];
+    const {
+      a: areaA,
+      b: areaB,
+      diff,
+    } = measureComparison(build(a), build(b)).front;
+    const disc = Math.PI * r * r;
+    const lens =
+      2 * r * r * Math.acos(0.5) - (r / 2) * Math.sqrt(4 * r * r - r * r);
+    near(count(diff!.states, DIFF_SHARED), lens);
+    near(count(diff!.states, DIFF_A_ONLY), disc - lens);
+    near(count(diff!.states, DIFF_B_ONLY), disc - lens);
+    // Each side's areas match measuring it alone.
+    near(areaA.total.withWeapons, measureView(a, 1, 'front').total.withWeapons);
+    near(areaB.total.withWeapons, measureView(b, 1, 'front').total.withWeapons);
+  });
+});
+
 describe('assignPools', () => {
   const entry = (socket: string, parent: number): CharacterPresetModule => ({
     module_ref: `OBJID_Module::M_${socket}`,
@@ -164,6 +208,12 @@ describe('assignPools', () => {
       'Right Shoulder',
     ]);
     expect(pools.map((p) => p.side)).toEqual([null, null, 'left', 'right']);
+    expect(pools.map((p) => p.key)).toEqual([
+      'chassis',
+      'torso',
+      'shoulder:left',
+      'shoulder:right',
+    ]);
   });
 
   it("puts weapons in their mount's pool and leaves the rest out", () => {
@@ -266,6 +316,7 @@ describe('real data: Anansi with Hefty on both shoulders', () => {
       'right',
     ]);
     expect(pools[label('Left Leg')].zone).toBe('DA_ArmorZone_LeftLeg.0');
+    expect(pools[label('Left Leg')].key).toBe('chassis:DA_ArmorZone_LeftLeg.0');
     expect(pools[label('Left Shoulder')].weaponIds).toEqual([
       'DA_Module_Weapon_Hefty.0',
     ]);
@@ -334,5 +385,134 @@ describe('real data: Anansi with Hefty on both shoulders', () => {
       label('Left Shoulder')
     ];
     expect(left.withWeapons).toBeGreaterThan(left.alone * 1.1);
+  });
+});
+
+describe('real data: Anansi A vs B with the left shoulder swapped', () => {
+  const current = path.join(process.cwd(), 'WRFrontiersDB-Data', 'current');
+  const read = <T>(file: string): T =>
+    JSON.parse(
+      fs.readFileSync(path.join(current, 'Objects', file), 'utf8')
+    ) as T;
+  const tables = {
+    modules: read<Record<string, never>>('Module.json'),
+    moduleTypes: read<Record<string, never>>('ModuleType.json'),
+    socketTypes: read<Record<string, never>>('ModuleSocketType.json'),
+    bots: read<Record<string, never>>('VirtualBot.json'),
+  };
+  const charModules = read<Record<string, unknown>>('CharacterModule.json');
+  const index = buildCompatibilityIndex(tables);
+  const models = new Map<string, ModuleModel>();
+
+  const place = (build: ReturnType<typeof resolveBuild>) => {
+    const preset = toPresetModules(build);
+    for (const e of preset) {
+      const id = modelIdForModule(
+        refToId(e.module_ref),
+        tables.modules,
+        charModules,
+        sideForSocket(e.socket_name ?? '')
+      );
+      if (id && !models.has(id)) {
+        models.set(
+          id,
+          JSON.parse(
+            fs.readFileSync(path.join(current, 'Models', `${id}.json`), 'utf8')
+          )
+        );
+      }
+    }
+    const placements = computeModuleWorlds(
+      preset,
+      tables.modules,
+      tables.moduleTypes,
+      charModules,
+      models
+    );
+    return {
+      placements,
+      ...collectBodies(preset, placements, models, tables),
+    };
+  };
+
+  const a = resolveBuild(
+    {
+      chassis: 'DA_Module_ChassisAnansi.2',
+      'Shoulder_L.Shoulder_Weapon_0': 'DA_Module_Weapon_Hefty.0',
+      'Shoulder_R.Shoulder_Weapon_0': 'DA_Module_Weapon_Hefty.0',
+    },
+    tables,
+    index
+  );
+  const leftSlot = a.slots.find((s) => s.key === 'Shoulder_L')!;
+  // Another released left shoulder with a heavy slot, so the weapon carries.
+  const other = leftSlot.options.find(
+    (id) =>
+      id !== a.selection.Shoulder_L &&
+      tables.modules[id] &&
+      resolveComparison(a, { Shoulder_L: id }, tables, index).b.selection[
+        'Shoulder_L.Shoulder_Weapon_0'
+      ] === 'DA_Module_Weapon_Hefty.0'
+  )!;
+  const { b } = resolveComparison(a, { Shoulder_L: other }, tables, index);
+  const measuredA = place(a);
+  const measuredB = place(b);
+  const views = measureComparison(measuredA, measuredB, 4);
+  const poolIndex = (pools: { key: string }[], key: string): number =>
+    pools.findIndex((p) => p.key === key);
+
+  it('found a comparable shoulder', () => {
+    expect(other).toBeDefined();
+  });
+
+  it('leaves every other pool unchanged', () => {
+    for (const key of [
+      'torso',
+      'shoulder:right',
+      'chassis:DA_ArmorZone_Pelvis.0',
+    ]) {
+      const ia = poolIndex(measuredA.pools, key);
+      const ib = poolIndex(measuredB.pools, key);
+      for (const view of VIEW_ORDER) {
+        expect(views[view].b.pools[ib], `${key} ${view}`).toEqual(
+          views[view].a.pools[ia]
+        );
+      }
+    }
+  });
+
+  it('changes the left shoulder and the whole robot somewhere', () => {
+    const ia = poolIndex(measuredA.pools, 'shoulder:left');
+    const ib = poolIndex(measuredB.pools, 'shoulder:left');
+    expect(
+      VIEW_ORDER.some(
+        (view) =>
+          views[view].a.pools[ia].alone !== views[view].b.pools[ib].alone
+      )
+    ).toBe(true);
+    expect(
+      VIEW_ORDER.some(
+        (view) =>
+          views[view].a.total.withWeapons !== views[view].b.total.withWeapons
+      )
+    ).toBe(true);
+  });
+
+  it('the 3D diff shares everything but the left shoulder and its weapon', () => {
+    const { sharedA, sharedB } = diffPlacements(
+      measuredA.placements,
+      measuredB.placements
+    );
+    const changedA = measuredA.placements.filter((_, i) => !sharedA[i]);
+    const changedB = measuredB.placements.filter((_, i) => !sharedB[i]);
+    // The swapped shoulder, plus its (moved) weapon on each side.
+    expect(changedA.map((p) => p.socket_name).sort()).toEqual([
+      'Shoulder_L',
+      'Shoulder_Weapon_0',
+    ]);
+    expect(changedB.map((p) => p.socket_name).sort()).toEqual([
+      'Shoulder_L',
+      'Shoulder_Weapon_0',
+    ]);
   });
 });

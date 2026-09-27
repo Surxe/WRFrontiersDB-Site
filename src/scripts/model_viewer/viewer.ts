@@ -17,15 +17,25 @@ import {
   type ZoneColorFn,
 } from './scene';
 import {
+  DIFF_A_ONLY,
+  DIFF_B_ONLY,
+  DIFF_SHARED,
   VIEWS,
+  VIEW_ORDER,
   collectBodies,
   measureBuild,
+  measureComparison,
+  type ComparisonView,
+  type DiffRaster,
   type HitboxBody,
   type HitboxPool,
   type ViewAreas,
   type ViewName,
 } from './hitbox_area';
 import { toThree, type Mat4 } from './math';
+import type { ModulePlacement } from './mount';
+import { diffPlacements } from './placement_diff';
+import { DIFF_COLORS } from './colors';
 import type { CharacterPresetModule } from '../../types/character_preset';
 import type { Module, ModuleType } from '../../types/module';
 import type { ModuleModel, Vec3 } from '../../types/model';
@@ -42,7 +52,14 @@ export interface BuildOptions {
   label: string;
   hitbox: boolean;
   skeleton: boolean;
+  /** Compare against build B (`modules` is then build A): both are drawn
+   * overlapping in the diff colors instead of module colors. */
+  compare?: { modules: CharacterPresetModule[] };
 }
+
+/** Opacity of a compared build's changed meshes, so overlapping A and B
+ * parts show through each other. */
+const CHANGED_MESH_OPACITY = 0.55;
 
 const FALLBACK_COLOR = 0x9aa0a6;
 
@@ -73,6 +90,14 @@ export interface HitboxMeasurement {
   areas: Record<ViewName, ViewAreas>;
 }
 
+export interface ComparisonMeasurement {
+  poolsA: HitboxPool[];
+  poolsB: HitboxPool[];
+  views: Record<ViewName, ComparisonView>;
+}
+
+type HitboxSet = { pools: HitboxPool[]; bodies: HitboxBody[] };
+
 export class ModelViewer {
   private renderer: THREE.WebGLRenderer;
   private scene: THREE.Scene;
@@ -84,7 +109,13 @@ export class ModelViewer {
   /** Flat, opaque per-pool hitbox silhouettes shown in the axis views. */
   private silhouettes = new THREE.Group();
   private view: ViewName | null = null;
-  private hitboxes: { pools: HitboxPool[]; bodies: HitboxBody[] } | null = null;
+  private hitboxes: HitboxSet | null = null;
+  /** Build B's hitboxes while comparing, else null. */
+  private hitboxesB: HitboxSet | null = null;
+  /** Per-view A vs B silhouette diffs, once measured. */
+  private diffRasters: Partial<Record<ViewName, DiffRaster>> | null = null;
+  /** The diff image shown in an axis view while comparing. */
+  private diffPlane: { mesh: THREE.Mesh; texture: THREE.DataTexture } | null = null;
   private track: TrackedResources = createTrack();
   private models = new Map<string, ModuleModel>();
   private status: HTMLElement;
@@ -160,6 +191,7 @@ export class ModelViewer {
     for (const geo of this.track.geos) geo.dispose();
     for (const mat of this.track.mats) mat.dispose();
     this.track = createTrack();
+    this.disposeDiffPlane();
     while (this.root.children.length > 0) this.root.remove(this.root.children[0]);
     while (this.silhouettes.children.length > 0) {
       this.silhouettes.remove(this.silhouettes.children[0]);
@@ -217,10 +249,16 @@ export class ModelViewer {
     );
 
     const presetModules = opts.modules;
+    const compareModules = opts.compare?.modules ?? null;
 
     // 1) Resolve + load every model this build needs BEFORE computing world
     //    transforms (socket frames come from the parent module's skeleton).
     const needed = this.neededModels(presetModules, modules, charModules);
+    if (compareModules) {
+      for (const id of this.neededModels(compareModules, modules, charModules)) {
+        needed.add(id);
+      }
+    }
     let missing = 0;
     await Promise.all(
       [...needed].map(async (id) => {
@@ -231,39 +269,76 @@ export class ModelViewer {
     if (generation !== this.generation) return;
 
     // 2) Now that the models are cached, resolve the module world transforms.
-    const placements = computeModuleWorlds(
-      presetModules,
-      modules,
-      moduleTypes,
-      charModules,
-      this.models,
-    );
+    const tables = { modules, moduleTypes };
+    const place = (list: CharacterPresetModule[]): ModulePlacement[] =>
+      computeModuleWorlds(list, modules, moduleTypes, charModules, this.models);
+    const placements = place(presetModules);
+    const placementsB = compareModules ? place(compareModules) : null;
 
     this.disposeTracked();
-    this.hitboxes = collectBodies(presetModules, placements, this.models, {
-      modules,
-      moduleTypes,
-    });
-    this.addSilhouettes(this.hitboxes.bodies, opts);
+    this.diffRasters = null;
+    this.hitboxes = collectBodies(presetModules, placements, this.models, tables);
+    this.hitboxesB =
+      compareModules && placementsB
+        ? collectBodies(compareModules, placementsB, this.models, tables)
+        : null;
+
     let loaded = 0;
-
-    for (let i = 0; i < placements.length; i++) {
-      const placement = placements[i];
-      if (!placement.model_id) continue;
-
-      const model = this.models.get(placement.model_id) ?? null;
+    const draw = (
+      placement: ModulePlacement,
+      colorOf: ZoneColorFn,
+      meshOpacity = 1,
+    ): void => {
+      if (!placement.model_id) return;
+      const model = this.models.get(placement.model_id);
       if (!model) {
         missing += 1;
-        continue;
+        return;
       }
-
-      this.addPlacement(model, placement.world, i, opts);
+      this.addPlacement(model, placement.world, colorOf, opts, meshOpacity);
       loaded += 1;
+    };
+
+    if (!placementsB) {
+      this.addSilhouettes(this.hitboxes.bodies, opts);
+      placements.forEach((placement, i) => draw(placement, colorFor(opts, i)));
+    } else {
+      // Compare: shared parts once (grey, from A), A-only orange, B-only blue.
+      // The axis views show the measured diff image instead (see
+      // measureComparison), so no per-module silhouettes are built.
+      const { sharedA, sharedB } = diffPlacements(placements, placementsB);
+      const flat = (color: number): ZoneColorFn => () => color;
+      placements.forEach((placement, i) =>
+        sharedA[i]
+          ? draw(placement, flat(DIFF_COLORS.shared))
+          : draw(placement, flat(DIFF_COLORS.aOnly), CHANGED_MESH_OPACITY),
+      );
+      placementsB.forEach((placement, i) => {
+        if (!sharedB[i]) draw(placement, flat(DIFF_COLORS.bOnly), CHANGED_MESH_OPACITY);
+      });
     }
 
     this.reportBuild(opts.label, loaded, missing);
     this.frameToRobot();
     if (this.view) this.fitOrtho();
+  }
+
+  /** A vs B areas and silhouette diffs of the compared builds, every view
+   * (null unless the last build compared). Also enables the diff images in
+   * the axis views. */
+  measureComparison(): ComparisonMeasurement | null {
+    if (!this.hitboxes || !this.hitboxesB) return null;
+    const views = measureComparison(this.hitboxes, this.hitboxesB, AREA_CELL_CM);
+    this.diffRasters = {};
+    for (const view of VIEW_ORDER) {
+      const diff = views[view].diff;
+      if (diff) this.diffRasters[view] = diff;
+    }
+    if (this.view) {
+      this.showDiffPlane(this.view);
+      this.fitOrtho();
+    }
+    return { poolsA: this.hitboxes.pools, poolsB: this.hitboxesB.pools, views };
   }
 
   /** Per-pool hitbox areas (cm^2) of the current build, every view. */
@@ -286,6 +361,7 @@ export class ModelViewer {
     this.controls.enableRotate = !axis;
     this.controls.object = axis ? this.ortho : this.camera;
     if (axis) {
+      if (this.diffRasters) this.showDiffPlane(view);
       this.fitOrtho();
     } else if (previous) {
       // Back in 3D, look from the side that was just selected.
@@ -368,17 +444,90 @@ export class ModelViewer {
   private addPlacement(
     model: ModuleModel,
     world: Mat4,
-    moduleIndex: number,
+    colorOf: ZoneColorFn,
     opts: BuildOptions,
+    meshOpacity: number,
   ): void {
     addModel(
       this.root,
       model,
       world,
-      colorFor(opts, moduleIndex),
-      { hitbox: opts.hitbox, skeleton: opts.skeleton },
+      colorOf,
+      { hitbox: opts.hitbox, skeleton: opts.skeleton, meshOpacity },
       this.track,
     );
+  }
+
+  private disposeDiffPlane(): void {
+    if (!this.diffPlane) return;
+    const { mesh, texture } = this.diffPlane;
+    mesh.removeFromParent();
+    mesh.geometry.dispose();
+    (mesh.material as THREE.Material).dispose();
+    texture.dispose();
+    this.diffPlane = null;
+  }
+
+  /** Show `view`'s A vs B diff raster as a flat image: one texel per ray grid
+   * cell, laid on the grid's own plane in UE space (so it lines up with the
+   * robot exactly), in front of it along the view direction. */
+  private showDiffPlane(view: ViewName): void {
+    this.disposeDiffPlane();
+    const raster = this.diffRasters?.[view];
+    if (!raster) return;
+    const { grid, states } = raster;
+
+    const rgba = (color: number): [number, number, number, number] => [
+      (color >> 16) & 0xff,
+      (color >> 8) & 0xff,
+      color & 0xff,
+      255,
+    ];
+    const palette: Record<number, [number, number, number, number]> = {
+      [DIFF_SHARED]: rgba(DIFF_COLORS.shared),
+      [DIFF_A_ONLY]: rgba(DIFF_COLORS.aOnly),
+      [DIFF_B_ONLY]: rgba(DIFF_COLORS.bOnly),
+    };
+    const data = new Uint8Array(states.length * 4);
+    states.forEach((state, c) => {
+      const px = palette[state];
+      if (px) data.set(px, c * 4);
+    });
+    const texture = new THREE.DataTexture(data, grid.nu, grid.nv, THREE.RGBAFormat);
+    texture.magFilter = THREE.NearestFilter;
+    texture.minFilter = THREE.NearestFilter;
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.needsUpdate = true;
+
+    const { dir, u, v } = VIEWS[view];
+    const u1 = grid.u0 + grid.nu * grid.cell;
+    const v1 = grid.v0 + grid.nv * grid.cell;
+    const corner = (su: number, sv: number): number[] =>
+      [0, 1, 2].map((k) => u[k] * su + v[k] * sv + dir[k] * grid.start);
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute(
+      'position',
+      new THREE.Float32BufferAttribute(
+        [
+          ...corner(grid.u0, grid.v0),
+          ...corner(u1, grid.v0),
+          ...corner(u1, v1),
+          ...corner(grid.u0, v1),
+        ],
+        3,
+      ),
+    );
+    geo.setAttribute('uv', new THREE.Float32BufferAttribute([0, 0, 1, 0, 1, 1, 0, 1], 2));
+    geo.setIndex([0, 1, 2, 0, 2, 3]);
+    const mat = new THREE.MeshBasicMaterial({
+      map: texture,
+      transparent: true,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+    });
+    const mesh = new THREE.Mesh(geo, mat);
+    this.silhouettes.add(mesh);
+    this.diffPlane = { mesh, texture };
   }
 
   private reportBuild(label: string, loaded: number, missing: number): void {

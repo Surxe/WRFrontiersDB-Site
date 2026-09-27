@@ -20,6 +20,15 @@ export interface BuilderUiOptions {
   /** A fresh copy of the part's pre-rendered ObjRef (icon + localized name),
    * or null to fall back to its plain-text name. */
   partRef?: (moduleId: string) => Node | null;
+  /** Element id prefix, unique per builder on the page (default
+   * `model-slot`). */
+  idPrefix?: string;
+  /** Slots whose module differs from the build compared against: marked, and
+   * given a revert button where `canRevert` allows (slots the user chose, as
+   * opposed to ones that changed as a consequence). */
+  changed?: ReadonlySet<SlotKey>;
+  canRevert?: (key: SlotKey) => boolean;
+  onRevert?: (key: SlotKey) => void;
 }
 
 const EMPTY_VALUE = '';
@@ -40,8 +49,8 @@ export function displaySlots(build: ResolvedBuild): BuildSlot[] {
     ]);
 }
 
-function pickerIdFor(key: SlotKey): string {
-  return `model-slot-${key.replace(/[^A-Za-z0-9_-]/g, '-')}`;
+function pickerIdFor(key: SlotKey, prefix = 'model-slot'): string {
+  return `${prefix}-${key.replace(/[^A-Za-z0-9_-]/g, '-')}`;
 }
 
 /** Plain-text qualifiers after a part's name: an id hint when two parts share
@@ -87,7 +96,7 @@ function partContent(
  */
 function buildPicker(slot: BuildSlot, opts: BuilderUiOptions): HTMLElement {
   const { tables } = opts;
-  const id = pickerIdFor(slot.key);
+  const id = pickerIdFor(slot.key, opts.idPrefix);
   const wrapper = document.createElement('div');
   wrapper.className = 'part-picker';
 
@@ -274,6 +283,27 @@ function buildRow(slot: BuildSlot, opts: BuilderUiOptions): HTMLElement {
     label.appendChild(lock);
   }
 
+  if (opts.changed?.has(slot.key)) {
+    row.classList.add('is-changed');
+    const mark = document.createElement('span');
+    mark.className = 'builder-changed';
+    mark.textContent = 'changed';
+    label.appendChild(mark);
+    if (opts.onRevert && opts.canRevert?.(slot.key)) {
+      const revert = document.createElement('button');
+      revert.type = 'button';
+      revert.className = 'builder-revert';
+      revert.textContent = 'use A';
+      revert.title = "Use build A's part in this slot";
+      revert.addEventListener('click', (event) => {
+        // Inside the <label>: keep the click from also opening the picker.
+        event.preventDefault();
+        opts.onRevert?.(slot.key);
+      });
+      label.appendChild(revert);
+    }
+  }
+
   row.append(label, picker);
   return row;
 }
@@ -297,6 +327,6 @@ export function renderBuilder(
   );
 
   if (focusedKey) {
-    document.getElementById(pickerIdFor(focusedKey))?.focus();
+    document.getElementById(pickerIdFor(focusedKey, opts.idPrefix))?.focus();
   }
 }

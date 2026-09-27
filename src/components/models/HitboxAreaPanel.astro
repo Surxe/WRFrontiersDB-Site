@@ -1,7 +1,9 @@
 ---
 // Hitbox area panel for the 3D model viewer. src/scripts/model_viewer switches
 // the camera from #hitbox-view-buttons and renders one card per health pool
-// into #hitbox-area-pools (area_panel.ts).
+// into #hitbox-area-pools (area_panel.ts). While comparing builds it also fills
+// #hitbox-compare: the headline, the metric switch and the diff legend (whose
+// swatches index.ts colors from DIFF_COLORS).
 ---
 
 <section class="hitbox-area" aria-labelledby="hitbox-area-title">
@@ -22,6 +24,41 @@
       >
       <button type="button" data-view="top" aria-pressed="false">Top</button>
     </div>
+  </div>
+  <div id="hitbox-compare" class="hitbox-compare" hidden>
+    <div class="hitbox-compare-bar">
+      <div
+        id="hitbox-compare-headline"
+        class="hitbox-headline"
+        aria-label="Whole robot area change, A to B"
+        aria-live="polite"
+      >
+      </div>
+      <div
+        id="hitbox-metric-buttons"
+        class="hitbox-view-buttons"
+        role="group"
+        aria-label="Compared area"
+      >
+        <button type="button" data-metric="withWeapons" aria-pressed="true">
+          With weapons
+        </button>
+        <button type="button" data-metric="alone" aria-pressed="false">
+          Alone
+        </button>
+      </div>
+    </div>
+    <p class="hitbox-compare-legend">
+      <span
+        ><span class="hitbox-swatch" data-diff="shared"></span> Both builds</span
+      >
+      <span
+        ><span class="hitbox-swatch" data-diff="aOnly"></span> Only A (lost)</span
+      >
+      <span
+        ><span class="hitbox-swatch" data-diff="bOnly"></span> Only B (gained)</span
+      >
+    </p>
   </div>
   <div id="hitbox-area-pools" class="hitbox-area-pools" aria-live="polite">
     <p class="is-muted">Measuring...</p>
@@ -48,10 +85,102 @@
       The Front/Back/Left/Right/Top buttons show the hitboxes flat from that
       side, in the same colors as the 3D view.
     </li>
+    <li>
+      <strong>Compare</strong> (next to Build): build B is build A plus the parts
+      you swap; slots you leave alone follow A. Every view then shows where the silhouettes
+      differ, and the headline gives the whole robot's change per side. A smaller
+      area (green) is a harder target.
+    </li>
   </ul>
 </section>
 
 <style>
+  .hitbox-compare {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .hitbox-compare[hidden] {
+    display: none;
+  }
+
+  .hitbox-compare-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .hitbox-headline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .hitbox-headline :global(.hitbox-headline-item) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 4.5rem;
+    padding: 0.3rem 0.6rem;
+    border: 1px solid var(--wrf-border);
+    border-radius: var(--wrf-radius-sm);
+    background: var(--wrf-bg);
+    color: var(--wrf-text);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .hitbox-headline :global(.hitbox-headline-item.is-active) {
+    border-color: var(--wrf-accent);
+  }
+
+  .hitbox-headline :global(.hitbox-headline-view) {
+    color: var(--wrf-text-muted);
+    font-size: 0.75rem;
+  }
+
+  .hitbox-headline :global(.hitbox-headline-value) {
+    font-size: 1.05rem;
+    font-weight: bold;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .hitbox-headline :global(.is-better .hitbox-headline-value),
+  .hitbox-area-pools :global(td.is-better) {
+    color: var(--wrf-success);
+  }
+
+  .hitbox-headline :global(.is-worse .hitbox-headline-value),
+  .hitbox-area-pools :global(td.is-worse) {
+    color: var(--wrf-danger);
+  }
+
+  .hitbox-headline :global(.is-same .hitbox-headline-value),
+  .hitbox-area-pools :global(td.is-same) {
+    color: var(--wrf-text-muted);
+  }
+
+  .hitbox-compare-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1rem;
+    margin: 0;
+    color: var(--wrf-text-muted);
+    font-size: 0.8rem;
+  }
+
+  .hitbox-compare-legend .hitbox-swatch {
+    display: inline-block;
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 2px;
+    vertical-align: middle;
+  }
+
   .hitbox-area {
     margin-top: 1rem;
     padding: 0.75rem;

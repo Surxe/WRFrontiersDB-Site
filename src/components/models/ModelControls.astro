@@ -1,14 +1,38 @@
 ---
 // Build panel for the 3D model viewer. src/scripts/model_viewer renders the
 // cascading part dropdowns into #model-builder (build/ui.ts) and reads the
-// view toggles by id.
+// view toggles by id. With Compare on, build B's dropdowns go into
+// #model-builder-b (B = A plus the user's swaps; see build/compare.ts).
 ---
 
 <aside class="model-controls" aria-label="Robot build">
-  <h2>Build</h2>
+  <div class="model-build-head">
+    <h2 id="model-build-a-title">Build</h2>
+    <label class="model-check">
+      <input type="checkbox" id="model-compare" />
+      Compare
+    </label>
+  </div>
   <div id="model-builder" class="model-builder" aria-live="polite">
     <p class="builder-placeholder">Loading parts...</p>
   </div>
+  <section
+    id="model-compare-b"
+    class="model-compare-b"
+    aria-labelledby="model-build-b-title"
+    hidden
+  >
+    <div class="model-build-head">
+      <h2 id="model-build-b-title">Build B</h2>
+      <button type="button" id="model-compare-reset" class="model-small-button">
+        Reset B
+      </button>
+    </div>
+    <p class="builder-placeholder">
+      Swap any parts to compare against build A. Slots you leave alone follow A.
+    </p>
+    <div id="model-builder-b" class="model-builder" aria-live="polite"></div>
+  </section>
   <div class="model-view-toggles">
     <label class="model-check">
       <input type="checkbox" id="model-hitbox" checked />
@@ -31,6 +55,67 @@
   .model-controls h2 {
     margin: 0;
     font-size: 1rem;
+  }
+
+  .model-build-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .model-compare-b {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--wrf-border);
+  }
+
+  .model-compare-b[hidden] {
+    display: none;
+  }
+
+  .model-small-button {
+    padding: 0.15rem 0.5rem;
+    border: 1px solid var(--wrf-border);
+    border-radius: var(--wrf-radius-sm);
+    background: var(--wrf-surface-2);
+    color: var(--wrf-text);
+    font-size: 0.8rem;
+    cursor: pointer;
+  }
+
+  .model-small-button:hover {
+    border-color: var(--wrf-accent-hover);
+  }
+
+  /* Build B rows that differ from build A (build/ui.ts). */
+  .model-builder :global(.builder-row.is-changed) {
+    margin-left: -0.5rem;
+    padding-left: calc(var(--depth, 0) * 0.9rem + 0.35rem);
+    border-left: 3px solid var(--wrf-accent);
+  }
+
+  .model-builder :global(.builder-changed) {
+    color: var(--wrf-accent);
+    font-size: 0.75rem;
+  }
+
+  .model-builder :global(.builder-revert) {
+    margin-left: auto;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--wrf-link);
+    font: inherit;
+    font-size: 0.75rem;
+    cursor: pointer;
+  }
+
+  .model-builder :global(.builder-revert:hover) {
+    color: var(--wrf-link-hover);
+    text-decoration: underline;
   }
 
   .model-builder {
