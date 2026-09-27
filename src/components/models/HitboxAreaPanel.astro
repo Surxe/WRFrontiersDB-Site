@@ -168,7 +168,7 @@
     padding: 0;
     border: 0;
     background: none;
-    color: var(--wrf-link);
+    color: inherit;
     font: inherit;
     cursor: pointer;
   }
@@ -178,8 +178,9 @@
     text-decoration: underline;
   }
 
-  .hitbox-area-pools :global(tr.is-active) {
-    background: var(--wrf-accent-active-bg);
+  .hitbox-area-pools :global(th.is-active button) {
+    color: var(--wrf-accent);
+    font-weight: bold;
   }
 
   .hitbox-area-pools :global(td.is-muted) {

@@ -101,14 +101,17 @@ function poolCard(
     if (!viewApplies(pool, view)) continue;
     const area = measurement.areas[view][index];
     const row = document.createElement('tr');
-    if (view === opts.view) row.className = 'is-active';
 
     const viewCell = document.createElement('th');
     viewCell.scope = 'row';
+    // Only the selected axis view is emphasized; the 3D view matches no row.
+    const active = view === opts.view;
+    if (active) viewCell.className = 'is-active';
     const button = document.createElement('button');
     button.type = 'button';
     button.textContent = viewRowLabel(pool, view);
     button.title = `Show the ${VIEWS[view].label.toLowerCase()} view`;
+    if (active) button.setAttribute('aria-current', 'true');
     button.addEventListener('click', () => opts.onSelectView(view));
     viewCell.append(button);
     row.append(viewCell, textEl('td', m2(area.alone)));
@@ -134,7 +137,14 @@ export function renderAreaPanel(
     );
     return;
   }
-  measurement.pools.forEach((pool, i) => {
-    container.append(poolCard(pool, i, measurement, opts));
-  });
+  // Right shoulder, torso, left shoulder: left to right as the default 3D
+  // camera (front-right of the robot) sees them.
+  const rank = (pool: HitboxPool): number =>
+    pool.side === 'right' ? 0 : pool.side === 'left' ? 2 : 1;
+  measurement.pools
+    .map((pool, i) => ({ pool, i }))
+    .sort((a, b) => rank(a.pool) - rank(b.pool))
+    .forEach(({ pool, i }) => {
+      container.append(poolCard(pool, i, measurement, opts));
+    });
 }
