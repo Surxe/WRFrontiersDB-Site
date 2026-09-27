@@ -4,7 +4,9 @@ import path from 'path';
 import {
   assignPools,
   collectBodies,
+  measureBuild,
   measureView,
+  VIEW_ORDER,
   viewApplies,
   type HitboxBody,
 } from '../../src/scripts/model_viewer/hitbox_area';
@@ -131,17 +133,18 @@ describe('assignPools', () => {
   ];
   const { pools, poolOf, weapon } = assignPools(presets, (i) => kinds[i]);
 
-  it('makes the torso and each shoulder a pool', () => {
+  it('makes the chassis, torso and each shoulder a pool', () => {
     expect(pools.map((p) => p.label)).toEqual([
+      'Chassis',
       'Torso',
       'Left Shoulder',
       'Right Shoulder',
     ]);
-    expect(pools.map((p) => p.side)).toEqual([null, 'left', 'right']);
+    expect(pools.map((p) => p.side)).toEqual([null, null, 'left', 'right']);
   });
 
   it("puts weapons in their mount's pool and leaves the rest out", () => {
-    expect(poolOf).toEqual([null, 0, 1, 1, 2, 2, 0, null]);
+    expect(poolOf).toEqual([0, 1, 2, 2, 3, 3, 1, null]);
     expect(weapon).toEqual([
       false,
       false,
@@ -152,17 +155,20 @@ describe('assignPools', () => {
       true,
       false,
     ]);
-    expect(pools[1].weaponIds).toEqual(['M_Shoulder_Weapon_0']);
-    expect(pools[0].weaponIds).toEqual(['M_Torso_Weapon_0']);
-    expect(pools[1].weaponIndices).toEqual([3]);
-    expect(pools[0].weaponIndices).toEqual([6]);
+    expect(pools[2].weaponIds).toEqual(['M_Shoulder_Weapon_0']);
+    expect(pools[1].weaponIds).toEqual(['M_Torso_Weapon_0']);
+    expect(pools[2].weaponIndices).toEqual([3]);
+    expect(pools[1].weaponIndices).toEqual([6]);
+    // The chassis sits above the torso, but torso weapons stay with the torso.
+    expect(pools[0].weaponIds).toEqual([]);
   });
 
   it("skips a shoulder's inner side", () => {
-    expect(viewApplies(pools[1], 'right')).toBe(false);
+    expect(viewApplies(pools[2], 'right')).toBe(false);
+    expect(viewApplies(pools[2], 'left')).toBe(true);
+    expect(viewApplies(pools[3], 'left')).toBe(false);
     expect(viewApplies(pools[1], 'left')).toBe(true);
-    expect(viewApplies(pools[2], 'left')).toBe(false);
-    expect(viewApplies(pools[0], 'left')).toBe(true);
+    expect(viewApplies(pools[0], 'right')).toBe(true);
   });
 });
 
@@ -216,14 +222,26 @@ describe('real data: Anansi with Hefty on both shoulders', () => {
   );
   const { pools, bodies } = collectBodies(preset, placements, models, tables);
 
-  it('finds the torso and both shoulders, each shoulder armed', () => {
+  it('finds the chassis, torso and both shoulders, each shoulder armed', () => {
     expect(pools.map((p) => p.label)).toEqual([
+      'Chassis',
       'Torso',
       'Left Shoulder',
       'Right Shoulder',
     ]);
-    expect(pools[1].weaponIds).toEqual(['DA_Module_Weapon_Hefty.0']);
+    expect(pools[0].weaponIds).toEqual([]);
     expect(pools[2].weaponIds).toEqual(['DA_Module_Weapon_Hefty.0']);
+    expect(pools[3].weaponIds).toEqual(['DA_Module_Weapon_Hefty.0']);
+  });
+
+  it('measures the chassis from every side', () => {
+    const areas = measureBuild(bodies, pools.length, 4);
+    for (const view of VIEW_ORDER) {
+      const [chassis] = areas[view];
+      expect(chassis.alone, view).toBeGreaterThan(0);
+      // No weapons mount on the chassis: nothing to add.
+      expect(chassis.withWeapons, view).toBe(chassis.alone);
+    }
   });
 
   it("matches the torso capsule's analytic front area", () => {
@@ -231,13 +249,13 @@ describe('real data: Anansi with Hefty on both shoulders', () => {
     const torsoModel = models.get('BP_Module_Anansi_Torso.0')!;
     const r = torsoModel.capsules[0].radius;
     near(
-      measureView(bodies, pools.length, 'front', 2)[0].alone,
+      measureView(bodies, pools.length, 'front', 2)[1].alone,
       Math.PI * r * r
     );
   });
 
   it('a mounted weapon grows its shoulder from the outer side', () => {
-    const [, left] = measureView(bodies, pools.length, 'left', 2);
+    const [, , left] = measureView(bodies, pools.length, 'left', 2);
     expect(left.withWeapons).toBeGreaterThan(left.alone * 1.1);
   });
 });

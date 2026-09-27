@@ -1,6 +1,6 @@
 /**
- * Renders the hitbox-area panel: one card per health pool (torso, each
- * shoulder) with its projected area from every applicable view.
+ * Renders the hitbox-area panel: one card per health pool (each shoulder,
+ * torso, chassis) with its projected area from every applicable view.
  */
 import {
   VIEW_ORDER,
@@ -132,15 +132,19 @@ export function renderAreaPanel(
 ): void {
   container.replaceChildren();
   if (!measurement || measurement.pools.length === 0) {
-    container.append(
-      textEl('p', 'No torso or shoulder hitboxes in this build.', 'is-muted')
-    );
+    container.append(textEl('p', 'No hitboxes in this build.', 'is-muted'));
     return;
   }
   // Right shoulder, torso, left shoulder: left to right as the default 3D
-  // camera (front-right of the robot) sees them.
+  // camera (front-right of the robot) sees them; the chassis below them.
   const rank = (pool: HitboxPool): number =>
-    pool.side === 'right' ? 0 : pool.side === 'left' ? 2 : 1;
+    pool.kind === 'chassis'
+      ? 3
+      : pool.side === 'right'
+        ? 0
+        : pool.side === 'left'
+          ? 2
+          : 1;
   measurement.pools
     .map((pool, i) => ({ pool, i }))
     .sort((a, b) => rank(a.pool) - rank(b.pool))

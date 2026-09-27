@@ -1,8 +1,8 @@
 /**
  * Projected hitbox area of a build, per health pool and view direction.
  *
- * Each torso and shoulder is its own health pool; a weapon's hits go to the
- * pool of the torso/shoulder it is mounted on. For every view a grid of
+ * The chassis (legs), torso and each shoulder are their own health pools; a
+ * weapon's hits go to the pool of the part it is mounted on. For every view a grid of
  * parallel rays (one per `cell` x `cell` square) is intersected analytically
  * with the build's hitbox primitives, and each pool gets, in isolation:
  *
@@ -43,10 +43,11 @@ export const VIEWS: Record<ViewName, ViewDef> = {
 
 export const VIEW_ORDER: readonly ViewName[] = ['front', 'back', 'left', 'right', 'top'];
 
-/** One health pool: a torso or a shoulder (with its mounted weapons). */
+/** One health pool: the chassis, torso or a shoulder (with its mounted
+ * weapons). */
 export interface HitboxPool {
   label: string;
-  kind: 'torso' | 'shoulder';
+  kind: 'chassis' | 'torso' | 'shoulder';
   /** Which side a shoulder sits on; its inner-side view is not measured. */
   side: 'left' | 'right' | null;
   /** Index (in the module list) of the pool's own module. */
@@ -89,8 +90,9 @@ function sideOfSocket(socketName: string | null | undefined): 'left' | 'right' |
 
 /**
  * Health pools of a module list (preset shape, parents first), and which pool
- * each entry's hits go to: torsos and shoulders are pools; a weapon joins the
- * nearest torso/shoulder above it; everything else is in no pool.
+ * each entry's hits go to: the chassis, torso and shoulders are pools; a
+ * weapon joins the nearest pool part above it (its mount); everything else
+ * (gear) is in no pool.
  */
 export function assignPools(
   presetModules: readonly CharacterPresetModule[],
@@ -101,10 +103,12 @@ export function assignPools(
   const weapon: boolean[] = new Array(presetModules.length).fill(false);
   presetModules.forEach((entry, i) => {
     const kind = kindOf(i);
-    if (kind === 'torso' || kind === 'shoulder') {
+    if (kind === 'chassis' || kind === 'torso' || kind === 'shoulder') {
       const side = kind === 'shoulder' ? sideOfSocket(entry.socket_name) : null;
       const label =
-        kind === 'torso'
+        kind === 'chassis'
+          ? 'Chassis'
+          : kind === 'torso'
           ? 'Torso'
           : side === 'left'
             ? 'Left Shoulder'
