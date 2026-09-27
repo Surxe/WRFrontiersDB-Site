@@ -1,7 +1,8 @@
 ---
 // Hitbox area panel for the 3D model viewer. src/scripts/model_viewer switches
-// the camera from #hitbox-view-buttons and renders one card per health pool
-// into #hitbox-area-pools (area_panel.ts). While comparing builds it also fills
+// the camera from #hitbox-mode-buttons (3D / flat 2D) and #hitbox-view-buttons
+// (the side to look from; none pressed at a custom 3D angle), and renders one
+// card per health pool into #hitbox-area-pools (area_panel.ts). While comparing builds it also fills
 // #hitbox-compare: the headline, the metric switch and the diff legend (whose
 // swatches index.ts colors from DIFF_COLORS).
 ---
@@ -9,20 +10,34 @@
 <section class="hitbox-area" aria-labelledby="hitbox-area-title">
   <div class="hitbox-area-head">
     <h2 id="hitbox-area-title">Hitbox area</h2>
-    <div
-      id="hitbox-view-buttons"
-      class="hitbox-view-buttons"
-      role="group"
-      aria-label="Camera view"
-    >
-      <button type="button" data-view="" aria-pressed="true">3D</button>
-      <button type="button" data-view="front" aria-pressed="false">Front</button
+    <div class="hitbox-view-controls">
+      <div
+        id="hitbox-mode-buttons"
+        class="hitbox-view-buttons"
+        role="group"
+        aria-label="Camera mode"
       >
-      <button type="button" data-view="back" aria-pressed="false">Back</button>
-      <button type="button" data-view="left" aria-pressed="false">Left</button>
-      <button type="button" data-view="right" aria-pressed="false">Right</button
+        <button type="button" data-mode="3d" aria-pressed="true">3D</button>
+        <button type="button" data-mode="2d" aria-pressed="false">2D</button>
+      </div>
+      <div
+        id="hitbox-view-buttons"
+        class="hitbox-view-buttons"
+        role="group"
+        aria-label="Camera side"
       >
-      <button type="button" data-view="top" aria-pressed="false">Top</button>
+        <button type="button" data-view="front" aria-pressed="false"
+          >Front</button
+        >
+        <button type="button" data-view="back" aria-pressed="false">Back</button
+        >
+        <button type="button" data-view="left" aria-pressed="false">Left</button
+        >
+        <button type="button" data-view="right" aria-pressed="false"
+          >Right</button
+        >
+        <button type="button" data-view="top" aria-pressed="false">Top</button>
+      </div>
     </div>
   </div>
   <div id="hitbox-compare" class="hitbox-compare" hidden>
@@ -82,8 +97,9 @@
       silhouette, overlap counted once; so it is less than the pools added up.
     </li>
     <li>
-      The Front/Back/Left/Right/Top buttons show the hitboxes flat from that
-      side, in the same colors as the 3D view.
+      <strong>2D</strong> shows the hitboxes flat from the chosen side, in the same
+      colors as the 3D view; in <strong>3D</strong> the side buttons aim the camera
+      from that side.
     </li>
     <li>
       <strong>Compare</strong> (next to Build): build B is build A plus the parts
@@ -201,6 +217,12 @@
   .hitbox-area-head h2 {
     margin: 0;
     font-size: 1rem;
+  }
+
+  .hitbox-view-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
   }
 
   .hitbox-view-buttons {

@@ -349,10 +349,10 @@ export class ModelViewer {
   }
 
   /** Switch to an orthographic axis view of the flat, opaque hitbox
-   * silhouettes, or back to the free 3D view. */
+   * silhouettes, or back to the free 3D view (left at its current angle;
+   * see lookFrom). */
   setView(view: ViewName | null): void {
     if (view === this.view) return;
-    const previous = this.view;
     this.view = view;
     const axis = view !== null;
     this.root.visible = !axis;
@@ -363,14 +363,41 @@ export class ModelViewer {
     if (axis) {
       if (this.diffRasters) this.showDiffPlane(view);
       this.fitOrtho();
-    } else if (previous) {
-      // Back in 3D, look from the side that was just selected.
-      const [dx, dy, dz] = VIEWS[previous].dir;
-      // Straight down is a degenerate orbit; lean back a hair so the robot's
-      // front stays at the top of the screen, as in the Top view.
-      this.aimPerspective(previous === 'top' ? [-0.01, 0, 1] : [-dx, -dy, -dz]);
     }
     this.controls.update();
+  }
+
+  /** Aim the 3D camera at the robot from `side`. */
+  lookFrom(side: ViewName): void {
+    const [dx, dy, dz] = VIEWS[side].dir;
+    // Straight down is a degenerate orbit; lean back a hair so the robot's
+    // front stays at the top of the screen, as in the 2D Top view.
+    this.aimPerspective(side === 'top' ? [-0.01, 0, 1] : [-dx, -dy, -dz]);
+  }
+
+  /** Call `cb` when the user rotates the 3D camera (not on zoom or pan). */
+  onOrbit(cb: () => void): void {
+    let dragging = false;
+    let azimuth = 0;
+    let polar = 0;
+    this.controls.addEventListener('start', () => {
+      dragging = true;
+      azimuth = this.controls.getAzimuthalAngle();
+      polar = this.controls.getPolarAngle();
+    });
+    this.controls.addEventListener('end', () => {
+      dragging = false;
+    });
+    this.controls.addEventListener('change', () => {
+      if (!dragging || this.view) return;
+      if (
+        Math.abs(this.controls.getAzimuthalAngle() - azimuth) > 1e-4 ||
+        Math.abs(this.controls.getPolarAngle() - polar) > 1e-4
+      ) {
+        dragging = false;
+        cb();
+      }
+    });
   }
 
   /** Aim the perspective camera at the robot's center from direction `from`

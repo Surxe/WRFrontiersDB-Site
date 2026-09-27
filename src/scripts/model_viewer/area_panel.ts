@@ -130,7 +130,7 @@ function areaCard(spec: CardSpec, opts: PanelBaseOptions): HTMLElement {
     const row = document.createElement('tr');
     const viewCell = document.createElement('th');
     viewCell.scope = 'row';
-    // Only the selected axis view is emphasized; the 3D view matches no row.
+    // Only the selected side is emphasized; a custom 3D angle matches no row.
     const active = view === opts.view;
     if (active) viewCell.className = 'is-active';
     const button = document.createElement('button');

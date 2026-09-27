@@ -100,6 +100,11 @@ async function init(): Promise<void> {
       const key = swatch.dataset.diff as keyof typeof DIFF_COLORS;
       swatch.style.background = cssHex(DIFF_COLORS[key]);
     }
+    const modeButtons = [
+      ...el<HTMLElement>(
+        'hitbox-mode-buttons'
+      ).querySelectorAll<HTMLButtonElement>('button'),
+    ];
     const viewButtons = [
       ...el<HTMLElement>(
         'hitbox-view-buttons'
@@ -132,12 +137,15 @@ async function init(): Promise<void> {
       writeModelUrl(build.selection, { hitbox: hitboxBox.checked }, isSlotKey);
     };
 
-    // Hitbox areas of the last build, and the active camera view.
+    // Hitbox areas of the last build, and the camera: 3D or flat 2D, looking
+    // from `cameraView` (null in 3D at a custom angle, e.g. the default one or
+    // after the user orbits).
     let measurement: HitboxMeasurement | null = null;
     let comparison: ComparisonMeasurement | null = null;
     let metric: CompareMetric = 'withWeapons';
     let colors: number[] = [];
     let zoneColors: Record<string, number> = {};
+    let cameraMode: '3d' | '2d' = '3d';
     let cameraView: ViewName | null = null;
 
     const renderAreas = (): void => {
@@ -159,23 +167,60 @@ async function init(): Promise<void> {
       });
     };
 
-    const selectView = (next: ViewName | null): void => {
-      cameraView = next;
-      viewer?.setView(next);
+    const syncCameraButtons = (): void => {
+      for (const button of modeButtons) {
+        button.setAttribute(
+          'aria-pressed',
+          String(button.dataset.mode === cameraMode)
+        );
+      }
       for (const button of viewButtons) {
         button.setAttribute(
           'aria-pressed',
-          String((button.dataset.view || null) === next)
+          String(button.dataset.view === cameraView)
         );
       }
       renderAreas();
     };
 
-    for (const button of viewButtons) {
+    const selectView = (next: ViewName): void => {
+      cameraView = next;
+      if (cameraMode === '2d') viewer?.setView(next);
+      else viewer?.lookFrom(next);
+      syncCameraButtons();
+    };
+
+    const selectMode = (next: '3d' | '2d'): void => {
+      if (next === cameraMode) return;
+      cameraMode = next;
+      if (next === '2d') {
+        // A custom 3D angle has no flat equivalent; start from the front.
+        cameraView ??= 'front';
+        viewer?.setView(cameraView);
+      } else {
+        viewer?.setView(null);
+        if (cameraView) viewer?.lookFrom(cameraView);
+      }
+      syncCameraButtons();
+    };
+
+    for (const button of modeButtons) {
       button.addEventListener('click', () => {
-        selectView((button.dataset.view || null) as ViewName | null);
+        selectMode(button.dataset.mode as '3d' | '2d');
       });
     }
+
+    for (const button of viewButtons) {
+      button.addEventListener('click', () => {
+        selectView(button.dataset.view as ViewName);
+      });
+    }
+
+    viewer?.onOrbit(() => {
+      if (cameraView === null) return;
+      cameraView = null;
+      syncCameraButtons();
+    });
 
     for (const button of metricButtons) {
       button.addEventListener('click', () => {
