@@ -18,6 +18,7 @@ import { fetchJSON } from './data';
 import { el } from './dom';
 import { ModelViewer, type HitboxMeasurement } from './viewer';
 import { renderAreaPanel } from './area_panel';
+import { partRefLookup, whenLocalized } from './part_refs';
 import type { ViewName } from './hitbox_area';
 import { parseViewParams, writeModelUrl } from './params';
 import { buildCompatibilityIndex } from './build/compatibility';
@@ -154,12 +155,17 @@ async function init(): Promise<void> {
       }
     };
 
+    const partRef = partRefLookup(document.getElementById('model-part-refs'));
     const render = (build: ResolvedBuild): void => {
       renderBuilder(builderEl, build, {
         tables,
         onSelect: (key, moduleId) => store.select(key, moduleId),
+        partRef,
       });
     };
+    // Once names are localized, re-render so the dropdowns clone the
+    // localized ObjRefs.
+    void whenLocalized().then(() => render(store.current));
 
     store.subscribe((build) => {
       render(build);

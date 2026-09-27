@@ -65,9 +65,94 @@
     font-size: 0.75rem;
   }
 
-  .model-builder :global(select) {
+  /* Part dropdowns: a button + listbox (build/ui.ts), so options can show
+     the part's ObjRef icon and localized name. */
+  .model-builder :global(.part-picker) {
+    position: relative;
+  }
+
+  .model-builder :global(.part-picker-button) {
+    display: flex;
+    align-items: center;
     width: 100%;
-    padding: 0.3rem;
+    min-height: 2rem;
+    padding: 0.2rem 1.6rem 0.2rem 0.4rem;
+    border: 1px solid var(--wrf-border);
+    border-radius: var(--wrf-radius-sm);
+    background: var(--wrf-surface-2);
+    color: var(--wrf-text);
+    font: inherit;
+    font-size: 0.85rem;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .model-builder :global(.part-picker-button::after) {
+    content: '';
+    position: absolute;
+    right: 0.6rem;
+    top: 50%;
+    border: 0.3rem solid transparent;
+    border-top-color: var(--wrf-text-muted);
+    transform: translateY(-25%);
+  }
+
+  .model-builder :global(.part-picker-button:hover:not(:disabled)) {
+    border-color: var(--wrf-accent-hover);
+  }
+
+  .model-builder :global(.part-picker-button:disabled) {
+    cursor: default;
+    opacity: 0.7;
+  }
+
+  .model-builder :global(.part-picker-list) {
+    position: absolute;
+    z-index: 20;
+    top: calc(100% + 2px);
+    left: 0;
+    right: 0;
+    max-height: 20rem;
+    margin: 0;
+    padding: 0.2rem 0;
+    overflow-y: auto;
+    list-style: none;
+    border: 1px solid var(--wrf-border);
+    border-radius: var(--wrf-radius-sm);
+    background: var(--wrf-surface-2);
+    box-shadow: 0 6px 18px rgb(0 0 0 / 35%);
+  }
+
+  .model-builder :global(.part-picker-list:focus) {
+    outline: none;
+  }
+
+  .model-builder :global(.part-picker-option) {
+    padding: 0.2rem 0.5rem;
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+
+  .model-builder :global(.part-picker-option.is-active) {
+    background: var(--wrf-accent-active-bg);
+  }
+
+  .model-builder :global(.part-picker-option[aria-selected='true']) {
+    font-weight: bold;
+  }
+
+  .model-builder :global(.part-picker-group) {
+    padding: 0.35rem 0.5rem 0.1rem;
+    color: var(--wrf-text-muted);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+  }
+
+  .model-builder :global(.part-content) {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0 0.35rem;
+    align-items: center;
   }
 
   .model-view-toggles {

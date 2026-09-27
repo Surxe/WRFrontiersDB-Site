@@ -1,0 +1,46 @@
+---
+// Pre-rendered ObjRef (icon + LocalizedText name, no link) for every part the
+// builder can offer. Hidden; build/ui.ts clones these into its dropdowns, so
+// options look like the rest of the site and localize the same way
+// (data-loc-key, resolved client-side by public/js/localization.js).
+import ObjRef from '../obj_ref/ObjRef.astro';
+import { getParseObjects } from '../../utils/parse_object';
+import { kindOfModule } from '../../scripts/model_viewer/build/classify';
+import type { Module, ModuleType } from '../../types/module';
+
+const modules = getParseObjects<Module>('Objects/Module.json');
+const moduleTypes = getParseObjects<ModuleType>('Objects/ModuleType.json');
+const BUILDABLE = new Set(['chassis', 'torso', 'shoulder', 'weapon']);
+
+// Unnamed modules have no ObjRef; the builder falls back to plain text.
+const parts = Object.entries(modules).filter(
+  ([id, module]) =>
+    module.name && BUILDABLE.has(kindOfModule(id, { modules, moduleTypes }))
+);
+---
+
+<div id="model-part-refs" hidden>
+  {
+    parts.map(([id, module]) => (
+      <span data-module-id={id}>
+        <ObjRef obj={module} iconSize={20} useHref={false} />
+      </span>
+    ))
+  }
+</div>
+
+<!--
+  Localize every LocalizedText on the page (this palette included), then tell
+  the builder (part_refs.ts whenLocalized) so it re-clones localized ObjRefs.
+  Unprocessed module script, like ObjectPageScripts: localization.js is served
+  from public/ and must not go through Vite.
+-->
+<script type="module">
+  const { initializeLocalization } = await import('/js/localization.js');
+  try {
+    await initializeLocalization('current');
+  } finally {
+    window.wrfModelPartsLocalized = true;
+    window.dispatchEvent(new Event('wrf:model-parts-localized'));
+  }
+</script>
