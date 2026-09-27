@@ -98,7 +98,7 @@ function addHitboxes(
     color,
     roughness: 0.6,
     transparent: true,
-    opacity: 0.32,
+    opacity: 0.45,
     depthWrite: false,
     side: THREE.DoubleSide,
   });

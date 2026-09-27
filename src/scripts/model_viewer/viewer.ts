@@ -70,7 +70,11 @@ export class ModelViewer {
     this.scene.add(this.root);
 
     // Data is Z-up (UE); three.js is Y-up. Rotate the model group once.
+    // UE is left-handed and three.js right-handed, so a rotation alone mirrors
+    // the robot (left parts render on its right). Negate UE Y first (scale is
+    // applied before rotation) to keep sides true to the game.
     this.root.rotation.x = -Math.PI / 2;
+    this.root.scale.y = -1;
 
     window.addEventListener('resize', () => this.onResize());
     this.animate();
