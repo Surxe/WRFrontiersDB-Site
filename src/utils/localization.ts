@@ -232,3 +232,21 @@ export function resolveLocalizedEmbeds(
 
   return resolved;
 }
+
+/**
+ * Resolves a catalog of `{ Key, TableNamespace }` references into full
+ * LocalizationKeys (English text included), e.g. a page's UI strings for
+ * LocalizedText and for its client script.
+ */
+export function resolveLocalizationKeys<Id extends string>(
+  refs: Readonly<Record<Id, { Key: string; TableNamespace: string }>>
+): Record<Id, LocalizationKey> {
+  const entries = Object.entries<{ Key: string; TableNamespace: string }>(
+    refs
+  ).map(([id, ref]) => [
+    id,
+    resolveLocalizationKey(ref.Key, ref.TableNamespace),
+  ]);
+  // Same keys as `refs`, each mapped to its resolved key.
+  return Object.fromEntries(entries) as Record<Id, LocalizationKey>;
+}

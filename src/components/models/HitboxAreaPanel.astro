@@ -2,115 +2,194 @@
 // Hitbox area panel for the 3D model viewer. src/scripts/model_viewer switches
 // the camera from #hitbox-mode-buttons (3D / flat 2D) and #hitbox-view-buttons
 // (the side to look from; none pressed at a custom 3D angle), and renders one
-// card per health pool into #hitbox-area-pools (area_panel.ts). While comparing builds it also fills
-// #hitbox-compare: the headline, the metric switch and the diff legend (whose
-// swatches index.ts colors from DIFF_COLORS).
+// card per health pool into #hitbox-area-pools (ui/area_panel.ts). While
+// comparing builds it also fills #hitbox-compare: the headline and the metric
+// switch; the diff legend's swatches are colored from DIFF_COLORS (colors.ts).
+import LocalizedText from '../LocalizedText.astro';
+import { getDefaultString } from '../../utils/localization';
+import type { ModelStrings } from '../../scripts/model_viewer/strings';
+import type { ViewName } from '../../scripts/robot/hitbox_area/views';
+import type { LocalizationKey } from '../../types/localization';
+
+interface Props {
+  strings: ModelStrings;
+}
+
+const { strings } = Astro.props;
+
+const modes = [
+  { mode: '3d', label: strings.mode3d, pressed: true },
+  { mode: '2d', label: strings.mode2d, pressed: false },
+];
+const views: { view: ViewName; label: LocalizationKey }[] = [
+  { view: 'front', label: strings.viewFront },
+  { view: 'back', label: strings.viewBack },
+  { view: 'left', label: strings.viewLeft },
+  { view: 'right', label: strings.viewRight },
+  { view: 'top', label: strings.viewTop },
+];
+const metrics = [
+  { metric: 'withWeapons', label: strings.withWeapons, pressed: true },
+  { metric: 'alone', label: strings.alone, pressed: false },
+];
+const legend = [
+  { diff: 'shared', label: strings.diffShared },
+  { diff: 'aOnly', label: strings.diffAOnly },
+  { diff: 'bOnly', label: strings.diffBOnly },
+];
+// A bold term, then its explanation.
+const notes = [
+  { term: null, text: strings.notesArea },
+  { term: strings.alone, text: strings.notesAlone },
+  { term: strings.withWeapons, text: strings.notesWithWeapons },
+  { term: strings.wholeRobot, text: strings.notesWholeRobot },
+  { term: strings.mode2d, text: strings.notes2d },
+  { term: strings.mode3d, text: strings.notes3d },
+  { term: strings.compare, text: strings.notesCompare },
+];
 ---
 
-<section class="hitbox-area" aria-labelledby="hitbox-area-title">
+<section class="hitbox-area wrf-panel" aria-labelledby="hitbox-area-title">
   <div class="hitbox-area-head">
-    <h2 id="hitbox-area-title">Hitbox area</h2>
+    <LocalizedText
+      tag="h2"
+      id="hitbox-area-title"
+      localizationKey={strings.hitboxArea}
+    />
     <div class="hitbox-view-controls">
       <div
         id="hitbox-mode-buttons"
-        class="hitbox-view-buttons"
+        class="wrf-toggle wrf-toggle--sm"
         role="group"
-        aria-label="Camera mode"
+        aria-label={getDefaultString(strings.cameraMode)}
+        data-model-aria-label="cameraMode"
       >
-        <button type="button" data-mode="3d" aria-pressed="true">3D</button>
-        <button type="button" data-mode="2d" aria-pressed="false">2D</button>
+        {
+          modes.map(({ mode, label, pressed }) => (
+            <button
+              type="button"
+              class="wrf-toggle__btn"
+              data-mode={mode}
+              aria-pressed={String(pressed)}
+            >
+              <LocalizedText tag="span" localizationKey={label} />
+            </button>
+          ))
+        }
       </div>
       <div
         id="hitbox-view-buttons"
-        class="hitbox-view-buttons"
+        class="wrf-toggle wrf-toggle--sm"
         role="group"
-        aria-label="Camera side"
+        aria-label={getDefaultString(strings.cameraSide)}
+        data-model-aria-label="cameraSide"
       >
-        <button type="button" data-view="front" aria-pressed="false"
-          >Front</button
-        >
-        <button type="button" data-view="back" aria-pressed="false">Back</button
-        >
-        <button type="button" data-view="left" aria-pressed="false">Left</button
-        >
-        <button type="button" data-view="right" aria-pressed="false"
-          >Right</button
-        >
-        <button type="button" data-view="top" aria-pressed="false">Top</button>
+        {
+          views.map(({ view, label }) => (
+            <button
+              type="button"
+              class="wrf-toggle__btn"
+              data-view={view}
+              aria-pressed="false"
+            >
+              <LocalizedText tag="span" localizationKey={label} />
+            </button>
+          ))
+        }
       </div>
     </div>
   </div>
+
   <div id="hitbox-compare" class="hitbox-compare" hidden>
     <div class="hitbox-compare-bar">
       <div
         id="hitbox-compare-headline"
         class="hitbox-headline"
-        aria-label="Whole robot area change, A to B"
+        aria-label={getDefaultString(strings.compareHeadline)}
+        data-model-aria-label="compareHeadline"
         aria-live="polite"
       >
       </div>
       <div
         id="hitbox-metric-buttons"
-        class="hitbox-view-buttons"
+        class="wrf-toggle wrf-toggle--sm"
         role="group"
-        aria-label="Compared area"
+        aria-label={getDefaultString(strings.comparedArea)}
+        data-model-aria-label="comparedArea"
       >
-        <button type="button" data-metric="withWeapons" aria-pressed="true">
-          With weapons
-        </button>
-        <button type="button" data-metric="alone" aria-pressed="false">
-          Alone
-        </button>
+        {
+          metrics.map(({ metric, label, pressed }) => (
+            <button
+              type="button"
+              class="wrf-toggle__btn"
+              data-metric={metric}
+              aria-pressed={String(pressed)}
+            >
+              <LocalizedText tag="span" localizationKey={label} />
+            </button>
+          ))
+        }
       </div>
     </div>
     <p class="hitbox-compare-legend">
-      <span
-        ><span class="hitbox-swatch" data-diff="shared"></span> Both builds</span
-      >
-      <span
-        ><span class="hitbox-swatch" data-diff="aOnly"></span> Only A (lost)</span
-      >
-      <span
-        ><span class="hitbox-swatch" data-diff="bOnly"></span> Only B (gained)</span
-      >
+      {
+        legend.map(({ diff, label }) => (
+          <span>
+            <span class="model-swatch" data-diff={diff} />
+            <LocalizedText tag="span" localizationKey={label} />
+          </span>
+        ))
+      }
     </p>
   </div>
+
   <div id="hitbox-area-pools" class="hitbox-area-pools" aria-live="polite">
-    <p class="is-muted">Measuring...</p>
+    <p class="is-muted">
+      <LocalizedText tag="span" localizationKey={strings.measuring} />
+    </p>
   </div>
+
   <ul class="hitbox-area-notes">
-    <li>
-      Projected hitbox area in m² as seen from each side, for the build above.
-      The torso, each shoulder, and the chassis's pelvis, left leg and right leg
-      are their own health pools (a spider's two left legs share one pool, as do
-      its two right legs); a weapon's hits go to the part it is mounted on.
-      Shoulders and legs are measured from their outer side only.
-    </li>
-    <li>
-      <strong>Alone</strong>: the part's own hitboxes. <strong
-        >With weapons</strong
-      >: the part plus its mounted weapons, overlap counted once. Each part is
-      measured on its own, as if nothing else were in front of it.
-    </li>
-    <li>
-      <strong>Whole robot</strong>: every health pool combined into one
-      silhouette, overlap counted once; so it is less than the pools added up.
-    </li>
-    <li>
-      <strong>2D</strong> shows the hitboxes flat from the chosen side, in the same
-      colors as the 3D view; in <strong>3D</strong> the side buttons aim the camera
-      from that side.
-    </li>
-    <li>
-      <strong>Compare</strong> (next to Build): build B is build A plus the parts
-      you swap; slots you leave alone follow A. Every view then shows where the silhouettes
-      differ, and the headline gives the whole robot's change per side. A smaller
-      area (green) is a harder target.
-    </li>
+    {
+      notes.map(({ term, text }) => (
+        <li>
+          {term && (
+            <strong>
+              <LocalizedText tag="span" localizationKey={term} />
+            </strong>
+          )}
+          <LocalizedText tag="span" localizationKey={text} />
+        </li>
+      ))
+    }
   </ul>
 </section>
 
 <style>
+  .hitbox-area {
+    margin-top: 1rem;
+  }
+
+  .hitbox-area-head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+  }
+
+  .hitbox-area-head :global(h2) {
+    margin: 0;
+    font-size: 1rem;
+  }
+
+  .hitbox-view-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+  }
+
   .hitbox-compare {
     display: flex;
     flex-direction: column;
@@ -136,15 +215,13 @@
     gap: 0.4rem;
   }
 
+  /* Headline items are created at runtime by ui/area_panel.ts, hence
+     :global. */
   .hitbox-headline :global(.hitbox-headline-item) {
     display: flex;
     flex-direction: column;
     align-items: center;
     min-width: 4.5rem;
-    padding: 0.3rem 0.6rem;
-    border: 1px solid var(--wrf-border);
-    border-radius: var(--wrf-radius-sm);
-    background: var(--wrf-bg);
     color: var(--wrf-text);
     font: inherit;
     cursor: pointer;
@@ -165,18 +242,15 @@
     font-variant-numeric: tabular-nums;
   }
 
-  .hitbox-headline :global(.is-better .hitbox-headline-value),
-  .hitbox-area-pools :global(td.is-better) {
+  .hitbox-headline :global(.is-better .hitbox-headline-value) {
     color: var(--wrf-success);
   }
 
-  .hitbox-headline :global(.is-worse .hitbox-headline-value),
-  .hitbox-area-pools :global(td.is-worse) {
+  .hitbox-headline :global(.is-worse .hitbox-headline-value) {
     color: var(--wrf-danger);
   }
 
-  .hitbox-headline :global(.is-same .hitbox-headline-value),
-  .hitbox-area-pools :global(td.is-same) {
+  .hitbox-headline :global(.is-same .hitbox-headline-value) {
     color: var(--wrf-text-muted);
   }
 
@@ -189,65 +263,10 @@
     font-size: 0.8rem;
   }
 
-  .hitbox-compare-legend .hitbox-swatch {
-    display: inline-block;
-    width: 0.75rem;
-    height: 0.75rem;
-    border-radius: 2px;
-    vertical-align: middle;
-  }
-
-  .hitbox-area {
-    margin-top: 1rem;
-    padding: 0.75rem;
-    border: 1px solid var(--wrf-border);
-    border-radius: var(--wrf-radius-md);
-    background: var(--wrf-surface);
-  }
-
-  .hitbox-area-head {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem 1rem;
+  .hitbox-compare-legend > span {
+    display: inline-flex;
+    gap: 0.35rem;
     align-items: center;
-    justify-content: space-between;
-    margin-bottom: 0.75rem;
-  }
-
-  .hitbox-area-head h2 {
-    margin: 0;
-    font-size: 1rem;
-  }
-
-  .hitbox-view-controls {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem 1rem;
-  }
-
-  .hitbox-view-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.25rem;
-  }
-
-  .hitbox-view-buttons button {
-    padding: 0.25rem 0.6rem;
-    border: 1px solid var(--wrf-border);
-    border-radius: var(--wrf-radius-sm);
-    background: var(--wrf-surface-2);
-    color: var(--wrf-text);
-    font-size: 0.85rem;
-    cursor: pointer;
-  }
-
-  .hitbox-view-buttons button:hover {
-    border-color: var(--wrf-accent-hover);
-  }
-
-  .hitbox-view-buttons button[aria-pressed='true'] {
-    border-color: var(--wrf-accent);
-    background: var(--wrf-accent-active-bg);
   }
 
   .hitbox-area-pools {
@@ -258,16 +277,11 @@
 
   .hitbox-area-pools :global(.is-muted) {
     margin: 0;
-    color: var(--wrf-text-muted);
   }
 
-  /* Cards are created at runtime by area_panel.ts, hence :global. */
+  /* Cards are created at runtime by ui/area_panel.ts, hence :global. */
   .hitbox-area-pools :global(.hitbox-pool) {
     min-width: 0;
-    padding: 0.5rem 0.6rem;
-    border: 1px solid var(--wrf-border);
-    border-radius: var(--wrf-radius-sm);
-    background: var(--wrf-bg);
     overflow-x: auto;
   }
 
@@ -299,16 +313,8 @@
     margin: 0.15rem 0 0.4rem;
   }
 
-  .hitbox-area-pools :global(.hitbox-swatch) {
-    display: inline-block;
-    width: 0.75rem;
-    height: 0.75rem;
-    border-radius: 2px;
-  }
-
   .hitbox-area-pools :global(table) {
     width: 100%;
-    border-collapse: collapse;
     font-size: 0.85rem;
     font-variant-numeric: tabular-nums;
   }
@@ -330,27 +336,9 @@
     text-align: left;
   }
 
-  .hitbox-area-pools :global(tbody th button) {
-    padding: 0;
-    border: 0;
-    background: none;
-    color: inherit;
-    font: inherit;
-    cursor: pointer;
-  }
-
-  .hitbox-area-pools :global(tbody th button:hover) {
-    color: var(--wrf-link-hover);
-    text-decoration: underline;
-  }
-
-  .hitbox-area-pools :global(th.is-active button) {
+  .hitbox-area-pools :global(th.is-active .wrf-link-btn) {
     color: var(--wrf-accent);
     font-weight: bold;
-  }
-
-  .hitbox-area-pools :global(td.is-muted) {
-    color: var(--wrf-text-muted);
   }
 
   .hitbox-area-notes {
@@ -358,5 +346,15 @@
     padding-left: 1.2rem;
     color: var(--wrf-text-muted);
     font-size: 0.8rem;
+  }
+
+  .hitbox-area-notes strong {
+    color: var(--wrf-text);
+  }
+
+  /* "Term: explanation" (a CSS colon, so markup whitespace can't split it
+     from the term). */
+  .hitbox-area-notes strong::after {
+    content: ':';
   }
 </style>

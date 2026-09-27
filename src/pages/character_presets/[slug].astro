@@ -15,8 +15,8 @@ import { getObjRefData } from '../../utils/obj_ref';
 import { generateCharacterPresetLocalizedMetaDescriptions } from '../../utils/build_localization';
 import TextElements from '../../components/obj_ref/TextElements.astro';
 import type { CharacterPreset } from '../../types/character_preset';
-import { selectionFromPreset } from '../../scripts/model_viewer/build/graph';
-import { selectionQuery } from '../../scripts/model_viewer/build/params';
+import { selectionFromPreset } from '../../scripts/robot/build/graph';
+import ModelViewerLink from '../../components/models/ModelViewerLink.astro';
 
 export async function getStaticPaths() {
   return generateSlugBasedStaticPaths('CharacterPreset');
@@ -73,13 +73,10 @@ const localizedDescriptions = preset
           />
         </h1>
 
-        <p>
-          <a
-            href={`/models?${selectionQuery(selectionFromPreset(preset.modules))}`}
-          >
-            View this loadout in the 3D model viewer →
-          </a>
-        </p>
+        <ModelViewerLink
+          selection={selectionFromPreset(preset.modules)}
+          kind="loadout"
+        />
 
         <BotItem preset={preset} modules={modules} pilots={pilots} />
       </div>

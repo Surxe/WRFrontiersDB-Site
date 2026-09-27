@@ -11,8 +11,8 @@ import type { Module, ModuleType } from '../../types/module';
 import { getDefaultString } from '../../utils/localization';
 import { generateRobotLocalizedMetaDescriptions } from '../../utils/build_localization';
 import { refToId } from '../../utils/object_reference';
-import { selectionQuery } from '../../scripts/model_viewer/build/params';
-import { isRootModuleType } from '../../scripts/model_viewer/build/classify';
+import { findChassis } from '../../scripts/robot/build/classify';
+import ModelViewerLink from '../../components/models/ModelViewerLink.astro';
 
 export async function getStaticPaths() {
   const virtualBotsMap = getAllVirtualBots();
@@ -51,9 +51,9 @@ const localizedDescriptions = generateRobotLocalizedMetaDescriptions(
 // Deep link into the 3D viewer: the chassis alone is enough -- the viewer fills
 // the required torso and shoulders with this bot's own core modules and leaves
 // the weapon slots empty.
-const chassisId = bot.core_module_refs.map(refToId).find((mId) => {
-  const typeRef = modules[mId]?.module_type_ref;
-  return typeRef ? isRootModuleType(refToId(typeRef), { moduleTypes }) : false;
+const chassisId = findChassis(bot.core_module_refs.map(refToId), {
+  modules,
+  moduleTypes,
 });
 ---
 
@@ -80,11 +80,7 @@ const chassisId = bot.core_module_refs.map(refToId).find((mId) => {
 
   {
     chassisId && (
-      <p style="margin-top: 1rem;">
-        <a href={`/models?${selectionQuery({ chassis: chassisId })}`}>
-          View this robot in the 3D model viewer →
-        </a>
-      </p>
+      <ModelViewerLink selection={{ chassis: chassisId }} kind="robot" />
     )
   }
 

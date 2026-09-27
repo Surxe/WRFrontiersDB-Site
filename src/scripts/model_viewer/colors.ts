@@ -1,18 +1,44 @@
 /**
- * Per-module render colors.
+ * Render colors: one per module of a build (its hitboxes share it), and a
+ * fixed set for comparing two builds.
  *
- * Every module in a build gets its own color, and its hitbox is drawn in the
- * same color. A full robot needs at most 9 (chassis, torso, two shoulders,
- * five weapons), which the fixed palette covers; anything beyond it (e.g. gear
- * from a deep link) gets generated hues that are still guaranteed unique.
+ * These are data colors drawn in the 3D scene (and repeated in the panels'
+ * swatches), not page chrome, so they are raw values rather than design
+ * tokens.
  */
-import type { ModuleKind, ResolvedBuild } from './build/types';
+import {
+  ARMOR_ZONE_LEFT_LEG,
+  ARMOR_ZONE_RIGHT_LEG,
+} from '../../utils/constants';
+import type { ModuleKind, ResolvedBuild } from '../robot/build/types';
+import type { ArmorZoneId } from '../../types/model';
 
-/** Tableau 10: distinct, reasonably color-blind-safe, readable on dark. */
-export const MODULE_PALETTE: readonly number[] = [
+/** Tableau 10: distinct, reasonably color-blind-safe, readable on dark. A
+ * full robot needs at most 11 (chassis + 2 legs, torso, two shoulders, five
+ * weapons); beyond that (e.g. gear from a deep link) hues are generated. */
+const MODULE_PALETTE: readonly number[] = [
   0x4e79a7, 0xf28e2b, 0xe15759, 0x76b7b2, 0x59a14f, 0xedc948, 0xb07aa1,
   0xff9da7, 0x9c755f, 0xbab0ac,
 ];
+
+/** Color for anything the palette did not cover. */
+export const FALLBACK_COLOR = 0x9aa0a6;
+
+/** Build comparison colors (A = the live build, B = the compared one): a
+ * fixed, colorblind-safe set used instead of per-module colors, so any number
+ * of swapped parts reads the same. Grey is area both builds cover; orange is
+ * area only A has (lost by switching); blue is area only B has (gained). */
+export const DIFF_COLORS = {
+  shared: 0x8a9099,
+  aOnly: 0xf28e2b,
+  bOnly: 0x4e79a7,
+} as const;
+
+export type DiffColorKey = keyof typeof DIFF_COLORS;
+
+export function isDiffColorKey(value: unknown): value is DiffColorKey {
+  return value === 'shared' || value === 'aOnly' || value === 'bOnly';
+}
 
 function hslToHex(h: number, s: number, l: number): number {
   const a = s * Math.min(l, 1 - l);
@@ -48,63 +74,64 @@ const KIND_ORDER: readonly ModuleKind[] = [
   'other',
 ];
 
-/** Chassis health pools (armor zones) drawn in a color of their own. The
- * chassis splits into pelvis + left leg + right leg; the pelvis keeps the
- * chassis slot's color. */
-export const LEG_ZONES: readonly string[] = [
-  'DA_ArmorZone_LeftLeg.0',
-  'DA_ArmorZone_RightLeg.0',
+/** Chassis health pools (armor zones) drawn in a color of their own; the
+ * pelvis keeps the chassis slot's color. */
+const LEG_ZONES: readonly ArmorZoneId[] = [
+  ARMOR_ZONE_LEFT_LEG,
+  ARMOR_ZONE_RIGHT_LEG,
 ];
 
+/** A build's colors. */
+export interface BuildColors {
+  /** Per module-list entry, in `toPresetModules(build)` order. */
+  modules: readonly number[];
+  /** Armor zones with a color of their own (the chassis legs), overriding
+   * their module's. */
+  zones: ReadonlyMap<ArmorZoneId, number>;
+}
+
 /**
- * Color per slot key, plus `<chassisKey>#<zone>` for each leg zone.
- *
  * Colors are handed out per slot (empty slots included), structural parts
  * first, so the chassis (and its legs) / torso / shoulders keep their colors
- * while weapons are swapped, and a weapon keeps its color when another slot
- * is emptied.
+ * while weapons are swapped, and a weapon keeps its color when another slot is
+ * emptied.
  */
-function slotColors(build: ResolvedBuild): Map<string, number> {
+export function buildColors(build: ResolvedBuild): BuildColors {
   const ranked = [...build.slots].sort(
     (a, b) => KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind)
   );
+  const chassisKey = build.slots.find((slot) => slot.kind === 'chassis')?.key;
+  const zoneKey = (zone: ArmorZoneId): string => `${chassisKey}#${zone}`;
   const keys = ranked.flatMap((slot) =>
-    slot.kind === 'chassis'
-      ? [slot.key, ...LEG_ZONES.map((zone) => `${slot.key}#${zone}`)]
-      : [slot.key]
+    slot.key === chassisKey ? [slot.key, ...LEG_ZONES.map(zoneKey)] : [slot.key]
   );
   const palette = uniqueColors(keys.length);
-  return new Map(keys.map((key, i) => [key, palette[i]]));
+  const colorOf = (key: string): number =>
+    palette[keys.indexOf(key)] ?? FALLBACK_COLOR;
+  return {
+    modules: build.slots
+      .filter((slot) => slot.moduleId)
+      .map((slot) => colorOf(slot.key)),
+    zones: new Map(
+      chassisKey === undefined
+        ? []
+        : LEG_ZONES.map((zone) => [zone, colorOf(zoneKey(zone))])
+    ),
+  };
 }
 
-/** Colors for the modules a build renders, in `toPresetModules(build)` order. */
-export function buildModuleColors(build: ResolvedBuild): number[] {
-  const colorOf = slotColors(build);
-  return build.slots
-    .filter((slot) => slot.moduleId)
-    .map((slot) => colorOf.get(slot.key)!);
-}
-
-/** Colors of the chassis's leg health pools, keyed by armor zone id. Parts
- * in any other zone use their module's color. */
-export function buildZoneColors(build: ResolvedBuild): Record<string, number> {
-  const colorOf = slotColors(build);
-  const chassis = build.slots.find((slot) => slot.kind === 'chassis');
-  if (!chassis) return {};
-  return Object.fromEntries(
-    LEG_ZONES.map((zone) => [zone, colorOf.get(`${chassis.key}#${zone}`)!])
+/** The color of a module's part in armor zone `zone` (null: none). */
+export function partColor(
+  colors: BuildColors,
+  moduleIndex: number,
+  zone: ArmorZoneId | null
+): number {
+  return (
+    (zone !== null ? colors.zones.get(zone) : undefined) ??
+    colors.modules[moduleIndex] ??
+    FALLBACK_COLOR
   );
 }
-
-/** Build comparison colors (A = the live build, B = the compared one): a
- * fixed, colorblind-safe set used instead of per-module colors, so any number
- * of swapped parts reads the same. Grey is area both builds cover; orange is
- * area only A has (lost by switching); blue is area only B has (gained). */
-export const DIFF_COLORS = {
-  shared: 0x8a9099,
-  aOnly: 0xf28e2b,
-  bOnly: 0x4e79a7,
-} as const;
 
 /** `0xrrggbb` -> `#rrggbb`. */
 export function cssHex(color: number): string {

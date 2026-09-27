@@ -24,20 +24,29 @@ export interface ModuleRarity extends ParseObject {
   sort_order: number;
 }
 
+/** How a part mounts on its socket: centered, or on one side (its per-side
+ * blueprint / adapter). `Inherited` sockets take the parent part's side. */
+export type MountWay = 'Standard' | 'Left' | 'Right' | 'Inherited';
+
+/** A socket on a module that another module mounts into. */
+export interface ModuleSocket {
+  /** Socket (bone) name on the module's model, e.g. `Shoulder_L`. */
+  name: string;
+  socket_type_ref: string;
+  mount_way?: MountWay;
+}
+
 export interface Module extends ParseObject {
   parseObjectClass: 'Module';
   production_status?: string;
   inventory_icon_path: string;
   module_rarity_ref: string;
+  /** The module's model per mount way (per-side parts have one per side). */
   character_module_mounts: Array<{
     character_module_ref: string;
-    mount: string;
+    mount: MountWay;
   }>;
-  sockets?: Array<{
-    name: string;
-    socket_type_ref: string;
-    mount_way?: string;
-  }>;
+  sockets?: ModuleSocket[];
   module_tags_refs?: string[];
   name?: LocalizationKey; // TODO InvariantString support
   description?: LocalizationKey;

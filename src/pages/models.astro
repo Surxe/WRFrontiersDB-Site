@@ -1,37 +1,54 @@
 ---
 import Page from '../components/Page.astro';
 import Breadcrumb from '../components/Breadcrumb.astro';
-import { getModelsBreadcrumbs } from '../utils/breadcrumb';
+import LocalizedText from '../components/LocalizedText.astro';
 import ModelControls from '../components/models/ModelControls.astro';
 import ModelViewport from '../components/models/ModelViewport.astro';
 import HitboxAreaPanel from '../components/models/HitboxAreaPanel.astro';
 import ModelPartRefs from '../components/models/ModelPartRefs.astro';
+import { getModelsBreadcrumbs } from '../utils/breadcrumb';
+import { generateSimpleLocalizedMetaDescriptions } from '../utils/build_localization';
+import {
+  getDefaultString,
+  resolveLocalizationKeys,
+} from '../utils/localization';
+import { MODEL_STRINGS } from '../scripts/model_viewer/strings';
+
+const strings = resolveLocalizationKeys(MODEL_STRINGS);
+const description = getDefaultString(strings.metaDescription);
+const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
+  strings.metaDescription,
+  {},
+  getDefaultString(strings.title) ?? 'Models'
+);
 ---
 
 <Page
-  title="3D Models"
-  description="Build any War Robots: Frontiers robot part by part and view its live hitbox + untextured model."
+  title={strings.title}
+  description={description}
+  localizedDescriptions={localizedDescriptions}
 >
-  <main class="model-page">
+  <!-- data-strings: the UI strings, for text the page script builds
+       (strings.ts). An attribute, as the browser decodes its entities. -->
+  <main
+    id="model-page"
+    class="model-page"
+    data-strings={JSON.stringify(strings)}
+  >
     <Breadcrumb breadcrumbs={getModelsBreadcrumbs()} />
     <header class="model-header">
-      <h1>3D Models</h1>
-      <p>
-        Build any robot part by part: pick a chassis, then its torso, each
-        shoulder, and a weapon for every mount slot. Each part's slots appear
-        once the part is placed, just like in the hangar. Your build is always
-        reflected in the URL, so you can copy it to share an exact loadout.
-      </p>
-      <p class="model-hint">
-        Drag to orbit, right-drag to pan, scroll to zoom.
+      <LocalizedText tag="h1" localizationKey={strings.title} />
+      <LocalizedText tag="p" localizationKey={strings.intro} />
+      <p class="model-controls-hint">
+        <LocalizedText tag="span" localizationKey={strings.controlsHint} />
       </p>
     </header>
 
     <div class="model-layout">
-      <ModelControls />
+      <ModelControls strings={strings} />
       <div class="model-stage">
-        <ModelViewport />
-        <HitboxAreaPanel />
+        <ModelViewport strings={strings} />
+        <HitboxAreaPanel strings={strings} />
       </div>
     </div>
     <ModelPartRefs />
@@ -49,18 +66,17 @@ import ModelPartRefs from '../components/models/ModelPartRefs.astro';
     padding: 1rem;
   }
 
-  .model-header h1 {
+  .model-header :global(h1) {
     margin: 0 0 0.25rem;
   }
 
   .model-header p {
     margin: 0 0 1rem;
-    opacity: 0.85;
+    color: var(--wrf-text-muted);
   }
 
-  .model-header .model-hint {
+  .model-controls-hint {
     font-size: 0.9rem;
-    opacity: 0.7;
   }
 
   .model-layout {
@@ -78,5 +94,29 @@ import ModelPartRefs from '../components/models/ModelPartRefs.astro';
     .model-layout {
       grid-template-columns: minmax(0, 1fr);
     }
+  }
+
+  /* Shared by the runtime-built UI of every panel (src/scripts/model_viewer),
+     hence :global. */
+  .model-page :global(.model-swatch) {
+    display: inline-block;
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 2px;
+    vertical-align: middle;
+  }
+
+  .model-page :global(.model-hint),
+  .model-page :global(.is-muted),
+  .model-page :global(.is-same) {
+    color: var(--wrf-text-muted);
+  }
+
+  .model-page :global(.is-better) {
+    color: var(--wrf-success);
+  }
+
+  .model-page :global(.is-worse) {
+    color: var(--wrf-danger);
   }
 </style>

@@ -1,12 +1,11 @@
 /**
  * Query-param contract for the `/models` page.
  *
- * The viewer is the single place three.js runs. Other pages deep-link into it
- * with a plain URL; the viewer reads its initial state from the params and
- * writes every change back with `history.replaceState`, so the current build
- * is always a copyable link.
+ * Other pages deep-link into the viewer with a plain URL; the page reads its
+ * initial state from the params and writes every change back with
+ * `history.replaceState`, so the current view is always a copyable link.
  *
- * ## Build params (see build/params.ts)
+ * ## Build params (see robot/build/params.ts)
  *
  * One param per filled slot, keyed by where it mounts:
  *
@@ -22,49 +21,81 @@
  * addressable without a code change. Missing required slots are filled with
  * the chassis's own parts; missing optional slots stay empty.
  *
+ * ## Compare params (see robot/build/compare.ts)
+ *
+ *   compare    1 — compare build A (the build params) against build B
+ *   b.<slot>   B's swaps from A, one per changed slot; empty = emptied in B
+ *
  * ## View params
  *
  *   mesh       0 | 1 — render the module meshes. Default 1.
  *   hitbox     0 | 1 — render collision hitboxes. Default 1.
  *
- * Unknown params are preserved on write.
+ * Unknown params (e.g. `lang`) are preserved on write.
  */
-import { writeSelection, type SlotKeyMatcher } from './build/params';
-import type { BuildSelection } from './build/types';
+import {
+  readSelection,
+  selectionQuery,
+  writeSelection,
+  type SlotKeyMatcher,
+} from '../robot/build/params';
+import {
+  readOverrides,
+  writeOverrides,
+  type BuildOverrides,
+} from '../robot/build/compare';
+import type { BuildSelection } from '../robot/build/types';
 
-export interface ModelViewParams {
-  mesh?: boolean;
-  hitbox?: boolean;
+export interface ModelPageState {
+  selection: BuildSelection;
+  /** B's overrides while comparing, else null. */
+  compare: BuildOverrides | null;
+  mesh: boolean;
+  hitbox: boolean;
 }
 
-function readFlag(sp: URLSearchParams, key: string): boolean | undefined {
-  const value = sp.get(key);
-  return value === '0' || value === '1' ? value === '1' : undefined;
+const FLAGS = ['mesh', 'hitbox'] as const;
+
+function readFlag(params: URLSearchParams, key: string): boolean | null {
+  const value = params.get(key);
+  return value === '0' || value === '1' ? value === '1' : null;
 }
 
-/** Parse the view params from a query string. */
-export function parseViewParams(search: string): ModelViewParams {
-  const sp = new URLSearchParams(search);
-  const params: ModelViewParams = {};
-  const mesh = readFlag(sp, 'mesh');
-  if (mesh !== undefined) params.mesh = mesh;
-  const hitbox = readFlag(sp, 'hitbox');
-  if (hitbox !== undefined) params.hitbox = hitbox;
-  return params;
+/** The page state a query string encodes. */
+export function readModelUrl(
+  search: string,
+  isSlotKey: SlotKeyMatcher
+): ModelPageState {
+  const params = new URLSearchParams(search);
+  return {
+    selection: readSelection(params, isSlotKey),
+    compare:
+      readFlag(params, 'compare') === true
+        ? readOverrides(params, isSlotKey)
+        : null,
+    mesh: readFlag(params, 'mesh') ?? true,
+    hitbox: readFlag(params, 'hitbox') ?? true,
+  };
 }
 
-/** Merge the build + view state into the current URL (no reload). */
+/** Merge the page state into the current URL (no reload). */
 export function writeModelUrl(
-  selection: BuildSelection,
-  view: ModelViewParams,
+  state: ModelPageState,
   isSlotKey: SlotKeyMatcher
 ): void {
   const url = new URL(window.location.href);
-  const sp = url.searchParams;
-  writeSelection(sp, selection, isSlotKey);
-  sp.delete('mesh');
-  if (view.mesh !== undefined) sp.set('mesh', view.mesh ? '1' : '0');
-  sp.delete('hitbox');
-  if (view.hitbox !== undefined) sp.set('hitbox', view.hitbox ? '1' : '0');
+  const params = url.searchParams;
+  writeSelection(params, state.selection, isSlotKey);
+  writeOverrides(params, state.compare ?? {}, isSlotKey);
+  params.delete('compare');
+  if (state.compare) params.set('compare', '1');
+  for (const flag of FLAGS) params.set(flag, state[flag] ? '1' : '0');
   history.replaceState(null, '', url);
+}
+
+/** Link to the /models page showing `selection` (for deep links from other
+ * pages; usable at build time). */
+export function modelsPageHref(selection: BuildSelection): string {
+  const query = selectionQuery(selection);
+  return query ? `/models?${query}` : '/models';
 }

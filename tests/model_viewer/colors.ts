@@ -1,22 +1,28 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'fs';
 import path from 'path';
-import type { BuildTables } from '../../src/scripts/model_viewer/build/types';
-import { buildCompatibilityIndex } from '../../src/scripts/model_viewer/build/compatibility';
+import type { BuildTables } from '../../src/scripts/robot/build/types';
+import { buildCompatibilityIndex } from '../../src/scripts/robot/build/compatibility';
 import {
   resolveBuild,
   toPresetModules,
-} from '../../src/scripts/model_viewer/build/graph';
+} from '../../src/scripts/robot/build/graph';
 import {
-  LEG_ZONES,
-  MODULE_PALETTE,
-  buildModuleColors,
-  buildZoneColors,
+  buildColors,
+  partColor,
   uniqueColors,
 } from '../../src/scripts/model_viewer/colors';
+import {
+  ARMOR_ZONE_LEFT_LEG,
+  ARMOR_ZONE_PELVIS,
+  ARMOR_ZONE_RIGHT_LEG,
+} from '../../src/utils/constants';
 
 const tables = JSON.parse(
-  fs.readFileSync(path.join(__dirname, 'build', 'fixture_tables.json'), 'utf8')
+  fs.readFileSync(
+    path.join(__dirname, '..', 'robot', 'build', 'fixture_tables.json'),
+    'utf8'
+  )
 ) as BuildTables;
 const index = buildCompatibilityIndex(tables);
 
@@ -32,9 +38,8 @@ const full = {
 };
 
 describe('uniqueColors', () => {
-  it('covers a full robot (9 modules) from the palette', () => {
-    expect(MODULE_PALETTE.length).toBeGreaterThanOrEqual(9);
-    expect(new Set(MODULE_PALETTE).size).toBe(MODULE_PALETTE.length);
+  it('covers a full robot (11 colors) from the fixed palette, all distinct', () => {
+    expect(new Set(uniqueColors(11)).size).toBe(11);
   });
 
   it('stays unique past the palette', () => {
@@ -45,25 +50,25 @@ describe('uniqueColors', () => {
   });
 });
 
-describe('buildModuleColors', () => {
+describe('buildColors', () => {
   it('gives every rendered module its own color', () => {
     const build = resolveBuild(
       { ...full, Ability: 'DA_Module_AbilityDash.0' },
       tables,
       index
     );
-    const colors = buildModuleColors(build);
-    expect(colors).toHaveLength(toPresetModules(build).length);
-    expect(colors).toHaveLength(10);
-    expect(new Set(colors).size).toBe(10);
+    const { modules } = buildColors(build);
+    expect(modules).toHaveLength(toPresetModules(build).length);
+    expect(modules).toHaveLength(10);
+    expect(new Set(modules).size).toBe(10);
   });
 
   it('keeps each module color when other slots change', () => {
     const colorByKey = (selection: Record<string, string>) => {
       const build = resolveBuild(selection, tables, index);
-      const colors = buildModuleColors(build);
+      const { modules } = buildColors(build);
       const filled = build.slots.filter((s) => s.moduleId);
-      return Object.fromEntries(filled.map((s, i) => [s.key, colors[i]]));
+      return Object.fromEntries(filled.map((s, i) => [s.key, modules[i]]));
     };
     const before = colorByKey(full);
     const { 'Shoulder_L.Shoulder_Weapon_0': _dropped, ...fewer } = full;
@@ -72,22 +77,33 @@ describe('buildModuleColors', () => {
       expect(after[key], key).toBe(before[key]);
     }
   });
-});
 
-describe('buildZoneColors', () => {
   it('gives each chassis leg pool a color no module uses', () => {
-    const build = resolveBuild(full, tables, index);
-    const zones = buildZoneColors(build);
-    const legColors = LEG_ZONES.map((zone) => zones[zone]);
-    expect(legColors.every((c) => c !== undefined)).toBe(true);
-    const all = [...buildModuleColors(build), ...legColors];
+    const { modules, zones } = buildColors(resolveBuild(full, tables, index));
+    const legs = [ARMOR_ZONE_LEFT_LEG, ARMOR_ZONE_RIGHT_LEG].map((zone) =>
+      zones.get(zone)
+    );
+    expect(legs.every((c) => c !== undefined)).toBe(true);
+    const all = [...modules, ...legs];
     expect(new Set(all).size).toBe(all.length);
   });
 
   it('keeps the leg colors when weapons change', () => {
     const { 'Shoulder_L.Shoulder_Weapon_0': _dropped, ...fewer } = full;
-    expect(buildZoneColors(resolveBuild(fewer, tables, index))).toEqual(
-      buildZoneColors(resolveBuild(full, tables, index))
+    expect(buildColors(resolveBuild(fewer, tables, index)).zones).toEqual(
+      buildColors(resolveBuild(full, tables, index)).zones
     );
+  });
+});
+
+describe('partColor', () => {
+  it("uses a zone's own color, else the module's", () => {
+    const colors = buildColors(resolveBuild(full, tables, index));
+    expect(partColor(colors, 0, ARMOR_ZONE_LEFT_LEG)).toBe(
+      colors.zones.get(ARMOR_ZONE_LEFT_LEG)
+    );
+    // The pelvis keeps the chassis's color.
+    expect(partColor(colors, 0, ARMOR_ZONE_PELVIS)).toBe(colors.modules[0]);
+    expect(partColor(colors, 1, null)).toBe(colors.modules[1]);
   });
 });

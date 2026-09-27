@@ -744,7 +744,7 @@ export function getModelsBreadcrumbs(): BreadcrumbTrail {
       isCurrent: false,
     },
     {
-      label: '3D Models',
+      label: resolveLocalizationKey('Breadcrumb_Models', 'Web_UI'),
       href: '/models',
       isCurrent: true,
     },
