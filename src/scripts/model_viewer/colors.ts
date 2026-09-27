@@ -65,3 +65,8 @@ export function buildModuleColors(build: ResolvedBuild): number[] {
     .filter((slot) => slot.moduleId)
     .map((slot) => colorOf.get(slot.key)!);
 }
+
+/** `0xrrggbb` -> `#rrggbb`. */
+export function cssHex(color: number): string {
+  return `#${color.toString(16).padStart(6, '0')}`;
+}

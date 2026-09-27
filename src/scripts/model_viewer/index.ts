@@ -16,7 +16,9 @@
  */
 import { fetchJSON } from './data';
 import { el } from './dom';
-import { ModelViewer } from './viewer';
+import { ModelViewer, type HitboxMeasurement } from './viewer';
+import { renderAreaPanel } from './area_panel';
+import type { ViewName } from './hitbox_area';
 import { parseViewParams, writeModelUrl } from './params';
 import { buildCompatibilityIndex } from './build/compatibility';
 import { toPresetModules } from './build/graph';
@@ -62,6 +64,12 @@ async function init(): Promise<void> {
 
     const builderEl = el<HTMLElement>('model-builder');
     const hitboxBox = el<HTMLInputElement>('model-hitbox');
+    const areaEl = el<HTMLElement>('hitbox-area-pools');
+    const viewButtons = [
+      ...el<HTMLElement>(
+        'hitbox-view-buttons'
+      ).querySelectorAll<HTMLButtonElement>('button'),
+    ];
 
     status.textContent = 'Loading tables...';
     const tables = await loadTables();
@@ -88,20 +96,58 @@ async function init(): Promise<void> {
       writeModelUrl(build.selection, { hitbox: hitboxBox.checked }, isSlotKey);
     };
 
+    // Hitbox areas of the last build, and the active camera view.
+    let measurement: HitboxMeasurement | null = null;
+    let colors: number[] = [];
+    let cameraView: ViewName | null = null;
+
+    const renderAreas = (): void => {
+      renderAreaPanel(areaEl, measurement, {
+        tables,
+        colors,
+        view: cameraView,
+        onSelectView: (v) => selectView(v),
+      });
+    };
+
+    const selectView = (next: ViewName | null): void => {
+      cameraView = next;
+      viewer?.setView(next);
+      for (const button of viewButtons) {
+        button.setAttribute(
+          'aria-pressed',
+          String((button.dataset.view || null) === next)
+        );
+      }
+      renderAreas();
+    };
+
+    for (const button of viewButtons) {
+      button.addEventListener('click', () => {
+        selectView((button.dataset.view || null) as ViewName | null);
+      });
+    }
+
     const rebuild = async (build: ResolvedBuild): Promise<void> => {
       if (!viewer) {
         status.textContent = `${summarizeBuild(build, tables)} (3D view unavailable: WebGL could not start)`;
         return;
       }
       try {
+        const buildColors = buildModuleColors(build);
         await viewer.build({
           modules: toPresetModules(build),
-          colors: buildModuleColors(build),
+          colors: buildColors,
           label: summarizeBuild(build, tables),
           hitbox: hitboxBox.checked,
           // The bone overlay stays off in the UI (the viewer still supports it).
           skeleton: false,
         });
+        // Measure after the new build has painted; the raycast takes a moment.
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        colors = buildColors;
+        measurement = viewer.measureHitboxes();
+        renderAreas();
       } catch (err) {
         console.error('model build failed:', err);
         status.textContent = `Failed to build model: ${err instanceof Error ? err.message : String(err)}`;

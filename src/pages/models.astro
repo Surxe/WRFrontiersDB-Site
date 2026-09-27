@@ -3,6 +3,7 @@ import Page from '../components/Page.astro';
 import ModelControls from '../components/models/ModelControls.astro';
 import ModelViewport from '../components/models/ModelViewport.astro';
 import ModelNotes from '../components/models/ModelNotes.astro';
+import HitboxAreaPanel from '../components/models/HitboxAreaPanel.astro';
 ---
 
 <Page
@@ -24,6 +25,7 @@ import ModelNotes from '../components/models/ModelNotes.astro';
       <ModelControls />
       <div class="model-stage">
         <ModelViewport />
+        <HitboxAreaPanel />
       </div>
     </div>
     <ModelNotes />

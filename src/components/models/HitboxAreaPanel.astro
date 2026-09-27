@@ -1,0 +1,195 @@
+---
+// Hitbox area panel for the 3D model viewer. src/scripts/model_viewer switches
+// the camera from #hitbox-view-buttons and renders one card per health pool
+// into #hitbox-area-pools (area_panel.ts).
+---
+
+<section class="hitbox-area" aria-labelledby="hitbox-area-title">
+  <div class="hitbox-area-head">
+    <h2 id="hitbox-area-title">Hitbox area</h2>
+    <div
+      id="hitbox-view-buttons"
+      class="hitbox-view-buttons"
+      role="group"
+      aria-label="Camera view"
+    >
+      <button type="button" data-view="" aria-pressed="true">3D</button>
+      <button type="button" data-view="front" aria-pressed="false">Front</button
+      >
+      <button type="button" data-view="back" aria-pressed="false">Back</button>
+      <button type="button" data-view="left" aria-pressed="false">Left</button>
+      <button type="button" data-view="right" aria-pressed="false">Right</button
+      >
+      <button type="button" data-view="top" aria-pressed="false">Top</button>
+    </div>
+  </div>
+  <div id="hitbox-area-pools" class="hitbox-area-pools" aria-live="polite">
+    <p class="is-muted">Measuring...</p>
+  </div>
+  <ul class="hitbox-area-notes">
+    <li>
+      Projected hitbox area in m² as seen from each side, for the build above.
+      Each torso and shoulder is its own health pool; a weapon's hits go to the
+      part it is mounted on. Shoulders are measured from their outer side only.
+    </li>
+    <li>
+      <strong>Alone</strong>: the part's own hitboxes. <strong
+        >With weapons</strong
+      >: the part plus its mounted weapons, overlap counted once. Each part is
+      measured on its own, as if nothing else were in front of it.
+    </li>
+    <li>
+      The Front/Back/Left/Right/Top buttons show the hitboxes flat from that
+      side, in the same colors as the 3D view.
+    </li>
+  </ul>
+</section>
+
+<style>
+  .hitbox-area {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    border: 1px solid var(--wrf-border);
+    border-radius: var(--wrf-radius-md);
+    background: var(--wrf-surface);
+  }
+
+  .hitbox-area-head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+  }
+
+  .hitbox-area-head h2 {
+    margin: 0;
+    font-size: 1rem;
+  }
+
+  .hitbox-view-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+
+  .hitbox-view-buttons button {
+    padding: 0.25rem 0.6rem;
+    border: 1px solid var(--wrf-border);
+    border-radius: var(--wrf-radius-sm);
+    background: var(--wrf-surface-2);
+    color: var(--wrf-text);
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+
+  .hitbox-view-buttons button:hover {
+    border-color: var(--wrf-accent-hover);
+  }
+
+  .hitbox-view-buttons button[aria-pressed='true'] {
+    border-color: var(--wrf-accent);
+    background: var(--wrf-accent-active-bg);
+  }
+
+  .hitbox-area-pools {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 0.75rem;
+  }
+
+  .hitbox-area-pools :global(.is-muted) {
+    margin: 0;
+    color: var(--wrf-text-muted);
+  }
+
+  /* Cards are created at runtime by area_panel.ts, hence :global. */
+  .hitbox-area-pools :global(.hitbox-pool) {
+    min-width: 0;
+    padding: 0.5rem 0.6rem;
+    border: 1px solid var(--wrf-border);
+    border-radius: var(--wrf-radius-sm);
+    background: var(--wrf-bg);
+    overflow-x: auto;
+  }
+
+  .hitbox-area-pools :global(h3) {
+    display: flex;
+    gap: 0.35rem;
+    align-items: center;
+    margin: 0;
+    font-size: 0.95rem;
+  }
+
+  .hitbox-area-pools :global(.hitbox-pool-module),
+  .hitbox-area-pools :global(.hitbox-pool-weapons) {
+    color: var(--wrf-text-muted);
+    font-weight: normal;
+    font-size: 0.8rem;
+  }
+
+  .hitbox-area-pools :global(.hitbox-pool-weapons) {
+    margin: 0.15rem 0 0.4rem;
+  }
+
+  .hitbox-area-pools :global(.hitbox-swatch) {
+    display: inline-block;
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 2px;
+  }
+
+  .hitbox-area-pools :global(table) {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .hitbox-area-pools :global(th),
+  .hitbox-area-pools :global(td) {
+    padding: 0.2rem 0.35rem;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .hitbox-area-pools :global(thead th) {
+    color: var(--wrf-text-muted);
+    font-weight: normal;
+    border-bottom: 1px solid var(--wrf-border);
+  }
+
+  .hitbox-area-pools :global(th:first-child) {
+    text-align: left;
+  }
+
+  .hitbox-area-pools :global(tbody th button) {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--wrf-link);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .hitbox-area-pools :global(tbody th button:hover) {
+    color: var(--wrf-link-hover);
+    text-decoration: underline;
+  }
+
+  .hitbox-area-pools :global(tr.is-active) {
+    background: var(--wrf-accent-active-bg);
+  }
+
+  .hitbox-area-pools :global(td.is-muted) {
+    color: var(--wrf-text-muted);
+  }
+
+  .hitbox-area-notes {
+    margin: 0.75rem 0 0;
+    padding-left: 1.2rem;
+    color: var(--wrf-text-muted);
+    font-size: 0.8rem;
+  }
+</style>

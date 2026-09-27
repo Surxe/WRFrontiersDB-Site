@@ -6,11 +6,20 @@
  */
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import type { Mat4 } from './math';
 import { fetchJSON } from './data';
 import { refToId } from '../../utils/object_reference';
 import { computeModuleWorlds, modelIdForModule, sideForSocket } from './mount';
-import { addModel, createTrack, type TrackedResources } from './scene';
+import { addModel, createTrack, primitiveGeometry, type TrackedResources } from './scene';
+import {
+  VIEWS,
+  collectBodies,
+  measureBuild,
+  type HitboxBody,
+  type HitboxPool,
+  type PoolArea,
+  type ViewName,
+} from './hitbox_area';
+import { toThree, type Mat4 } from './math';
 import type { CharacterPresetModule } from '../../types/character_preset';
 import type { Module, ModuleType } from '../../types/module';
 import type { ModuleModel } from '../../types/model';
@@ -27,13 +36,28 @@ export interface BuildOptions {
 }
 
 const FALLBACK_COLOR = 0x9aa0a6;
+/** Ray grid spacing (cm) for area measurement: within ~0.3% of a 1 cm grid at
+ * a quarter of the cost. */
+const AREA_CELL_CM = 2;
+
+export interface HitboxMeasurement {
+  pools: HitboxPool[];
+  areas: Record<ViewName, PoolArea[]>;
+}
 
 export class ModelViewer {
   private renderer: THREE.WebGLRenderer;
   private scene: THREE.Scene;
   private camera: THREE.PerspectiveCamera;
+  private ortho = new THREE.OrthographicCamera(-1, 1, 1, -1, 1, 100000);
   private controls: OrbitControls;
+  private grid: THREE.GridHelper;
   private root = new THREE.Group();
+  /** Flat, opaque per-pool hitbox silhouettes shown in the axis views. */
+  private silhouettes = new THREE.Group();
+  private view: ViewName | null = null;
+  private savedTarget = new THREE.Vector3();
+  private hitboxes: { pools: HitboxPool[]; bodies: HitboxBody[] } | null = null;
   private track: TrackedResources = createTrack();
   private models = new Map<string, ModuleModel>();
   private status: HTMLElement;
@@ -62,7 +86,8 @@ export class ModelViewer {
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableDamping = true;
 
-    this.scene.add(new THREE.GridHelper(6000, 120, 0x3a3f47, 0x23272e));
+    this.grid = new THREE.GridHelper(6000, 120, 0x3a3f47, 0x23272e);
+    this.scene.add(this.grid);
     this.scene.add(new THREE.HemisphereLight(0xbfd4ff, 0x22242a, 1.6));
     const dir = new THREE.DirectionalLight(0xffffff, 2.2);
     dir.position.set(1200, 1600, 900);
@@ -75,6 +100,10 @@ export class ModelViewer {
     // applied before rotation) to keep sides true to the game.
     this.root.rotation.x = -Math.PI / 2;
     this.root.scale.y = -1;
+    this.silhouettes.rotation.copy(this.root.rotation);
+    this.silhouettes.scale.copy(this.root.scale);
+    this.silhouettes.visible = false;
+    this.scene.add(this.silhouettes);
 
     window.addEventListener('resize', () => this.onResize());
     this.animate();
@@ -86,12 +115,13 @@ export class ModelViewer {
     this.camera.aspect = w / Math.max(1, h);
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(w, h);
+    if (this.view) this.fitOrtho();
   }
 
   private animate(): void {
     requestAnimationFrame(() => this.animate());
     this.controls.update();
-    this.renderer.render(this.scene, this.camera);
+    this.renderer.render(this.scene, this.view ? this.ortho : this.camera);
   }
 
   setStatus(line: string): void {
@@ -104,6 +134,9 @@ export class ModelViewer {
     for (const mat of this.track.mats) mat.dispose();
     this.track = createTrack();
     while (this.root.children.length > 0) this.root.remove(this.root.children[0]);
+    while (this.silhouettes.children.length > 0) {
+      this.silhouettes.remove(this.silhouettes.children[0]);
+    }
   }
 
   async loadModel(cmId: string): Promise<ModuleModel | null> {
@@ -180,6 +213,11 @@ export class ModelViewer {
     );
 
     this.disposeTracked();
+    this.hitboxes = collectBodies(presetModules, placements, this.models, {
+      modules,
+      moduleTypes,
+    });
+    this.addSilhouettes(this.hitboxes.bodies, opts.colors);
     let loaded = 0;
 
     for (let i = 0; i < placements.length; i++) {
@@ -198,6 +236,87 @@ export class ModelViewer {
 
     this.reportBuild(opts.label, loaded, missing);
     this.frameToRobot();
+    if (this.view) this.fitOrtho();
+  }
+
+  /** Per-pool hitbox areas (cm^2) of the current build, every view. */
+  measureHitboxes(): HitboxMeasurement | null {
+    if (!this.hitboxes) return null;
+    const { pools, bodies } = this.hitboxes;
+    return { pools, areas: measureBuild(bodies, pools.length, AREA_CELL_CM) };
+  }
+
+  /** Switch to an orthographic axis view of the flat, opaque hitbox
+   * silhouettes, or back to the free 3D view. */
+  setView(view: ViewName | null): void {
+    if (view === this.view) return;
+    if (!this.view) this.savedTarget.copy(this.controls.target);
+    this.view = view;
+    const axis = view !== null;
+    this.root.visible = !axis;
+    this.grid.visible = !axis;
+    this.silhouettes.visible = axis;
+    this.controls.enableRotate = !axis;
+    this.controls.object = axis ? this.ortho : this.camera;
+    if (axis) {
+      this.fitOrtho();
+    } else {
+      this.controls.target.copy(this.savedTarget);
+    }
+    this.controls.update();
+  }
+
+  /** `colors` is per module-list entry, as for the 3D view, so each module's
+   * silhouette matches its color there. */
+  private addSilhouettes(bodies: HitboxBody[], colors: number[]): void {
+    const mats = new Map<number, THREE.MeshBasicMaterial>();
+    const matFor = (color: number): THREE.MeshBasicMaterial => {
+      let mat = mats.get(color);
+      if (!mat) {
+        mat = new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide });
+        mats.set(color, mat);
+        this.track.mats.push(mat);
+      }
+      return mat;
+    };
+    bodies.forEach((body, i) => {
+      const mat = matFor(colors[i] ?? FALLBACK_COLOR);
+      for (const prim of body.primitives) {
+        const geo = primitiveGeometry(prim);
+        geo.applyMatrix4(toThree(prim.m));
+        const obj = new THREE.Mesh(geo, mat);
+        this.silhouettes.add(obj);
+        this.track.geos.push(geo);
+        this.track.objs.push(obj);
+      }
+    });
+  }
+
+  /** Aim the orthographic camera down the active view's axis, framing the
+   * whole robot. */
+  private fitOrtho(): void {
+    if (!this.view) return;
+    const box = new THREE.Box3().setFromObject(this.silhouettes);
+    if (box.isEmpty()) return;
+    const sphere = box.getBoundingSphere(new THREE.Sphere());
+    const r = sphere.radius * 1.05;
+    // UE (X fwd, Y right, Z up) -> this scene is (x, z, y); see the root transform.
+    const [dx, dy, dz] = VIEWS[this.view].dir;
+    const dir = new THREE.Vector3(dx, dz, dy);
+    this.ortho.up.set(0, 1, 0);
+    if (this.view === 'top') this.ortho.up.set(1, 0, 0); // robot's front up
+    this.ortho.position.copy(sphere.center).addScaledVector(dir, -r * 4);
+    const aspect = this.container.clientWidth / Math.max(1, this.container.clientHeight);
+    this.ortho.left = -r * aspect;
+    this.ortho.right = r * aspect;
+    this.ortho.top = r;
+    this.ortho.bottom = -r;
+    this.ortho.near = 1;
+    this.ortho.far = r * 10;
+    this.ortho.zoom = 1;
+    this.ortho.updateProjectionMatrix();
+    this.controls.target.copy(sphere.center);
+    this.ortho.lookAt(sphere.center);
   }
 
   private addPlacement(

@@ -2,7 +2,8 @@
  * three.js geometry construction: hitbox primitives and per-module meshes.
  */
 import * as THREE from 'three';
-import { IDENTITY, boneWorlds, eulerMat, mapply, mmul, toThree, type Mat4 } from './math';
+import { IDENTITY, boneWorlds, mapply, mmul, toThree, type Mat4 } from './math';
+import { hitboxPrimitives, type HitboxPrimitive } from './hitbox';
 import { isFxMesh } from './mesh';
 import type { ModuleModel, Vec3 } from '../../types/model';
 
@@ -86,11 +87,17 @@ function addModuleMeshes(
   }
 }
 
+/** three.js geometry for one hitbox primitive, in the primitive's local frame. */
+export function primitiveGeometry(p: HitboxPrimitive): THREE.BufferGeometry {
+  if (p.kind === 'capsule') return buildCapsuleGeometry(p.radius, p.length);
+  if (p.kind === 'box') return buildBoxGeometry(p.extent);
+  return new THREE.SphereGeometry(p.radius, 24, 16);
+}
+
 function addHitboxes(
   group: THREE.Group,
   model: ModuleModel,
   world: Mat4,
-  boneWorld: Mat4[],
   color: number,
   track: TrackedResources,
 ): void {
@@ -104,28 +111,13 @@ function addHitboxes(
   });
   track.mats.push(hitMat);
 
-  const addPrimitive = (geo: THREE.BufferGeometry, local: Mat4): void => {
-    geo.applyMatrix4(toThree(local));
+  for (const prim of hitboxPrimitives(model, world)) {
+    const geo = primitiveGeometry(prim);
+    geo.applyMatrix4(toThree(prim.m));
     const obj = new THREE.Mesh(geo, hitMat);
     group.add(obj);
     track.geos.push(geo);
     track.objs.push(obj);
-  };
-
-  for (const cap of model.capsules ?? []) {
-    const boneMat = boneWorld[cap.bone] ?? IDENTITY;
-    const local = mmul(world, mmul(boneMat, eulerMat(cap.rot[0], cap.rot[1], cap.rot[2], cap.center)));
-    addPrimitive(buildCapsuleGeometry(cap.radius, cap.length), local);
-  }
-  for (const bx of model.boxes ?? []) {
-    const boneMat = boneWorld[bx.bone] ?? IDENTITY;
-    const local = mmul(world, mmul(boneMat, eulerMat(bx.rot[0], bx.rot[1], bx.rot[2], bx.center)));
-    addPrimitive(buildBoxGeometry(bx.extent), local);
-  }
-  for (const sp of model.spheres ?? []) {
-    const boneMat = boneWorld[sp.bone] ?? IDENTITY;
-    const center = mapply(mmul(world, boneMat), sp.center);
-    addPrimitive(new THREE.SphereGeometry(sp.radius, 24, 16), eulerMat(0, 0, 0, center));
   }
 }
 
@@ -163,9 +155,9 @@ export function addModel(
   opts: { hitbox: boolean; skeleton: boolean },
   track: TrackedResources,
 ): void {
-  // Hitboxes + skeleton overlay share the mesh's component space (root at origin).
+  // The skeleton overlay shares the mesh's component space (root at origin).
   const boneWorld = boneWorlds(model.bones ?? [], true);
   addModuleMeshes(group, model, toThree(world), color, track);
-  if (opts.hitbox) addHitboxes(group, model, world, boneWorld, color, track);
+  if (opts.hitbox) addHitboxes(group, model, world, color, track);
   if (opts.skeleton) addSkeleton(group, model, world, boneWorld, track);
 }
