@@ -4,12 +4,13 @@
 > composition into the Site. References below to the Python precomputer
 > (`wrf_models`, `combine.module_worlds`, `config.MOUNT_ORIENTATION`, etc.) describe
 > the now-removed `WRFrontiersDB-Models` repo; the live implementation is
-> `src/scripts/model_viewer/` (`mount.ts` = resolution, `constants.ts` = the
-> correction tables, `scene.ts` = geometry). The "Recommended pipeline changes"
-> below have since been implemented there (mount way driven by the adapter set,
-> `MOUNT_ORIENTATION` keyed by socket type + mount way, the `Standard` adapter
-> offset applied, light-weapon roll restored to -90). The findings themselves are
-> retained as the source-of-truth rationale for those constants.
+> `src/scripts/robot/model/` (`mount.ts` = resolution) with the correction tables
+> in `src/utils/constants.ts` (`WEAPON_MOUNT_ROTATION`,
+> `WEAPON_ROTATION_OVERRIDES`). The "Recommended pipeline changes" below have
+> since been implemented there (mount way driven by the adapter set, a mount
+> rotation per mount way, the `Standard` adapter offset applied, light-weapon
+> roll restored to -90). The findings themselves are retained as the
+> source-of-truth rationale for those constants.
 
 _Goal: determine whether the exported source assets carry a mounted weapon's relative
 rotation/position to its shoulder hardpoint, so the combined model can place titan weapons
@@ -99,7 +100,7 @@ AttachSocketName|SocketOverride` across all four BPs: **zero hits.**
 
 ## Recommended pipeline changes
 
-_(All implemented in `src/scripts/model_viewer/` — retained as rationale.)_
+_(All implemented in `src/scripts/robot/model/mount.ts` — retained as rationale.)_
 
 1. **Drive mount way from the weapon's `CharacterModules` key, not the hardpoint suffix.**
    Standard-only weapons are titan/centered; L/R weapons are light/mirrored. Store the mount
@@ -109,11 +110,13 @@ _(All implemented in `src/scripts/model_viewer/` — retained as rationale.)_
 2. **Make `MOUNT_ORIENTATION` keyed by (socket type, mount way)** — light `Weapon`+L/R keeps
    the calibrated `-90` roll (+90 left mirror); titan `Standard` gets its own rotation AND a
    position offset, both calibrated against an in-game screenshot (the transform is not in the
-   assets, so this is unavoidable). Now `MOUNT_ORIENTATION` in `constants.ts`.
+   assets, so this is unavoidable). Now `WEAPON_MOUNT_ROTATION` in
+   `src/utils/constants.ts`, keyed by mount way alone: the calibrated values
+   turned out identical for light and heavy sockets.
 3. Apply the serialized `Standard` adapter socket offset for titan weapons (small but real:
-   Bayonet `(0,0,30)`). Now `APPLY_ADAPTER_OFFSET` in `constants.ts`, gated to `Standard`.
+   Bayonet `(0,0,30)`). Now `weaponMount` in `mount.ts`, for `Standard` only.
 4. Revert the experimental global `roll_deg=180` back to the light-weapon `-90` before
-   shipping; it un-calibrates Typhon. Done — see `MOUNT_ORIENTATION`.
+   shipping; it un-calibrates Typhon. Done — see `WEAPON_MOUNT_ROTATION`.
 
 ## Only exhaustive alternative to a constant
 

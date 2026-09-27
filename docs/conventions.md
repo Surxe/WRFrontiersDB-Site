@@ -40,12 +40,29 @@ Example: [modules/[id].astro](../../src/pages/modules/[id].astro)
 - `initializeLocalization(version)` in `public/js/localization.js` handles loading and updating text
 - Uses two-level lookup: `locData[namespace][key]`
 
+### Runtime-built UI (bundled scripts)
+
+Text a client script builds (dropdowns, result tables) is localized too:
+
+- Declare every string in one catalog of `{ Key, TableNamespace }` refs
+  (e.g. `src/scripts/model_viewer/strings.ts`), preferring the game's own
+  localization keys and adding `Web_UI` keys to `public/locales/en.json`
+  otherwise.
+- The page resolves the catalog at build time (`resolveLocalizationKeys`),
+  renders its static text with `LocalizedText`, and passes the resolved
+  catalog to the script. The script localizes the page (`localizePage`) and
+  builds its own text in the reader's language, falling back to English.
+- Pass JSON to a script through a `data-*` attribute, not
+  `<script type="application/json" set:text=...>`: `set:text` HTML-escapes the
+  quotes and the browser does not decode entities inside `<script>`.
+
 ## File Organization
 
 - **Pages**: `src/pages/{parseObject}.astro` (list) and `src/pages/{parseObject}/[id].astro` (detail)
 - **Components**: Reusable UI in `src/components/`
 - **Utils**: Build-time helpers in `src/utils/` (TypeScript, Node.js APIs)
 - **Public JS**: Client-side scripts in `public/js/` (plain JavaScript, browser APIs)
+- **Bundled scripts**: Client TypeScript in `src/scripts/` imported from Astro `<script>` tags (see Architecture)
 - **Types**: TypeScript interfaces in `src/types/` (e.g., `Module`, `LocalizationKey`)
 - **Tests**: Test files in `tests/` directory, organized by type (e.g., `tests/ts_utils/`, `tests/components/`)
 

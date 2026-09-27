@@ -25,7 +25,10 @@ how-to; the style guide is the source of truth.
    `var(--wrf-accent)`, `var(--wrf-border)`, and so on. See the token list in
    `design-tokens.css` / the style guide.
 2. **Reuse the shared element classes.** Add `.wrf-btn` (`--primary` /
-   `--secondary`), `.wrf-toggle` / `.wrf-toggle__btn`, `.wrf-tooltip` rather than
+   `--secondary`, `--sm`), `.wrf-link-btn` (a button that looks like a link),
+   `.wrf-toggle` / `.wrf-toggle__btn` (`--sm`; selected via `.active` or
+   `aria-pressed="true"`), `.wrf-panel` (`--inset`), `.wrf-select` +
+   `.wrf-listbox` (a rich custom dropdown), `.wrf-tooltip` rather than
    restyling bare elements. Links (`a`), form controls, focus rings, scrollbars,
    and selection are styled globally by `elements.css` - don't re-declare them.
 3. **Domain colors stay raw, on purpose.** Meaningful data-driven colors -

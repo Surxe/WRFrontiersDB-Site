@@ -15,6 +15,7 @@ Static Astro site displaying War Robots Frontiers game data from WRFrontiersDB-D
 - [Ability Relationships](ability_relationships.md) - Ability system connections and dependencies
 - [Browser Data Access](browser-data-access.md) - Testing data accessibility and patterns
 - [Weapon Mount Findings](weapon_mount_findings.md) - Source investigation behind the /models mount-correction constants
+- Robot models / `/models` page: see Architecture > "Robot builds and 3D models"
 
 ## Critical Rules
 
@@ -27,7 +28,7 @@ Static Astro site displaying War Robots Frontiers game data from WRFrontiersDB-D
 ## Tech Stack
 
 - **Framework**: Astro 5.x (static output)
-- **Language**: TypeScript (build-time), JavaScript (runtime)
+- **Language**: TypeScript (build-time and bundled `src/scripts`), JavaScript (`public/js` runtime)
 - **Testing**: Vitest
 
 ## File Structure
@@ -37,6 +38,9 @@ src/
   pages/          # Astro pages (list and detail views)
   components/     # Reusable UI components
   utils/          # Build-time helpers (TypeScript + Node.js)
+  scripts/        # Client TypeScript bundled by Astro <script> tags
+    robot/        # Headless robot builds, models, hitbox areas (browser + Node)
+    model_viewer/ # The /models page (three.js viewer + DOM UI)
   types/          # TypeScript interfaces
 public/
   js/             # Client-side scripts (plain JavaScript)
@@ -45,6 +49,8 @@ tests/            # Test files organized by type
   components/     # Tests for components
   pages/          # Tests for page logic
   js/             # Tests for public/js/*.js
+  robot/          # Tests for src/scripts/robot (mirrors its tree)
+  model_viewer/   # Tests for src/scripts/model_viewer
 WRFrontiersDB-Data/  # External data repository (read-only)
   current/        # Current game data
 ```

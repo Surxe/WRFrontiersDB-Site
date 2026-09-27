@@ -1,19 +1,28 @@
 ---
 name: model-correction
-description: Diagnose and fix a WRFrontiers robot model that renders wrong on the /models page (weapon/shoulder position or rotation, oversized hitboxes, stray geometry). Use when a bot's composed model looks incorrect in the live viewer, or when validating a newly-parsed model. The composition lives in src/scripts/model_viewer/.
+description: Diagnose and fix a WRFrontiers robot model that renders wrong on the /models page (weapon/shoulder position or rotation, oversized hitboxes, stray geometry). Use when a bot's composed model looks incorrect in the live viewer, or when validating a newly-parsed model. The composition lives in src/scripts/robot/model/.
 ---
 
 # Correcting WRFrontiers robot models
 
 The `/models` page composes per-module data into a full robot **live in the
-browser**. The logic is `src/scripts/model_viewer/`:
+browser**. The composition is the headless core in `src/scripts/robot/` (no DOM
+or WebGL, so it also runs in Node):
 
-- `mount.ts` — mount resolution (`computeModuleWorlds` + socket/adapter helpers).
-- `constants.ts` — the runtime correction tables (`MOUNT_ORIENTATION`,
-  `WEAPON_ROTATION_OVERRIDE`, `APPLY_ADAPTER_OFFSET`).
-- `scene.ts` — three.js geometry construction (meshes, hitbox primitives, skeleton).
-- `math.ts` — 4x4 matrix + UE FRotator/quaternion math.
-- `mesh.ts` — FX-mesh classification and component-space AABB.
+- `model/mount.ts` — mount resolution (`placeModules`, `requiredModelIds`, and
+  the socket / adapter helpers).
+- `src/utils/constants.ts` — the runtime correction tables
+  (`WEAPON_MOUNT_ROTATION`, `WEAPON_ROTATION_OVERRIDES`) and the socket / bone
+  ids (`TORSO_SOCKET`, `TORSO_MOUNT_BONE`).
+- `model/math.ts` — UE FRotator / quaternion helpers on three.js `Matrix4`.
+- `model/hitbox.ts` — world-space hitbox primitives, shared by rendering and
+  area measurement.
+- `model/mesh.ts` — FX-mesh classification and component-space bounds.
+- `assembly.ts` — `assemble()`: load the needed models, place them, collect
+  hitboxes.
+
+Drawing lives in `src/scripts/model_viewer/render/` (`scene.ts` geometry,
+`viewer.ts` the three.js scene).
 
 A source edit only takes effect in the browser after a rebuild; use the dev
 server (`npm run dev`, or the `run-dev-server` skill) to see changes on `/models`.
@@ -44,24 +53,26 @@ Ground-truth reference (a hand-built, in-game-correct Typhon): read-only at
 ## Iteration loop
 
 1. `npm run dev`, open `/models`, pick the affected bot preset + shoulder (and
-   toggle hitbox/skeleton as needed). Presets live in `Objects/CharacterPreset.json`;
+   toggle mesh/hitbox as needed). Presets live in `Objects/CharacterPreset.json`;
    weapon display names differ from ids (e.g. "Magneto" = StickyGun) — resolve via
    `Module.json` `name.Key`.
 2. Get directional feedback from the user against the ground-truth reference.
-3. Make the change in the relevant `model_viewer/` module, verify numerically
+3. Make the change in the relevant `robot/model/` module, verify numerically
    (below), and reload.
 
 ## Verifying numerically (Node)
 
-The pure math is already isolated: `computeModuleWorlds` is exported from
-`mount.ts`, `refToId` from `src/utils/object_reference`, and `init()` (the DOM
-entry) lives only in `index.ts` — so a `tsx` script can import `mount.ts`
-directly with **no scaffolding edits**. Load the same `Objects/*.json` +
-`Models/*.json`, run `computeModuleWorlds`, and print per-module world Z / euler
-to check placement.
+The core is headless, so a `tsx` script can use it with **no scaffolding
+edits**: load the `Objects/*.json` tables into a `RobotTables`, then either run
+`assemble()` with a `ModelCache` that reads `Models/<id>.json` from disk (as
+`tests/robot/assembly.ts` does), or call `placeModules` (`model/mount.ts`) with a
+`Map` of loaded models, and print each placement's world position / rotation.
 
-Euler extraction (matches `eulerMat` = Rz(yaw)Ry(pitch)Rx(roll)):
-`x=atan2(m[2][1],m[2][2]) (roll), y=atan2(-m[2][0],sy) (pitch), z=atan2(m[1][0],m[0][0]) (yaw)`.
+World matrices are three.js `Matrix4`s (column-major `elements`; the position is
+`elements[12..14]`). `rotatorMatrix` builds Rz(yaw)Ry(pitch)Rx(roll), i.e.
+`Euler(roll, pitch, yaw, 'ZYX')`, so read a rotation back with
+`new Euler().setFromRotationMatrix(m, 'ZYX')` (x = roll, y = pitch, z = yaw, in
+radians).
 
 `npx tsc --noEmit` must stay clean; also run `npm run build`.
 
@@ -69,39 +80,42 @@ Euler extraction (matches `eulerMat` = Rz(yaw)Ry(pitch)Rx(roll)):
 
 1. **Whole upper body sunk / torso at wrong height** -> the "Root" preset socket
    is the chassis origin bone; the real attach is the chassis `Torso` bone.
-   `socketFrame` remaps `'Root' -> 'Torso'` (`mount.ts`).
+   `socketFrame` remaps `TORSO_SOCKET` -> `TORSO_MOUNT_BONE` (`mount.ts`).
 
 2. **Shoulders lifted ~2x, weapons ~3x (baked-root skeletons)** -> some skeletons
    bake the mount height into the root bone while the mesh stays root-relative, so
    the full bone world double-counts down the chain. `mountBoneFrame` picks the
-   full vs root-identity bone world whose position lands INSIDE the parent mesh
-   AABB (`meshAabb`, `dist2ToBox`). No-op when the root isn't baked. Hitbox
-   placement uses `boneWorlds(bones, true)` in `scene.ts`.
+   full vs root-at-origin bone world whose position lands INSIDE the parent mesh
+   bounds (`meshBounds`). No-op when the root isn't baked. Hitbox placement uses
+   `boneWorlds(bones, true)` in `model/hitbox.ts`.
 
 3. **Left shoulder renders the right mesh (or vice versa)** -> per-side shoulders
-   are one module id with separate Left/Right BPs. `computeModuleWorlds` derives
+   are one module id with separate Left/Right BPs. `placeModules` derives
    the side from the `socket_name` suffix and passes it to `modelIdForModule` so
    the correct-side BP is resolved.
 
 4. **Weapon orientation wrong / mirrored** -> runtime mount rotation, not in any
-   asset. `MOUNT_ORIENTATION[socketType][mountWay]` (light `Weapon` / `WeaponHeavy`;
-   `Left` roll +90 / `Right` -90 / `Standard` for titan-centered). Mount way comes
-   from the parent shoulder side + the weapon's adapter set (`adapterMountWay`:
-   Left/Right adapters = mirrored light; Standard-only = titan; plus `weaponMountSide`).
+   asset. `WEAPON_MOUNT_ROTATION[mountWay]` (`Left` roll +90 / `Right` -90 /
+   `Standard` for titan-centered). Mount way comes from the parent shoulder side
+   - the weapon's adapter set (`adapterMountWay`: Left/Right adapters = mirrored
+     light; Standard-only = titan). A weapon with per-side models (Hive,
+     Scrubber) takes its adapters from the parent-side model.
 
 5. **Weapon floats off its mount / adapter gap** -> the adapter socket offset
    positions the (unrendered) adapter mesh, NOT the weapon root, for Left/Right
    adapters. Only the `Standard` adapter offset is applied to weapon placement
-   (`APPLY_ADAPTER_OFFSET`, gated to Standard). Adapters carry NO rotation — never
+   (`weaponMount`). Adapters carry NO rotation — never
    expect them to fix orientation.
 
 6. **Hitbox boxes ~2x too big** -> UE `FKBoxElem` X/Y/Z are FULL dimensions;
-   `buildBoxGeometry` passes them straight to `THREE.BoxGeometry` (which wants full
-   w/h/d). Capsules use radius+length and are unaffected.
+   `primitiveGeometry` (`render/scene.ts`) passes them straight to
+   `THREE.BoxGeometry` (which wants full w/h/d); the area raycaster halves them.
+   Capsules use radius+length and are unaffected.
 
 7. **Stray cone/plane geometry off the body** -> a cosmetic FX/effect skeletal
    mesh component (`SK_*_Effect` / `*_FX`) rendered as solid. Filtered by `isFxMesh`
-   in `scene.ts` (`addModel`) AND `meshAabb` (`mesh.ts`). Data keeps the FX asset;
+   when rendering (`render/scene.ts`) AND in `meshBounds` (`model/mesh.ts`). Data
+   keeps the FX asset;
    this is a render-side filter.
 
 8. **One weapon oriented inconsistently with its siblings** -> that hardpoint bone
@@ -109,8 +123,8 @@ Euler extraction (matches `eulerMat` = Rz(yaw)Ry(pitch)Rx(roll)):
    fixable by mirroring the other shoulder (a sagittal mirror negates yaw/Z but
    PRESERVES roll/X, so roll anomalies can't be expressed as a mirror). Override
    the weapon's final world rotation, keeping its position:
-   `WEAPON_ROTATION_OVERRIDE['${parentShoulderModelId}|${socket}'] = [pitch, yaw, roll]`
-   (`withWorldRotation`; `constants.ts`). Set the value from the in-game view.
+   `WEAPON_ROTATION_OVERRIDES['${parentShoulderModelId}|${socket}'] = [pitch, yaw, roll]`
+   (`withRotation`; `src/utils/constants.ts`). Set the value from the in-game view.
 
 ## Diagnostic notes
 
@@ -135,7 +149,9 @@ Euler extraction (matches `eulerMat` = Rz(yaw)Ry(pitch)Rx(roll)):
 
 ## After a fix
 
-`npx tsc --noEmit` + `npm run build`, then verify the affected preset(s) on
-`/models`. Add new one-off corrections to the config tables in `constants.ts`
+`npx tsc --noEmit` + `npm run build` + `npm run vitest` (tests/robot checks
+placement and areas against the real data), then verify the affected preset(s) on
+`/models`. Add new one-off corrections to the config tables in
+`src/utils/constants.ts`
 (with a comment on the in-game evidence), never as inline magic numbers in the
 compute code.
