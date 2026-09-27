@@ -22,7 +22,7 @@ import {
 import { toThree, type Mat4 } from './math';
 import type { CharacterPresetModule } from '../../types/character_preset';
 import type { Module, ModuleType } from '../../types/module';
-import type { ModuleModel } from '../../types/model';
+import type { ModuleModel, Vec3 } from '../../types/model';
 
 export interface BuildOptions {
   /** The module tree to render, parents before children. */
@@ -40,6 +40,18 @@ const FALLBACK_COLOR = 0x9aa0a6;
  * a quarter of the cost. */
 const AREA_CELL_CM = 2;
 
+/** UE unit vector from the robot's front (+X), turned `yawDeg` toward its
+ * right (+Y) and raised `pitchDeg`. */
+function fromFront(yawDeg: number, pitchDeg: number): Vec3 {
+  const yaw = THREE.MathUtils.degToRad(yawDeg);
+  const pitch = THREE.MathUtils.degToRad(pitchDeg);
+  return [Math.cos(pitch) * Math.cos(yaw), Math.cos(pitch) * Math.sin(yaw), Math.sin(pitch)];
+}
+
+/** Opening camera direction (robot toward camera): nearly head-on, for a
+ * slight angle from the robot's right and above. */
+const DEFAULT_CAMERA_FROM = fromFront(20, 12);
+
 export interface HitboxMeasurement {
   pools: HitboxPool[];
   areas: Record<ViewName, PoolArea[]>;
@@ -56,7 +68,6 @@ export class ModelViewer {
   /** Flat, opaque per-pool hitbox silhouettes shown in the axis views. */
   private silhouettes = new THREE.Group();
   private view: ViewName | null = null;
-  private savedTarget = new THREE.Vector3();
   private hitboxes: { pools: HitboxPool[]; bodies: HitboxBody[] } | null = null;
   private track: TrackedResources = createTrack();
   private models = new Map<string, ModuleModel>();
@@ -250,7 +261,7 @@ export class ModelViewer {
    * silhouettes, or back to the free 3D view. */
   setView(view: ViewName | null): void {
     if (view === this.view) return;
-    if (!this.view) this.savedTarget.copy(this.controls.target);
+    const previous = this.view;
     this.view = view;
     const axis = view !== null;
     this.root.visible = !axis;
@@ -260,10 +271,29 @@ export class ModelViewer {
     this.controls.object = axis ? this.ortho : this.camera;
     if (axis) {
       this.fitOrtho();
-    } else {
-      this.controls.target.copy(this.savedTarget);
+    } else if (previous) {
+      // Back in 3D, look from the side that was just selected.
+      const [dx, dy, dz] = VIEWS[previous].dir;
+      // Straight down is a degenerate orbit; lean back a hair so the robot's
+      // front stays at the top of the screen, as in the Top view.
+      this.aimPerspective(previous === 'top' ? [-0.01, 0, 1] : [-dx, -dy, -dz]);
     }
     this.controls.update();
+  }
+
+  /** Aim the perspective camera at the robot's center from direction `from`
+   * (UE, robot toward camera), far enough back to fit the whole robot. */
+  private aimPerspective(from: Vec3): boolean {
+    const box = new THREE.Box3().setFromObject(this.root);
+    if (box.isEmpty()) return false;
+    const sphere = box.getBoundingSphere(new THREE.Sphere());
+    const dist = sphere.radius / Math.sin(THREE.MathUtils.degToRad(this.camera.fov / 2));
+    // UE (X fwd, Y right, Z up) -> this scene is (x, z, y); see the root transform.
+    const dir = new THREE.Vector3(from[0], from[2], from[1]).normalize();
+    this.camera.position.copy(sphere.center).addScaledVector(dir, dist);
+    this.controls.target.copy(sphere.center);
+    this.controls.update();
+    return true;
   }
 
   /** `colors` is per module-list entry, as for the 3D view, so each module's
@@ -346,18 +376,12 @@ export class ModelViewer {
     );
   }
 
-  /** On the first build, lift the camera and its aim point up by half the
-   * assembled robot's height so the opening frame centers on the robot's
-   * vertical midpoint instead of its feet (the origin). Only runs once per page
-   * load so later orbit/zoom stays with the user. */
+  /** On the first build, aim at the assembled robot's center from the default
+   * angle. Only runs once per page load so later orbit/zoom stays with the
+   * user. */
   private frameToRobot(): void {
     if (this.framed) return;
-    const box = new THREE.Box3().setFromObject(this.root);
-    if (box.isEmpty()) return; // nothing rendered yet — retry on a later build
-    const halfHeight = (box.max.y - box.min.y) / 2;
-    this.camera.position.set(900, 700 + halfHeight, 1400);
-    this.controls.target.set(0, halfHeight, 0);
-    this.controls.update();
-    this.framed = true;
+    // Nothing rendered yet: retry on a later build.
+    this.framed = this.aimPerspective(DEFAULT_CAMERA_FROM);
   }
 }
