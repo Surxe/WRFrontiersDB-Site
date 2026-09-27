@@ -9,7 +9,13 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { fetchJSON } from './data';
 import { refToId } from '../../utils/object_reference';
 import { computeModuleWorlds, modelIdForModule, sideForSocket } from './mount';
-import { addModel, createTrack, primitiveGeometry, type TrackedResources } from './scene';
+import {
+  addModel,
+  createTrack,
+  primitiveGeometry,
+  type TrackedResources,
+  type ZoneColorFn,
+} from './scene';
 import {
   VIEWS,
   collectBodies,
@@ -29,6 +35,9 @@ export interface BuildOptions {
   modules: CharacterPresetModule[];
   /** One unique color per entry of `modules`; its hitbox uses it too. */
   colors: number[];
+  /** Health pools (armor zones) with a color of their own (the chassis legs),
+   * overriding their module's color. */
+  zoneColors: Record<string, number>;
   /** Short description of what is being rendered, for the status line. */
   label: string;
   hitbox: boolean;
@@ -36,6 +45,13 @@ export interface BuildOptions {
 }
 
 const FALLBACK_COLOR = 0x9aa0a6;
+
+/** Color of a module's parts: its armor zone's own color if it has one (the
+ * chassis legs), else the module's. */
+function colorFor(opts: BuildOptions, moduleIndex: number): ZoneColorFn {
+  const moduleColor = opts.colors[moduleIndex] ?? FALLBACK_COLOR;
+  return (zone) => (zone ? opts.zoneColors[zone] : undefined) ?? moduleColor;
+}
 /** Ray grid spacing (cm) for area measurement: within ~0.3% of a 1 cm grid at
  * a quarter of the cost. */
 const AREA_CELL_CM = 2;
@@ -228,7 +244,7 @@ export class ModelViewer {
       modules,
       moduleTypes,
     });
-    this.addSilhouettes(this.hitboxes.bodies, opts.colors);
+    this.addSilhouettes(this.hitboxes.bodies, opts);
     let loaded = 0;
 
     for (let i = 0; i < placements.length; i++) {
@@ -241,7 +257,7 @@ export class ModelViewer {
         continue;
       }
 
-      this.addPlacement(model, placement.world, opts.colors[i] ?? FALLBACK_COLOR, opts);
+      this.addPlacement(model, placement.world, i, opts);
       loaded += 1;
     }
 
@@ -296,9 +312,9 @@ export class ModelViewer {
     return true;
   }
 
-  /** `colors` is per module-list entry, as for the 3D view, so each module's
-   * silhouette matches its color there. */
-  private addSilhouettes(bodies: HitboxBody[], colors: number[]): void {
+  /** Colored as in the 3D view: by module, or by health pool (armor zone)
+   * where it has its own color. */
+  private addSilhouettes(bodies: HitboxBody[], opts: BuildOptions): void {
     const mats = new Map<number, THREE.MeshBasicMaterial>();
     const matFor = (color: number): THREE.MeshBasicMaterial => {
       let mat = mats.get(color);
@@ -309,9 +325,9 @@ export class ModelViewer {
       }
       return mat;
     };
-    bodies.forEach((body, i) => {
-      const mat = matFor(colors[i] ?? FALLBACK_COLOR);
+    for (const body of bodies) {
       for (const prim of body.primitives) {
+        const mat = matFor(colorFor(opts, body.moduleIndex)(prim.zone));
         const geo = primitiveGeometry(prim);
         geo.applyMatrix4(toThree(prim.m));
         const obj = new THREE.Mesh(geo, mat);
@@ -319,7 +335,7 @@ export class ModelViewer {
         this.track.geos.push(geo);
         this.track.objs.push(obj);
       }
-    });
+    }
   }
 
   /** Aim the orthographic camera down the active view's axis, framing the
@@ -352,14 +368,14 @@ export class ModelViewer {
   private addPlacement(
     model: ModuleModel,
     world: Mat4,
-    color: number,
+    moduleIndex: number,
     opts: BuildOptions,
   ): void {
     addModel(
       this.root,
       model,
       world,
-      color,
+      colorFor(opts, moduleIndex),
       { hitbox: opts.hitbox, skeleton: opts.skeleton },
       this.track,
     );

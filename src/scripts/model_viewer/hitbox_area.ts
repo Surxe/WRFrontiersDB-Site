@@ -1,8 +1,10 @@
 /**
  * Projected hitbox area of a build, per health pool and view direction.
  *
- * The chassis (legs), torso and each shoulder are their own health pools; a
- * weapon's hits go to the pool of the part it is mounted on. For every view a grid of
+ * The torso and each shoulder are their own health pools, and the chassis
+ * splits into three (pelvis, left leg, right leg: the armor zones its
+ * components link, see the parser's model export); a weapon's hits go to the
+ * pool of the part it is mounted on. For every view a grid of
  * parallel rays (one per `cell` x `cell` square) is intersected analytically
  * with the build's hitbox primitives, and each pool gets, in isolation:
  *
@@ -43,13 +45,16 @@ export const VIEWS: Record<ViewName, ViewDef> = {
 
 export const VIEW_ORDER: readonly ViewName[] = ['front', 'back', 'left', 'right', 'top'];
 
-/** One health pool: the chassis, torso or a shoulder (with its mounted
- * weapons). */
+/** One health pool: a chassis zone (pelvis / leg), the torso or a shoulder
+ * (with its mounted weapons). */
 export interface HitboxPool {
   label: string;
   kind: 'chassis' | 'torso' | 'shoulder';
-  /** Which side a shoulder sits on; its inner-side view is not measured. */
+  /** Which side a shoulder or leg sits on; its inner-side view is not
+   * measured. */
   side: 'left' | 'right' | null;
+  /** Armor zone id of a chassis pool split by zone, else null. */
+  zone: string | null;
   /** Index (in the module list) of the pool's own module. */
   moduleIndex: number;
   moduleId: string;
@@ -59,9 +64,14 @@ export interface HitboxPool {
   weaponIndices: number[];
 }
 
-/** A placed module's hitboxes and the pool its hits go to. */
+/** A placed module's hitboxes (or one armor zone's share of them) and the
+ * pool its hits go to. */
 export interface HitboxBody {
   primitives: HitboxPrimitive[];
+  /** Index (in the module list) of the module these hitboxes belong to. */
+  moduleIndex: number;
+  /** Armor zone of these hitboxes, when the module splits by zone. */
+  zone: string | null;
   /** Pool index, or null for modules outside any pool (chassis, gear), which
    * are not measured. */
   pool: number | null;
@@ -116,7 +126,7 @@ export function assignPools(
               ? 'Right Shoulder'
               : 'Shoulder';
       poolOf[i] = pools.length;
-      pools.push({ label, kind, side, moduleIndex: i, moduleId: refToId(entry.module_ref), weaponIds: [], weaponIndices: [] });
+      pools.push({ label, kind, side, zone: null, moduleIndex: i, moduleId: refToId(entry.module_ref), weaponIds: [], weaponIndices: [] });
       return;
     }
     if (kind !== 'weapon') return;
@@ -134,6 +144,34 @@ export function assignPools(
   return { pools, poolOf, weapon };
 }
 
+/** The chassis's armor zones, in display order. */
+const CHASSIS_ZONES: Record<string, { label: string; side: 'left' | 'right' | null }> = {
+  'DA_ArmorZone_Pelvis.0': { label: 'Pelvis', side: null },
+  'DA_ArmorZone_LeftLeg.0': { label: 'Left Leg', side: 'left' },
+  'DA_ArmorZone_RightLeg.0': { label: 'Right Leg', side: 'right' },
+};
+
+const zoneRank = (zone: string | null): number => {
+  const i = Object.keys(CHASSIS_ZONES).indexOf(zone ?? '');
+  return i < 0 ? Infinity : i;
+};
+
+/** A pool per armor zone of a chassis whose hitboxes span several zones
+ * (pelvis first; the first pool also takes any weapon mounted on the
+ * chassis). Hitboxes with no zone get a plain "Chassis" pool. */
+function splitChassis(pool: HitboxPool, zones: (string | null)[]): HitboxPool[] {
+  return [...zones]
+    .sort((a, b) => zoneRank(a) - zoneRank(b))
+    .map((zone, n) => ({
+      ...pool,
+      label: (zone ? CHASSIS_ZONES[zone]?.label : undefined) ?? 'Chassis',
+      side: (zone ? CHASSIS_ZONES[zone]?.side : undefined) ?? null,
+      zone,
+      weaponIds: n === 0 ? pool.weaponIds : [],
+      weaponIndices: n === 0 ? pool.weaponIndices : [],
+    }));
+}
+
 /** Pools + hitbox bodies of a placed build (see mount.ts computeModuleWorlds);
  * modules whose model is not loaded contribute no hitboxes. */
 export function collectBodies(
@@ -142,16 +180,56 @@ export function collectBodies(
   models: ReadonlyMap<string, ModuleModel>,
   tables: Pick<BuildTables, 'modules' | 'moduleTypes'>,
 ): { pools: HitboxPool[]; bodies: HitboxBody[] } {
-  const { pools, poolOf, weapon } = assignPools(presetModules, (i) =>
+  const { pools: modulePools, poolOf, weapon } = assignPools(presetModules, (i) =>
     kindOfModule(placements[i].module_id, tables),
   );
-  const bodies = placements.map((placement, i) => {
+  const primitives = placements.map((placement) => {
     const model = placement.model_id ? models.get(placement.model_id) : undefined;
-    return {
-      primitives: model ? hitboxPrimitives(model, placement.world) : [],
-      pool: poolOf[i],
-      weapon: weapon[i],
-    };
+    return model ? hitboxPrimitives(model, placement.world) : [];
+  });
+
+  // Module pools -> final pools, splitting each chassis by armor zone.
+  const pools: HitboxPool[] = [];
+  const firstPool: number[] = []; // module pool -> its (first) final pool
+  const zonePool = new Map<number, Map<string | null, number>>(); // chassis module pool -> zone -> final pool
+  modulePools.forEach((pool, p) => {
+    firstPool[p] = pools.length;
+    const zones = new Set(primitives[pool.moduleIndex].map((prim) => prim.zone ?? null));
+    if (pool.kind !== 'chassis' || zones.size < 2) {
+      pools.push(pool);
+      return;
+    }
+    const byZone = new Map<string | null, number>();
+    for (const split of splitChassis(pool, [...zones])) {
+      byZone.set(split.zone, pools.length);
+      pools.push(split);
+    }
+    zonePool.set(p, byZone);
+  });
+
+  const bodies: HitboxBody[] = [];
+  placements.forEach((_, i) => {
+    const p = poolOf[i];
+    const byZone = p === null ? undefined : zonePool.get(p);
+    if (p === null || !byZone || weapon[i]) {
+      bodies.push({
+        primitives: primitives[i],
+        moduleIndex: i,
+        zone: null,
+        pool: p === null ? null : firstPool[p],
+        weapon: weapon[i],
+      });
+      return;
+    }
+    for (const [zone, pool] of byZone) {
+      bodies.push({
+        primitives: primitives[i].filter((prim) => (prim.zone ?? null) === zone),
+        moduleIndex: i,
+        zone,
+        pool,
+        weapon: false,
+      });
+    }
   });
   return { pools, bodies };
 }

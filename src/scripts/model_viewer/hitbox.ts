@@ -10,10 +10,14 @@ import type { ModuleModel, Vec3 } from '../../types/model';
 
 /** A collision primitive in UE world space. `m` maps the primitive's local
  * frame (centered at the origin; capsules along local Z) to world. */
-export type HitboxPrimitive =
+export type HitboxPrimitive = (
   | { kind: 'capsule'; m: Mat4; radius: number; length: number }
   | { kind: 'box'; m: Mat4; extent: Vec3 }
-  | { kind: 'sphere'; m: Mat4; radius: number };
+  | { kind: 'sphere'; m: Mat4; radius: number }
+) & {
+  /** Health pool (armor zone) of the primitive's component, if linked. */
+  zone?: string;
+};
 
 export function hitboxPrimitives(model: ModuleModel, world: Mat4): HitboxPrimitive[] {
   // Hitboxes share the mesh's component space (root at origin).
@@ -22,17 +26,17 @@ export function hitboxPrimitives(model: ModuleModel, world: Mat4): HitboxPrimiti
   for (const cap of model.capsules ?? []) {
     const boneMat = boneWorld[cap.bone] ?? IDENTITY;
     const m = mmul(world, mmul(boneMat, eulerMat(cap.rot[0], cap.rot[1], cap.rot[2], cap.center)));
-    out.push({ kind: 'capsule', m, radius: cap.radius, length: cap.length });
+    out.push({ kind: 'capsule', m, radius: cap.radius, length: cap.length, zone: cap.armor_zone });
   }
   for (const bx of model.boxes ?? []) {
     const boneMat = boneWorld[bx.bone] ?? IDENTITY;
     const m = mmul(world, mmul(boneMat, eulerMat(bx.rot[0], bx.rot[1], bx.rot[2], bx.center)));
-    out.push({ kind: 'box', m, extent: bx.extent });
+    out.push({ kind: 'box', m, extent: bx.extent, zone: bx.armor_zone });
   }
   for (const sp of model.spheres ?? []) {
     const boneMat = boneWorld[sp.bone] ?? IDENTITY;
     const center = mapply(mmul(world, boneMat), sp.center);
-    out.push({ kind: 'sphere', m: eulerMat(0, 0, 0, center), radius: sp.radius });
+    out.push({ kind: 'sphere', m: eulerMat(0, 0, 0, center), radius: sp.radius, zone: sp.armor_zone });
   }
   return out;
 }

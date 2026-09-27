@@ -59,15 +59,20 @@ function buildBoxGeometry(extent: Vec3): THREE.BufferGeometry {
   return new THREE.BoxGeometry(extent[0], extent[1], extent[2]);
 }
 
+/** A part's color: its health pool's (armor zone's) own color when it has
+ * one (the chassis legs), else the module's. */
+export type ZoneColorFn = (zone: string | undefined) => number;
+
 function addModuleMeshes(
   group: THREE.Group,
   model: ModuleModel,
   worldMatrix: THREE.Matrix4,
-  color: number,
+  colorOf: ZoneColorFn,
   track: TrackedResources,
 ): void {
   for (const mesh of model.meshes ?? []) {
     if (isFxMesh(mesh)) continue;
+    const color = colorOf(mesh.armor_zone);
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.Float32BufferAttribute(mesh.verts, 3));
     geo.setIndex(mesh.indices);
@@ -98,23 +103,31 @@ function addHitboxes(
   group: THREE.Group,
   model: ModuleModel,
   world: Mat4,
-  color: number,
+  colorOf: ZoneColorFn,
   track: TrackedResources,
 ): void {
-  const hitMat = new THREE.MeshStandardMaterial({
-    color,
-    roughness: 0.6,
-    transparent: true,
-    opacity: 0.45,
-    depthWrite: false,
-    side: THREE.DoubleSide,
-  });
-  track.mats.push(hitMat);
+  const mats = new Map<number, THREE.Material>();
+  const hitMat = (color: number): THREE.Material => {
+    let mat = mats.get(color);
+    if (!mat) {
+      mat = new THREE.MeshStandardMaterial({
+        color,
+        roughness: 0.6,
+        transparent: true,
+        opacity: 0.45,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+      });
+      mats.set(color, mat);
+      track.mats.push(mat);
+    }
+    return mat;
+  };
 
   for (const prim of hitboxPrimitives(model, world)) {
     const geo = primitiveGeometry(prim);
     geo.applyMatrix4(toThree(prim.m));
-    const obj = new THREE.Mesh(geo, hitMat);
+    const obj = new THREE.Mesh(geo, hitMat(colorOf(prim.zone)));
     group.add(obj);
     track.geos.push(geo);
     track.objs.push(obj);
@@ -151,13 +164,13 @@ export function addModel(
   group: THREE.Group,
   model: ModuleModel,
   world: Mat4,
-  color: number,
+  colorOf: ZoneColorFn,
   opts: { hitbox: boolean; skeleton: boolean },
   track: TrackedResources,
 ): void {
   // The skeleton overlay shares the mesh's component space (root at origin).
   const boneWorld = boneWorlds(model.bones ?? [], true);
-  addModuleMeshes(group, model, toThree(world), color, track);
-  if (opts.hitbox) addHitboxes(group, model, world, color, track);
+  addModuleMeshes(group, model, toThree(world), colorOf, track);
+  if (opts.hitbox) addHitboxes(group, model, world, colorOf, track);
   if (opts.skeleton) addSkeleton(group, model, world, boneWorld, track);
 }

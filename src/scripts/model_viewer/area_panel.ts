@@ -1,6 +1,7 @@
 /**
  * Renders the hitbox-area panel: one card per health pool (each shoulder,
- * torso, chassis) with its projected area from every applicable view.
+ * torso, pelvis, each leg) with its projected area from every applicable
+ * view.
  */
 import {
   VIEW_ORDER,
@@ -18,6 +19,9 @@ export interface AreaPanelOptions {
   tables: Pick<BuildTables, 'modules'>;
   /** Build colors (toPresetModules order), as the 3D view uses them. */
   colors: number[];
+  /** Health pools (armor zones) with their own color, as the 3D view uses
+   * them. */
+  zoneColors: Record<string, number>;
   view: ViewName | null;
   onSelectView: (view: ViewName) => void;
 }
@@ -25,9 +29,8 @@ export interface AreaPanelOptions {
 const m2 = (cm2: number): string => (cm2 / 1e4).toFixed(2);
 
 function viewRowLabel(pool: HitboxPool, view: ViewName): string {
-  // A shoulder's only measured side is its outer one.
-  if (pool.kind === 'shoulder' && (view === 'left' || view === 'right'))
-    return 'Side';
+  // A shoulder's or leg's only measured side is its outer one.
+  if (pool.side && (view === 'left' || view === 'right')) return 'Side';
   return VIEWS[view].label;
 }
 
@@ -60,7 +63,9 @@ function poolCard(
   card.className = 'hitbox-pool';
 
   const head = document.createElement('h3');
-  const color = opts.colors[pool.moduleIndex];
+  const color =
+    (pool.zone ? opts.zoneColors[pool.zone] : undefined) ??
+    opts.colors[pool.moduleIndex];
   if (color !== undefined) head.append(swatch(color, pool.label));
   head.append(
     ` ${pool.label} `,
@@ -135,16 +140,12 @@ export function renderAreaPanel(
     container.append(textEl('p', 'No hitboxes in this build.', 'is-muted'));
     return;
   }
-  // Right shoulder, torso, left shoulder: left to right as the default 3D
-  // camera (front-right of the robot) sees them; the chassis below them.
+  // Right, middle, left: as the default 3D camera (front-right of the robot)
+  // sees them. Shoulders + torso first, then the chassis (right leg, pelvis,
+  // left leg) below them.
   const rank = (pool: HitboxPool): number =>
-    pool.kind === 'chassis'
-      ? 3
-      : pool.side === 'right'
-        ? 0
-        : pool.side === 'left'
-          ? 2
-          : 1;
+    (pool.kind === 'chassis' ? 3 : 0) +
+    (pool.side === 'right' ? 0 : pool.side === 'left' ? 2 : 1);
   measurement.pools
     .map((pool, i) => ({ pool, i }))
     .sort((a, b) => rank(a.pool) - rank(b.pool))

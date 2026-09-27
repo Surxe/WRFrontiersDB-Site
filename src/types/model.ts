@@ -25,8 +25,14 @@ export interface Adapter {
   offset: Vec3 | null;
 }
 
+/** Health pool (armor zone) id of the component a primitive or mesh belongs
+ * to, e.g. `DA_ArmorZone_LeftLeg.0`. Absent when the component links none
+ * (weapons, which share their mount's pool). */
+type ArmorZoneId = string;
+
 export interface Capsule {
   bone: number;
+  armor_zone?: ArmorZoneId;
   center: Vec3;
   rot: [number, number, number];
   radius: number;
@@ -35,6 +41,7 @@ export interface Capsule {
 
 export interface Box {
   bone: number;
+  armor_zone?: ArmorZoneId;
   center: Vec3;
   rot: [number, number, number];
   extent: Vec3;
@@ -42,6 +49,7 @@ export interface Box {
 
 export interface Sphere {
   bone: number;
+  armor_zone?: ArmorZoneId;
   center: Vec3;
   radius: number;
 }
@@ -51,6 +59,7 @@ export interface ModelMesh {
   verts: number[];
   indices: number[];
   num_tris: number;
+  armor_zone?: ArmorZoneId;
 }
 
 export interface ModuleModel {

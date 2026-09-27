@@ -27,7 +27,7 @@ import { readSelection, slotKeyMatcher } from './build/params';
 import { BuildStore } from './build/store';
 import { renderBuilder } from './build/ui';
 import { summarizeBuild } from './build/classify';
-import { buildModuleColors } from './colors';
+import { buildModuleColors, buildZoneColors } from './colors';
 import type { BuildTables, ResolvedBuild } from './build/types';
 import type { Module, ModuleType } from '../../types/module';
 import type { ModuleSocketType } from '../../types/module_socket_type';
@@ -100,12 +100,14 @@ async function init(): Promise<void> {
     // Hitbox areas of the last build, and the active camera view.
     let measurement: HitboxMeasurement | null = null;
     let colors: number[] = [];
+    let zoneColors: Record<string, number> = {};
     let cameraView: ViewName | null = null;
 
     const renderAreas = (): void => {
       renderAreaPanel(areaEl, measurement, {
         tables,
         colors,
+        zoneColors,
         view: cameraView,
         onSelectView: (v) => selectView(v),
       });
@@ -136,9 +138,11 @@ async function init(): Promise<void> {
       }
       try {
         const buildColors = buildModuleColors(build);
+        const buildZones = buildZoneColors(build);
         await viewer.build({
           modules: toPresetModules(build),
           colors: buildColors,
+          zoneColors: buildZones,
           label: summarizeBuild(build, tables),
           hitbox: hitboxBox.checked,
           // The bone overlay stays off in the UI (the viewer still supports it).
@@ -147,6 +151,7 @@ async function init(): Promise<void> {
         // Measure after the new build has painted; the raycast takes a moment.
         await new Promise((resolve) => setTimeout(resolve, 0));
         colors = buildColors;
+        zoneColors = buildZones;
         measurement = viewer.measureHitboxes();
         renderAreas();
       } catch (err) {

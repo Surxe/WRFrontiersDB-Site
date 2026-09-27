@@ -40,7 +40,7 @@ const body = (
   primitives: HitboxPrimitive[],
   pool: number | null,
   weapon = false
-): HitboxBody => ({ primitives, pool, weapon });
+): HitboxBody => ({ primitives, moduleIndex: 0, zone: null, pool, weapon });
 
 /** Relative closeness, since grid areas are exact only in the limit. */
 const near = (actual: number, expected: number, tol = 0.01): void => {
@@ -222,25 +222,65 @@ describe('real data: Anansi with Hefty on both shoulders', () => {
   );
   const { pools, bodies } = collectBodies(preset, placements, models, tables);
 
-  it('finds the chassis, torso and both shoulders, each shoulder armed', () => {
+  const label = (name: string): number =>
+    pools.findIndex((p) => p.label === name);
+
+  it('splits the chassis into its armor zones', () => {
     expect(pools.map((p) => p.label)).toEqual([
-      'Chassis',
+      'Pelvis',
+      'Left Leg',
+      'Right Leg',
       'Torso',
       'Left Shoulder',
       'Right Shoulder',
     ]);
-    expect(pools[0].weaponIds).toEqual([]);
-    expect(pools[2].weaponIds).toEqual(['DA_Module_Weapon_Hefty.0']);
-    expect(pools[3].weaponIds).toEqual(['DA_Module_Weapon_Hefty.0']);
+    expect(pools.map((p) => p.side)).toEqual([
+      null,
+      'left',
+      'right',
+      null,
+      'left',
+      'right',
+    ]);
+    expect(pools[label('Left Leg')].zone).toBe('DA_ArmorZone_LeftLeg.0');
+    expect(pools[label('Left Shoulder')].weaponIds).toEqual([
+      'DA_Module_Weapon_Hefty.0',
+    ]);
+    expect(pools[label('Right Shoulder')].weaponIds).toEqual([
+      'DA_Module_Weapon_Hefty.0',
+    ]);
   });
 
-  it('measures the chassis from every side', () => {
+  it("puts a spider's two left legs in one pool and two right legs in another", () => {
+    // Anansi: a pelvis capsule plus 3 capsules per leg, 4 legs.
+    const count = (name: string): number =>
+      bodies
+        .filter((b) => b.pool === label(name))
+        .reduce((n, b) => n + b.primitives.length, 0);
+    expect(count('Pelvis')).toBe(1);
+    expect(count('Left Leg')).toBe(6);
+    expect(count('Right Leg')).toBe(6);
+    // Every left-leg hitbox sits on the robot's left (-Y), right on +Y.
+    for (const b of bodies) {
+      for (const prim of b.primitives) {
+        const y = prim.m[1][3];
+        if (b.pool === label('Left Leg')) expect(y).toBeLessThan(0);
+        if (b.pool === label('Right Leg')) expect(y).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it('measures each chassis pool from every applicable side', () => {
     const areas = measureBuild(bodies, pools.length, 4);
-    for (const view of VIEW_ORDER) {
-      const [chassis] = areas[view];
-      expect(chassis.alone, view).toBeGreaterThan(0);
-      // No weapons mount on the chassis: nothing to add.
-      expect(chassis.withWeapons, view).toBe(chassis.alone);
+    for (const name of ['Pelvis', 'Left Leg', 'Right Leg']) {
+      const p = label(name);
+      for (const view of VIEW_ORDER) {
+        if (!viewApplies(pools[p], view)) continue;
+        const area = areas[view][p];
+        expect(area.alone, `${name} ${view}`).toBeGreaterThan(0);
+        // No weapons mount on the chassis: nothing to add.
+        expect(area.withWeapons, `${name} ${view}`).toBe(area.alone);
+      }
     }
   });
 
@@ -249,13 +289,15 @@ describe('real data: Anansi with Hefty on both shoulders', () => {
     const torsoModel = models.get('BP_Module_Anansi_Torso.0')!;
     const r = torsoModel.capsules[0].radius;
     near(
-      measureView(bodies, pools.length, 'front', 2)[1].alone,
+      measureView(bodies, pools.length, 'front', 2)[label('Torso')].alone,
       Math.PI * r * r
     );
   });
 
   it('a mounted weapon grows its shoulder from the outer side', () => {
-    const [, , left] = measureView(bodies, pools.length, 'left', 2);
+    const left = measureView(bodies, pools.length, 'left', 2)[
+      label('Left Shoulder')
+    ];
     expect(left.withWeapons).toBeGreaterThan(left.alone * 1.1);
   });
 });

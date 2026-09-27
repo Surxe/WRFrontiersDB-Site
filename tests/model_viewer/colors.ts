@@ -8,8 +8,10 @@ import {
   toPresetModules,
 } from '../../src/scripts/model_viewer/build/graph';
 import {
+  LEG_ZONES,
   MODULE_PALETTE,
   buildModuleColors,
+  buildZoneColors,
   uniqueColors,
 } from '../../src/scripts/model_viewer/colors';
 
@@ -69,5 +71,23 @@ describe('buildModuleColors', () => {
     for (const key of Object.keys(after)) {
       expect(after[key], key).toBe(before[key]);
     }
+  });
+});
+
+describe('buildZoneColors', () => {
+  it('gives each chassis leg pool a color no module uses', () => {
+    const build = resolveBuild(full, tables, index);
+    const zones = buildZoneColors(build);
+    const legColors = LEG_ZONES.map((zone) => zones[zone]);
+    expect(legColors.every((c) => c !== undefined)).toBe(true);
+    const all = [...buildModuleColors(build), ...legColors];
+    expect(new Set(all).size).toBe(all.length);
+  });
+
+  it('keeps the leg colors when weapons change', () => {
+    const { 'Shoulder_L.Shoulder_Weapon_0': _dropped, ...fewer } = full;
+    expect(buildZoneColors(resolveBuild(fewer, tables, index))).toEqual(
+      buildZoneColors(resolveBuild(full, tables, index))
+    );
   });
 });

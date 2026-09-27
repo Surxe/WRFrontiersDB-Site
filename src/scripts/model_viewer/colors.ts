@@ -48,22 +48,52 @@ const KIND_ORDER: readonly ModuleKind[] = [
   'other',
 ];
 
+/** Chassis health pools (armor zones) drawn in a color of their own. The
+ * chassis splits into pelvis + left leg + right leg; the pelvis keeps the
+ * chassis slot's color. */
+export const LEG_ZONES: readonly string[] = [
+  'DA_ArmorZone_LeftLeg.0',
+  'DA_ArmorZone_RightLeg.0',
+];
+
 /**
- * Colors for the modules a build renders, in `toPresetModules(build)` order.
+ * Color per slot key, plus `<chassisKey>#<zone>` for each leg zone.
  *
  * Colors are handed out per slot (empty slots included), structural parts
- * first, so the chassis / torso / shoulders keep their colors while weapons
- * are swapped, and a weapon keeps its color when another slot is emptied.
+ * first, so the chassis (and its legs) / torso / shoulders keep their colors
+ * while weapons are swapped, and a weapon keeps its color when another slot
+ * is emptied.
  */
-export function buildModuleColors(build: ResolvedBuild): number[] {
+function slotColors(build: ResolvedBuild): Map<string, number> {
   const ranked = [...build.slots].sort(
     (a, b) => KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind)
   );
-  const palette = uniqueColors(ranked.length);
-  const colorOf = new Map(ranked.map((slot, i) => [slot.key, palette[i]]));
+  const keys = ranked.flatMap((slot) =>
+    slot.kind === 'chassis'
+      ? [slot.key, ...LEG_ZONES.map((zone) => `${slot.key}#${zone}`)]
+      : [slot.key]
+  );
+  const palette = uniqueColors(keys.length);
+  return new Map(keys.map((key, i) => [key, palette[i]]));
+}
+
+/** Colors for the modules a build renders, in `toPresetModules(build)` order. */
+export function buildModuleColors(build: ResolvedBuild): number[] {
+  const colorOf = slotColors(build);
   return build.slots
     .filter((slot) => slot.moduleId)
     .map((slot) => colorOf.get(slot.key)!);
+}
+
+/** Colors of the chassis's leg health pools, keyed by armor zone id. Parts
+ * in any other zone use their module's color. */
+export function buildZoneColors(build: ResolvedBuild): Record<string, number> {
+  const colorOf = slotColors(build);
+  const chassis = build.slots.find((slot) => slot.kind === 'chassis');
+  if (!chassis) return {};
+  return Object.fromEntries(
+    LEG_ZONES.map((zone) => [zone, colorOf.get(`${chassis.key}#${zone}`)!])
+  );
 }
 
 /** `0xrrggbb` -> `#rrggbb`. */
