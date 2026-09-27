@@ -359,6 +359,13 @@ async function init(): Promise<void> {
     el<HTMLButtonElement>('model-compare-reset').addEventListener('click', () =>
       compare.reset()
     );
+    // Back to an empty selection: the default chassis with only its required
+    // parts, as on a bare /models link. B's swaps go too (B = A again), in
+    // the same update.
+    el<HTMLButtonElement>('model-clear').addEventListener('click', () => {
+      compare.clearOverrides();
+      store.replace({});
+    });
     for (const box of [meshBox, hitboxBox]) {
       box.addEventListener('change', () => {
         syncUrl(store.current);

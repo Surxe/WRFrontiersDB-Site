@@ -180,6 +180,12 @@ export class CompareStore {
     this.update();
   }
 
+  /** Drop every override without notifying, for a caller about to change A
+   * (whose update then brings B along as B = A). */
+  clearOverrides(): void {
+    this.overrides = {};
+  }
+
   /** Replace the overrides wholesale (e.g. from the URL, later). */
   replace(overrides: BuildOverrides): void {
     this.overrides = { ...overrides };

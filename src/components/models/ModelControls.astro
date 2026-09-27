@@ -42,6 +42,14 @@
       <input type="checkbox" id="model-hitbox" checked />
       Hitbox
     </label>
+    <button
+      type="button"
+      id="model-clear"
+      class="model-small-button model-clear"
+      title="Clear the build (and build B's swaps) back to the default robot"
+    >
+      Clear build
+    </button>
   </div>
 </aside>
 
@@ -246,9 +254,14 @@
 
   .model-view-toggles {
     display: flex;
+    align-items: center;
     gap: 1rem;
     padding-top: 0.5rem;
     border-top: 1px solid var(--wrf-border);
+  }
+
+  .model-clear {
+    margin-left: auto;
   }
 
   .model-check {
