@@ -22,7 +22,7 @@ import {
   measureBuild,
   type HitboxBody,
   type HitboxPool,
-  type PoolArea,
+  type ViewAreas,
   type ViewName,
 } from './hitbox_area';
 import { toThree, type Mat4 } from './math';
@@ -70,7 +70,7 @@ const DEFAULT_CAMERA_FROM = fromFront(20, 12);
 
 export interface HitboxMeasurement {
   pools: HitboxPool[];
-  areas: Record<ViewName, PoolArea[]>;
+  areas: Record<ViewName, ViewAreas>;
 }
 
 export class ModelViewer {

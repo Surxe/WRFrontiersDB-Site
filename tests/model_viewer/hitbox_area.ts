@@ -51,7 +51,7 @@ describe('measureView: analytic shapes', () => {
   it('a sphere projects to a disc from every side', () => {
     const bodies = [body([sphere(50, [0, 0, 0])], 0)];
     for (const view of ['front', 'left', 'top'] as const) {
-      near(measureView(bodies, 1, view)[0].alone, Math.PI * 50 * 50);
+      near(measureView(bodies, 1, view).pools[0].alone, Math.PI * 50 * 50);
     }
   });
 
@@ -62,9 +62,9 @@ describe('measureView: analytic shapes', () => {
       extent: [100, 60, 40],
     };
     const bodies = [body([box], 0)];
-    near(measureView(bodies, 1, 'front')[0].alone, 60 * 40);
-    near(measureView(bodies, 1, 'left')[0].alone, 100 * 40);
-    near(measureView(bodies, 1, 'top')[0].alone, 100 * 60);
+    near(measureView(bodies, 1, 'front').pools[0].alone, 60 * 40);
+    near(measureView(bodies, 1, 'left').pools[0].alone, 100 * 40);
+    near(measureView(bodies, 1, 'top').pools[0].alone, 100 * 60);
   });
 
   it('a capsule is a disc end-on and a stadium side-on', () => {
@@ -79,10 +79,13 @@ describe('measureView: analytic shapes', () => {
       length: len,
     };
     const bodies = [body([cap], 0)];
-    near(measureView(bodies, 1, 'front')[0].alone, Math.PI * r * r);
-    near(measureView(bodies, 1, 'top')[0].alone, 2 * r * len + Math.PI * r * r);
+    near(measureView(bodies, 1, 'front').pools[0].alone, Math.PI * r * r);
     near(
-      measureView(bodies, 1, 'left')[0].alone,
+      measureView(bodies, 1, 'top').pools[0].alone,
+      2 * r * len + Math.PI * r * r
+    );
+    near(
+      measureView(bodies, 1, 'left').pools[0].alone,
       2 * r * len + Math.PI * r * r
     );
   });
@@ -96,11 +99,31 @@ describe('measureView: pools', () => {
       body([sphere(r, [0, 0, 0])], 0),
       body([sphere(r, [0, r, 0])], 0, true),
     ];
-    const [area] = measureView(bodies, 1, 'front');
+    const [area] = measureView(bodies, 1, 'front').pools;
     const lens =
       2 * r * r * Math.acos(0.5) - (r / 2) * Math.sqrt(4 * r * r - r * r);
     near(area.alone, Math.PI * r * r);
     near(area.withWeapons, 2 * Math.PI * r * r - lens);
+  });
+});
+
+describe('measureView: whole robot', () => {
+  it('unions every pool once, and counts weapons only with weapons', () => {
+    // Two pools' discs overlapping by one radius, plus a weapon disc off to
+    // the side on pool 0 (seen from the front, rays run -X).
+    const r = 40;
+    const bodies = [
+      body([sphere(r, [0, 0, 0])], 0),
+      body([sphere(r, [0, r, 0])], 1),
+      body([sphere(r, [0, -4 * r, 0])], 0, true),
+    ];
+    const { pools, total } = measureView(bodies, 2, 'front');
+    const disc = Math.PI * r * r;
+    const lens =
+      2 * r * r * Math.acos(0.5) - (r / 2) * Math.sqrt(4 * r * r - r * r);
+    near(total.alone, 2 * disc - lens);
+    near(total.withWeapons, 3 * disc - lens);
+    expect(total.alone).toBeLessThan(pools[0].alone + pools[1].alone);
   });
 });
 
@@ -276,7 +299,7 @@ describe('real data: Anansi with Hefty on both shoulders', () => {
       const p = label(name);
       for (const view of VIEW_ORDER) {
         if (!viewApplies(pools[p], view)) continue;
-        const area = areas[view][p];
+        const area = areas[view].pools[p];
         expect(area.alone, `${name} ${view}`).toBeGreaterThan(0);
         // No weapons mount on the chassis: nothing to add.
         expect(area.withWeapons, `${name} ${view}`).toBe(area.alone);
@@ -289,13 +312,25 @@ describe('real data: Anansi with Hefty on both shoulders', () => {
     const torsoModel = models.get('BP_Module_Anansi_Torso.0')!;
     const r = torsoModel.capsules[0].radius;
     near(
-      measureView(bodies, pools.length, 'front', 2)[label('Torso')].alone,
+      measureView(bodies, pools.length, 'front', 2).pools[label('Torso')].alone,
       Math.PI * r * r
     );
   });
 
+  it('the whole robot covers at least its biggest pool from every side', () => {
+    const areas = measureBuild(bodies, pools.length, 4);
+    for (const view of VIEW_ORDER) {
+      const { total, pools: byPool } = areas[view];
+      const biggest = Math.max(...byPool.map((a) => a.withWeapons));
+      expect(total.withWeapons, view).toBeGreaterThanOrEqual(biggest);
+      // Weapons can sit wholly inside the rest of the silhouette (Hefty from
+      // the side is hidden by the chassis + torso), so they never shrink it.
+      expect(total.withWeapons, view).toBeGreaterThanOrEqual(total.alone);
+    }
+  });
+
   it('a mounted weapon grows its shoulder from the outer side', () => {
-    const left = measureView(bodies, pools.length, 'left', 2)[
+    const left = measureView(bodies, pools.length, 'left', 2).pools[
       label('Left Shoulder')
     ];
     expect(left.withWeapons).toBeGreaterThan(left.alone * 1.1);

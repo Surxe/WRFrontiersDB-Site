@@ -11,6 +11,8 @@
  *   alone        silhouette of the pool module's own hitboxes
  *   withWeapons  silhouette of the module + its mounted weapons (overlap once)
  *
+ * plus the same two for the whole robot: every pool combined.
+ *
  * Areas are in cm^2 (UE units). Views are UE directions: X forward, Y right,
  * Z up. Nothing here depends on three.js or the DOM.
  */
@@ -82,6 +84,13 @@ export interface HitboxBody {
 export interface PoolArea {
   alone: number;
   withWeapons: number;
+}
+
+/** One view's areas: per pool, and for the whole robot (every pool's
+ * silhouettes combined, overlap counted once). */
+export interface ViewAreas {
+  pools: PoolArea[];
+  total: PoolArea;
 }
 
 /** A pool's outer side is measured; the side facing the torso is not. */
@@ -365,15 +374,15 @@ function projectRange(p: HitboxPrimitive, half: Vec3, axis: Vec3): [number, numb
 }
 
 /**
- * Per-pool areas (cm^2) for one view. `cell` is the ray grid spacing in cm;
- * each hit cell contributes cell^2.
+ * Per-pool and whole-robot areas (cm^2) for one view. `cell` is the ray grid
+ * spacing in cm; each hit cell contributes cell^2.
  */
 export function measureView(
   bodies: readonly HitboxBody[],
   poolCount: number,
   view: ViewName,
   cell = 1,
-): PoolArea[] {
+): ViewAreas {
   if (poolCount > 32) throw new Error(`too many hitbox pools (${poolCount})`);
   const { dir, u, v } = VIEWS[view];
   const prepared: PreparedPrim[] = [];
@@ -383,7 +392,9 @@ export function measureView(
       prepared.push({ inv: affineInverse(prim.m), prim, body: b, half: localHalfSize(prim) });
     }
   });
-  const result = Array.from({ length: poolCount }, () => ({ alone: 0, withWeapons: 0 }));
+  const pools = Array.from({ length: poolCount }, () => ({ alone: 0, withWeapons: 0 }));
+  const total = { alone: 0, withWeapons: 0 };
+  const result = { pools, total };
   if (prepared.length === 0) return result;
 
   const rects = prepared.map((pp) => ({
@@ -432,22 +443,24 @@ export function measureView(
     const a = any[c];
     if (a === 0) continue;
     const s = own[c];
+    total.withWeapons += area;
+    if (s !== 0) total.alone += area;
     for (let p = 0; p < poolCount; p++) {
       const bit = 1 << p;
-      if (a & bit) result[p].withWeapons += area;
-      if (s & bit) result[p].alone += area;
+      if (a & bit) pools[p].withWeapons += area;
+      if (s & bit) pools[p].alone += area;
     }
   }
   return result;
 }
 
-/** Every view's per-pool areas. */
+/** Every view's per-pool and whole-robot areas. */
 export function measureBuild(
   bodies: readonly HitboxBody[],
   poolCount: number,
   cell = 1,
-): Record<ViewName, PoolArea[]> {
-  const out = {} as Record<ViewName, PoolArea[]>;
+): Record<ViewName, ViewAreas> {
+  const out = {} as Record<ViewName, ViewAreas>;
   for (const view of VIEW_ORDER) out[view] = measureView(bodies, poolCount, view, cell);
   return out;
 }

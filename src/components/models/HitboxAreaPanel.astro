@@ -41,6 +41,10 @@
       measured on its own, as if nothing else were in front of it.
     </li>
     <li>
+      <strong>Whole robot</strong>: every health pool combined into one
+      silhouette, overlap counted once; so it is less than the pools added up.
+    </li>
+    <li>
       The Front/Back/Left/Right/Top buttons show the hitboxes flat from that
       side, in the same colors as the 3D view.
     </li>
@@ -114,6 +118,15 @@
     border-radius: var(--wrf-radius-sm);
     background: var(--wrf-bg);
     overflow-x: auto;
+  }
+
+  /* The whole-robot card spans its own row above the per-pool cards. */
+  .hitbox-area-pools :global(.hitbox-pool-total) {
+    grid-column: 1 / -1;
+  }
+
+  .hitbox-area-pools :global(.hitbox-pool-total table) {
+    max-width: 32rem;
   }
 
   .hitbox-area-pools :global(h3) {

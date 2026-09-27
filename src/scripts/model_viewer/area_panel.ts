@@ -1,13 +1,14 @@
 /**
- * Renders the hitbox-area panel: one card per health pool (each shoulder,
- * torso, pelvis, each leg) with its projected area from every applicable
- * view.
+ * Renders the hitbox-area panel: a card for the whole robot, then one per
+ * health pool (each shoulder, torso, pelvis, each leg), with the projected
+ * area from every applicable view.
  */
 import {
   VIEW_ORDER,
   VIEWS,
   viewApplies,
   type HitboxPool,
+  type PoolArea,
   type ViewName,
 } from './hitbox_area';
 import { cssHex } from './colors';
@@ -53,39 +54,41 @@ function swatch(color: number, title: string): HTMLElement {
   return node;
 }
 
-function poolCard(
-  pool: HitboxPool,
-  index: number,
-  measurement: HitboxMeasurement,
-  opts: AreaPanelOptions
-): HTMLElement {
+interface CardSpec {
+  title: string;
+  /** Swatch color before the title (a pool's 3D-view color). */
+  color?: number;
+  /** Muted text after the title (the pool's module name). */
+  detail?: string;
+  /** Module-list indices + ids of the weapons counted in "With weapons". */
+  weapons: { id: string; index: number }[];
+  /** Views measured for this card, with each row's label. */
+  views: { view: ViewName; label: string }[];
+  area: (view: ViewName) => PoolArea;
+  className?: string;
+}
+
+function areaCard(spec: CardSpec, opts: AreaPanelOptions): HTMLElement {
   const card = document.createElement('article');
-  card.className = 'hitbox-pool';
+  card.className = ['hitbox-pool', spec.className].filter(Boolean).join(' ');
 
   const head = document.createElement('h3');
-  const color =
-    (pool.zone ? opts.zoneColors[pool.zone] : undefined) ??
-    opts.colors[pool.moduleIndex];
-  if (color !== undefined) head.append(swatch(color, pool.label));
-  head.append(
-    ` ${pool.label} `,
-    textEl(
-      'span',
-      moduleLabel(pool.moduleId, opts.tables),
-      'hitbox-pool-module'
-    )
-  );
+  if (spec.color !== undefined) head.append(swatch(spec.color, spec.title));
+  head.append(` ${spec.title} `);
+  if (spec.detail) {
+    head.append(textEl('span', spec.detail, 'hitbox-pool-module'));
+  }
   card.append(head);
 
   const sub = document.createElement('p');
   sub.className = 'hitbox-pool-weapons';
-  if (pool.weaponIds.length === 0) {
+  if (spec.weapons.length === 0) {
     sub.textContent = 'No weapons mounted';
   } else {
     sub.append('Weapons:');
-    pool.weaponIds.forEach((id, w) => {
+    spec.weapons.forEach(({ id, index }, w) => {
       const name = moduleLabel(id, opts.tables);
-      const weaponColor = opts.colors[pool.weaponIndices[w]];
+      const weaponColor = opts.colors[index];
       sub.append(w === 0 ? ' ' : ', ');
       if (weaponColor !== undefined) sub.append(swatch(weaponColor, name), ' ');
       sub.append(name);
@@ -100,11 +103,10 @@ function poolCard(
   }
   table.createTHead().append(headRow);
   const body = table.createTBody();
-  const armed = pool.weaponIds.length > 0;
+  const armed = spec.weapons.length > 0;
 
-  for (const view of VIEW_ORDER) {
-    if (!viewApplies(pool, view)) continue;
-    const area = measurement.areas[view][index];
+  for (const { view, label } of spec.views) {
+    const area = spec.area(view);
     const row = document.createElement('tr');
 
     const viewCell = document.createElement('th');
@@ -114,7 +116,7 @@ function poolCard(
     if (active) viewCell.className = 'is-active';
     const button = document.createElement('button');
     button.type = 'button';
-    button.textContent = viewRowLabel(pool, view);
+    button.textContent = label;
     button.title = `Show the ${VIEWS[view].label.toLowerCase()} view`;
     if (active) button.setAttribute('aria-current', 'true');
     button.addEventListener('click', () => opts.onSelectView(view));
@@ -128,6 +130,53 @@ function poolCard(
   }
   card.append(table);
   return card;
+}
+
+function poolCard(
+  pool: HitboxPool,
+  index: number,
+  measurement: HitboxMeasurement,
+  opts: AreaPanelOptions
+): HTMLElement {
+  return areaCard(
+    {
+      title: pool.label,
+      color:
+        (pool.zone ? opts.zoneColors[pool.zone] : undefined) ??
+        opts.colors[pool.moduleIndex],
+      detail: moduleLabel(pool.moduleId, opts.tables),
+      weapons: pool.weaponIds.map((id, w) => ({
+        id,
+        index: pool.weaponIndices[w],
+      })),
+      views: VIEW_ORDER.filter((view) => viewApplies(pool, view)).map(
+        (view) => ({ view, label: viewRowLabel(pool, view) })
+      ),
+      area: (view) => measurement.areas[view].pools[index],
+    },
+    opts
+  );
+}
+
+/** Every health pool combined: the robot's whole silhouette, from every
+ * side. */
+function wholeRobotCard(
+  measurement: HitboxMeasurement,
+  opts: AreaPanelOptions
+): HTMLElement {
+  return areaCard(
+    {
+      title: 'Whole robot',
+      detail: 'all health pools combined',
+      weapons: measurement.pools.flatMap((pool) =>
+        pool.weaponIds.map((id, w) => ({ id, index: pool.weaponIndices[w] }))
+      ),
+      views: VIEW_ORDER.map((view) => ({ view, label: VIEWS[view].label })),
+      area: (view) => measurement.areas[view].total,
+      className: 'hitbox-pool-total',
+    },
+    opts
+  );
 }
 
 export function renderAreaPanel(
@@ -146,6 +195,7 @@ export function renderAreaPanel(
   const rank = (pool: HitboxPool): number =>
     (pool.kind === 'chassis' ? 3 : 0) +
     (pool.side === 'right' ? 0 : pool.side === 'left' ? 2 : 1);
+  container.append(wholeRobotCard(measurement, opts));
   measurement.pools
     .map((pool, i) => ({ pool, i }))
     .sort((a, b) => rank(a.pool) - rank(b.pool))
