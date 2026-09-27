@@ -1,6 +1,8 @@
 ---
 // The three.js render target + status line. src/scripts/model_viewer mounts the
-// WebGL canvas into #model-canvas and writes progress into #model-status.
+// WebGL canvas into #model-canvas and writes progress into #model-status. In
+// the 2D views it also overlays part labels there (label_overlay.ts, content
+// from view_labels.ts), hence the :global styles.
 ---
 
 <div id="model-canvas" class="model-canvas" role="img" aria-label="3D model viewer">
@@ -29,6 +31,76 @@
     align-items: center;
     justify-content: center;
     color: #9aa0a6;
+  }
+
+  /* The canvas is dark in either site theme, so the labels are too. */
+  .model-canvas :global(.model-view-labels) {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .model-canvas :global(.model-view-labels[hidden]),
+  .model-canvas :global(.model-view-label[hidden]) {
+    display: none;
+  }
+
+  .model-canvas :global(.model-view-labels svg) {
+    position: absolute;
+    inset: 0;
+  }
+
+  .model-canvas :global(.model-view-labels line) {
+    stroke-width: 1;
+    opacity: 0.7;
+  }
+
+  .model-canvas :global(.model-view-label) {
+    position: absolute;
+    max-width: 174px;
+    padding: 0.3rem 0.45rem;
+    border: 1px solid #2c3139;
+    border-radius: 4px;
+    background: rgba(20, 22, 26, 0.72);
+    color: #c9ced6;
+    font-size: 0.75rem;
+    line-height: 1.3;
+  }
+
+  .model-canvas :global(.model-view-label-head) {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+    font-weight: bold;
+  }
+
+  .model-canvas :global(.model-view-label .hitbox-swatch) {
+    display: inline-block;
+    width: 0.65rem;
+    height: 0.65rem;
+    border-radius: 2px;
+  }
+
+  .model-canvas :global(.model-view-label-part) {
+    margin: 0.15rem 0;
+    overflow-wrap: anywhere;
+  }
+
+  .model-canvas :global(.model-view-label-area) {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .model-canvas :global(.model-view-label .is-muted),
+  .model-canvas :global(.model-view-label .is-same) {
+    color: #8a9099;
+  }
+
+  .model-canvas :global(.model-view-label .is-better) {
+    color: #59c27a;
+  }
+
+  .model-canvas :global(.model-view-label .is-worse) {
+    color: #e5645c;
   }
 
   .model-status {

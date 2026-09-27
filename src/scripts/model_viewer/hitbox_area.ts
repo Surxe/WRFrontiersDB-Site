@@ -94,6 +94,11 @@ export interface PoolArea {
 export interface ViewAreas {
   pools: PoolArea[];
   total: PoolArea;
+  /** Per pool, a UE point on its own hitboxes to point a label at: where the
+   * pool is visible (nothing else in front of it) near the middle of that
+   * visible part, else anywhere on its silhouette; null when the pool has no
+   * area in this view. */
+  anchors: (Vec3 | null)[];
 }
 
 /** A pool's outer side is measured; the side facing the torso is not. */
@@ -435,10 +440,12 @@ function gridFor(sets: readonly PreparedView[], view: ViewName, cell: number): V
 }
 
 /** Per-cell bitmasks of the pools hit: `own` by a pool module's own
- * hitboxes, `any` by the module or its weapons. */
+ * hitboxes, `any` by the module or its weapons. `front` is the nearest hit's
+ * pool as `pool * 2 + (weapon ? 1 : 0)`, or -1 for none. */
 interface PoolMasks {
   own: Uint32Array;
   any: Uint32Array;
+  front: Int8Array;
 }
 
 function rasterize(bodies: readonly HitboxBody[], set: PreparedView, grid: ViewGrid): PoolMasks {
@@ -446,6 +453,8 @@ function rasterize(bodies: readonly HitboxBody[], set: PreparedView, grid: ViewG
   const { cell, u0, v0, nu, nv, start } = grid;
   const own = new Uint32Array(nu * nv);
   const any = new Uint32Array(nu * nv);
+  const front = new Int8Array(nu * nv).fill(-1);
+  const nearest = new Float64Array(nu * nv).fill(Infinity);
   const o: Vec3 = [0, 0, 0];
   set.prepared.forEach((pp, idx) => {
     const body = bodies[pp.body];
@@ -467,16 +476,65 @@ function rasterize(bodies: readonly HitboxBody[], set: PreparedView, grid: ViewG
         const c = j * nu + i;
         any[c] |= bit;
         if (!body.weapon) own[c] |= bit;
+        if (t < nearest[c]) {
+          nearest[c] = t;
+          front[c] = body.pool! * 2 + (body.weapon ? 1 : 0);
+        }
       }
     }
   });
-  return { own, any };
+  return { own, any, front };
+}
+
+/** Each pool's label anchor (see ViewAreas.anchors): the candidate cell
+ * nearest the candidates' centroid, candidates being the cells where the
+ * pool's own hitboxes are frontmost, or failing that every cell they cover. */
+function poolAnchors(masks: PoolMasks, grid: ViewGrid, poolCount: number): (Vec3 | null)[] {
+  const { own, front } = masks;
+  const { nu } = grid;
+  const visible = (p: number, c: number): boolean => front[c] === p * 2;
+  const covered = (p: number, c: number): boolean => (own[c] & (1 << p)) !== 0;
+  const pick = (p: number, has: (p: number, c: number) => boolean): number => {
+    let n = 0;
+    let si = 0;
+    let sj = 0;
+    for (let c = 0; c < own.length; c++) {
+      if (!has(p, c)) continue;
+      n += 1;
+      si += c % nu;
+      sj += Math.floor(c / nu);
+    }
+    if (n === 0) return -1;
+    const ci = si / n;
+    const cj = sj / n;
+    let best = -1;
+    let bestD = Infinity;
+    for (let c = 0; c < own.length; c++) {
+      if (!has(p, c)) continue;
+      const d = (c % nu - ci) ** 2 + (Math.floor(c / nu) - cj) ** 2;
+      if (d < bestD) {
+        bestD = d;
+        best = c;
+      }
+    }
+    return best;
+  };
+  const { dir, u, v } = VIEWS[grid.view];
+  return Array.from({ length: poolCount }, (_, p) => {
+    let c = pick(p, visible);
+    if (c < 0) c = pick(p, covered);
+    if (c < 0) return null;
+    const su = grid.u0 + (c % nu + 0.5) * grid.cell;
+    const sv = grid.v0 + (Math.floor(c / nu) + 0.5) * grid.cell;
+    return [0, 1, 2].map((k) => u[k] * su + v[k] * sv + dir[k] * grid.start) as Vec3;
+  });
 }
 
 function sumAreas(masks: PoolMasks | null, grid: ViewGrid | null, poolCount: number): ViewAreas {
   const pools = Array.from({ length: poolCount }, () => ({ alone: 0, withWeapons: 0 }));
   const total = { alone: 0, withWeapons: 0 };
-  if (!masks || !grid) return { pools, total };
+  const anchors: (Vec3 | null)[] = new Array(poolCount).fill(null);
+  if (!masks || !grid) return { pools, total, anchors };
   const area = grid.cell * grid.cell;
   const { own, any } = masks;
   for (let c = 0; c < any.length; c++) {
@@ -491,7 +549,7 @@ function sumAreas(masks: PoolMasks | null, grid: ViewGrid | null, poolCount: num
       if (s & bit) pools[p].alone += area;
     }
   }
-  return { pools, total };
+  return { pools, total, anchors: poolAnchors(masks, grid, poolCount) };
 }
 
 function checkPoolCount(poolCount: number): void {

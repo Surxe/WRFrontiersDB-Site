@@ -31,6 +31,7 @@ import {
 } from './area_panel';
 import { CompareStore } from './build/compare';
 import { partRefLookup, whenLocalized } from './part_refs';
+import { compareViewLabels, singleViewLabels } from './view_labels';
 import type { ViewName } from './hitbox_area';
 import { parseViewParams, writeModelUrl } from './params';
 import { buildCompatibilityIndex } from './build/compatibility';
@@ -143,6 +144,8 @@ async function init(): Promise<void> {
       );
     };
 
+    const partRef = partRefLookup(document.getElementById('model-part-refs'));
+
     // Hitbox areas of the last build, and the camera: 3D or flat 2D, looking
     // from `cameraView` (null in 3D at a custom angle, e.g. the default one or
     // after the user orbits).
@@ -154,7 +157,27 @@ async function init(): Promise<void> {
     let cameraMode: '3d' | '2d' = '3d';
     let cameraView: ViewName | null = null;
 
+    /** The 2D view's part labels, for the active side. */
+    const renderLabels = (): void => {
+      if (!viewer) return;
+      if (cameraMode !== '2d' || !cameraView) {
+        viewer.setLabels([]);
+        return;
+      }
+      viewer.setLabels(
+        compare.isEnabled
+          ? compareViewLabels(comparison, cameraView, { tables, partRef })
+          : singleViewLabels(measurement, cameraView, {
+              tables,
+              partRef,
+              colors,
+              zoneColors,
+            })
+      );
+    };
+
     const renderAreas = (): void => {
+      renderLabels();
       if (compare.isEnabled) {
         renderComparePanel(areaEl, headlineEl, comparison, {
           tables,
@@ -283,7 +306,6 @@ async function init(): Promise<void> {
       }
     };
 
-    const partRef = partRefLookup(document.getElementById('model-part-refs'));
     const render = (build: ResolvedBuild): void => {
       renderBuilder(builderEl, build, {
         tables,
@@ -313,6 +335,7 @@ async function init(): Promise<void> {
     void whenLocalized().then(() => {
       render(store.current);
       renderB();
+      renderLabels();
     });
 
     // While comparing, the compare store (which follows A) drives rebuilds,

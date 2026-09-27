@@ -113,6 +113,39 @@ describe('measureView: pools', () => {
   });
 });
 
+describe('measureView: anchors', () => {
+  const r = 40;
+  const onDisc = (
+    at: number[] | null,
+    center: [number, number],
+    radius = r
+  ): boolean =>
+    at !== null &&
+    (at[1] - center[0]) ** 2 + (at[2] - center[1]) ** 2 <= radius ** 2;
+
+  it('points at the part of a pool nothing else covers', () => {
+    // Pool 1 is in front of pool 0 (rays run -X) and covers its +Y half.
+    const bodies = [
+      body([sphere(r, [0, 0, 0])], 0),
+      body([sphere(r, [100, 30, 0])], 1),
+    ];
+    const { anchors } = measureView(bodies, 2, 'front');
+    expect(onDisc(anchors[0], [0, 0])).toBe(true);
+    expect(onDisc(anchors[0], [30, 0])).toBe(false);
+    expect(onDisc(anchors[1], [30, 0])).toBe(true);
+  });
+
+  it('falls back to a hidden pool, and is null without area', () => {
+    const bodies = [
+      body([sphere(r / 2, [0, 0, 0])], 0),
+      body([sphere(r, [100, 0, 0])], 1),
+    ];
+    const { anchors } = measureView(bodies, 3, 'front');
+    expect(onDisc(anchors[0], [0, 0], r / 2)).toBe(true);
+    expect(anchors[2]).toBeNull();
+  });
+});
+
 describe('measureView: whole robot', () => {
   it('unions every pool once, and counts weapons only with weapons', () => {
     // Two pools' discs overlapping by one radius, plus a weapon disc off to

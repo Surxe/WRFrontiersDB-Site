@@ -41,7 +41,7 @@ export interface ComparePanelOptions extends PanelBaseOptions {
   metric: CompareMetric;
 }
 
-const m2 = (cm2: number): string => (cm2 / 1e4).toFixed(2);
+export const m2 = (cm2: number): string => (cm2 / 1e4).toFixed(2);
 
 /** Changes smaller than this (relative) read as "no change". */
 const SAME_EPSILON = 0.0005;
@@ -52,7 +52,7 @@ function viewRowLabel(pool: HitboxPool, view: ViewName): string {
   return VIEWS[view].label;
 }
 
-function textEl(
+export function textEl(
   tag: keyof HTMLElementTagNameMap,
   text: string,
   className?: string
@@ -63,7 +63,7 @@ function textEl(
   return node;
 }
 
-function swatch(color: number, title: string): HTMLElement {
+export function swatch(color: number, title: string): HTMLElement {
   const node = document.createElement('span');
   node.className = 'hitbox-swatch';
   node.style.background = cssHex(color);
@@ -71,9 +71,12 @@ function swatch(color: number, title: string): HTMLElement {
   return node;
 }
 
-/** `+0.42 (+6.1%)`, classed better (smaller) / worse (bigger) / same. */
-function deltaCell(a: number | null, b: number | null): HTMLElement {
-  if (a === null || b === null) return textEl('td', '-', 'is-muted');
+/** `+0.42 (+6.1%)` from A to B, classed better (smaller) / worse (bigger) /
+ * same. */
+export function formatDelta(
+  a: number,
+  b: number
+): { text: string; className: string } {
   const diff = b - a;
   const rel = a > 0 ? diff / a : b > 0 ? Infinity : 0;
   const same = Math.abs(rel) < SAME_EPSILON;
@@ -81,11 +84,16 @@ function deltaCell(a: number | null, b: number | null): HTMLElement {
   const pct = Number.isFinite(rel)
     ? ` (${sign}${Math.abs(rel * 100).toFixed(1)}%)`
     : '';
-  return textEl(
-    'td',
-    same ? '0.00' : `${sign}${m2(Math.abs(diff))}${pct}`,
-    same ? 'is-same' : diff < 0 ? 'is-better' : 'is-worse'
-  );
+  return {
+    text: same ? '0.00' : `${sign}${m2(Math.abs(diff))}${pct}`,
+    className: same ? 'is-same' : diff < 0 ? 'is-better' : 'is-worse',
+  };
+}
+
+function deltaCell(a: number | null, b: number | null): HTMLElement {
+  if (a === null || b === null) return textEl('td', '-', 'is-muted');
+  const { text, className } = formatDelta(a, b);
+  return textEl('td', text, className);
 }
 
 interface Column {
@@ -193,7 +201,7 @@ function singleColumns(
 /** Right, middle, left: as the default 3D camera (front-right of the robot)
  * sees them. Shoulders + torso first, then the chassis (right leg, pelvis,
  * left leg) below them. */
-const poolRank = (pool: HitboxPool): number =>
+export const poolRank = (pool: HitboxPool): number =>
   (pool.kind === 'chassis' ? 3 : 0) +
   (pool.side === 'right' ? 0 : pool.side === 'left' ? 2 : 1);
 
@@ -304,6 +312,28 @@ function compareColumns(
   ];
 }
 
+/** A's and B's pools matched by key, in display order: indices into
+ * `poolsA` / `poolsB` (-1 where that build lacks the pool), and the pool to
+ * describe it by (A's, else B's). */
+export function matchPools(
+  cmp: ComparisonMeasurement
+): { a: number; b: number; pool: HitboxPool }[] {
+  const keys = new Map<string, { a: number; b: number }>();
+  cmp.poolsA.forEach((pool, i) => keys.set(pool.key, { a: i, b: -1 }));
+  cmp.poolsB.forEach((pool, i) => {
+    const entry = keys.get(pool.key);
+    if (entry) entry.b = i;
+    else keys.set(pool.key, { a: -1, b: i });
+  });
+  return [...keys.values()]
+    .map(({ a, b }) => ({
+      a,
+      b,
+      pool: a >= 0 ? cmp.poolsA[a] : cmp.poolsB[b],
+    }))
+    .sort((x, y) => poolRank(x.pool) - poolRank(y.pool));
+}
+
 /** The headline: the whole robot's % change per view, A to B. */
 function renderHeadline(
   headline: HTMLElement,
@@ -378,48 +408,34 @@ export function renderComparePanel(
     )
   );
 
-  // Pools matched by key; a pool only one build has still gets a card.
-  const keys = new Map<string, { a: number; b: number }>();
-  cmp.poolsA.forEach((pool, i) => keys.set(pool.key, { a: i, b: -1 }));
-  cmp.poolsB.forEach((pool, i) => {
-    const entry = keys.get(pool.key);
-    if (entry) entry.b = i;
-    else keys.set(pool.key, { a: -1, b: i });
+  // A pool only one build has still gets a card.
+  matchPools(cmp).forEach(({ a, b, pool }) => {
+    const poolA = a >= 0 ? cmp.poolsA[a] : null;
+    const poolB = b >= 0 ? cmp.poolsB[b] : null;
+    container.append(
+      areaCard(
+        {
+          title: pool.label,
+          detail: versus(
+            poolA && moduleLabel(poolA.moduleId, opts.tables),
+            poolB && moduleLabel(poolB.moduleId, opts.tables)
+          ),
+          sub: compareWeaponsLine(
+            poolA?.weaponIds ?? [],
+            poolB?.weaponIds ?? [],
+            opts
+          ),
+          views: VIEW_ORDER.filter((view) => viewApplies(pool, view)).map(
+            (view) => ({ view, label: viewRowLabel(pool, view) })
+          ),
+          columns: compareColumns(
+            (view) => (a >= 0 ? cmp.views[view].a.pools[a] : null),
+            (view) => (b >= 0 ? cmp.views[view].b.pools[b] : null),
+            opts.metric
+          ),
+        },
+        opts
+      )
+    );
   });
-  [...keys.values()]
-    .map(({ a, b }) => ({
-      a,
-      b,
-      pool: a >= 0 ? cmp.poolsA[a] : cmp.poolsB[b],
-    }))
-    .sort((x, y) => poolRank(x.pool) - poolRank(y.pool))
-    .forEach(({ a, b, pool }) => {
-      const poolA = a >= 0 ? cmp.poolsA[a] : null;
-      const poolB = b >= 0 ? cmp.poolsB[b] : null;
-      container.append(
-        areaCard(
-          {
-            title: pool.label,
-            detail: versus(
-              poolA && moduleLabel(poolA.moduleId, opts.tables),
-              poolB && moduleLabel(poolB.moduleId, opts.tables)
-            ),
-            sub: compareWeaponsLine(
-              poolA?.weaponIds ?? [],
-              poolB?.weaponIds ?? [],
-              opts
-            ),
-            views: VIEW_ORDER.filter((view) => viewApplies(pool, view)).map(
-              (view) => ({ view, label: viewRowLabel(pool, view) })
-            ),
-            columns: compareColumns(
-              (view) => (a >= 0 ? cmp.views[view].a.pools[a] : null),
-              (view) => (b >= 0 ? cmp.views[view].b.pools[b] : null),
-              opts.metric
-            ),
-          },
-          opts
-        )
-      );
-    });
 }

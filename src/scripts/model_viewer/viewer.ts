@@ -36,6 +36,7 @@ import { toThree, type Mat4 } from './math';
 import type { ModulePlacement } from './mount';
 import { diffPlacements } from './placement_diff';
 import { DIFF_COLORS } from './colors';
+import { LABEL_GUTTER_PX, LabelOverlay, type ScreenPoint, type ViewLabel } from './label_overlay';
 import type { CharacterPresetModule } from '../../types/character_preset';
 import type { Module, ModuleType } from '../../types/module';
 import type { ModuleModel, Vec3 } from '../../types/model';
@@ -99,6 +100,12 @@ export interface ComparisonMeasurement {
 
 type HitboxSet = { pools: HitboxPool[]; bodies: HitboxBody[] };
 
+/** A part label for the axis views, pointing at `anchor` (UE, as
+ * ViewAreas.anchors gives it). */
+export interface AnchoredLabel extends ViewLabel {
+  anchor: Vec3;
+}
+
 export class ModelViewer {
   private renderer: THREE.WebGLRenderer;
   private scene: THREE.Scene;
@@ -123,6 +130,8 @@ export class ModelViewer {
   private container: HTMLElement;
   private framed = false;
   private generation = 0;
+  private labels: LabelOverlay;
+  private labelAnchors: THREE.Vector3[] = [];
 
   constructor(container: HTMLElement, status: HTMLElement) {
     this.container = container;
@@ -164,6 +173,8 @@ export class ModelViewer {
     this.silhouettes.visible = false;
     this.scene.add(this.silhouettes);
 
+    this.labels = new LabelOverlay(container);
+
     window.addEventListener('resize', () => this.onResize());
     this.animate();
   }
@@ -181,6 +192,33 @@ export class ModelViewer {
     requestAnimationFrame(() => this.animate());
     this.controls.update();
     this.renderer.render(this.scene, this.view ? this.ortho : this.camera);
+    if (this.view && this.labelAnchors.length > 0) this.layoutLabels();
+  }
+
+  /** Show part labels in the axis views (replacing any), or none. */
+  setLabels(labels: readonly AnchoredLabel[]): void {
+    const hadLabels = !this.labels.isEmpty;
+    this.labels.set(labels);
+    // UE -> scene, as the silhouettes group maps it.
+    this.silhouettes.updateMatrixWorld();
+    this.labelAnchors = labels.map(({ anchor }) =>
+      this.silhouettes.localToWorld(new THREE.Vector3(...anchor)),
+    );
+    // Make room for the label columns (or give it back); only on a change,
+    // as refitting drops the user's zoom and pan.
+    if (this.view && hadLabels !== labels.length > 0) this.fitOrtho();
+  }
+
+  private layoutLabels(): void {
+    const w = this.container.clientWidth;
+    const h = this.container.clientHeight;
+    const v = new THREE.Vector3();
+    const points: ScreenPoint[] = this.labelAnchors.map((anchor) => {
+      v.copy(anchor).project(this.ortho);
+      if (Math.abs(v.x) > 1 || Math.abs(v.y) > 1) return null;
+      return { x: ((v.x + 1) / 2) * w, y: ((1 - v.y) / 2) * h };
+    });
+    this.labels.layout(points, w, h);
   }
 
   setStatus(line: string): void {
@@ -277,6 +315,7 @@ export class ModelViewer {
     const placementsB = compareModules ? place(compareModules) : null;
 
     this.disposeTracked();
+    this.setLabels([]); // until the new build is measured
     this.diffRasters = null;
     this.hitboxes = collectBodies(presetModules, placements, this.models, tables);
     this.hitboxesB =
@@ -359,6 +398,7 @@ export class ModelViewer {
     this.root.visible = !axis;
     this.grid.visible = !axis;
     this.silhouettes.visible = axis;
+    this.labels.visible = axis;
     this.controls.enableRotate = !axis;
     this.controls.object = axis ? this.ortho : this.camera;
     if (axis) {
@@ -449,14 +489,18 @@ export class ModelViewer {
     const box = new THREE.Box3().setFromObject(this.silhouettes);
     if (box.isEmpty()) return;
     const sphere = box.getBoundingSphere(new THREE.Sphere());
-    const r = sphere.radius * 1.05;
+    const w = this.container.clientWidth;
+    const h = Math.max(1, this.container.clientHeight);
+    // With labels, shrink the robot to fit between their columns.
+    const gutter = this.labels.isEmpty ? 0 : Math.min(LABEL_GUTTER_PX, w * 0.25);
+    const r = sphere.radius * 1.05 * Math.max(1, h / Math.max(1, w - 2 * gutter));
     // UE (X fwd, Y right, Z up) -> this scene is (x, z, y); see the root transform.
     const [dx, dy, dz] = VIEWS[this.view].dir;
     const dir = new THREE.Vector3(dx, dz, dy);
     this.ortho.up.set(0, 1, 0);
     if (this.view === 'top') this.ortho.up.set(1, 0, 0); // robot's front up
     this.ortho.position.copy(sphere.center).addScaledVector(dir, -r * 4);
-    const aspect = this.container.clientWidth / Math.max(1, this.container.clientHeight);
+    const aspect = w / h;
     this.ortho.left = -r * aspect;
     this.ortho.right = r * aspect;
     this.ortho.top = r;
