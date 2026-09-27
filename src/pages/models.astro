@@ -1,8 +1,9 @@
 ---
 import Page from '../components/Page.astro';
+import Breadcrumb from '../components/Breadcrumb.astro';
+import { getModelsBreadcrumbs } from '../utils/breadcrumb';
 import ModelControls from '../components/models/ModelControls.astro';
 import ModelViewport from '../components/models/ModelViewport.astro';
-import ModelNotes from '../components/models/ModelNotes.astro';
 import HitboxAreaPanel from '../components/models/HitboxAreaPanel.astro';
 import ModelPartRefs from '../components/models/ModelPartRefs.astro';
 ---
@@ -12,6 +13,7 @@ import ModelPartRefs from '../components/models/ModelPartRefs.astro';
   description="Build any War Robots: Frontiers robot part by part and view its live hitbox + untextured model."
 >
   <main class="model-page">
+    <Breadcrumb breadcrumbs={getModelsBreadcrumbs()} />
     <header class="model-header">
       <h1>3D Models</h1>
       <p>
@@ -20,6 +22,7 @@ import ModelPartRefs from '../components/models/ModelPartRefs.astro';
         once the part is placed, just like in the hangar. Your build is always
         reflected in the URL, so you can copy it to share an exact loadout.
       </p>
+      <p class="model-hint">Drag to orbit, right-drag to pan, scroll to zoom.</p>
     </header>
 
     <div class="model-layout">
@@ -29,7 +32,6 @@ import ModelPartRefs from '../components/models/ModelPartRefs.astro';
         <HitboxAreaPanel />
       </div>
     </div>
-    <ModelNotes />
     <ModelPartRefs />
   </main>
 </Page>
@@ -52,6 +54,11 @@ import ModelPartRefs from '../components/models/ModelPartRefs.astro';
   .model-header p {
     margin: 0 0 1rem;
     opacity: 0.85;
+  }
+
+  .model-header .model-hint {
+    font-size: 0.9rem;
+    opacity: 0.7;
   }
 
   .model-layout {

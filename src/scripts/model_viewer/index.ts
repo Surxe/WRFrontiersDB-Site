@@ -281,9 +281,6 @@ async function init(): Promise<void> {
           modules: toPresetModules(build),
           colors: buildColors,
           zoneColors: buildZones,
-          label: cmp
-            ? `A: ${summarizeBuild(cmp.a, tables)} vs B: ${summarizeBuild(cmp.b, tables)}`
-            : summarizeBuild(build, tables),
           mesh: meshBox.checked,
           hitbox: hitboxBox.checked,
           // The bone overlay stays off in the UI (the viewer still supports it).

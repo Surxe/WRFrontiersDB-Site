@@ -49,8 +49,6 @@ export interface BuildOptions {
   /** Health pools (armor zones) with a color of their own (the chassis legs),
    * overriding their module's color. */
   zoneColors: Record<string, number>;
-  /** Short description of what is being rendered, for the status line. */
-  label: string;
   mesh: boolean;
   hitbox: boolean;
   skeleton: boolean;
@@ -323,7 +321,6 @@ export class ModelViewer {
         ? collectBodies(compareModules, placementsB, this.models, tables)
         : null;
 
-    let loaded = 0;
     const draw = (
       placement: ModulePlacement,
       colorOf: ZoneColorFn,
@@ -336,7 +333,6 @@ export class ModelViewer {
         return;
       }
       this.addPlacement(model, placement.world, colorOf, opts, meshOpacity);
-      loaded += 1;
     };
 
     if (!placementsB) {
@@ -358,7 +354,7 @@ export class ModelViewer {
       });
     }
 
-    this.reportBuild(opts.label, loaded, missing);
+    this.reportBuild(missing);
     this.frameToRobot();
     if (this.view) this.fitOrtho();
   }
@@ -607,15 +603,9 @@ export class ModelViewer {
     this.diffPlane = { mesh, texture };
   }
 
-  private reportBuild(label: string, loaded: number, missing: number): void {
-    const verts = this.track.geos.reduce(
-      (sum, g) => sum + (g.getAttribute('position')?.count ?? 0),
-      0,
-    );
-    this.setStatus(
-      `${label}: ${loaded} models loaded (${verts.toLocaleString()} verts)` +
-        (missing > 0 ? `, ${missing} missing` : ''),
-    );
+  /** Clear the loading line once built; only surface parts that failed to load. */
+  private reportBuild(missing: number): void {
+    this.setStatus(missing > 0 ? `${missing} models missing` : '');
   }
 
   /** On the first build, aim at the assembled robot's center from the default
