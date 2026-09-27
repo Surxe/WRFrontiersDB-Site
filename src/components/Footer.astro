@@ -17,6 +17,14 @@ if (fs.existsSync(versionPath)) {
   <span class="site-footer__version">
     Game version: <strong>{gameVersion}</strong>
   </span>
+  <p class="site-footer__legal">
+    War Robots: Frontiers and all related game assets, models, and trademarks
+    are the property of MY.GAMES. This is an unofficial fan project, not
+    affiliated with or endorsed by MY.GAMES. Assets are shown for viewing only
+    and may not be redistributed or used commercially. Rights holders may
+    request removal of any content, or of this site, at any time by contacting
+    @Surxe on Discord.
+  </p>
 </footer>
 
 <style>
@@ -28,6 +36,12 @@ if (fs.existsSync(versionPath)) {
     text-align: center;
     font-size: 0.8rem;
     color: var(--wrf-text-muted);
+  }
+
+  .site-footer__legal {
+    max-width: 60rem;
+    margin: 0.5rem auto 0;
+    line-height: 1.4;
   }
 
   .site-footer__version strong {
