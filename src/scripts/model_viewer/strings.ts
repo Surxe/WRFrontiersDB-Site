@@ -64,6 +64,8 @@ export const MODEL_STRINGS = {
   changed: site('Models_Changed'),
   useA: site('Models_Use_A'),
   useATitle: site('Models_Use_A_Title'),
+  searchParts: site('Models_Search_Parts'),
+  noMatchingParts: site('Models_No_Matching_Parts'),
 
   // Hitbox area panel
   hitboxArea: site('Models_Hitbox_Area'),

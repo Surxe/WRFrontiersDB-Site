@@ -34,6 +34,13 @@ files, which are served as-is). Bundled code reaches the site's runtime
 localization through `src/scripts/localization.ts`, which imports
 `/js/localization.js` by URL at runtime rather than bundling it.
 
+`src/scripts/search/` is the shared client-side search: `text.ts` (DOM-free
+matching: case/accent-insensitive, every query word must appear) and
+`element_filter.ts` (`ElementFilter`, which hides rendered elements, and group
+headers left empty, that miss a query). The /models part dropdowns use it via
+`ui/part_picker.ts`'s `search` option; any other runtime list can build an
+`ElementFilter` from its elements' text and call `apply(query)` on input.
+
 ## Robot builds and 3D models (/models)
 
 Two layers:

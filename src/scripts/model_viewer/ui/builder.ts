@@ -34,6 +34,9 @@ export interface BuilderContext {
   onRevert?: (key: SlotKey) => void;
 }
 
+/** Dropdowns with at least this many options get a search box. */
+const SEARCH_MIN_OPTIONS = 8;
+
 /** Slot kinds not shown as dropdowns (supply / cycle gear, for now). */
 const HIDDEN_KINDS: ReadonlySet<BuildSlot['kind']> = new Set(['ability']);
 
@@ -145,6 +148,13 @@ function buildRow(
     onChange: (moduleId) => ctx.onSelect(slot.key, moduleId),
     disabled: fixed,
     title: fixed ? ctx.text.t('fixedTitle') : undefined,
+    search:
+      slot.options.length >= SEARCH_MIN_OPTIONS
+        ? {
+            placeholder: ctx.text.t('searchParts'),
+            noMatches: ctx.text.t('noMatchingParts'),
+          }
+        : undefined,
     signal,
   });
   picker.button.dataset.slotKey = slot.key;

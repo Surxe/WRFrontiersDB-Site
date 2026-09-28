@@ -71,6 +71,8 @@
     "Models_Changed": "changed",
     "Models_Use_A": "use A",
     "Models_Use_A_Title": "Use build A's part in this slot",
+    "Models_Search_Parts": "Search parts...",
+    "Models_No_Matching_Parts": "No matching parts",
     "Models_Hitbox_Area": "Hitbox area",
     "Models_Camera_Mode": "Camera mode",
     "Models_Mode_3D": "3D",
