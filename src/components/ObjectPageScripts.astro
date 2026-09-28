@@ -14,19 +14,10 @@ const browserData = {
 };
 ---
 
-<!--Common astro scripts for all ParseObject pages--><!--The object's data, for use by js-->
-<script
-  type="application/json"
-  id="object-data"
-  set:text={JSON.stringify(objectData)}
-/>
-
-<!--Complete object data with slug for browser access-->
-<script
-  type="application/json"
-  id="browser-data"
-  set:text={JSON.stringify(browserData)}
-/>
+<!--Common astro scripts for all ParseObject pages--><!--Complete object data with slug, for browser-console access (see docs/browser-data-access.md).
+    A data-* attribute, not <script type="application/json" set:text>: set:text
+    HTML-escapes the JSON and the browser does not decode entities inside <script>.-->
+<div id="browser-data" hidden data-json={JSON.stringify(browserData)}></div>
 
 <!--Initialize localization on all the localizeable elements-->
 <script type="module">
