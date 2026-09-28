@@ -3,6 +3,7 @@ import Page from '../components/Page.astro';
 import Breadcrumb from '../components/Breadcrumb.astro';
 import LocalizedText from '../components/LocalizedText.astro';
 import ModelControls from '../components/models/ModelControls.astro';
+import ModelCompareControls from '../components/models/ModelCompareControls.astro';
 import ModelViewport from '../components/models/ModelViewport.astro';
 import HitboxAreaPanel from '../components/models/HitboxAreaPanel.astro';
 import ModelPartRefs from '../components/models/ModelPartRefs.astro';
@@ -66,6 +67,7 @@ const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
         <ModelViewport strings={strings} />
         <HitboxAreaPanel strings={strings} />
       </div>
+      <ModelCompareControls strings={strings} />
     </div>
     <ModelPartRefs />
   </main>
@@ -103,8 +105,11 @@ const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
   }
 
   .model-layout {
+    /* The build panels' column width. */
+    --model-side: minmax(240px, 300px);
+
     display: grid;
-    grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
+    grid-template-columns: var(--model-side) minmax(0, 1fr);
     gap: 1rem;
     align-items: start;
   }
@@ -113,9 +118,45 @@ const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
     min-width: 0;
   }
 
+  /* Comparing: build B gets its own column right of the viewport, and the
+     page widens to make room for it. */
+  :global(.model-page:has(.model-compare-b:not([hidden]))) {
+    max-width: 1800px;
+  }
+
+  :global(.model-layout:has(.model-compare-b:not([hidden]))) {
+    grid-template-columns: var(--model-side) minmax(0, 1fr) var(--model-side);
+  }
+
+  @media (max-width: 1100px) {
+    :global(.model-layout:has(.model-compare-b:not([hidden]))) {
+      grid-template-columns: var(--model-side) minmax(0, 1fr);
+      grid-template-rows: auto 1fr;
+    }
+
+    /* Too narrow for three columns: B stacks under A, the stage spanning
+       both. */
+    .model-stage {
+      grid-column: 2;
+      grid-row: 1 / span 2;
+    }
+
+    .model-layout :global(.model-compare-b) {
+      grid-column: 1;
+      grid-row: 2;
+    }
+  }
+
   @media (max-width: 800px) {
-    .model-layout {
+    .model-layout,
+    :global(.model-layout:has(.model-compare-b:not([hidden]))) {
       grid-template-columns: minmax(0, 1fr);
+    }
+
+    .model-stage,
+    .model-layout :global(.model-compare-b) {
+      grid-column: auto;
+      grid-row: auto;
     }
   }
 

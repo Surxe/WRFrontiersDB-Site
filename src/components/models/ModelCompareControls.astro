@@ -1,0 +1,37 @@
+---
+// Build B's panel for the 3D model viewer, shown (right of the viewport) while
+// Compare is on. src/scripts/model_viewer renders B's dropdowns into
+// #model-builder-b (B = A plus the user's swaps; see robot/build/compare.ts).
+import LocalizedText from '../LocalizedText.astro';
+import ModelBuildPanel from './ModelBuildPanel.astro';
+import type { ModelStrings } from '../../scripts/model_viewer/strings';
+
+interface Props {
+  strings: ModelStrings;
+}
+
+const { strings } = Astro.props;
+---
+
+<ModelBuildPanel
+  id="model-compare-b"
+  class="model-compare-b"
+  titleId="model-build-b-title"
+  title={strings.buildB}
+  builderId="model-builder-b"
+  ariaLabel="buildB"
+  strings={strings}
+  hidden
+>
+  <button
+    slot="head"
+    type="button"
+    id="model-compare-reset"
+    class="wrf-btn wrf-btn--secondary wrf-btn--sm"
+  >
+    <LocalizedText tag="span" localizationKey={strings.resetB} />
+  </button>
+  <p slot="intro" class="model-placeholder">
+    <LocalizedText tag="span" localizationKey={strings.compareHint} />
+  </p>
+</ModelBuildPanel>

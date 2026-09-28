@@ -1,0 +1,156 @@
+---
+// One build's panel for the 3D model viewer: a titled head, then the cascading
+// part dropdowns that src/scripts/model_viewer renders into #{builderId}
+// (ui/builder.ts). Build A (ModelControls) and build B (ModelCompareControls)
+// both use it, so the two columns look alike.
+//
+// Slots: "head" sits right of the title, "intro" between the head and the
+// dropdowns, "builder" is the dropdowns' initial content, and the default slot
+// goes below them.
+import LocalizedText from '../LocalizedText.astro';
+import { getDefaultString } from '../../utils/localization';
+import type { LocalizationKey } from '../../types/localization';
+import type { ModelStrings } from '../../scripts/model_viewer/strings';
+
+interface Props {
+  id?: string;
+  class?: string;
+  titleId: string;
+  title: LocalizationKey;
+  builderId: string;
+  /** Names the panel (aria-label, relocalized via data-model-aria-label). */
+  ariaLabel: keyof ModelStrings;
+  strings: ModelStrings;
+  hidden?: boolean;
+}
+
+const {
+  id,
+  class: className,
+  titleId,
+  title,
+  builderId,
+  ariaLabel,
+  strings,
+  hidden,
+} = Astro.props;
+---
+
+<aside
+  id={id}
+  class:list={['model-build-panel', 'wrf-panel', className]}
+  aria-label={getDefaultString(strings[ariaLabel])}
+  data-model-aria-label={ariaLabel}
+  hidden={hidden}
+>
+  <div class="model-build-head">
+    <LocalizedText tag="h2" id={titleId} localizationKey={title} />
+    <slot name="head" />
+  </div>
+  <slot name="intro" />
+  <div id={builderId} class="model-builder" aria-live="polite">
+    <slot name="builder" />
+  </div>
+  <slot />
+</aside>
+
+<style>
+  .model-build-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .model-build-panel[hidden] {
+    display: none;
+  }
+
+  .model-build-panel :global(h2) {
+    margin: 0;
+    font-size: 1rem;
+  }
+
+  .model-build-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  /* Slotted content (the panels' placeholders, toggles) is styled from here
+     too, so both panels share one look; hence :global. */
+  .model-build-panel :global(.model-placeholder) {
+    margin: 0;
+    color: var(--wrf-text-muted);
+    font-size: 0.85rem;
+  }
+
+  .model-build-panel :global(.model-check) {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.85rem;
+  }
+
+  .model-builder {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  /* Rows are created at runtime by ui/builder.ts, hence :global. */
+  .model-builder :global(.builder-row) {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  /* A part's weapon slots sit one level in. */
+  .model-builder :global(.builder-row.is-nested) {
+    padding-left: 0.9rem;
+  }
+
+  .model-builder :global(.builder-row label) {
+    display: flex;
+    gap: 0.4rem;
+    align-items: baseline;
+    font-size: 0.85rem;
+  }
+
+  .model-builder :global(.model-hint) {
+    font-size: 0.75rem;
+  }
+
+  /* Build B rows that differ from build A. */
+  .model-builder :global(.builder-row.is-changed) {
+    margin-left: -0.5rem;
+    padding-left: 0.35rem;
+    border-left: 3px solid var(--wrf-accent);
+  }
+
+  .model-builder :global(.builder-row.is-nested.is-changed) {
+    padding-left: 1.25rem;
+  }
+
+  .model-builder :global(.builder-changed) {
+    color: var(--wrf-accent);
+    font-size: 0.75rem;
+  }
+
+  .model-builder :global(.builder-revert) {
+    margin-left: auto;
+    font-size: 0.75rem;
+  }
+
+  /* Part dropdowns: .wrf-select + .wrf-listbox (ui/part_picker.ts). */
+  .model-builder :global(.model-picker) {
+    position: relative;
+  }
+
+  .model-builder :global(.model-part) {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0 0.35rem;
+    align-items: center;
+  }
+</style>
