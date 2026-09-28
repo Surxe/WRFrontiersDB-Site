@@ -24,7 +24,7 @@
 
 - Client-side localization lazy-loaded on language change
 - `public/js/*.js`: Plain JavaScript modules (not TypeScript)
-- Fetches localization JSON from `WRFrontiersDB-Data/current/Localization/{lang}.json`
+- Fetches game localization from `WRFrontiersDB-Data/current/Localization/{lang}.json` and site strings from `public/locales/{lang}.json` (served as `/locales/{lang}.json`), merging the site namespaces over the game ones
 
 ### Bundled client scripts (src/scripts)
 

@@ -49,14 +49,14 @@ Standard detail page layout:
 - Handles meta descriptions, breadcrumbs, structured data
 - Used by ALL detail pages (modules, pilots, etc.)
 
-### 7. Navigation Components (`src/components/nav/`)
+### 6. Navigation Components (`src/components/nav/`)
 
 #### `BaseNavBox.astro` - Base navigation component
 
 - Provides consistent navigation structure
 - Used by all specialized navigation components
 
-### 8. Icon.astro
+### 7. Icon.astro
 
 Simple icon display component:
 
@@ -77,7 +77,6 @@ Simple icon display component:
 
 - Manual icon + link combinations with `ObjRef`
 - Hardcoded text with `LocalizedText`
-- Custom table layouts with `Table.astro`
 
 ### Patterns to Follow:
 

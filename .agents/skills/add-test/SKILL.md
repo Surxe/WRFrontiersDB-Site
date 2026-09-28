@@ -12,7 +12,7 @@ This project uses **Vitest** for unit and integration testing.
 **Quick Reference**
 
 - Run all non-heavy tests: `npm run vitest`
-- Run all regular and heavy tests: `npm run vitest:heavy`
+- Run all regular and heavy tests: `npm run vitest:heavy` (POSIX shell syntax; on Windows run it from git-bash or WSL)
 
 ### Setup
 
@@ -28,16 +28,24 @@ Tests are located in the `tests/` directory, organized by type:
 
 ```
 tests/
+├── *.test.ts          # Cross-cutting data checks (slugs, socket mapping, all parse objects)
 ├── ts_utils/          # Tests for src/utils/*.ts
+├── utils/             # Tests for src/utils (older .test.ts style)
 ├── ts_types/          # Type validation tests
 ├── components/        # Tests for Astro components
-├── pages/             # Tests for page logic
-└── js/                # Tests for public/js/*.js
+├── robot/             # Tests for src/scripts/robot (mirrors its tree)
+└── model_viewer/      # Tests for src/scripts/model_viewer
 ```
 
 ### Naming Convention
 
-- Test files: `{fileName}/{functionOrInterfaceName}.ts`
+Test files mirror the source they cover; the granularity depends on the area:
+
+- `src/utils/{fileName}.ts`: one test file per function, `tests/ts_utils/{fileName}/{functionName}.ts`
+- Components: one file per component, `tests/components/{Component}.ts` (subdirectory for grouped components, e.g. `tests/components/pilot/`)
+- `src/scripts/**`: one file per source module, same relative path (`src/scripts/robot/build/params.ts` -> `tests/robot/build/params.ts`)
+- The `.test.ts` suffix is optional; Vitest runs every `tests/**/*.ts`. Prefer plain `.ts` for new files
+- Name slow, real-data tests `*.heavy.ts`; they run only under `npm run vitest:heavy`
 - Place in `tests/` subdirectory (not next to source files)
 
 ## Running Tests

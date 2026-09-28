@@ -52,8 +52,9 @@ Ground-truth reference (a hand-built, in-game-correct Typhon): read-only at
 
 ## Iteration loop
 
-1. `npm run dev`, open `/models`, pick the affected bot preset + shoulder (and
-   toggle mesh/hitbox as needed). Presets live in `Objects/CharacterPreset.json`;
+1. `npm run dev` and load the affected build in `/models`: open the preset's
+   page (`/character_presets/<slug>`) and follow its "View this loadout" link,
+   or build it part by part on `/models` (and toggle mesh/hitbox as needed). Presets live in `Objects/CharacterPreset.json`;
    weapon display names differ from ids (e.g. "Magneto" = StickyGun) — resolve via
    `Module.json` `name.Key`.
 2. Get directional feedback from the user against the ground-truth reference.

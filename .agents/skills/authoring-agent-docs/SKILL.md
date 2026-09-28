@@ -8,18 +8,18 @@ description: Decide where a new piece of agent guidance belongs (skill, rule, ho
 `.agents/` is the single source of truth for agent-facing docs. Tool-specific
 directories (`.claude/`, `.windsurf/`, `.cursor/`) are gitignored symlinks into
 it, created by `.agents/setup-symlinks.sh`. When adding guidance, decide the
-*form* first (this skill), then drop it in the right place - the symlinks make it
+_form_ first (this skill), then drop it in the right place - the symlinks make it
 visible to every tool with no extra step.
 
 ## The homes and how each loads
 
-| Home | What loads, and when | Scope |
-| --- | --- | --- |
-| `.agents/skills/<name>/SKILL.md` | Frontmatter `name` + `description` is **always** preloaded as an index; the **body loads lazily** only when a tool judges it relevant. | Committed, all tools (via symlink) |
-| `.agents/rules/<name>.md` | Loaded **always-on by Windsurf/Cursor**. **Claude Code does NOT auto-load rules** - Claude sees a rule only if a skill points at it (see "referenced-only"). | Committed, Windsurf/Cursor |
-| Repo-root `CLAUDE.md` | Loaded **eagerly and in full** every turn by Claude (imports too). The only true always-on channel for Claude. | Committed, Claude |
-| `.claude/settings.json` hook / permission | **Deterministic enforcement** at the tool boundary. Zero model context. | Committed, Claude |
-| Per-user agent memory (outside the repo) | Index preloaded, body on recall - the memory model. But **per-user, uncommitted, and keyed to wherever the tool launches from** (often a parent of the repo), so it is NOT repo-scoped. | Personal, not the repo |
+| Home                                      | What loads, and when                                                                                                                                                                    | Scope                              |
+| ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| `.agents/skills/<name>/SKILL.md`          | Frontmatter `name` + `description` is **always** preloaded as an index; the **body loads lazily** only when a tool judges it relevant.                                                  | Committed, all tools (via symlink) |
+| `.agents/rules/<name>.md`                 | Loaded **always-on by Windsurf/Cursor**. **Claude Code does NOT auto-load rules** - Claude sees a rule only if a skill points at it (see "referenced-only").                            | Committed, Windsurf/Cursor         |
+| Repo-root `CLAUDE.md`                     | Loaded **eagerly and in full** every turn by Claude (imports too). The only true always-on channel for Claude.                                                                          | Committed, Claude                  |
+| `.claude/settings.json` hook / permission | **Deterministic enforcement** at the tool boundary. Zero model context.                                                                                                                 | Committed, Claude                  |
+| Per-user agent memory (outside the repo)  | Index preloaded, body on recall - the memory model. But **per-user, uncommitted, and keyed to wherever the tool launches from** (often a parent of the repo), so it is NOT repo-scoped. | Personal, not the repo             |
 
 Key mechanic: **a skill's `description` is always loaded.** So converting a
 one-line rule into a skill saves nothing - you just move that line from an

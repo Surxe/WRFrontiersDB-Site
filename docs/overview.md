@@ -1,6 +1,6 @@
-# WRFrontiersDB-Site Copilot Instructions
+# WRFrontiersDB-Site Docs Overview
 
-Before answering any question, always say 'I have read the copilot instructions and will follow them.'
+Entry point for the project docs, for contributors and AI agents alike.
 
 ## Project Overview
 
@@ -21,7 +21,7 @@ Static Astro site displaying War Robots Frontiers game data from WRFrontiersDB-D
 
 **Always follow these rules**:
 
-1. **Production filtering**: Only objects that support `production_status` attribute and have it set to `'Ready'` appear in production lists
+1. **Production filtering**: Modules appear in production lists only when `production_status` is `'Ready'` and `name` is non-empty (missing = not ready); other object classes are always ready. See the `production-readiness` skill
 2. **No TypeScript in public/js**: Client-side scripts must be plain JavaScript with JSDoc
 3. **Tests go in tests/ directory**: Never place test files next to source files
 
@@ -45,10 +45,11 @@ src/
 public/
   js/             # Client-side scripts (plain JavaScript)
 tests/            # Test files organized by type
-  ts_utils/       # Tests for src/utils/*.ts
+  *.test.ts       # Cross-cutting data checks (slugs, socket mapping, all parse objects)
+  ts_utils/       # Tests for src/utils/*.ts (one dir per file, one test per function)
+  utils/          # Tests for src/utils (older .test.ts style)
+  ts_types/       # Tests for src/types
   components/     # Tests for components
-  pages/          # Tests for page logic
-  js/             # Tests for public/js/*.js
   robot/          # Tests for src/scripts/robot (mirrors its tree)
   model_viewer/   # Tests for src/scripts/model_viewer
 WRFrontiersDB-Data/  # External data repository (read-only)

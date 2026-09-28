@@ -7,10 +7,11 @@ description: Load before writing or editing ANY CSS or Astro `<style>` block in 
 
 This site's visual language - palette, typography, and the reusable UI elements
 (links, buttons, toggles, tooltips, form controls, focus, scrollbars, selection)
+
 - is owned by the **WRFrontiersDB-Design** submodule, checked out at
-`vendor/wrf-design/` and imported by `src/components/Page.astro`
-(`import '../../vendor/wrf-design/index.css'`). WRFrontiers-Discount-Visualizer
-consumes the same submodule, so the two sites stay visually identical.
+  `vendor/wrf-design/` and imported by `src/components/Page.astro`
+  (`import '../../vendor/wrf-design/index.css'`). WRFrontiers-Discount-Visualizer
+  consumes the same submodule, so the two sites stay visually identical.
 
 **Canonical reference:** `vendor/wrf-design/STYLE-GUIDE.md` (palette, elements,
 do/don't) and `vendor/wrf-design/README.md` (consuming, the local dev loop, and

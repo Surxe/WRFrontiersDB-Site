@@ -1,43 +1,52 @@
-# Astro Starter Kit: Minimal
+# WRFrontiersDB-Site
 
-```sh
-npm create astro@latest -- --template minimal
+Static [Astro](https://astro.build) site for the War Robots: Frontiers database,
+published at [wrf-db.info](https://wrf-db.info). It builds a page for every game
+object (modules, pilots, robots, character presets, ...) from the latest game
+data, plus a 3D robot model viewer at `/models`. Text is localized client-side
+into every game language.
+
+## Setup
+
+The site reads game data from
+[WRFrontiersDB-Data](https://github.com/Surxe/WRFrontiersDB-Data), which is not
+committed here. Clone it next to this repo and link it in (both paths are
+gitignored):
+
+```bash
+git clone https://github.com/Surxe/WRFrontiersDB-Data ../WRFrontiersDB-Data
+ln -s ../WRFrontiersDB-Data WRFrontiersDB-Data
+ln -s ../WRFrontiersDB-Data public/WRFrontiersDB-Data
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+Shared styles come from the
+[WRFrontiersDB-Design](https://github.com/Surxe/WRFrontiersDB-Design) submodule:
 
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+```bash
+git submodule update --init
+npm install
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+AI agent docs live in `.agents/`; run `bash .agents/setup-symlinks.sh` once per
+checkout (see [.agents/README.md](.agents/README.md)).
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+## Commands
 
-Any static assets, like images, can be placed in the `public/` directory.
+| Command                | Action                                      |
+| ---------------------- | ------------------------------------------- |
+| `npm run dev`          | Start the dev server at `localhost:4321`    |
+| `npm run build`        | Build the site to `./dist/`                 |
+| `npm run preview`      | Preview the build locally                   |
+| `npm run build:slugs`  | Regenerate `public/slug_map.json`           |
+| `npm run lint`         | ESLint                                      |
+| `npm run lint:styles`  | Design-system style lint                    |
+| `npm run format:check` | Prettier check (`format:fix` to apply)      |
+| `npm run vitest`       | Run all non-heavy tests                     |
+| `npm run vitest:heavy` | Run all tests, including heavy ones (POSIX) |
 
-## 🧞 Commands
+Deployment targets are described in [BUILD.md](BUILD.md).
 
-All commands are run from the root of the project, from a terminal:
+## Docs
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+Start at [docs/overview.md](docs/overview.md) for architecture, conventions and
+the project layout.

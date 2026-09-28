@@ -14,7 +14,7 @@
     "lint:styles": "node vendor/wrf-design/lint-styles.cjs --config .wrf-lint.json",
     "format:check": "prettier --check \"**/*.{js,ts,astro,json,md}\"",
     "vitest": "vitest run",
-    "vitest:heavy": "set HEAVY_TESTS=1 && vitest run",
+    "vitest:heavy": "HEAVY_TESTS=1 vitest run",
     "format:fix": "prettier --write \"**/*.{js,ts,astro,json,md}\""
   },
   "dependencies": {
