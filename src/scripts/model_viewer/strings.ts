@@ -40,6 +40,8 @@ export const MODEL_STRINGS = {
   buildA: site('Models_Build_A'),
   buildB: site('Models_Build_B'),
   compare: site('Models_Compare'),
+  compareStart: site('Models_Compare_Start'),
+  compareStop: site('Models_Compare_Stop'),
   resetB: site('Models_Reset_B'),
   compareHint: site('Models_Compare_Hint'),
   mesh: site('Models_Mesh'),
