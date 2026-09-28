@@ -46,6 +46,10 @@ export const MODEL_STRINGS = {
   hitbox: site('Models_Hitbox'),
   clearBuild: site('Models_Clear_Build'),
   clearBuildTitle: site('Models_Clear_Build_Title'),
+  share: site('Models_Share'),
+  shareTitle: site('Models_Share_Title'),
+  shareCopied: site('Models_Share_Copied'),
+  shareFailed: site('Models_Share_Failed'),
   loadingParts: site('Models_Loading_Parts'),
 
   // Build slots and part pickers

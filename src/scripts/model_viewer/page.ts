@@ -102,6 +102,8 @@ function pageElements() {
     meshBox: requireElement('model-mesh', HTMLInputElement),
     hitboxBox: requireElement('model-hitbox', HTMLInputElement),
     clear: requireElement('model-clear', HTMLButtonElement),
+    share: requireElement('model-share', HTMLButtonElement),
+    shareLabel: requireElement('model-share-label', HTMLElement),
     areaPools: requireElement('hitbox-area-pools', HTMLElement),
     compareBar: requireElement('hitbox-compare', HTMLElement),
     headline: requireElement('hitbox-compare-headline', HTMLElement),
@@ -114,6 +116,33 @@ function pageElements() {
 }
 
 type PageElements = ReturnType<typeof pageElements>;
+
+/** Copy `text` to the clipboard, falling back to execCommand where the async
+ * Clipboard API is unavailable (non-secure contexts). */
+async function copyText(text: string): Promise<boolean> {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch {
+    // fall through to the legacy path
+  }
+  const area = document.createElement('textarea');
+  area.value = text;
+  area.setAttribute('readonly', '');
+  area.style.position = 'fixed';
+  area.style.opacity = '0';
+  document.body.append(area);
+  area.select();
+  try {
+    return document.execCommand('copy');
+  } catch {
+    return false;
+  } finally {
+    area.remove();
+  }
+}
 
 /** Set the attributes the page marks `data-model-<attr>="<string id>"` (text
  * LocalizedText can't reach: aria-labels, titles). */
@@ -259,6 +288,16 @@ export class ModelPage {
     el.clear.addEventListener('click', () => {
       this.compare.clearOverrides();
       this.store.replace({});
+    });
+    // The URL always mirrors the view (syncUrl), so sharing is copying it.
+    el.share.addEventListener('click', async () => {
+      const ok = await copyText(window.location.href);
+      el.shareLabel.textContent = this.text.t(
+        ok ? 'shareCopied' : 'shareFailed'
+      );
+      window.setTimeout(() => {
+        el.shareLabel.textContent = this.text.t('share');
+      }, 1500);
     });
     for (const box of [el.meshBox, el.hitboxBox]) {
       box.addEventListener('change', () => {

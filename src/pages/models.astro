@@ -37,7 +37,23 @@ const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
   >
     <Breadcrumb breadcrumbs={getModelsBreadcrumbs()} />
     <header class="model-header">
-      <LocalizedText tag="h1" localizationKey={strings.title} />
+      <div class="model-title-row">
+        <LocalizedText tag="h1" localizationKey={strings.title} />
+        <!-- Copies the URL, which always mirrors the view (page.ts). -->
+        <button
+          type="button"
+          id="model-share"
+          class="wrf-btn wrf-btn--secondary wrf-btn--sm"
+          title={getDefaultString(strings.shareTitle)}
+          data-model-title="shareTitle"
+        >
+          <LocalizedText
+            tag="span"
+            id="model-share-label"
+            localizationKey={strings.share}
+          />
+        </button>
+      </div>
       <LocalizedText tag="p" localizationKey={strings.intro} />
       <p class="model-controls-hint">
         <LocalizedText tag="span" localizationKey={strings.controlsHint} />
@@ -68,6 +84,13 @@ const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
 
   .model-header :global(h1) {
     margin: 0 0 0.25rem;
+  }
+
+  .model-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
   }
 
   .model-header p {
