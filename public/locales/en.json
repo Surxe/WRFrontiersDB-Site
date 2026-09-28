@@ -61,6 +61,7 @@
     "Models_Hitbox": "Hitbox",
     "Models_Fullscreen_Enter": "Enter fullscreen",
     "Models_Fullscreen_Exit": "Exit fullscreen",
+    "Models_Recenter": "Re-center camera",
     "Models_Clear_Build": "Clear build",
     "Models_Clear_Build_Title": "Clear the build (and build B's swaps) back to the default robot",
     "Models_Share": "Share",

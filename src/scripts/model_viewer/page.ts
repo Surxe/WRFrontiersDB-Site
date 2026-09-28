@@ -105,6 +105,7 @@ function pageElements() {
     meshBox: requireElement('model-mesh', HTMLInputElement),
     hitboxBox: requireElement('model-hitbox', HTMLInputElement),
     fullscreen: requireElement('model-fullscreen', HTMLButtonElement),
+    recenter: requireElement('model-recenter', HTMLButtonElement),
     clear: requireElement('model-clear', HTMLButtonElement),
     share: requireElement('model-share', HTMLButtonElement),
     shareLabel: requireElement('model-share-label', HTMLElement),
@@ -311,8 +312,11 @@ export class ModelPage {
         el.shareLabel.textContent = this.text.t('share');
       }, 1500);
     });
-    // Nothing to enlarge without WebGL: the button stays hidden.
-    if (this.viewer) {
+    // Nothing to enlarge or pan without WebGL: the buttons stay hidden.
+    const { viewer } = this;
+    if (viewer) {
+      el.recenter.hidden = false;
+      el.recenter.addEventListener('click', () => viewer.recenter());
       new FullscreenToggle(el.viewport, el.fullscreen, {
         enter: this.text.t('fullscreenEnter'),
         exit: this.text.t('fullscreenExit'),

@@ -48,6 +48,7 @@ export const MODEL_STRINGS = {
   hitbox: site('Models_Hitbox'),
   fullscreenEnter: site('Models_Fullscreen_Enter'),
   fullscreenExit: site('Models_Fullscreen_Exit'),
+  recenter: site('Models_Recenter'),
   clearBuild: site('Models_Clear_Build'),
   clearBuildTitle: site('Models_Clear_Build_Title'),
   share: site('Models_Share'),
