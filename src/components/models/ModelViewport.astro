@@ -3,7 +3,9 @@
 // WebGL canvas into #model-canvas (render/viewer.ts; transparent, over this
 // element's background) and writes progress into #model-status. In the 2D
 // views it also overlays part labels there (render/label_overlay.ts, content
-// from ui/view_labels.ts), hence the :global styles.
+// from ui/view_labels.ts), hence the :global styles. The mesh / hitbox
+// toggles float over the viewport's corner, outside #model-canvas (whose
+// role="img" would hide them from assistive tech).
 import LocalizedText from '../LocalizedText.astro';
 import { getDefaultString } from '../../utils/localization';
 import type { ModelStrings } from '../../scripts/model_viewer/strings';
@@ -15,15 +17,27 @@ interface Props {
 const { strings } = Astro.props;
 ---
 
-<div
-  id="model-canvas"
-  class="model-canvas"
-  role="img"
-  aria-label={getDefaultString(strings.viewerLabel)}
-  data-model-aria-label="viewerLabel"
->
-  <div id="model-loading" class="model-canvas-loading">
-    <LocalizedText tag="span" localizationKey={strings.loadingViewer} />
+<div class="model-viewport">
+  <div
+    id="model-canvas"
+    class="model-canvas"
+    role="img"
+    aria-label={getDefaultString(strings.viewerLabel)}
+    data-model-aria-label="viewerLabel"
+  >
+    <div id="model-loading" class="model-canvas-loading">
+      <LocalizedText tag="span" localizationKey={strings.loadingViewer} />
+    </div>
+  </div>
+  <div class="model-view-toggles">
+    <label class="model-check">
+      <input type="checkbox" id="model-mesh" checked />
+      <LocalizedText tag="span" localizationKey={strings.mesh} />
+    </label>
+    <label class="model-check">
+      <input type="checkbox" id="model-hitbox" checked />
+      <LocalizedText tag="span" localizationKey={strings.hitbox} />
+    </label>
   </div>
 </div>
 <p id="model-status" class="model-status" aria-live="polite">
@@ -31,6 +45,30 @@ const { strings } = Astro.props;
 </p>
 
 <style>
+  .model-viewport {
+    position: relative;
+  }
+
+  .model-view-toggles {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.5rem;
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.3rem 0.6rem;
+    border: 1px solid var(--wrf-border);
+    border-radius: var(--wrf-radius-sm);
+    /* Translucent, like the view labels, so the robot shows through. */
+    background: color-mix(in srgb, var(--wrf-bg) 72%, transparent);
+  }
+
+  .model-check {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.85rem;
+  }
+
   .model-canvas {
     position: relative;
     width: 100%;

@@ -1,8 +1,7 @@
 ---
 // Build panel for the 3D model viewer. src/scripts/model_viewer renders the
-// cascading part dropdowns into #model-builder (ui/builder.ts) and reads the
-// view toggles by id. With Compare on, build B's panel shows in its own column
-// (ModelCompareControls).
+// cascading part dropdowns into #model-builder (ui/builder.ts). With Compare
+// on, build B's panel shows in its own column (ModelCompareControls).
 import LocalizedText from '../LocalizedText.astro';
 import ModelBuildPanel from './ModelBuildPanel.astro';
 import { getDefaultString } from '../../utils/localization';
@@ -22,44 +21,17 @@ const { strings } = Astro.props;
   ariaLabel="buildPanel"
   strings={strings}
 >
-  <label slot="head" class="model-check">
-    <input type="checkbox" id="model-compare" />
-    <LocalizedText tag="span" localizationKey={strings.compare} />
-  </label>
+  <button
+    slot="head"
+    type="button"
+    id="model-clear"
+    class="wrf-btn wrf-btn--secondary wrf-btn--sm"
+    title={getDefaultString(strings.clearBuildTitle)}
+    data-model-title="clearBuildTitle"
+  >
+    <LocalizedText tag="span" localizationKey={strings.clearBuild} />
+  </button>
   <p slot="builder" class="model-placeholder">
     <LocalizedText tag="span" localizationKey={strings.loadingParts} />
   </p>
-  <div class="model-view-toggles">
-    <label class="model-check">
-      <input type="checkbox" id="model-mesh" checked />
-      <LocalizedText tag="span" localizationKey={strings.mesh} />
-    </label>
-    <label class="model-check">
-      <input type="checkbox" id="model-hitbox" checked />
-      <LocalizedText tag="span" localizationKey={strings.hitbox} />
-    </label>
-    <button
-      type="button"
-      id="model-clear"
-      class="wrf-btn wrf-btn--secondary wrf-btn--sm model-clear"
-      title={getDefaultString(strings.clearBuildTitle)}
-      data-model-title="clearBuildTitle"
-    >
-      <LocalizedText tag="span" localizationKey={strings.clearBuild} />
-    </button>
-  </div>
 </ModelBuildPanel>
-
-<style>
-  .model-view-toggles {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding-top: 0.5rem;
-    border-top: 1px solid var(--wrf-border);
-  }
-
-  .model-clear {
-    margin-left: auto;
-  }
-</style>

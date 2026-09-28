@@ -96,7 +96,8 @@ function pageElements() {
     builderA: requireElement('model-builder', HTMLElement),
     builderB: requireElement('model-builder-b', HTMLElement),
     buildATitle: requireElement('model-build-a-title', HTMLElement),
-    compareBox: requireElement('model-compare', HTMLInputElement),
+    compareToggle: requireElement('model-compare', HTMLButtonElement),
+    compareLabel: requireElement('model-compare-label', HTMLElement),
     compareSection: requireElement('model-compare-b', HTMLElement),
     compareReset: requireElement('model-compare-reset', HTMLButtonElement),
     meshBox: requireElement('model-mesh', HTMLInputElement),
@@ -158,6 +159,8 @@ function localizeAttributes(text: ModelText): void {
 export class ModelPage {
   private readonly store: BuildStore;
   private readonly compare: CompareStore;
+  /** The URL asked for Compare on (turned on once the page is wired up). */
+  private readonly compareOnLoad: boolean;
   private readonly models = new ModelCache(fetchModuleModel);
   private readonly partRefs: PartRefs;
   private readonly isSlotKey: SlotKeyMatcher;
@@ -195,7 +198,7 @@ export class ModelPage {
     this.partRefs = new PartRefs(el.partRefs);
     el.meshBox.checked = state.mesh;
     el.hitboxBox.checked = state.hitbox;
-    el.compareBox.checked = state.compare !== null;
+    this.compareOnLoad = state.compare !== null;
     if (state.compare) this.compare.replace(state.compare);
 
     this.modes = new ToggleGroup(el.modeButtons, 'mode', isCameraMode);
@@ -270,6 +273,12 @@ export class ModelPage {
     });
     this.compare.subscribe((cmp) => {
       const on = cmp !== null;
+      el.compareToggle.setAttribute('aria-pressed', String(on));
+      el.compareToggle.classList.toggle('wrf-btn--primary', !on);
+      el.compareToggle.classList.toggle('wrf-btn--secondary', on);
+      el.compareLabel.textContent = this.text.t(
+        on ? 'compareStop' : 'compareStart'
+      );
       el.compareSection.hidden = !on;
       el.compareBar.hidden = !on;
       el.buildATitle.textContent = this.text.t(on ? 'buildA' : 'build');
@@ -278,8 +287,8 @@ export class ModelPage {
       void this.rebuild();
     });
 
-    el.compareBox.addEventListener('change', () =>
-      this.compare.setEnabled(el.compareBox.checked)
+    el.compareToggle.addEventListener('click', () =>
+      this.compare.setEnabled(!this.compare.isEnabled)
     );
     el.compareReset.addEventListener('click', () => this.compare.reset());
     // Back to an empty selection: the default chassis with only its required
@@ -311,7 +320,7 @@ export class ModelPage {
     this.renderBuilderA(this.store.current);
     this.syncUrl();
     this.syncCamera();
-    if (el.compareBox.checked) this.compare.setEnabled(true);
+    if (this.compareOnLoad) this.compare.setEnabled(true);
     else void this.rebuild();
   }
 

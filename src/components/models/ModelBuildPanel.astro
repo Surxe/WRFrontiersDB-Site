@@ -77,18 +77,11 @@ const {
     gap: 0.5rem;
   }
 
-  /* Slotted content (the panels' placeholders, toggles) is styled from here
-     too, so both panels share one look; hence :global. */
+  /* Slotted placeholders are styled from here too, so both panels share one
+     look; hence :global. */
   .model-build-panel :global(.model-placeholder) {
     margin: 0;
     color: var(--wrf-text-muted);
-    font-size: 0.85rem;
-  }
-
-  .model-build-panel :global(.model-check) {
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
     font-size: 0.85rem;
   }
 

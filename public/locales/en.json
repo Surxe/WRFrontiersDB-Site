@@ -53,6 +53,8 @@
     "Models_Build_A": "Build A (current)",
     "Models_Build_B": "Build B",
     "Models_Compare": "Compare",
+    "Models_Compare_Start": "Compare builds",
+    "Models_Compare_Stop": "Stop comparing",
     "Models_Reset_B": "Reset B",
     "Models_Compare_Hint": "Swap any parts to compare against build A. Slots you leave alone follow A.",
     "Models_Mesh": "Mesh",
