@@ -7,10 +7,11 @@ description: Load before writing or editing ANY CSS or Astro `<style>` block in 
 
 This site's visual language - palette, typography, and the reusable UI elements
 (links, buttons, toggles, tooltips, form controls, focus, scrollbars, selection)
+
 - is owned by the **WRFrontiersDB-Design** submodule, checked out at
-`vendor/wrf-design/` and imported by `src/components/Page.astro`
-(`import '../../vendor/wrf-design/index.css'`). WRFrontiers-Discount-Visualizer
-consumes the same submodule, so the two sites stay visually identical.
+  `vendor/wrf-design/` and imported by `src/components/Page.astro`
+  (`import '../../vendor/wrf-design/index.css'`). WRFrontiers-Discount-Visualizer
+  consumes the same submodule, so the two sites stay visually identical.
 
 **Canonical reference:** `vendor/wrf-design/STYLE-GUIDE.md` (palette, elements,
 do/don't) and `vendor/wrf-design/README.md` (consuming, the local dev loop, and
@@ -25,7 +26,10 @@ how-to; the style guide is the source of truth.
    `var(--wrf-accent)`, `var(--wrf-border)`, and so on. See the token list in
    `design-tokens.css` / the style guide.
 2. **Reuse the shared element classes.** Add `.wrf-btn` (`--primary` /
-   `--secondary`), `.wrf-toggle` / `.wrf-toggle__btn`, `.wrf-tooltip` rather than
+   `--secondary`, `--sm`), `.wrf-link-btn` (a button that looks like a link),
+   `.wrf-toggle` / `.wrf-toggle__btn` (`--sm`; selected via `.active` or
+   `aria-pressed="true"`), `.wrf-panel` (`--inset`), `.wrf-select` +
+   `.wrf-listbox` (a rich custom dropdown), `.wrf-tooltip` rather than
    restyling bare elements. Links (`a`), form controls, focus rings, scrollbars,
    and selection are styled globally by `elements.css` - don't re-declare them.
 3. **Domain colors stay raw, on purpose.** Meaningful data-driven colors -

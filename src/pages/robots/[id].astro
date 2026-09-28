@@ -7,10 +7,12 @@ import ObjRef from '../../components/obj_ref/ObjRef.astro';
 import { getParseObjects } from '../../utils/parse_object';
 import { getAllVirtualBots, getVirtualBotById } from '../../utils/bot_modules';
 import type { CharacterPreset } from '../../types/character_preset';
-import type { Module } from '../../types/module';
+import type { Module, ModuleType } from '../../types/module';
 import { getDefaultString } from '../../utils/localization';
 import { generateRobotLocalizedMetaDescriptions } from '../../utils/build_localization';
 import { refToId } from '../../utils/object_reference';
+import { findChassis } from '../../scripts/robot/build/classify';
+import ModelViewerLink from '../../components/models/ModelViewerLink.astro';
 
 export async function getStaticPaths() {
   const virtualBotsMap = getAllVirtualBots();
@@ -31,6 +33,7 @@ const presets = getParseObjects<CharacterPreset>(
   'Objects/CharacterPreset.json'
 );
 const modules = getParseObjects<Module>('Objects/Module.json');
+const moduleTypes = getParseObjects<ModuleType>('Objects/ModuleType.json');
 
 export function getRobotDetailBreadcrumbs(botName: string) {
   return [
@@ -44,6 +47,14 @@ const localizedDescriptions = generateRobotLocalizedMetaDescriptions(
   bot,
   getDefaultString(bot.name) || bot.id
 );
+
+// Deep link into the 3D viewer: the chassis alone is enough -- the viewer fills
+// the required torso and shoulders with this bot's own core modules and leaves
+// the weapon slots empty.
+const chassisId = findChassis(bot.core_module_refs.map(refToId), {
+  modules,
+  moduleTypes,
+});
 ---
 
 <ParseObjectPage
@@ -66,6 +77,12 @@ const localizedDescriptions = generateRobotLocalizedMetaDescriptions(
 
   <LocalizedText id="robot-name" tag="h1" localizationKey={bot.name} />
   <p><strong>Type:</strong> {bot.character_type}</p>
+
+  {
+    chassisId && (
+      <ModelViewerLink selection={{ chassis: chassisId }} kind="robot" />
+    )
+  }
 
   <section style="margin-top: 2rem;">
     <h2>Core Modules</h2>
@@ -94,5 +111,5 @@ const localizedDescriptions = generateRobotLocalizedMetaDescriptions(
     </div>
   </section>
 
-  <ObjectPageScripts objectData={bot} jsFileName="robot_page.js" slug={id} />
+  <ObjectPageScripts objectData={bot} slug={id} />
 </ParseObjectPage>

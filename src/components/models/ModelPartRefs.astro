@@ -1,0 +1,36 @@
+---
+// Pre-rendered ObjRef (icon + LocalizedText name, no link) for every part the
+// builder can offer. Hidden; the page script (ui/part_refs.ts) clones these into
+// its dropdowns and labels once the page is localized, so parts look like the
+// rest of the site and localize the same way.
+import ObjRef from '../obj_ref/ObjRef.astro';
+import { getParseObjects } from '../../utils/parse_object';
+import { kindOfModule } from '../../scripts/robot/build/classify';
+import type { ModuleKind } from '../../scripts/robot/build/types';
+import type { Module, ModuleType } from '../../types/module';
+
+const modules = getParseObjects<Module>('Objects/Module.json');
+const moduleTypes = getParseObjects<ModuleType>('Objects/ModuleType.json');
+const BUILDABLE: ReadonlySet<ModuleKind> = new Set([
+  'chassis',
+  'torso',
+  'shoulder',
+  'weapon',
+]);
+
+// Unnamed modules have no ObjRef; the builder falls back to plain text.
+const parts = Object.entries(modules).filter(
+  ([id, module]) =>
+    module.name && BUILDABLE.has(kindOfModule(id, { modules, moduleTypes }))
+);
+---
+
+<div id="model-part-refs" hidden>
+  {
+    parts.map(([id, module]) => (
+      <span data-module-id={id}>
+        <ObjRef obj={module} iconSize={20} useHref={false} />
+      </span>
+    ))
+  }
+</div>

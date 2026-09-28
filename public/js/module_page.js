@@ -4,14 +4,6 @@
  */
 async function initializeModulePage() {
   try {
-    const el = document.getElementById('object-data');
-    if (!el) {
-      console.error('Object data element not found');
-      return;
-    }
-
-    const _module = JSON.parse(el.textContent.replace(/&quot;/g, '"'));
-
     const levelSwitcher = document.getElementById('level-switcher');
     if (levelSwitcher) {
       // Import setStatChoice dynamically

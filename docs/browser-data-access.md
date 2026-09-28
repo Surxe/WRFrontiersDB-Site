@@ -2,7 +2,7 @@
 
 ## Overview
 
-Complete object data is stored in a `<script type="application/json" id="browser-data">` tag on all detail pages for easy browser access during testing.
+Complete object data is stored as JSON in the `data-json` attribute of a hidden `<div id="browser-data">` on all detail pages for easy browser access during testing.
 
 ## How to Access
 
@@ -10,9 +10,7 @@ Complete object data is stored in a `<script type="application/json" id="browser
 
 ```javascript
 // Get the complete object data
-const temp = document.createElement('textarea');
-temp.innerHTML = document.getElementById('browser-data').textContent;
-const data = JSON.parse(temp.value);
+const data = JSON.parse(document.getElementById('browser-data').dataset.json);
 
 console.log(data.id); // "DA_Module_ChassisAlpha.1"
 console.log(data.slug); // "titan-chassis-alpha"

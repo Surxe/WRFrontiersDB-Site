@@ -732,3 +732,21 @@ export function getShoulderProfilesBreadcrumbs(): BreadcrumbTrail {
     },
   ];
 }
+
+/**
+ * Generate breadcrumb trail for 3D models page
+ */
+export function getModelsBreadcrumbs(): BreadcrumbTrail {
+  return [
+    {
+      label: resolveLocalizationKey('Breadcrumb_Home', 'Web_UI'),
+      href: '/',
+      isCurrent: false,
+    },
+    {
+      label: resolveLocalizationKey('Breadcrumb_Models', 'Web_UI'),
+      href: '/models',
+      isCurrent: true,
+    },
+  ];
+}

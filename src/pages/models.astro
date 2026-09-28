@@ -1,0 +1,145 @@
+---
+import Page from '../components/Page.astro';
+import Breadcrumb from '../components/Breadcrumb.astro';
+import LocalizedText from '../components/LocalizedText.astro';
+import ModelControls from '../components/models/ModelControls.astro';
+import ModelViewport from '../components/models/ModelViewport.astro';
+import HitboxAreaPanel from '../components/models/HitboxAreaPanel.astro';
+import ModelPartRefs from '../components/models/ModelPartRefs.astro';
+import { getModelsBreadcrumbs } from '../utils/breadcrumb';
+import { generateSimpleLocalizedMetaDescriptions } from '../utils/build_localization';
+import {
+  getDefaultString,
+  resolveLocalizationKeys,
+} from '../utils/localization';
+import { MODEL_STRINGS } from '../scripts/model_viewer/strings';
+
+const strings = resolveLocalizationKeys(MODEL_STRINGS);
+const description = getDefaultString(strings.metaDescription);
+const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
+  strings.metaDescription,
+  {},
+  getDefaultString(strings.title) ?? 'Models'
+);
+---
+
+<Page
+  title={strings.title}
+  description={description}
+  localizedDescriptions={localizedDescriptions}
+>
+  <!-- data-strings: the UI strings, for text the page script builds
+       (strings.ts). An attribute, as the browser decodes its entities. -->
+  <main
+    id="model-page"
+    class="model-page"
+    data-strings={JSON.stringify(strings)}
+  >
+    <Breadcrumb breadcrumbs={getModelsBreadcrumbs()} />
+    <header class="model-header">
+      <div class="model-title-row">
+        <LocalizedText tag="h1" localizationKey={strings.title} />
+        <!-- Copies the URL, which always mirrors the view (page.ts). -->
+        <button
+          type="button"
+          id="model-share"
+          class="wrf-btn wrf-btn--secondary wrf-btn--sm"
+          title={getDefaultString(strings.shareTitle)}
+          data-model-title="shareTitle"
+        >
+          <LocalizedText
+            tag="span"
+            id="model-share-label"
+            localizationKey={strings.share}
+          />
+        </button>
+      </div>
+      <LocalizedText tag="p" localizationKey={strings.intro} />
+      <p class="model-controls-hint">
+        <LocalizedText tag="span" localizationKey={strings.controlsHint} />
+      </p>
+    </header>
+
+    <div class="model-layout">
+      <ModelControls strings={strings} />
+      <div class="model-stage">
+        <ModelViewport strings={strings} />
+        <HitboxAreaPanel strings={strings} />
+      </div>
+    </div>
+    <ModelPartRefs />
+  </main>
+</Page>
+
+<script>
+  import '../scripts/model_viewer/index.ts';
+</script>
+
+<style>
+  .model-page {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 1rem;
+  }
+
+  .model-header :global(h1) {
+    margin: 0 0 0.25rem;
+  }
+
+  .model-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .model-header p {
+    margin: 0 0 1rem;
+    color: var(--wrf-text-muted);
+  }
+
+  .model-controls-hint {
+    font-size: 0.9rem;
+  }
+
+  .model-layout {
+    display: grid;
+    grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
+    gap: 1rem;
+    align-items: start;
+  }
+
+  .model-stage {
+    min-width: 0;
+  }
+
+  @media (max-width: 800px) {
+    .model-layout {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  /* Shared by the runtime-built UI of every panel (src/scripts/model_viewer),
+     hence :global. */
+  .model-page :global(.model-swatch) {
+    display: inline-block;
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 2px;
+    vertical-align: middle;
+  }
+
+  .model-page :global(.model-hint),
+  .model-page :global(.is-muted),
+  .model-page :global(.is-same) {
+    color: var(--wrf-text-muted);
+  }
+
+  .model-page :global(.is-better) {
+    color: var(--wrf-success);
+  }
+
+  .model-page :global(.is-worse) {
+    color: var(--wrf-danger);
+  }
+</style>

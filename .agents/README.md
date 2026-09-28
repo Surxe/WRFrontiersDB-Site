@@ -22,13 +22,13 @@ bash .agents/setup-symlinks.sh
 
 Idempotent - run it after any fresh clone. It creates:
 
-| Link                | Target          | Used by      |
-| ------------------- | --------------- | ------------ |
-| `.claude/skills`    | `.agents/skills` | Claude Code  |
-| `.windsurf/skills`  | `.agents/skills` | Windsurf     |
-| `.windsurf/rules`   | `.agents/rules`  | Windsurf     |
-| `.cursor/skills`    | `.agents/skills` | Cursor       |
-| `.cursor/rules`     | `.agents/rules`  | Cursor       |
+| Link               | Target           | Used by     |
+| ------------------ | ---------------- | ----------- |
+| `.claude/skills`   | `.agents/skills` | Claude Code |
+| `.windsurf/skills` | `.agents/skills` | Windsurf    |
+| `.windsurf/rules`  | `.agents/rules`  | Windsurf    |
+| `.cursor/skills`   | `.agents/skills` | Cursor      |
+| `.cursor/rules`    | `.agents/rules`  | Cursor      |
 
 ### Windows (plain Command Prompt)
 

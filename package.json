@@ -14,13 +14,15 @@
     "lint:styles": "node vendor/wrf-design/lint-styles.cjs --config .wrf-lint.json",
     "format:check": "prettier --check \"**/*.{js,ts,astro,json,md}\"",
     "vitest": "vitest run",
-    "vitest:heavy": "set HEAVY_TESTS=1 && vitest run",
+    "vitest:heavy": "HEAVY_TESTS=1 vitest run",
     "format:fix": "prettier --write \"**/*.{js,ts,astro,json,md}\""
   },
   "dependencies": {
-    "astro": "^5.16.6"
+    "astro": "^5.16.6",
+    "three": "^0.186.1"
   },
   "devDependencies": {
+    "@types/three": "^0.186.0",
     "@typescript-eslint/eslint-plugin": "^8.52.0",
     "@typescript-eslint/parser": "^8.52.0",
     "@vitest/ui": "^4.0.16",

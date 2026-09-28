@@ -1,0 +1,34 @@
+---
+// A deep link into the /models page showing a build, e.g. from a robot or a
+// preset page.
+import LocalizedText from '../LocalizedText.astro';
+import { resolveLocalizationKey } from '../../utils/localization';
+import { MODEL_STRINGS } from '../../scripts/model_viewer/strings';
+import { modelsPageHref } from '../../scripts/model_viewer/params';
+import type { BuildSelection } from '../../scripts/robot/build/types';
+
+interface Props {
+  selection: BuildSelection;
+  /** Link text: the whole robot, or a specific loadout. */
+  kind: 'robot' | 'loadout';
+}
+
+const { selection, kind } = Astro.props;
+const ref =
+  kind === 'robot'
+    ? MODEL_STRINGS.viewRobotLink
+    : MODEL_STRINGS.viewLoadoutLink;
+const label = resolveLocalizationKey(ref.Key, ref.TableNamespace);
+---
+
+<p class="model-viewer-link">
+  <a href={modelsPageHref(selection)}>
+    <LocalizedText tag="span" localizationKey={label} /> →
+  </a>
+</p>
+
+<style>
+  .model-viewer-link {
+    margin: 1rem 0;
+  }
+</style>

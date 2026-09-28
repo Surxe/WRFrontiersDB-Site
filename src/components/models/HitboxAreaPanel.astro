@@ -1,0 +1,360 @@
+---
+// Hitbox area panel for the 3D model viewer. src/scripts/model_viewer switches
+// the camera from #hitbox-mode-buttons (3D / flat 2D) and #hitbox-view-buttons
+// (the side to look from; none pressed at a custom 3D angle), and renders one
+// card per health pool into #hitbox-area-pools (ui/area_panel.ts). While
+// comparing builds it also fills #hitbox-compare: the headline and the metric
+// switch; the diff legend's swatches are colored from DIFF_COLORS (colors.ts).
+import LocalizedText from '../LocalizedText.astro';
+import { getDefaultString } from '../../utils/localization';
+import type { ModelStrings } from '../../scripts/model_viewer/strings';
+import type { ViewName } from '../../scripts/robot/hitbox_area/views';
+import type { LocalizationKey } from '../../types/localization';
+
+interface Props {
+  strings: ModelStrings;
+}
+
+const { strings } = Astro.props;
+
+const modes = [
+  { mode: '3d', label: strings.mode3d, pressed: true },
+  { mode: '2d', label: strings.mode2d, pressed: false },
+];
+const views: { view: ViewName; label: LocalizationKey }[] = [
+  { view: 'front', label: strings.viewFront },
+  { view: 'back', label: strings.viewBack },
+  { view: 'left', label: strings.viewLeft },
+  { view: 'right', label: strings.viewRight },
+  { view: 'top', label: strings.viewTop },
+];
+const metrics = [
+  { metric: 'withWeapons', label: strings.withWeapons, pressed: true },
+  { metric: 'alone', label: strings.alone, pressed: false },
+];
+const legend = [
+  { diff: 'shared', label: strings.diffShared },
+  { diff: 'aOnly', label: strings.diffAOnly },
+  { diff: 'bOnly', label: strings.diffBOnly },
+];
+// A bold term, then its explanation.
+const notes = [
+  { term: null, text: strings.notesArea },
+  { term: strings.alone, text: strings.notesAlone },
+  { term: strings.withWeapons, text: strings.notesWithWeapons },
+  { term: strings.wholeRobot, text: strings.notesWholeRobot },
+  { term: strings.mode2d, text: strings.notes2d },
+  { term: strings.mode3d, text: strings.notes3d },
+  { term: strings.compare, text: strings.notesCompare },
+];
+---
+
+<section class="hitbox-area wrf-panel" aria-labelledby="hitbox-area-title">
+  <div class="hitbox-area-head">
+    <LocalizedText
+      tag="h2"
+      id="hitbox-area-title"
+      localizationKey={strings.hitboxArea}
+    />
+    <div class="hitbox-view-controls">
+      <div
+        id="hitbox-mode-buttons"
+        class="wrf-toggle wrf-toggle--sm"
+        role="group"
+        aria-label={getDefaultString(strings.cameraMode)}
+        data-model-aria-label="cameraMode"
+      >
+        {
+          modes.map(({ mode, label, pressed }) => (
+            <button
+              type="button"
+              class="wrf-toggle__btn"
+              data-mode={mode}
+              aria-pressed={String(pressed)}
+            >
+              <LocalizedText tag="span" localizationKey={label} />
+            </button>
+          ))
+        }
+      </div>
+      <div
+        id="hitbox-view-buttons"
+        class="wrf-toggle wrf-toggle--sm"
+        role="group"
+        aria-label={getDefaultString(strings.cameraSide)}
+        data-model-aria-label="cameraSide"
+      >
+        {
+          views.map(({ view, label }) => (
+            <button
+              type="button"
+              class="wrf-toggle__btn"
+              data-view={view}
+              aria-pressed="false"
+            >
+              <LocalizedText tag="span" localizationKey={label} />
+            </button>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+
+  <div id="hitbox-compare" class="hitbox-compare" hidden>
+    <div class="hitbox-compare-bar">
+      <div
+        id="hitbox-compare-headline"
+        class="hitbox-headline"
+        aria-label={getDefaultString(strings.compareHeadline)}
+        data-model-aria-label="compareHeadline"
+        aria-live="polite"
+      >
+      </div>
+      <div
+        id="hitbox-metric-buttons"
+        class="wrf-toggle wrf-toggle--sm"
+        role="group"
+        aria-label={getDefaultString(strings.comparedArea)}
+        data-model-aria-label="comparedArea"
+      >
+        {
+          metrics.map(({ metric, label, pressed }) => (
+            <button
+              type="button"
+              class="wrf-toggle__btn"
+              data-metric={metric}
+              aria-pressed={String(pressed)}
+            >
+              <LocalizedText tag="span" localizationKey={label} />
+            </button>
+          ))
+        }
+      </div>
+    </div>
+    <p class="hitbox-compare-legend">
+      {
+        legend.map(({ diff, label }) => (
+          <span>
+            <span class="model-swatch" data-diff={diff} />
+            <LocalizedText tag="span" localizationKey={label} />
+          </span>
+        ))
+      }
+    </p>
+  </div>
+
+  <div id="hitbox-area-pools" class="hitbox-area-pools" aria-live="polite">
+    <p class="is-muted">
+      <LocalizedText tag="span" localizationKey={strings.measuring} />
+    </p>
+  </div>
+
+  <ul class="hitbox-area-notes">
+    {
+      notes.map(({ term, text }) => (
+        <li>
+          {term && (
+            <strong>
+              <LocalizedText tag="span" localizationKey={term} />
+            </strong>
+          )}
+          <LocalizedText tag="span" localizationKey={text} />
+        </li>
+      ))
+    }
+  </ul>
+</section>
+
+<style>
+  .hitbox-area {
+    margin-top: 1rem;
+  }
+
+  .hitbox-area-head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+  }
+
+  .hitbox-area-head :global(h2) {
+    margin: 0;
+    font-size: 1rem;
+  }
+
+  .hitbox-view-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+  }
+
+  .hitbox-compare {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .hitbox-compare[hidden] {
+    display: none;
+  }
+
+  .hitbox-compare-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .hitbox-headline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  /* Headline items are created at runtime by ui/area_panel.ts, hence
+     :global. */
+  .hitbox-headline :global(.hitbox-headline-item) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 4.5rem;
+    color: var(--wrf-text);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .hitbox-headline :global(.hitbox-headline-item.is-active) {
+    border-color: var(--wrf-accent);
+  }
+
+  .hitbox-headline :global(.hitbox-headline-view) {
+    color: var(--wrf-text-muted);
+    font-size: 0.75rem;
+  }
+
+  .hitbox-headline :global(.hitbox-headline-value) {
+    font-size: 1.05rem;
+    font-weight: bold;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .hitbox-headline :global(.is-better .hitbox-headline-value) {
+    color: var(--wrf-success);
+  }
+
+  .hitbox-headline :global(.is-worse .hitbox-headline-value) {
+    color: var(--wrf-danger);
+  }
+
+  .hitbox-headline :global(.is-same .hitbox-headline-value) {
+    color: var(--wrf-text-muted);
+  }
+
+  .hitbox-compare-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1rem;
+    margin: 0;
+    color: var(--wrf-text-muted);
+    font-size: 0.8rem;
+  }
+
+  .hitbox-compare-legend > span {
+    display: inline-flex;
+    gap: 0.35rem;
+    align-items: center;
+  }
+
+  .hitbox-area-pools {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 0.75rem;
+  }
+
+  .hitbox-area-pools :global(.is-muted) {
+    margin: 0;
+  }
+
+  /* Cards are created at runtime by ui/area_panel.ts, hence :global. */
+  .hitbox-area-pools :global(.hitbox-pool) {
+    min-width: 0;
+    overflow-x: auto;
+  }
+
+  /* The whole-robot card spans its own row above the per-pool cards. */
+  .hitbox-area-pools :global(.hitbox-pool-total) {
+    grid-column: 1 / -1;
+  }
+
+  .hitbox-area-pools :global(.hitbox-pool-total table) {
+    max-width: 32rem;
+  }
+
+  .hitbox-area-pools :global(h3) {
+    display: flex;
+    gap: 0.35rem;
+    align-items: center;
+    margin: 0;
+    font-size: 0.95rem;
+  }
+
+  .hitbox-area-pools :global(.hitbox-pool-module),
+  .hitbox-area-pools :global(.hitbox-pool-weapons) {
+    color: var(--wrf-text-muted);
+    font-weight: normal;
+    font-size: 0.8rem;
+  }
+
+  .hitbox-area-pools :global(.hitbox-pool-weapons) {
+    margin: 0.15rem 0 0.4rem;
+  }
+
+  .hitbox-area-pools :global(table) {
+    width: 100%;
+    font-size: 0.85rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .hitbox-area-pools :global(th),
+  .hitbox-area-pools :global(td) {
+    padding: 0.2rem 0.35rem;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .hitbox-area-pools :global(thead th) {
+    color: var(--wrf-text-muted);
+    font-weight: normal;
+    border-bottom: 1px solid var(--wrf-border);
+  }
+
+  .hitbox-area-pools :global(th:first-child) {
+    text-align: left;
+  }
+
+  .hitbox-area-pools :global(th.is-active .wrf-link-btn) {
+    color: var(--wrf-accent);
+    font-weight: bold;
+  }
+
+  .hitbox-area-notes {
+    margin: 0.75rem 0 0;
+    padding-left: 1.2rem;
+    color: var(--wrf-text-muted);
+    font-size: 0.8rem;
+  }
+
+  .hitbox-area-notes strong {
+    color: var(--wrf-text);
+  }
+
+  /* "Term: explanation" (a CSS colon, so markup whitespace can't split it
+     from the term). */
+  .hitbox-area-notes strong::after {
+    content: ':';
+  }
+</style>
