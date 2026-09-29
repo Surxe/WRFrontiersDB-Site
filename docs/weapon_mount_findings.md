@@ -118,6 +118,30 @@ _(All implemented in `src/scripts/robot/model/mount.ts` — retained as rational
 4. Revert the experimental global `roll_deg=180` back to the light-weapon `-90` before
    shipping; it un-calibrates Typhon. Done — see `WEAPON_MOUNT_ROTATION`.
 
+## Per-side titan weapons: Hive and Scrubber (2026-09)
+
+The only weapons with a separate model per side (`BP_Weapon_Hive_L`/`_R`,
+`BP_Weapon_Scrubber_L`/`_R`), both mounted only on Matriarch. Each model carries
+one side adapter (no `Standard`), and the L/R meshes are Y-mirrors of each other.
+
+- **The adapter labels are reversed.** Of the 100 Left/Right weapon adapters, the
+  other 96 put a `Left` adapter's `Adapter` socket at -Y (robot-left) and a `Right`
+  one's at +Y. These four do the opposite: `Hive_R`'s `Right` adapter sits at
+  `(4.561, -34.911, 120)`, `Hive_L`'s `Left` at `(4.561, 34.911, 120)` (same for
+  Scrubber; the raw `SM_*_Adapter_*` meshes agree, so not a parser bug). The
+  `DA_Module_Weapon_*` `CharacterModules` table and the Matriarch shoulders'
+  `MountWay` are not swapped.
+- **In game, the geometry wins:** the robot's left shoulder shows the `_R` model,
+  the right shoulder the `_L` one, as exact mirrors across the robot's center
+  (verified in game on the Hive and Scrubber Matriarch presets). So
+  `weaponModelId` (`mount.ts`) renders the per-side model whose side adapter points
+  toward the shoulder, not the one labeled for it.
+- **Rotation and offset are the light-weapon ones:** the usual `Left` +90 /
+  `Right` -90 roll by shoulder side, and no adapter offset (applying the +120 Z
+  offset lifts the weapon well off the hardpoint, which does not match the game).
+  The Matriarch weapon hardpoints are unrotated and symmetric, so no
+  `WEAPON_ROTATION_OVERRIDES` entry is needed.
+
 ## Only exhaustive alternative to a constant
 
 Decompile the weapon/adapter Blueprint construction-script + the `SWeaponModule` attach

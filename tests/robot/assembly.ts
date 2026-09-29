@@ -22,14 +22,18 @@ import {
 import { viewApplies } from '../../src/scripts/robot/hitbox_area/pools';
 import { VIEW_NAMES } from '../../src/scripts/robot/hitbox_area/views';
 import { requiredModelIds } from '../../src/scripts/robot/model/mount';
+import { transformPoint } from '../../src/scripts/robot/model/math';
+import { meshBounds } from '../../src/scripts/robot/model/mesh';
+import { Vector3 } from 'three';
 import { diffPlacements } from '../../src/scripts/robot/model/placement_diff';
 import {
   ARMOR_ZONE_LEFT_LEG,
   ARMOR_ZONE_PELVIS,
   ARMOR_ZONE_RIGHT_LEG,
 } from '../../src/utils/constants';
-import { createObjectRef } from '../../src/utils/object_reference';
-import type { ModuleModel } from '../../src/types/model';
+import { createObjectRef, refToId } from '../../src/utils/object_reference';
+import type { CharacterPreset } from '../../src/types/character_preset';
+import type { ModuleModel, Vec3 } from '../../src/types/model';
 
 // The headless pipeline against the real game data: the same assemble() the
 // /models page runs, with models read from disk instead of fetched.
@@ -67,9 +71,9 @@ const anansiHefty = resolveBuild(
 );
 
 describe('requiredModelIds', () => {
-  it("includes a per-side weapon's parent-side model", () => {
-    // Hive (a titan weapon) has a model per side; its mount uses the one for
-    // the shoulder it sits on.
+  it("includes every one of a per-side weapon's models", () => {
+    // Hive (a titan weapon) has a model per side; which one renders on a
+    // shoulder depends on both models' adapters, so both are needed.
     const entry = (moduleId: string, socket_name: string, parent: number) => ({
       module_ref: createObjectRef('Module', moduleId),
       socket_name,
@@ -78,15 +82,91 @@ describe('requiredModelIds', () => {
     });
     const ids = requiredModelIds(
       [
-        entry('DA_Module_ChassisAnansi.2', 'None', -1),
-        entry('DA_Module_TorsoAnansi.1', 'Root', 0),
-        entry('DA_Module_ShoulderAnansi.0', 'Shoulder_L', 1),
+        entry('DA_Module_ChassisMatriarch.1', 'None', -1),
+        entry('DA_Module_TorsoMatriarch.0', 'Root', 0),
+        entry('DA_Module_ShoulderLMatriarch.0', 'Shoulder_L', 1),
         entry('DA_Module_Weapon_Hive.0', 'Shoulder_Weapon_0', 2),
       ],
       tables
     );
     expect(ids.has('BP_Weapon_Hive_L.0')).toBe(true);
+    expect(ids.has('BP_Weapon_Hive_R.0')).toBe(true);
   });
+});
+
+describe('placeModules: per-side titan weapons (Hive, Scrubber)', () => {
+  const presets = objects<CharacterPreset>('CharacterPreset');
+  const cases = [
+    ['Hive', 'DA_Preset_TitanPro_Matriarch.0'],
+    ['Scrubber', 'DA_Preset_TitanPro_ScrubberMatriarch.0'],
+  ] as const;
+
+  it('every side adapter of a single-model weapon points to its side', () => {
+    // The convention the per-side choice relies on: a Left adapter sits on
+    // the robot's left (-Y), a Right one on its right (+Y).
+    for (const [moduleId, module] of Object.entries(tables.modules)) {
+      if (!moduleId.startsWith('DA_Module_Weapon_')) continue;
+      const mounts = module.character_module_mounts ?? [];
+      if (mounts.length !== 1) continue;
+      const modelId = refToId(mounts[0].character_module_ref);
+      if (!(modelId in tables.characterModules)) continue;
+      const model = readJson<ModuleModel>('Models', `${modelId}.json`);
+      for (const { mount_way, offset } of model.adapters) {
+        if (mount_way === 'Standard' || !offset) continue;
+        const y = offset[1];
+        expect(mount_way === 'Left' ? y < 0 : y > 0, modelId).toBe(true);
+      }
+    }
+  });
+
+  for (const [weapon, presetId] of cases) {
+    describe(weapon, () => {
+      let assembly: Assembly;
+      const onShoulder = (socket: string) => {
+        const placement = assembly.placements.find(
+          (p) =>
+            p.moduleId === `DA_Module_Weapon_${weapon}.0` &&
+            assembly.placements[p.parentIndex].socketName === socket
+        );
+        if (!placement) throw new Error(`no ${weapon} on ${socket}`);
+        return placement;
+      };
+
+      beforeAll(async () => {
+        assembly = await assemble(presets[presetId].modules, tables, cache);
+      });
+
+      it('renders the model whose adapter points toward its shoulder', () => {
+        // The labels are reversed: in game the robot's left shows the _R
+        // model and its right the _L one.
+        expect(onShoulder('Shoulder_L').modelId).toBe(
+          `BP_Weapon_${weapon}_R.0`
+        );
+        expect(onShoulder('Shoulder_R').modelId).toBe(
+          `BP_Weapon_${weapon}_L.0`
+        );
+      });
+
+      it('mirrors the left weapon across the center plane', () => {
+        const center = (socket: string): Vec3 => {
+          const placement = onShoulder(socket);
+          const model = assembly.models.get(placement.modelId ?? '');
+          if (!model) throw new Error(`${placement.modelId} not loaded`);
+          const c = meshBounds(model).getCenter(new Vector3());
+          return transformPoint(placement.world, [c.x, c.y, c.z]);
+        };
+        const left = center('Shoulder_L');
+        const right = center('Shoulder_R');
+        // Within 5 cm: the hardpoints mirror to a few millimeters, but the
+        // Scrubber's L/R meshes pose the reload arm differently (their bounds
+        // centers sit 4 cm off a mirror). Drawing the _R model on both
+        // shoulders misses by 17 cm (Hive) to 37 cm (Scrubber).
+        expect(Math.abs(left[0] - right[0])).toBeLessThan(5);
+        expect(Math.abs(left[1] + right[1])).toBeLessThan(5);
+        expect(Math.abs(left[2] - right[2])).toBeLessThan(5);
+      });
+    });
+  }
 });
 
 describe('assemble: Anansi with Hefty on both shoulders', () => {

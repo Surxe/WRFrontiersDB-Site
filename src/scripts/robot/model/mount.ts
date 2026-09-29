@@ -62,6 +62,20 @@ export function socketSide(socketName: string): Side | null {
 
 const SIDE_MOUNT_WAY = { left: 'Left', right: 'Right' } as const;
 
+/** A module's exported CharacterModules (models), with their mount ways. */
+function exportedModels(
+  moduleId: string,
+  tables: Pick<MountTables, 'modules' | 'characterModules'>
+): { way: string; id: string }[] {
+  const mounts = tables.modules[moduleId]?.character_module_mounts ?? [];
+  return mounts
+    .map((mount) => ({
+      way: mount.mount,
+      id: refToId(mount.character_module_ref),
+    }))
+    .filter(({ id }) => id in tables.characterModules);
+}
+
 /**
  * The CharacterModule (model) a module renders as: the one for `side` when
  * the module has per-side models (shoulders; a few weapons), else its first
@@ -72,21 +86,49 @@ export function modelIdForModule(
   tables: Pick<MountTables, 'modules' | 'characterModules'>,
   side: Side | null
 ): string | null {
-  const mounts = tables.modules[moduleId]?.character_module_mounts ?? [];
-  const exported = mounts
-    .map((mount) => ({
-      way: mount.mount,
-      id: refToId(mount.character_module_ref),
-    }))
-    .filter(({ id }) => id in tables.characterModules);
+  const exported = exportedModels(moduleId, tables);
   const wanted = side ? SIDE_MOUNT_WAY[side] : null;
   return (
     (exported.find(({ way }) => way === wanted) ?? exported[0])?.id ?? null
   );
 }
 
+/** Whether a model's side adapter points toward `side` (robot-left = -Y). */
+function adapterFacesSide(model: ModuleModel, side: Side): boolean {
+  return model.adapters.some(
+    ({ mount_way, offset }) =>
+      mount_way !== 'Standard' &&
+      offset !== null &&
+      (side === 'left' ? offset[1] < 0 : offset[1] > 0)
+  );
+}
+
+/**
+ * The model a weapon renders as on its shoulder's `side`. A weapon with a
+ * model per side (Hive, Scrubber) renders the one whose side adapter points
+ * toward that side: their adapters' Left/Right labels are the reverse of
+ * where the adapters sit (every other weapon's agree), and the placement the
+ * adapters imply is what the game shows. Falls back to the label when no
+ * loaded model settles it.
+ */
+function weaponModelId(
+  moduleId: string,
+  tables: MountTables,
+  models: ModelLookup,
+  side: Side | null
+): string | null {
+  const byLabel = modelIdForModule(moduleId, tables, side);
+  const exported = exportedModels(moduleId, tables);
+  if (!side || exported.length < 2) return byLabel;
+  const facing = exported.find(({ id }) => {
+    const model = models.get(id);
+    return model !== undefined && adapterFacesSide(model, side);
+  });
+  return facing?.id ?? byLabel;
+}
+
 /** Per entry: the side its own socket implies (a shoulder's), used to pick
- * the model it renders as. */
+ * the model a non-weapon renders as. */
 function ownSide(entry: CharacterPresetModule): Side | null {
   return socketSide(entry.socket_name);
 }
@@ -144,17 +186,15 @@ function adapterMountWay(
 
 /** The weapon-specific part of a weapon's mount: the Standard adapter's
  * offset (Left/Right offsets position the unrendered adapter mesh, not the
- * weapon), then the runtime mount rotation. */
+ * weapon), then the runtime mount rotation. The rotation follows the
+ * shoulder's side even when the rendered per-side model's adapter is labeled
+ * for the other side (see {@link weaponModelId}): such a model has no
+ * Standard adapter, so {@link adapterMountWay} falls back to the side. */
 function weaponMount(
-  list: readonly CharacterPresetModule[],
-  entry: CharacterPresetModule,
-  tables: MountTables,
-  models: ModelLookup
+  model: ModuleModel | undefined,
+  side: Side | null
 ): Matrix4 {
-  const moduleId = refToId(entry.module_ref);
-  const modelId = modelIdForModule(moduleId, tables, parentSide(list, entry));
-  const model = modelId ? models.get(modelId) : undefined;
-  const way = adapterMountWay(model, parentSide(list, entry)) ?? 'Standard';
+  const way = adapterMountWay(model, side) ?? 'Standard';
   const offset =
     way === 'Standard'
       ? model?.adapters.find((adapter) => adapter.mount_way === 'Standard')
@@ -165,9 +205,10 @@ function weaponMount(
 }
 
 /**
- * Every model id placing `list` needs: each entry's own render model, plus a
- * weapon's parent-side model, whose adapters decide its mount. Load these
- * before {@link placeModules}.
+ * Every model id placing `list` needs: each entry's render model, and for a
+ * weapon every exported model, since which per-side model it renders depends
+ * on their adapters (see {@link weaponModelId}). Load these before
+ * {@link placeModules}.
  */
 export function requiredModelIds(
   list: readonly CharacterPresetModule[],
@@ -176,14 +217,12 @@ export function requiredModelIds(
   const ids = new Set<string>();
   for (const entry of list) {
     const moduleId = refToId(entry.module_ref);
-    const sides = [ownSide(entry)];
     if (kindOfModule(moduleId, tables) === 'weapon') {
-      sides.push(parentSide(list, entry));
+      for (const { id } of exportedModels(moduleId, tables)) ids.add(id);
+      continue;
     }
-    for (const side of sides) {
-      const id = modelIdForModule(moduleId, tables, side);
-      if (id) ids.add(id);
-    }
+    const id = modelIdForModule(moduleId, tables, ownSide(entry));
+    if (id) ids.add(id);
   }
   return ids;
 }
@@ -198,11 +237,17 @@ export function placeModules(
   tables: MountTables,
   models: ModelLookup
 ): ModulePlacement[] {
-  const renderModel = list.map((entry) =>
-    modelIdForModule(refToId(entry.module_ref), tables, ownSide(entry))
+  const isWeapon = list.map(
+    (entry) => kindOfModule(refToId(entry.module_ref), tables) === 'weapon'
   );
+  const renderModel = list.map((entry, i) => {
+    const moduleId = refToId(entry.module_ref);
+    return isWeapon[i]
+      ? weaponModelId(moduleId, tables, models, parentSide(list, entry))
+      : modelIdForModule(moduleId, tables, ownSide(entry));
+  });
   const worlds: Matrix4[] = [];
-  for (const entry of list) {
+  for (const [i, entry] of list.entries()) {
     const parent = entry.parent_socket_index;
     if (parent < 0) {
       worlds.push(new Matrix4());
@@ -213,8 +258,10 @@ export function placeModules(
     let local =
       (parentModel && socketFrame(parentModel, entry.socket_name)) ??
       new Matrix4();
-    if (kindOfModule(refToId(entry.module_ref), tables) === 'weapon') {
-      local = multiply(local, weaponMount(list, entry, tables, models));
+    if (isWeapon[i]) {
+      const modelId = renderModel[i];
+      const model = modelId ? models.get(modelId) : undefined;
+      local = multiply(local, weaponMount(model, parentSide(list, entry)));
     }
     let world = multiply(worlds[parent], local);
     // A few hardpoints need their mounted module's final rotation overridden

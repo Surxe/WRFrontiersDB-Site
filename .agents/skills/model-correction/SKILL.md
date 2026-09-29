@@ -93,14 +93,18 @@ radians).
 3. **Left shoulder renders the right mesh (or vice versa)** -> per-side shoulders
    are one module id with separate Left/Right BPs. `placeModules` derives
    the side from the `socket_name` suffix and passes it to `modelIdForModule` so
-   the correct-side BP is resolved.
+   the correct-side BP is resolved. Per-side WEAPONS (Hive, Scrubber) are the
+   exception: their adapter labels are reversed, so `weaponModelId` picks the
+   model whose side adapter points toward the parent shoulder (robot-left = -Y),
+   i.e. `_R` on the left shoulder, `_L` on the right (verified in game).
 
 4. **Weapon orientation wrong / mirrored** -> runtime mount rotation, not in any
    asset. `WEAPON_MOUNT_ROTATION[mountWay]` (`Left` roll +90 / `Right` -90 /
    `Standard` for titan-centered). Mount way comes from the parent shoulder side
    - the weapon's adapter set (`adapterMountWay`: Left/Right adapters = mirrored
      light; Standard-only = titan). A weapon with per-side models (Hive,
-     Scrubber) takes its adapters from the parent-side model.
+     Scrubber) has no Standard adapter and rolls by its shoulder's side even
+     though its rendered model's adapter is labeled for the other side.
 
 5. **Weapon floats off its mount / adapter gap** -> the adapter socket offset
    positions the (unrendered) adapter mesh, NOT the weapon root, for Left/Right
