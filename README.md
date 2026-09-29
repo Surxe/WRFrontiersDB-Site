@@ -25,7 +25,12 @@ Shared styles come from the
 ```bash
 git submodule update --init
 npm install
+npm run build:slugs   # generates public/slug_map.json (gitignored); dev + build need it
 ```
+
+`public/slug_map.json` is a generated artifact, not committed. Run `build:slugs`
+once after cloning (and again after changing slug logic); CI and the pipeline
+regenerate it on every build.
 
 AI agent docs live in `.agents/`; run `bash .agents/setup-symlinks.sh` once per
 checkout (see [.agents/README.md](.agents/README.md)).
