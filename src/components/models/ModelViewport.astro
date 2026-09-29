@@ -3,21 +3,41 @@
 // WebGL canvas into #model-canvas (render/viewer.ts; transparent, over this
 // element's background) and writes progress into #model-status. In the 2D
 // views it also overlays part labels there (render/label_overlay.ts, content
-// from ui/view_labels.ts), hence the :global styles. The mesh / hitbox
-// toggles float over the viewport's corner, outside #model-canvas (whose
-// role="img" would hide them from assistive tech).
+// from ui/view_labels.ts), hence the :global styles. Controls float over the
+// canvas (.model-overlay, which the 2D labels keep clear of), outside
+// #model-canvas (whose role="img" would hide them from assistive tech): the
+// mesh / hitbox toggles and the re-center button top-left, the fullscreen
+// button (ui/fullscreen.ts) top-right, and along the bottom the camera mode
+// (3D / flat 2D) and side buttons (none pressed at a custom 3D angle). The
+// re-center and fullscreen buttons stay hidden until the script wires them
+// up. Fullscreen takes .model-viewport (class is-fullscreen), overlays and
+// all, so every control stays in reach.
 import LocalizedText from '../LocalizedText.astro';
 import { getDefaultString } from '../../utils/localization';
 import type { ModelStrings } from '../../scripts/model_viewer/strings';
+import type { ViewName } from '../../scripts/robot/hitbox_area/views';
+import type { LocalizationKey } from '../../types/localization';
 
 interface Props {
   strings: ModelStrings;
 }
 
 const { strings } = Astro.props;
+
+const modes = [
+  { mode: '3d', label: strings.mode3d, pressed: true },
+  { mode: '2d', label: strings.mode2d, pressed: false },
+];
+const views: { view: ViewName; label: LocalizationKey }[] = [
+  { view: 'front', label: strings.viewFront },
+  { view: 'back', label: strings.viewBack },
+  { view: 'left', label: strings.viewLeft },
+  { view: 'right', label: strings.viewRight },
+  { view: 'top', label: strings.viewTop },
+];
 ---
 
-<div class="model-viewport">
+<div id="model-viewport" class="model-viewport">
   <div
     id="model-canvas"
     class="model-canvas"
@@ -29,15 +49,106 @@ const { strings } = Astro.props;
       <LocalizedText tag="span" localizationKey={strings.loadingViewer} />
     </div>
   </div>
-  <div class="model-view-toggles">
-    <label class="model-check">
-      <input type="checkbox" id="model-mesh" checked />
-      <LocalizedText tag="span" localizationKey={strings.mesh} />
-    </label>
-    <label class="model-check">
-      <input type="checkbox" id="model-hitbox" checked />
-      <LocalizedText tag="span" localizationKey={strings.hitbox} />
-    </label>
+  <div class="model-overlay model-overlay-start">
+    <div class="model-view-toggles">
+      <label class="model-check">
+        <input type="checkbox" id="model-mesh" checked />
+        <LocalizedText tag="span" localizationKey={strings.mesh} />
+      </label>
+      <label class="model-check">
+        <input type="checkbox" id="model-hitbox" checked />
+        <LocalizedText tag="span" localizationKey={strings.hitbox} />
+      </label>
+    </div>
+    <!-- Pans back to the robot's center, keeping the angle and zoom. -->
+    <button
+      type="button"
+      id="model-recenter"
+      class="model-icon-btn"
+      aria-label={getDefaultString(strings.recenter)}
+      title={getDefaultString(strings.recenter)}
+      data-model-aria-label="recenter"
+      data-model-title="recenter"
+      hidden
+    >
+      <svg
+        class="model-icon"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <path
+          d="M12 2v4M12 18v4M2 12h4M18 12h4M9 12a3 3 0 1 0 6 0a3 3 0 1 0-6 0"
+        ></path>
+      </svg>
+    </button>
+  </div>
+  <button
+    type="button"
+    id="model-fullscreen"
+    class="model-overlay model-icon-btn model-fullscreen-btn"
+    aria-label={getDefaultString(strings.fullscreenEnter)}
+    title={getDefaultString(strings.fullscreenEnter)}
+    hidden
+  >
+    <svg
+      class="model-icon model-fullscreen-icon--enter"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"></path>
+    </svg>
+    <svg
+      class="model-icon model-fullscreen-icon--exit"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d="M9 4v5H4M20 9h-5V4M15 20v-5h5M4 15h5v5"></path>
+    </svg>
+  </button>
+  <div class="model-overlay model-camera-bar">
+    <div
+      id="model-mode-buttons"
+      class="wrf-toggle wrf-toggle--sm"
+      role="group"
+      aria-label={getDefaultString(strings.cameraMode)}
+      data-model-aria-label="cameraMode"
+    >
+      {
+        modes.map(({ mode, label, pressed }) => (
+          <button
+            type="button"
+            class="wrf-toggle__btn"
+            data-mode={mode}
+            aria-pressed={String(pressed)}
+          >
+            <LocalizedText tag="span" localizationKey={label} />
+          </button>
+        ))
+      }
+    </div>
+    <div
+      id="model-view-buttons"
+      class="wrf-toggle wrf-toggle--sm"
+      role="group"
+      aria-label={getDefaultString(strings.cameraSide)}
+      data-model-aria-label="cameraSide"
+    >
+      {
+        views.map(({ view, label }) => (
+          <button
+            type="button"
+            class="wrf-toggle__btn"
+            data-view={view}
+            aria-pressed="false"
+          >
+            <LocalizedText tag="span" localizationKey={label} />
+          </button>
+        ))
+      }
+    </div>
   </div>
 </div>
 <p id="model-status" class="model-status" aria-live="polite">
@@ -49,10 +160,149 @@ const { strings } = Astro.props;
     position: relative;
   }
 
-  .model-view-toggles {
+  /* Overlays keep clear of notches and rounded corners in fullscreen. */
+  .model-viewport:global(.is-fullscreen) {
+    --model-inset-top: calc(0.75rem + env(safe-area-inset-top, 0px));
+    --model-inset-left: calc(0.75rem + env(safe-area-inset-left, 0px));
+    --model-inset-right: calc(0.75rem + env(safe-area-inset-right, 0px));
+    --model-inset-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+
+    display: flex;
+    flex-direction: column;
+    background: var(--wrf-bg);
+  }
+
+  /* The CSS fallback (no Fullscreen API; ui/fullscreen.ts): cover the page.
+     dvh tracks mobile browser chrome as it shows and hides. */
+  .model-viewport:global(.is-pinned) {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    height: 100vh;
+    height: 100dvh;
+  }
+
+  .model-viewport:global(.is-fullscreen) .model-canvas {
+    flex: 1;
+    min-height: 0;
+    height: auto;
+    border: none;
+    border-radius: 0;
+  }
+
+  :global(html.model-fullscreen-lock),
+  :global(html.model-fullscreen-lock body) {
+    overflow: hidden;
+  }
+
+  .model-fullscreen-btn {
     position: absolute;
-    top: 0.5rem;
-    left: 0.5rem;
+    top: var(--model-inset-top, 0.5rem);
+    right: var(--model-inset-right, 0.5rem);
+  }
+
+  /* Square icon buttons, translucent like the toggles. */
+  .model-icon-btn {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+    border: 1px solid var(--wrf-border);
+    border-radius: var(--wrf-radius-sm);
+    background: color-mix(in srgb, var(--wrf-bg) 72%, transparent);
+    color: var(--wrf-text);
+    cursor: pointer;
+    transition:
+      background var(--wrf-transition),
+      border-color var(--wrf-transition),
+      color var(--wrf-transition),
+      transform 0.1s ease;
+  }
+
+  .model-icon-btn[hidden] {
+    display: none;
+  }
+
+  .model-icon-btn:hover {
+    border-color: var(--wrf-accent);
+    color: var(--wrf-accent);
+  }
+
+  .model-icon-btn:active {
+    transform: scale(0.94);
+  }
+
+  .model-icon-btn:focus-visible {
+    outline: 2px solid var(--wrf-accent);
+    outline-offset: 2px;
+  }
+
+  /* Touch: a full 44px target. */
+  @media (pointer: coarse) {
+    .model-icon-btn {
+      width: 2.75rem;
+      height: 2.75rem;
+    }
+  }
+
+  .model-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .model-fullscreen-icon--exit,
+  :global(.is-fullscreen) .model-fullscreen-icon--enter {
+    display: none;
+  }
+
+  :global(.is-fullscreen) .model-fullscreen-icon--exit {
+    display: block;
+  }
+
+  .model-overlay-start {
+    position: absolute;
+    top: var(--model-inset-top, 0.5rem);
+    left: var(--model-inset-left, 0.5rem);
+    display: flex;
+    align-items: stretch;
+    gap: 0.4rem;
+  }
+
+  /* Centered along the bottom; wraps to two rows on narrow screens. Only the
+     groups take pointer events, so the gaps still orbit the camera. */
+  .model-camera-bar {
+    position: absolute;
+    right: var(--model-inset-right, 0.5rem);
+    bottom: var(--model-inset-bottom, 0.5rem);
+    left: var(--model-inset-left, 0.5rem);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.4rem;
+    pointer-events: none;
+  }
+
+  .model-camera-bar .wrf-toggle {
+    pointer-events: auto;
+    background: color-mix(in srgb, var(--wrf-surface) 85%, transparent);
+  }
+
+  /* Touch: taller, wider buttons. */
+  @media (pointer: coarse) {
+    .model-camera-bar .wrf-toggle__btn {
+      padding: 0.6rem 0.75rem;
+    }
+  }
+
+  .model-view-toggles {
     display: flex;
     gap: 0.75rem;
     padding: 0.3rem 0.6rem;

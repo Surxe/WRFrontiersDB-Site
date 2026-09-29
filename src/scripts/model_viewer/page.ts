@@ -47,6 +47,7 @@ import {
 import { readModelUrl, writeModelUrl } from './params';
 import { renderAreaPanel, renderComparePanel } from './ui/area_panel';
 import { renderBuilder } from './ui/builder';
+import { FullscreenToggle } from './ui/fullscreen';
 import { queryAll, requireElement } from './ui/dom';
 import { PartRefs } from './ui/part_refs';
 import { ToggleGroup } from './ui/toggle_group';
@@ -91,6 +92,7 @@ const afterPaint = (): Promise<void> =>
 function pageElements() {
   return {
     status: requireElement('model-status', HTMLElement),
+    viewport: requireElement('model-viewport', HTMLElement),
     canvas: requireElement('model-canvas', HTMLElement),
     loading: requireElement('model-loading', HTMLElement),
     builderA: requireElement('model-builder', HTMLElement),
@@ -102,14 +104,16 @@ function pageElements() {
     compareReset: requireElement('model-compare-reset', HTMLButtonElement),
     meshBox: requireElement('model-mesh', HTMLInputElement),
     hitboxBox: requireElement('model-hitbox', HTMLInputElement),
+    fullscreen: requireElement('model-fullscreen', HTMLButtonElement),
+    recenter: requireElement('model-recenter', HTMLButtonElement),
     clear: requireElement('model-clear', HTMLButtonElement),
     share: requireElement('model-share', HTMLButtonElement),
     shareLabel: requireElement('model-share-label', HTMLElement),
     areaPools: requireElement('hitbox-area-pools', HTMLElement),
     compareBar: requireElement('hitbox-compare', HTMLElement),
     headline: requireElement('hitbox-compare-headline', HTMLElement),
-    modeButtons: requireElement('hitbox-mode-buttons', HTMLElement),
-    viewButtons: requireElement('hitbox-view-buttons', HTMLElement),
+    modeButtons: requireElement('model-mode-buttons', HTMLElement),
+    viewButtons: requireElement('model-view-buttons', HTMLElement),
     metricButtons: requireElement('hitbox-metric-buttons', HTMLElement),
     page: requireElement('model-page', HTMLElement),
     partRefs: document.getElementById('model-part-refs'),
@@ -308,6 +312,19 @@ export class ModelPage {
         el.shareLabel.textContent = this.text.t('share');
       }, 1500);
     });
+    // Nothing to enlarge or pan without WebGL: the buttons stay hidden.
+    const { viewer } = this;
+    if (viewer) {
+      viewer.avoidLabelsUnder(
+        queryAll(el.viewport, '.model-overlay', HTMLElement)
+      );
+      el.recenter.hidden = false;
+      el.recenter.addEventListener('click', () => viewer.recenter());
+      new FullscreenToggle(el.viewport, el.fullscreen, {
+        enter: this.text.t('fullscreenEnter'),
+        exit: this.text.t('fullscreenExit'),
+      });
+    }
     for (const box of [el.meshBox, el.hitboxBox]) {
       box.addEventListener('change', () => {
         this.syncUrl();

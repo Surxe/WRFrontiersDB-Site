@@ -242,6 +242,28 @@ export class ModelViewer {
     this.aimPerspective(side === 'top' ? [-0.01, 0, 1] : [-dx, -dy, -dz]);
   }
 
+  /** Keep the axis views' part labels clear of these controls over the
+   * canvas. */
+  avoidLabelsUnder(controls: readonly HTMLElement[]): void {
+    this.labels.avoid = controls;
+    this.requestRender();
+  }
+
+  /** Pan back to the robot's center, keeping the camera's angle and zoom. */
+  recenter(): void {
+    const box = new THREE.Box3().setFromObject(
+      this.view ? this.silhouettes : this.models
+    );
+    if (box.isEmpty()) return;
+    const offset = box
+      .getBoundingSphere(new THREE.Sphere())
+      .center.sub(this.controls.target);
+    this.controls.object.position.add(offset);
+    this.controls.target.add(offset);
+    this.controls.update();
+    this.requestRender();
+  }
+
   /** Call `listener` when the user rotates the 3D camera (not on zoom or
    * pan). */
   onOrbit(listener: () => void): void {
