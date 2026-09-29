@@ -112,8 +112,8 @@ function pageElements() {
     areaPools: requireElement('hitbox-area-pools', HTMLElement),
     compareBar: requireElement('hitbox-compare', HTMLElement),
     headline: requireElement('hitbox-compare-headline', HTMLElement),
-    modeButtons: requireElement('hitbox-mode-buttons', HTMLElement),
-    viewButtons: requireElement('hitbox-view-buttons', HTMLElement),
+    modeButtons: requireElement('model-mode-buttons', HTMLElement),
+    viewButtons: requireElement('model-view-buttons', HTMLElement),
     metricButtons: requireElement('hitbox-metric-buttons', HTMLElement),
     page: requireElement('model-page', HTMLElement),
     partRefs: document.getElementById('model-part-refs'),
@@ -315,6 +315,9 @@ export class ModelPage {
     // Nothing to enlarge or pan without WebGL: the buttons stay hidden.
     const { viewer } = this;
     if (viewer) {
+      viewer.avoidLabelsUnder(
+        queryAll(el.viewport, '.model-overlay', HTMLElement)
+      );
       el.recenter.hidden = false;
       el.recenter.addEventListener('click', () => viewer.recenter());
       new FullscreenToggle(el.viewport, el.fullscreen, {

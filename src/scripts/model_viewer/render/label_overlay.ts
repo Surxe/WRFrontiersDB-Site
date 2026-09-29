@@ -4,7 +4,8 @@
  * on), with a thin line to a point on the part. The viewer projects each
  * label's anchor to canvas pixels every frame; this lays the cards out and
  * draws the lines. Cards never take pointer events, so zoom/pan still work
- * through them.
+ * through them, and they keep clear of the controls floating over the canvas
+ * (`avoid`).
  */
 import { cssHex } from '../colors';
 
@@ -36,6 +37,8 @@ export class LabelOverlay {
   private placed: Placed[] = [];
   /** Last layout's input, to skip unchanged frames. */
   private lastKey = '';
+  /** Controls over the canvas the cards stay above or below. */
+  avoid: readonly HTMLElement[] = [];
 
   constructor(container: HTMLElement) {
     this.root = document.createElement('div');
@@ -73,11 +76,41 @@ export class LabelOverlay {
     this.lastKey = '';
   }
 
+  /** The top and bottom bands (canvas pixels from each edge) a column's cards
+   * keep out of: those of the `avoid` controls over the column, each counted
+   * against the edge nearer its center. */
+  private reserved(left: boolean, width: number, height: number) {
+    const origin = this.root.getBoundingClientRect();
+    const column = LABEL_GUTTER_PX + EDGE_PX;
+    const from = left ? 0 : width - column;
+    let top = 0;
+    let bottom = 0;
+    for (const node of this.avoid) {
+      const rect = node.getBoundingClientRect();
+      if (rect.width === 0) continue; // hidden
+      const x0 = rect.left - origin.left;
+      const y0 = rect.top - origin.top;
+      const y1 = rect.bottom - origin.top;
+      if (x0 + rect.width <= from || x0 >= from + column) continue;
+      if (y0 + y1 < height) top = Math.max(top, y1);
+      else bottom = Math.max(bottom, height - y0);
+    }
+    return {
+      top: top > 0 ? top + GAP_PX : EDGE_PX,
+      bottom: bottom > 0 ? bottom + GAP_PX : EDGE_PX,
+    };
+  }
+
   /** Lay the cards out for their anchors' current canvas positions
    * (`points` parallel to the labels). */
   layout(points: readonly ScreenPoint[], width: number, height: number): void {
+    const edges = [true, false].map((left) =>
+      this.reserved(left, width, height)
+    );
     const key =
       `${width}x${height}:` +
+      edges.map(({ top, bottom }) => `${top},${bottom}`).join(';') +
+      ':' +
       points
         .map((p) => (p ? `${p.x.toFixed(1)},${p.y.toFixed(1)}` : '-'))
         .join(';');
@@ -88,10 +121,11 @@ export class LabelOverlay {
 
     const columns: {
       left: boolean;
+      edge: { top: number; bottom: number };
       items: { placed: Placed; point: { x: number; y: number } }[];
     }[] = [
-      { left: true, items: [] },
-      { left: false, items: [] },
+      { left: true, edge: edges[0], items: [] },
+      { left: false, edge: edges[1], items: [] },
     ];
     this.placed.forEach((placed, i) => {
       const point = points[i];
@@ -103,22 +137,22 @@ export class LabelOverlay {
         columns[point.x < width / 2 ? 0 : 1].items.push({ placed, point });
     });
 
-    for (const { left, items } of columns) {
+    for (const { left, edge, items } of columns) {
       // Top to bottom by anchor, each card centered on its anchor where it
       // fits, pushed down past the one above, then back up off the bottom.
       items.sort((a, b) => a.point.y - b.point.y);
       const heights = items.map(({ placed }) => placed.card.offsetHeight);
       const tops = items.map(({ point }, k) => point.y - heights[k] / 2);
       for (let k = 0; k < tops.length; k++) {
-        const min = k === 0 ? EDGE_PX : tops[k - 1] + heights[k - 1] + GAP_PX;
+        const min = k === 0 ? edge.top : tops[k - 1] + heights[k - 1] + GAP_PX;
         tops[k] = Math.max(tops[k], min);
       }
       for (let k = tops.length - 1; k >= 0; k--) {
         const max =
           k === tops.length - 1
-            ? height - EDGE_PX - heights[k]
+            ? height - edge.bottom - heights[k]
             : tops[k + 1] - GAP_PX - heights[k];
-        tops[k] = Math.max(EDGE_PX, Math.min(tops[k], max));
+        tops[k] = Math.max(edge.top, Math.min(tops[k], max));
       }
       items.forEach(({ placed, point }, k) => {
         const { card, line, dot } = placed;

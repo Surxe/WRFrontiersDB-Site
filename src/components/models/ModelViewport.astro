@@ -3,21 +3,38 @@
 // WebGL canvas into #model-canvas (render/viewer.ts; transparent, over this
 // element's background) and writes progress into #model-status. In the 2D
 // views it also overlays part labels there (render/label_overlay.ts, content
-// from ui/view_labels.ts), hence the :global styles. The mesh / hitbox
-// toggles and the re-center button float over the viewport's top-left corner,
-// the fullscreen button (ui/fullscreen.ts) the top-right, all outside
-// #model-canvas (whose role="img" would hide them from assistive tech). The
-// buttons stay hidden until the script wires them up. Fullscreen takes
-// .model-viewport (class is-fullscreen), overlays and all.
+// from ui/view_labels.ts), hence the :global styles. Controls float over the
+// canvas (.model-overlay, which the 2D labels keep clear of), outside
+// #model-canvas (whose role="img" would hide them from assistive tech): the
+// mesh / hitbox toggles and the re-center button top-left, the fullscreen
+// button (ui/fullscreen.ts) top-right, and along the bottom the camera mode
+// (3D / flat 2D) and side buttons (none pressed at a custom 3D angle). The
+// re-center and fullscreen buttons stay hidden until the script wires them
+// up. Fullscreen takes .model-viewport (class is-fullscreen), overlays and
+// all, so every control stays in reach.
 import LocalizedText from '../LocalizedText.astro';
 import { getDefaultString } from '../../utils/localization';
 import type { ModelStrings } from '../../scripts/model_viewer/strings';
+import type { ViewName } from '../../scripts/robot/hitbox_area/views';
+import type { LocalizationKey } from '../../types/localization';
 
 interface Props {
   strings: ModelStrings;
 }
 
 const { strings } = Astro.props;
+
+const modes = [
+  { mode: '3d', label: strings.mode3d, pressed: true },
+  { mode: '2d', label: strings.mode2d, pressed: false },
+];
+const views: { view: ViewName; label: LocalizationKey }[] = [
+  { view: 'front', label: strings.viewFront },
+  { view: 'back', label: strings.viewBack },
+  { view: 'left', label: strings.viewLeft },
+  { view: 'right', label: strings.viewRight },
+  { view: 'top', label: strings.viewTop },
+];
 ---
 
 <div id="model-viewport" class="model-viewport">
@@ -32,7 +49,7 @@ const { strings } = Astro.props;
       <LocalizedText tag="span" localizationKey={strings.loadingViewer} />
     </div>
   </div>
-  <div class="model-overlay-start">
+  <div class="model-overlay model-overlay-start">
     <div class="model-view-toggles">
       <label class="model-check">
         <input type="checkbox" id="model-mesh" checked />
@@ -69,7 +86,7 @@ const { strings } = Astro.props;
   <button
     type="button"
     id="model-fullscreen"
-    class="model-icon-btn model-fullscreen-btn"
+    class="model-overlay model-icon-btn model-fullscreen-btn"
     aria-label={getDefaultString(strings.fullscreenEnter)}
     title={getDefaultString(strings.fullscreenEnter)}
     hidden
@@ -91,6 +108,48 @@ const { strings } = Astro.props;
       <path d="M9 4v5H4M20 9h-5V4M15 20v-5h5M4 15h5v5"></path>
     </svg>
   </button>
+  <div class="model-overlay model-camera-bar">
+    <div
+      id="model-mode-buttons"
+      class="wrf-toggle wrf-toggle--sm"
+      role="group"
+      aria-label={getDefaultString(strings.cameraMode)}
+      data-model-aria-label="cameraMode"
+    >
+      {
+        modes.map(({ mode, label, pressed }) => (
+          <button
+            type="button"
+            class="wrf-toggle__btn"
+            data-mode={mode}
+            aria-pressed={String(pressed)}
+          >
+            <LocalizedText tag="span" localizationKey={label} />
+          </button>
+        ))
+      }
+    </div>
+    <div
+      id="model-view-buttons"
+      class="wrf-toggle wrf-toggle--sm"
+      role="group"
+      aria-label={getDefaultString(strings.cameraSide)}
+      data-model-aria-label="cameraSide"
+    >
+      {
+        views.map(({ view, label }) => (
+          <button
+            type="button"
+            class="wrf-toggle__btn"
+            data-view={view}
+            aria-pressed="false"
+          >
+            <LocalizedText tag="span" localizationKey={label} />
+          </button>
+        ))
+      }
+    </div>
+  </div>
 </div>
 <p id="model-status" class="model-status" aria-live="polite">
   <LocalizedText tag="span" localizationKey={strings.statusLoading} />
@@ -106,6 +165,7 @@ const { strings } = Astro.props;
     --model-inset-top: calc(0.75rem + env(safe-area-inset-top, 0px));
     --model-inset-left: calc(0.75rem + env(safe-area-inset-left, 0px));
     --model-inset-right: calc(0.75rem + env(safe-area-inset-right, 0px));
+    --model-inset-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
 
     display: flex;
     flex-direction: column;
@@ -214,6 +274,32 @@ const { strings } = Astro.props;
     display: flex;
     align-items: stretch;
     gap: 0.4rem;
+  }
+
+  /* Centered along the bottom; wraps to two rows on narrow screens. Only the
+     groups take pointer events, so the gaps still orbit the camera. */
+  .model-camera-bar {
+    position: absolute;
+    right: var(--model-inset-right, 0.5rem);
+    bottom: var(--model-inset-bottom, 0.5rem);
+    left: var(--model-inset-left, 0.5rem);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.4rem;
+    pointer-events: none;
+  }
+
+  .model-camera-bar .wrf-toggle {
+    pointer-events: auto;
+    background: color-mix(in srgb, var(--wrf-surface) 85%, transparent);
+  }
+
+  /* Touch: taller, wider buttons. */
+  @media (pointer: coarse) {
+    .model-camera-bar .wrf-toggle__btn {
+      padding: 0.6rem 0.75rem;
+    }
   }
 
   .model-view-toggles {

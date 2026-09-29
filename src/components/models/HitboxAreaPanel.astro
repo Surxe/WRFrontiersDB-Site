@@ -1,15 +1,13 @@
 ---
-// Hitbox area panel for the 3D model viewer. src/scripts/model_viewer switches
-// the camera from #hitbox-mode-buttons (3D / flat 2D) and #hitbox-view-buttons
-// (the side to look from; none pressed at a custom 3D angle), and renders one
-// card per health pool into #hitbox-area-pools (ui/area_panel.ts). While
+// Hitbox area panel for the 3D model viewer. src/scripts/model_viewer renders
+// one card per health pool into #hitbox-area-pools (ui/area_panel.ts); the
+// camera mode / side buttons it follows live over the viewport
+// (ModelViewport.astro). While
 // comparing builds it also fills #hitbox-compare: the headline and the metric
 // switch; the diff legend's swatches are colored from DIFF_COLORS (colors.ts).
 import LocalizedText from '../LocalizedText.astro';
 import { getDefaultString } from '../../utils/localization';
 import type { ModelStrings } from '../../scripts/model_viewer/strings';
-import type { ViewName } from '../../scripts/robot/hitbox_area/views';
-import type { LocalizationKey } from '../../types/localization';
 
 interface Props {
   strings: ModelStrings;
@@ -17,17 +15,6 @@ interface Props {
 
 const { strings } = Astro.props;
 
-const modes = [
-  { mode: '3d', label: strings.mode3d, pressed: true },
-  { mode: '2d', label: strings.mode2d, pressed: false },
-];
-const views: { view: ViewName; label: LocalizationKey }[] = [
-  { view: 'front', label: strings.viewFront },
-  { view: 'back', label: strings.viewBack },
-  { view: 'left', label: strings.viewLeft },
-  { view: 'right', label: strings.viewRight },
-  { view: 'top', label: strings.viewTop },
-];
 const metrics = [
   { metric: 'withWeapons', label: strings.withWeapons, pressed: true },
   { metric: 'alone', label: strings.alone, pressed: false },
@@ -56,48 +43,6 @@ const notes = [
       id="hitbox-area-title"
       localizationKey={strings.hitboxArea}
     />
-    <div class="hitbox-view-controls">
-      <div
-        id="hitbox-mode-buttons"
-        class="wrf-toggle wrf-toggle--sm"
-        role="group"
-        aria-label={getDefaultString(strings.cameraMode)}
-        data-model-aria-label="cameraMode"
-      >
-        {
-          modes.map(({ mode, label, pressed }) => (
-            <button
-              type="button"
-              class="wrf-toggle__btn"
-              data-mode={mode}
-              aria-pressed={String(pressed)}
-            >
-              <LocalizedText tag="span" localizationKey={label} />
-            </button>
-          ))
-        }
-      </div>
-      <div
-        id="hitbox-view-buttons"
-        class="wrf-toggle wrf-toggle--sm"
-        role="group"
-        aria-label={getDefaultString(strings.cameraSide)}
-        data-model-aria-label="cameraSide"
-      >
-        {
-          views.map(({ view, label }) => (
-            <button
-              type="button"
-              class="wrf-toggle__btn"
-              data-view={view}
-              aria-pressed="false"
-            >
-              <LocalizedText tag="span" localizationKey={label} />
-            </button>
-          ))
-        }
-      </div>
-    </div>
   </div>
 
   <div id="hitbox-compare" class="hitbox-compare" hidden>
@@ -182,12 +127,6 @@ const notes = [
   .hitbox-area-head :global(h2) {
     margin: 0;
     font-size: 1rem;
-  }
-
-  .hitbox-view-controls {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem 1rem;
   }
 
   .hitbox-compare {
