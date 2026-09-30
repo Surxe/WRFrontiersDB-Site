@@ -1,0 +1,39 @@
+name: Set up site
+description: Check out game data, install dependencies, and generate the slug map
+
+inputs:
+  data-repo-pat:
+    description: PAT with read access to Surxe/WRFrontiersDB-Data
+    required: true
+
+runs:
+  using: composite
+  steps:
+    # Checkout data repo (uses PAT ONLY for this step)
+    - name: Checkout Data Repo
+      uses: actions/checkout@v4
+      with:
+        repository: Surxe/WRFrontiersDB-Data
+        token: ${{ inputs.data-repo-pat }}
+        path: WRFrontiersDB-Data
+        ref: main
+
+    - name: Symlink WRFrontiersDB-Data to public
+      shell: bash
+      run: ln -s ../WRFrontiersDB-Data public/WRFrontiersDB-Data
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: npm
+
+    - name: Install dependencies
+      shell: bash
+      run: npm ci
+
+    # slug_map.json is a generated build input (gitignored); the slug collision
+    # test and astro build both read it, so produce it live first.
+    - name: Generate slug map
+      shell: bash
+      run: npm run build:slugs

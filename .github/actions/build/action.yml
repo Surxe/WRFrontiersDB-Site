@@ -1,0 +1,16 @@
+name: Build site
+description: Build the Astro site and upload it as the GitHub Pages artifact
+
+runs:
+  using: composite
+  steps:
+    - name: Build
+      shell: bash
+      run: npm run build
+      env:
+        CUSTOM_DOMAIN: 'true'
+
+    - name: Upload Pages artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: dist

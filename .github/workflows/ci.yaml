@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One run per ref; a newer push supersedes an in-flight run (incl. its deploy).
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # check -> test -> build share one checkout + npm ci instead of three.
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout site repo (uses GITHUB_TOKEN); submodules pulls WRFrontiersDB-Design
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: ./.github/actions/setup
+        with:
+          data-repo-pat: ${{ secrets.DATA_REPO_PAT }}
+
+      - uses: ./.github/actions/check
+
+      - uses: ./.github/actions/test
+
+      # Build only when deploying; PRs stop after check + test to stay fast.
+      - uses: ./.github/actions/build
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+
+  deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    needs: ci
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - uses: actions/deploy-pages@v4
