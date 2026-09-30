@@ -1,0 +1,17 @@
+name: Lint and format check
+description: Run eslint, the style lint, and the prettier format check
+
+runs:
+  using: composite
+  steps:
+    - name: Run lint
+      shell: bash
+      run: npm run lint
+
+    - name: Run style lint (raw chrome hex)
+      shell: bash
+      run: npm run lint:styles
+
+    - name: Run format check
+      shell: bash
+      run: npm run format:check
