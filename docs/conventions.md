@@ -30,7 +30,7 @@ Example: [modules/[slug].astro](../src/pages/modules/[slug].astro)
 - Site localization data exists in `public/locales/` directory
 - Meta descriptions live in `src/utils/meta_description.ts`. Each object type has a body builder (`pilotMetaBody`, `pilotTalentMetaBody`, `moduleMetaBody`, or `templateMetaBody` for Web_UI templates) that returns the body for one language
 - `precomputeMetaBodies(buildBody)` runs a builder for every language (empty bodies fall back to English); the `generate*LocalizedMetaDescriptions()` wrappers do this per type
-- Stat-bearing text goes through `statEmbeddedText()`: localized per language, stats embedded at level 1, markup stripped
+- Stat-bearing text goes through `statEmbeddedText()`: localized per language, stats embedded at a given level (modules use their top level, as the page does), markup stripped
 - Templates support variable embedding: `{variable_name}` replaced with object data
 - Each language gets separate `<meta name="description" lang="{lang}">` tag in HTML head; the unlabelled description and og/twitter tags (what link embeds read) carry the English body
 

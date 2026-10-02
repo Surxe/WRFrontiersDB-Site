@@ -150,28 +150,30 @@ export function generatePilotLocalizedMetaDescriptions(
 }
 
 /**
- * Module body: the same text the module page leads with, stats at level 1.
- * That is the module's own description, or else one line per ability. Ability
- * lines are prefixed with the ability name except on chassis, whose abilities
- * (dash, jump) read fine on their own. Modules with neither (weapons,
- * shoulders) use the generic module template.
+ * Module body: the same text the module page leads with, stats at `level`
+ * (the page's initial level). That is the module's own description, or else
+ * one line per ability, prefixed with the ability name. Chassis (whose
+ * abilities are the same dash and jump on every robot) and modules with no
+ * text (weapons, shoulders) use the generic module template.
  */
 export function moduleMetaBody(
   module: Module,
   statValueChoices: StatValueChoices,
-  abilityStats: ModuleAbilityRenderData[]
+  abilityStats: ModuleAbilityRenderData[],
+  level = 0
 ): MetaBodyBuilder {
-  const showsAbilities = abilityStats.length > 0 && !!module.abilities_scalars;
-  const isChassis =
-    getCoreModuleCategory(module)?.id === MODULE_CATEGORY_IDS.chassis;
   const fallback = templateMetaBody('Module_Meta_Description', {
     name: module.name ?? module.id,
   });
+  if (getCoreModuleCategory(module)?.id === MODULE_CATEGORY_IDS.chassis) {
+    return fallback;
+  }
+  const showsAbilities = abilityStats.length > 0 && !!module.abilities_scalars;
 
   return (lang) => {
     if (module.description && !showsAbilities) {
       return (
-        statEmbeddedText(module.description, statValueChoices, lang) ||
+        statEmbeddedText(module.description, statValueChoices, lang, level) ||
         fallback(lang)
       );
     }
@@ -181,9 +183,10 @@ export function moduleMetaBody(
             const text = statEmbeddedText(
               ability.description,
               abilityChoices,
-              lang
+              lang,
+              level
             );
-            const name = isChassis ? '' : localizeText(ability.name, lang);
+            const name = localizeText(ability.name, lang);
             return name && text ? `${name}: ${text}` : text;
           })
           .filter((line) => line)
@@ -196,10 +199,11 @@ export function moduleMetaBody(
 export function generateModuleLocalizedMetaDescriptions(
   module: Module,
   statValueChoices: StatValueChoices,
-  abilityStats: ModuleAbilityRenderData[]
+  abilityStats: ModuleAbilityRenderData[],
+  level = 0
 ): LocalizedDescription[] {
   return precomputeMetaBodies(
-    moduleMetaBody(module, statValueChoices, abilityStats)
+    moduleMetaBody(module, statValueChoices, abilityStats, level)
   );
 }
 
