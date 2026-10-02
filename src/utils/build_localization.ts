@@ -109,8 +109,7 @@ export function generatePilotTalentLocalizedMetaDescriptions(
 }
 
 /**
- * Build the shared pilot-talent embed set used by both the pilot meta
- * description and the pilot share text.
+ * Build the pilot-talent embed set used by the pilot meta description.
  *
  * Extracts the first talent of levels 1-5 (keyed talent1..talent5) plus the
  * pilot name, and — for hero pilots — the level-5 talent type (talent5_type).
@@ -193,66 +192,6 @@ export function generatePilotLocalizedMetaDescriptions(
   }
 
   return results;
-}
-
-/** Separator between talents within a single level's line. */
-const SHARE_TALENT_SEPARATOR = ', ';
-
-/**
- * Build the localized pilot share text for a single language: the pilot's full
- * name (bold) followed by one `L#:` line per level listing that level's
- * talents. The page URL is appended client-side as a "Full descriptions" link
- * (see buildSharePayload in public/js/share_button.js), so this text is
- * names-only and stays compact even for legendary pilots.
- *
- * Standard pilots yield 5 level lines (one talent each); legendary pilots yield
- * the full set (e.g. 3 talents on levels 1-4 and 1 on level 5).
- */
-function buildPilotShareText(
-  pilot: Pilot,
-  pilotTalents: Record<string, PilotTalent>,
-  lang: string
-): string {
-  // Full display name (first + optional second), matching the page heading.
-  const nameKeys = [pilot.first_name, pilot.second_name].filter(
-    (key): key is LocalizationKey => Boolean(key)
-  );
-  const name = localizeText(nameKeys, lang);
-
-  // One line per level, labelled by its 1-based level number so the grouping is
-  // explicit. Levels without talents are dropped, but the label reflects the
-  // pilot's actual level, not the filtered position.
-  const levelLines = (pilot.levels ?? [])
-    .map((level, i) => {
-      const talents = (level.talents_refs ?? [])
-        .map((ref) => {
-          const talent = pilotTalents[refToId(ref)];
-          return talent ? localizeText(talent.name, lang) : '';
-        })
-        .filter((talentName) => talentName)
-        .join(SHARE_TALENT_SEPARATOR);
-      return talents ? `L${i + 1}: ${talents}` : '';
-    })
-    .filter((line) => line);
-
-  return [`**${name}**`, ...levelLines].join('\n');
-}
-
-/**
- * Generate a per-language pilot "share text" — the pilot's name plus every
- * talent, grouped by level. Pre-generated for every supported language (talent
- * and pilot names localized from game data), mirroring how meta descriptions
- * are pre-generated, so the share button can pick the text for the user's
- * selected language client-side.
- */
-export function generatePilotLocalizedShareTexts(
-  pilot: Pilot,
-  pilotTalents: Record<string, PilotTalent>
-): { lang: string; text: string }[] {
-  return Object.keys(langs).map((lang) => ({
-    lang,
-    text: buildPilotShareText(pilot, pilotTalents, lang),
-  }));
 }
 
 /**
