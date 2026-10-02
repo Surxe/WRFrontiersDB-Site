@@ -1,6 +1,6 @@
 import type { LocalizationKey } from '../types/localization';
 import type { StatValueChoices } from '../types/stat';
-import { processLocalizedTextWithStats } from './stat_formatting';
+import { replaceStatPlaceholders } from './stat_formatting';
 import {
   resolveLocalizedEmbeds,
   resolveLocalizationKey,
@@ -69,96 +69,46 @@ export function generateTemplateMetaDescriptions(
   return precomputeMetaBodies(templateMetaBody(templateKey, embeds), fallback);
 }
 
-const PILOT_TALENT_TEMPLATE_LIMIT = 5;
-
 /**
- * Generate localized pilot talent meta descriptions using the embedment system
+ * Localize `text` into `lang` and fill its `{stat}` placeholders from the given
+ * stat choice (level), as plain text: no markup, whitespace collapsed.
  */
-export function generatePilotTalentLocalizedMetaDescriptions(
-  talent: PilotTalent,
+export function statEmbeddedText(
+  text: LocalizationKey | undefined,
   statValueChoices: StatValueChoices,
-  allPilots: Record<string, Pilot>
-): { lang: string; description: string }[] {
-  const supportedLangs = Object.keys(langs);
-  const results: { lang: string; description: string }[] = [];
-
-  // Get the number of pilots with this talent
-  const pilotCount = talent.pilots_with_this_talent?.length || 0;
-
-  // Determine which template to use
-  let templateKey: string;
-  if (pilotCount === 0) {
-    // Fallback to basic description if no pilots
-    templateKey = 'PilotTalent_Meta_Description_1';
-  } else if (pilotCount === 1) {
-    templateKey = 'PilotTalent_Meta_Description_1';
-  } else if (pilotCount === 2) {
-    templateKey = 'PilotTalent_Meta_Description_2';
-  } else if (pilotCount === 3) {
-    templateKey = 'PilotTalent_Meta_Description_3';
-  } else if (pilotCount === 4) {
-    templateKey = 'PilotTalent_Meta_Description_4';
-  } else if (pilotCount === PILOT_TALENT_TEMPLATE_LIMIT) {
-    templateKey = 'PilotTalent_Meta_Description_5';
-  } else {
-    templateKey = 'PilotTalent_Meta_Description_More';
-  }
-
-  // Resolve template key using the same pattern as pilot function
-  const resolvedTemplateKey = resolveLocalizationKey(templateKey, 'Web_UI');
-
-  for (const lang of supportedLangs) {
-    const locData = loadLocalizationData(lang);
-    if (!locData) continue;
-
-    // Get talent description with embedded stats
-    const talentDescriptionWithStats = processLocalizedTextWithStats(
-      talent.description,
+  lang: string,
+  choice = 0
+): string {
+  const locData = loadLocalizationData(lang);
+  let localized = localizeText(text, lang);
+  if (locData) {
+    localized = replaceStatPlaceholders(
+      localized,
       statValueChoices,
-      0, // Use choice 0 for meta descriptions (default stat values)
-      locData,
-      false // Don't wrap in HTML tags for meta descriptions
-    );
-
-    // Clean up any remaining HTML tags and normalize whitespace
-    const cleanDescription = talentDescriptionWithStats
-      .replace(/<[^>]*>/g, '') // Remove HTML tags
-      .replace(/\s+/g, ' ') // Normalize whitespace
-      .trim();
-
-    // Build embeds object
-    const embeds: Record<string, LocalizationKey | string> = {
-      TalentName: talent.name,
-      TalentDescriptionWithStats: cleanDescription,
-    };
-
-    // Add pilot names to embeds
-    const maxPilots = Math.min(pilotCount, PILOT_TALENT_TEMPLATE_LIMIT);
-    if (talent.pilots_with_this_talent) {
-      for (let i = 0; i < maxPilots; i++) {
-        const pilotRef = talent.pilots_with_this_talent[i].pilot_ref;
-        const pilot = allPilots[refToId(pilotRef)];
-        if (pilot) {
-          embeds[`pilot${i + 1}`] = pilot.first_name;
-        }
-      }
-    }
-
-    // Resolve the final template with all embeds
-    const description = resolveLocalizedEmbeds(
-      resolvedTemplateKey,
-      embeds,
+      choice,
       locData
     );
-
-    // Apply length limit for SEO
-    results.push({
-      lang,
-      description: description.substring(0, 160),
-    });
   }
+  return localized
+    .replace(/<[^>]*>/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
 
-  return results;
+/** Pilot talent body: its description with stat values embedded. */
+export function pilotTalentMetaBody(
+  talent: PilotTalent,
+  statValueChoices: StatValueChoices
+): MetaBodyBuilder {
+  return (lang) => statEmbeddedText(talent.description, statValueChoices, lang);
+}
+
+/** Pilot talent: precomputed {@link pilotTalentMetaBody} for every language. */
+export function generatePilotTalentLocalizedMetaDescriptions(
+  talent: PilotTalent,
+  statValueChoices: StatValueChoices
+): LocalizedDescription[] {
+  return precomputeMetaBodies(pilotTalentMetaBody(talent, statValueChoices));
 }
 
 /** Separator between the talents on one level of a pilot's talent list. */
