@@ -12,7 +12,11 @@ import type { CharacterPreset } from '../types/character_preset';
 import type { Currency } from '../types/currency';
 import type { CharacterClass } from '../types/character_class';
 import type { VirtualBot } from '../types/virtual_bot';
+import type { Module } from '../types/module';
+import type { ModuleAbilityRenderData } from './stat';
 import { refToId } from './object_reference';
+import { getCoreModuleCategory } from './core_modules';
+import { MODULE_CATEGORY_IDS } from './constants';
 import langs from '../../public/langs.json';
 
 /** One precomputed meta description body, for a single language. */
@@ -143,6 +147,60 @@ export function generatePilotLocalizedMetaDescriptions(
   pilotTalents: Record<string, PilotTalent>
 ): LocalizedDescription[] {
   return precomputeMetaBodies(pilotMetaBody(pilot, pilotTalents));
+}
+
+/**
+ * Module body: the same text the module page leads with, stats at level 1.
+ * That is the module's own description, or else one line per ability. Ability
+ * lines are prefixed with the ability name except on chassis, whose abilities
+ * (dash, jump) read fine on their own. Modules with neither (weapons,
+ * shoulders) use the generic module template.
+ */
+export function moduleMetaBody(
+  module: Module,
+  statValueChoices: StatValueChoices,
+  abilityStats: ModuleAbilityRenderData[]
+): MetaBodyBuilder {
+  const showsAbilities = abilityStats.length > 0 && !!module.abilities_scalars;
+  const isChassis =
+    getCoreModuleCategory(module)?.id === MODULE_CATEGORY_IDS.chassis;
+  const fallback = templateMetaBody('Module_Meta_Description', {
+    name: module.name ?? module.id,
+  });
+
+  return (lang) => {
+    if (module.description && !showsAbilities) {
+      return (
+        statEmbeddedText(module.description, statValueChoices, lang) ||
+        fallback(lang)
+      );
+    }
+    const lines = showsAbilities
+      ? abilityStats
+          .map(({ ability, statValueChoices: abilityChoices }) => {
+            const text = statEmbeddedText(
+              ability.description,
+              abilityChoices,
+              lang
+            );
+            const name = isChassis ? '' : localizeText(ability.name, lang);
+            return name && text ? `${name}: ${text}` : text;
+          })
+          .filter((line) => line)
+      : [];
+    return lines.join('\n') || fallback(lang);
+  };
+}
+
+/** Module: precomputed {@link moduleMetaBody} for every language. */
+export function generateModuleLocalizedMetaDescriptions(
+  module: Module,
+  statValueChoices: StatValueChoices,
+  abilityStats: ModuleAbilityRenderData[]
+): LocalizedDescription[] {
+  return precomputeMetaBodies(
+    moduleMetaBody(module, statValueChoices, abilityStats)
+  );
 }
 
 /**

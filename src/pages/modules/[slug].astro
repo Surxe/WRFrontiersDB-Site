@@ -18,7 +18,7 @@ import {
   generateSlugBasedStaticPaths,
 } from '../../utils/parse_object';
 import { getDefaultString } from '../../utils/localization';
-import { generateTemplateMetaDescriptions } from '../../utils/meta_description';
+import { generateModuleLocalizedMetaDescriptions } from '../../utils/meta_description';
 import { resolveObjectRef } from '../../utils/object_resolver';
 import type { ModuleStat } from '../../types/module';
 import {
@@ -110,10 +110,10 @@ if (!module.name) {
 const defaultName = getDefaultString(module.name) || module.id;
 
 // Generate localized meta descriptions
-const localizedDescriptions = generateTemplateMetaDescriptions(
-  { Key: 'Module_Meta_Description', TableNamespace: 'Web_UI' },
-  { name: module.name! },
-  defaultName
+const localizedDescriptions = generateModuleLocalizedMetaDescriptions(
+  module,
+  statValueChoices,
+  abilityStats
 );
 
 // Core Module Factory Bots logic
