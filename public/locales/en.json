@@ -43,7 +43,7 @@
     "Breadcrumb_Models": "3D Models",
     "Models_Title": "3D Models",
     "Models_Meta_Description": "Build any War Robots: Frontiers robot part by part and view its live hitbox and untextured model.",
-    "Models_Intro": "Build any robot part by part: pick a chassis, then its torso, each shoulder, and a weapon for every mount slot. Each part's slots appear once the part is placed, just like in the hangar. Your build is always reflected in the URL, so you can copy it to share an exact loadout.",
+    "Models_Intro": "Pick a chassis, torso, shoulders and weapons to see any robot's model and hitboxes, or compare two builds to see how their hitbox areas differ.",
     "Models_Controls_Hint": "Drag to orbit, right-drag to pan, scroll to zoom.",
     "Models_Viewer_Label": "3D model viewer",
     "Models_View_Robot_Link": "View this robot in the 3D model viewer",
