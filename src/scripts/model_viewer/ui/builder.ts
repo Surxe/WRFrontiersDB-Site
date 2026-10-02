@@ -78,21 +78,47 @@ export function slotLabel(
   return { label: typeText || slot.socketName, hint: null };
 }
 
-/** The picker's options, grouped by robot / titan where a slot mixes both
+/** Modules placed in the build's other slots. */
+export function equippedElsewhere(
+  build: ResolvedBuild,
+  slot: BuildSlot
+): Set<string> {
+  return new Set(
+    build.slots.flatMap((s) =>
+      s.key !== slot.key && s.moduleId !== null ? [s.moduleId] : []
+    )
+  );
+}
+
+/** The picker's options: those already equipped in another slot first (moved,
+ * not copied), then the rest, grouped by robot / titan where a slot mixes both
  * (the chassis list); an optional slot starts with "Empty". */
-function optionGroups(
+export function optionGroups(
   slot: BuildSlot,
-  ctx: BuilderContext
+  equipped: ReadonlySet<string>,
+  ctx: Pick<BuilderContext, 'tables' | 'text'>
 ): PickerGroup<string | null>[] {
-  const robots = slot.options.filter((id) => !isTitanModule(id, ctx.tables));
-  const titans = slot.options.filter((id) => isTitanModule(id, ctx.tables));
+  const top = slot.options.filter((id) => equipped.has(id));
+  const rest = slot.options.filter((id) => !equipped.has(id));
+  const robots = rest.filter((id) => !isTitanModule(id, ctx.tables));
+  const titans = rest.filter((id) => isTitanModule(id, ctx.tables));
   const groups: PickerGroup<string | null>[] =
     robots.length > 0 && titans.length > 0
       ? [
           { label: ctx.text.t('robots'), options: robots },
           { label: ctx.text.t('titans'), options: titans },
         ]
-      : [{ label: null, options: slot.options }];
+      : rest.length > 0
+        ? [
+            {
+              label: top.length > 0 ? ctx.text.t('otherParts') : null,
+              options: rest,
+            },
+          ]
+        : [];
+  if (top.length > 0) {
+    groups.unshift({ label: ctx.text.t('equipped'), options: top });
+  }
   return slot.required ? groups : [{ label: null, options: [null] }, ...groups];
 }
 
@@ -136,13 +162,14 @@ function partRenderer(
 
 function buildRow(
   slot: BuildSlot,
+  build: ResolvedBuild,
   ctx: BuilderContext,
   signal: AbortSignal
 ): HTMLElement {
   const fixed = slot.fixed && slot.options.length <= 1;
   const picker = createPicker<string | null>({
     id: pickerId(slot.key, ctx.idPrefix),
-    groups: optionGroups(slot, ctx),
+    groups: optionGroups(slot, equippedElsewhere(build, slot), ctx),
     selected: slot.moduleId,
     render: partRenderer(slot, ctx),
     onChange: (moduleId) => ctx.onSelect(slot.key, moduleId),
@@ -220,7 +247,9 @@ export function renderBuilder(
   const render = new AbortController();
   renders.set(container, render);
   container.replaceChildren(
-    ...displaySlots(build).map((slot) => buildRow(slot, ctx, render.signal))
+    ...displaySlots(build).map((slot) =>
+      buildRow(slot, build, ctx, render.signal)
+    )
   );
 
   if (focusedKey) {
