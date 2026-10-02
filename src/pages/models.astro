@@ -8,7 +8,7 @@ import ModelViewport from '../components/models/ModelViewport.astro';
 import HitboxAreaPanel from '../components/models/HitboxAreaPanel.astro';
 import ModelPartRefs from '../components/models/ModelPartRefs.astro';
 import { getModelsBreadcrumbs } from '../utils/breadcrumb';
-import { generateSimpleLocalizedMetaDescriptions } from '../utils/build_localization';
+import { generateTemplateMetaDescriptions } from '../utils/meta_description';
 import {
   getDefaultString,
   resolveLocalizationKeys,
@@ -17,7 +17,7 @@ import { MODEL_STRINGS } from '../scripts/model_viewer/strings';
 
 const strings = resolveLocalizationKeys(MODEL_STRINGS);
 const description = getDefaultString(strings.metaDescription);
-const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
+const localizedDescriptions = generateTemplateMetaDescriptions(
   strings.metaDescription,
   {},
   getDefaultString(strings.title) ?? 'Models'

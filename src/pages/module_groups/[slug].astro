@@ -9,7 +9,7 @@ import {
   generateSlugBasedStaticPaths,
   getParseObject,
 } from '../../utils/parse_object';
-import { generateSimpleLocalizedMetaDescriptions } from '../../utils/build_localization';
+import { generateTemplateMetaDescriptions } from '../../utils/meta_description';
 import { getModuleGroupDetailBreadcrumbs } from '../../utils/breadcrumb';
 import { prepareObjectList } from '../../utils/list';
 import type { Module } from '../../types/module';
@@ -56,7 +56,7 @@ const filteredModules = prepareObjectList(Object.fromEntries(allGroupModules), {
 });
 
 // Generate localized meta descriptions
-const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
+const localizedDescriptions = generateTemplateMetaDescriptions(
   { Key: 'ModuleGroup_Meta_Description', TableNamespace: 'Web_UI' },
   {
     groupName: group.name,

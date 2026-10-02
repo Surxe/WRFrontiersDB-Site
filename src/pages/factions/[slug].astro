@@ -11,7 +11,7 @@ import {
 } from '../../utils/parse_object';
 import { getDefaultString } from '../../utils/localization';
 import { getFactionDetailBreadcrumbs } from '../../utils/breadcrumb';
-import { generateSimpleLocalizedMetaDescriptions } from '../../utils/build_localization';
+import { generateTemplateMetaDescriptions } from '../../utils/meta_description';
 import FactionsNavBox from '../../components/nav/FactionsNavBox.astro';
 
 export async function getStaticPaths() {
@@ -27,7 +27,7 @@ const faction = getParseObject<Faction>(id, 'Objects/Faction.json');
 const defaultName = getDefaultString(faction.name) || faction.id;
 
 // Generate localized meta descriptions
-const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
+const localizedDescriptions = generateTemplateMetaDescriptions(
   { Key: 'Faction_Meta_Description', TableNamespace: 'Web_UI' },
   { name: faction.name },
   defaultName
