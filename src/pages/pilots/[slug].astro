@@ -26,11 +26,7 @@ import { refToId } from '../../utils/object_reference';
 import ObjRef from '../../components/obj_ref/ObjRef.astro';
 import TalentDisplay from '../../components/pilot/TalentDisplay.astro';
 import CurrencyAmount from '../../components/CurrencyAmount.astro';
-import {
-  generatePilotLocalizedMetaDescriptions,
-  generatePilotLocalizedShareTexts,
-} from '../../utils/build_localization';
-import ShareButton from '../../components/ShareButton.astro';
+import { generatePilotLocalizedMetaDescriptions } from '../../utils/meta_description';
 import PilotsNavBox from '../../components/nav/PilotsNavBox.astro';
 import { PILOT_TYPE_LEGENDARY_REF } from '../../utils/constants';
 import { getPilotDetailBreadcrumbs } from '../../utils/breadcrumb';
@@ -81,13 +77,6 @@ const defaultName = getDefaultString(pilot.first_name) || pilot.id;
 
 const localizedDescriptions = generatePilotLocalizedMetaDescriptions(
   pilot,
-  pilotTalents,
-  pilotTalentTypes,
-  defaultName
-);
-
-const localizedShareTexts = generatePilotLocalizedShareTexts(
-  pilot,
   pilotTalents
 );
 
@@ -108,8 +97,6 @@ const objRefData = getObjRefData(pilot);
         : [objRefData.text]}
     />
   </h1>
-
-  <ShareButton id={pilot.id} texts={localizedShareTexts} />
 
   <LocalizedText id="pilot-bio" tag="p" localizationKey={pilot.bio} />
 

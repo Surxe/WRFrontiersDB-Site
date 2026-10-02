@@ -14,7 +14,7 @@ import {
 } from '../../utils/parse_object';
 import { getDefaultString } from '../../utils/localization';
 import { getStatValueChoices } from '../../utils/stat';
-import { generatePilotTalentLocalizedMetaDescriptions } from '../../utils/build_localization';
+import { generatePilotTalentLocalizedMetaDescriptions } from '../../utils/meta_description';
 import ObjRef from '../../components/obj_ref/ObjRef.astro';
 import { refToId } from '../../utils/object_reference';
 import '../../styles/pilots.css';
@@ -54,8 +54,7 @@ const defaultName = getDefaultString(pilotTalent.name) || pilotTalent.id;
 // Generate localized meta descriptions for all supported languages
 const localizedDescriptions = generatePilotTalentLocalizedMetaDescriptions(
   pilotTalent,
-  statValueChoices,
-  pilots
+  statValueChoices
 );
 ---
 

@@ -9,6 +9,8 @@ export interface Props {
   localizationKey: LocalizationKey;
   statValueChoices: StatValueChoices;
   stripColorMarkup?: boolean;
+  /** Stat choice (level index) shown first. */
+  initialChoice?: number;
 }
 
 const {
@@ -17,6 +19,7 @@ const {
   localizationKey,
   statValueChoices,
   stripColorMarkup = false,
+  initialChoice = 0,
 } = Astro.props;
 const Tag = tag as any;
 
@@ -57,7 +60,7 @@ Creates an html element with localization data attributes and stat replacement d
       data-loc-key={key}
       data-loc-namespace={namespace}
       data-stat-value-choices={JSON.stringify(choiceMap)}
-      data-current-choice="0"
+      data-current-choice={String(initialChoice)}
       data-number-format="true"
       data-strip-color-markup={stripColorMarkup}
       data-loc-fallback={defaultText}

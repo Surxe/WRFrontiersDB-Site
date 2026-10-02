@@ -5,7 +5,7 @@ export interface VirtualBot extends ParseObject {
   parseObjectClass: 'VirtualBot';
   id: string;
   name: LocalizationKey;
-  character_type: string[];
+  character_type: string;
   /** The bot's own chassis / torso / shoulders (+ some default weapons). */
   core_module_refs: string[];
   factory_preset_refs: string[];

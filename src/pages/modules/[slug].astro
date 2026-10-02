@@ -18,7 +18,7 @@ import {
   generateSlugBasedStaticPaths,
 } from '../../utils/parse_object';
 import { getDefaultString } from '../../utils/localization';
-import { generateSimpleLocalizedMetaDescriptions } from '../../utils/build_localization';
+import { generateModuleLocalizedMetaDescriptions } from '../../utils/meta_description';
 import { resolveObjectRef } from '../../utils/object_resolver';
 import type { ModuleStat } from '../../types/module';
 import {
@@ -100,6 +100,8 @@ const abilityStats = getModuleAbilityStats(
 );
 
 const maxLevel = module.module_scalars?.levels?.variables?.length || 0;
+// Modules open at their top level; the meta description uses the same level.
+const initialLevel = Math.max(maxLevel - 1, 0);
 
 if (!module.name) {
   throw new Error(`Module with id ${id} is missing name. 
@@ -110,10 +112,11 @@ if (!module.name) {
 const defaultName = getDefaultString(module.name) || module.id;
 
 // Generate localized meta descriptions
-const localizedDescriptions = generateSimpleLocalizedMetaDescriptions(
-  { Key: 'Module_Meta_Description', TableNamespace: 'Web_UI' },
-  { name: module.name! },
-  defaultName
+const localizedDescriptions = generateModuleLocalizedMetaDescriptions(
+  module,
+  statValueChoices,
+  abilityStats,
+  initialLevel
 );
 
 // Core Module Factory Bots logic
@@ -180,9 +183,12 @@ const objRefData = getObjRefData(module);
             tag="p"
             localizationKey={module.description}
             statValueChoices={statValueChoices}
+            initialChoice={initialLevel}
           />
 
-          {maxLevel > 0 && <LevelSwitcher maxLevel={maxLevel} />}
+          {maxLevel > 0 && (
+            <LevelSwitcher maxLevel={maxLevel} initialLevel={initialLevel} />
+          )}
         </div>
       )
   }
@@ -247,6 +253,7 @@ const objRefData = getObjRefData(module);
                   tag="p"
                   localizationKey={abStat.ability.description}
                   statValueChoices={abStat.statValueChoices}
+                  initialChoice={initialLevel}
                 />
               )}
             </div>
@@ -254,7 +261,7 @@ const objRefData = getObjRefData(module);
         })}
 
         {maxLevel > 0 && (abilityStats.length > 1 || !module.description) && (
-          <LevelSwitcher maxLevel={maxLevel} />
+          <LevelSwitcher maxLevel={maxLevel} initialLevel={initialLevel} />
         )}
       </div>
     )

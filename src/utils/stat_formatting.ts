@@ -1,6 +1,5 @@
 import type { LocalizationKey, LocalizationData } from '../types/localization';
 import type { StatValueChoices } from '../types/stat';
-import { getDefaultString } from './localization';
 
 // Import shared stat formatting functions from public JavaScript module
 // Note: This is a build-time import that will be resolved during the build process
@@ -93,31 +92,4 @@ export function buildChoiceMap(statValueChoices: StatValueChoices): Record<
   }
 
   return choiceMap;
-}
-
-/**
- * Processes localized text with stat replacements
- * Combines localization lookup and stat replacement logic
- */
-export function processLocalizedTextWithStats(
-  localizationKey: LocalizationKey | undefined,
-  statValueChoices: StatValueChoices,
-  currentChoice: number,
-  locData: LocalizationData,
-  wrapInHtml: boolean = false
-): string {
-  let localizedText = getDefaultString(localizationKey) || '';
-
-  // Apply stat replacements if available
-  if (statValueChoices && Object.keys(statValueChoices).length > 0) {
-    localizedText = replaceStatPlaceholders(
-      localizedText,
-      statValueChoices,
-      currentChoice,
-      locData,
-      wrapInHtml
-    );
-  }
-
-  return localizedText;
 }

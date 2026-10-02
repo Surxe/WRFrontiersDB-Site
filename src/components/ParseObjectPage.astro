@@ -1,11 +1,12 @@
 ---
 import Page from './Page.astro';
 import type { LocalizationKey } from '../types/localization';
+import type { LocalizedDescription } from '../utils/meta_description';
 
 export interface Props {
   title?: string | LocalizationKey | LocalizationKey[];
   description?: string;
-  localizedDescriptions?: { lang: string; description: string }[];
+  localizedDescriptions?: LocalizedDescription[];
   metaImage?: string;
   url?: string;
   type?: string;

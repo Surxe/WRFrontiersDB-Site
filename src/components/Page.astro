@@ -6,6 +6,7 @@ import '../styles/page_header.css';
 import '../styles/global.css';
 import { localizeText } from '../utils/localization';
 import type { LocalizationKey } from '../types/localization';
+import type { LocalizedDescription } from '../utils/meta_description';
 import Footer from './Footer.astro';
 
 // Valid language codes — passed to the inline redirect script via define:vars
@@ -14,7 +15,7 @@ const validLangs = Object.keys(langs);
 export interface Props {
   title?: string | LocalizationKey | LocalizationKey[];
   description?: string;
-  localizedDescriptions?: { lang: string; description: string }[];
+  localizedDescriptions?: LocalizedDescription[];
   metaImage?: string;
   url?: string;
   type?: string;
@@ -23,7 +24,7 @@ export interface Props {
 
 const {
   title: rawTitle,
-  description,
+  description: explicitDescription,
   localizedDescriptions,
   metaImage,
   url,
@@ -32,6 +33,12 @@ const {
 } = Astro.props;
 
 const lang = Astro.url.searchParams.get('lang') || 'en';
+
+// Crawlers (link embeds, search) don't run JS or vary by ?lang=, so the
+// unlabelled description and og/twitter tags carry the English body.
+const description =
+  explicitDescription ??
+  localizedDescriptions?.find((d) => d.lang === 'en')?.description;
 const title =
   typeof rawTitle === 'string' ? rawTitle : localizeText(rawTitle, lang);
 
