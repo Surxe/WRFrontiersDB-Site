@@ -28,11 +28,11 @@ Example: [modules/[slug].astro](../src/pages/modules/[slug].astro)
 - `en` value used as default/fallback text in SSR HTML
 - Game localization data exists in `WRFrontiersDB-Data/current/Localization/` directory
 - Site localization data exists in `public/locales/` directory
-- Site localization includes Web_UI section with meta description templates for SEO
-- Meta descriptions generated server-side for each language using embedment system
-- Functions like `generatePilotLocalizedMetaDescriptions()` create localized meta tags
+- Meta descriptions live in `src/utils/meta_description.ts`. Each object type has a body builder (`pilotMetaBody`, `pilotTalentMetaBody`, `moduleMetaBody`, or `templateMetaBody` for Web_UI templates) that returns the body for one language
+- `precomputeMetaBodies(buildBody)` runs a builder for every language (empty bodies fall back to English); the `generate*LocalizedMetaDescriptions()` wrappers do this per type
+- Stat-bearing text goes through `statEmbeddedText()`: localized per language, stats embedded at level 1, markup stripped
 - Templates support variable embedding: `{variable_name}` replaced with object data
-- Each language gets separate `<meta name="description" lang="{lang}">` tag in HTML head
+- Each language gets separate `<meta name="description" lang="{lang}">` tag in HTML head; the unlabelled description and og/twitter tags (what link embeds read) carry the English body
 
 ### Client-side (runtime)
 
