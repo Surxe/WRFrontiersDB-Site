@@ -5,6 +5,7 @@ import {
   resolveLocalizedEmbeds,
   resolveLocalizationKey,
   loadLocalizationData,
+  localizeText,
 } from './localization';
 import type { Pilot, PilotTalent, PilotTalentType } from '../types/pilot';
 import type { CharacterPreset } from '../types/character_preset';
@@ -12,7 +13,6 @@ import type { Currency } from '../types/currency';
 import type { CharacterClass } from '../types/character_class';
 import type { VirtualBot } from '../types/virtual_bot';
 import { refToId } from './object_reference';
-import { PILOT_TYPE_LEGENDARY_REF } from './constants';
 import langs from '../../public/langs.json';
 
 /** One precomputed meta description body, for a single language. */
@@ -161,90 +161,38 @@ export function generatePilotTalentLocalizedMetaDescriptions(
   return results;
 }
 
+/** Separator between the talents on one level of a pilot's talent list. */
+const PILOT_TALENT_SEPARATOR = ', ';
+
 /**
- * Build the pilot-talent embed set used by the pilot meta description.
- *
- * Extracts the first talent of levels 1-5 (keyed talent1..talent5) plus the
- * pilot name, and — for hero pilots — the level-5 talent type (talent5_type).
+ * Pilot body: every talent the pilot can learn, one `L#:` line per level, e.g.
+ * five single-talent lines for a standard pilot, or 3 talents on levels 1-4
+ * plus 1 on level 5 for a hero pilot. Levels without talents are skipped, but
+ * each label keeps the pilot's real level number.
  */
-function buildPilotTalentEmbeds(
+export function pilotMetaBody(
   pilot: Pilot,
-  pilotTalents: Record<string, PilotTalent>,
-  pilotTalentTypes: Record<string, PilotTalentType>
-): { embeds: Record<string, LocalizationKey>; isHero: boolean } {
-  const isHero = pilot.pilot_type_ref === PILOT_TYPE_LEGENDARY_REF;
-
-  const embeds: Record<string, LocalizationKey> = {
-    pilot_name: pilot.first_name,
-  };
-
-  // Extract talents for levels 1-5
-  for (let i = 0; i < 5; i++) {
-    const level = pilot.levels[i];
-    if (level && level.talents_refs && level.talents_refs.length > 0) {
-      const talentId = refToId(level.talents_refs[0]);
-      const talent = pilotTalents[talentId];
-      if (talent) {
-        embeds[`talent${i + 1}`] = talent.name;
-      }
-    }
-  }
-
-  // Add talent5_type for hero pilots
-  if (isHero) {
-    const level5 = pilot.levels[4];
-    if (level5) {
-      const typeId = refToId(level5.talent_type_ref);
-      const type = pilotTalentTypes[typeId];
-      if (type) {
-        embeds['talent5_type'] = type.name;
-      }
-    }
-  }
-
-  return { embeds, isHero };
+  pilotTalents: Record<string, PilotTalent>
+): MetaBodyBuilder {
+  return (lang) =>
+    (pilot.levels ?? [])
+      .map((level, i) => {
+        const talents = (level.talents_refs ?? [])
+          .map((ref) => localizeText(pilotTalents[refToId(ref)]?.name, lang))
+          .filter((name) => name)
+          .join(PILOT_TALENT_SEPARATOR);
+        return talents ? `L${i + 1}: ${talents}` : '';
+      })
+      .filter((line) => line)
+      .join('\n');
 }
 
-/**
- * Generate localized pilot descriptions using the embedment system
- */
+/** Pilot: precomputed {@link pilotMetaBody} for every language. */
 export function generatePilotLocalizedMetaDescriptions(
   pilot: Pilot,
-  pilotTalents: Record<string, PilotTalent>,
-  pilotTalentTypes: Record<string, PilotTalentType>,
-  _defaultName: string
-): { lang: string; description: string }[] {
-  const supportedLangs = Object.keys(langs);
-  const results: { lang: string; description: string }[] = [];
-
-  const { embeds, isHero } = buildPilotTalentEmbeds(
-    pilot,
-    pilotTalents,
-    pilotTalentTypes
-  );
-  const templateKey = resolveLocalizationKey(
-    isHero ? 'Pilot_Meta_Description_Hero' : 'Pilot_Meta_Description_Standard',
-    'Web_UI'
-  );
-
-  for (const lang of supportedLangs) {
-    const locData = loadLocalizationData(lang);
-    if (!locData) continue;
-
-    let description = resolveLocalizedEmbeds(templateKey, embeds, locData);
-
-    // Fallback to English template if localized template is empty or not found
-    if (!description && lang !== 'en') {
-      const enLocData = loadLocalizationData('en');
-      if (enLocData) {
-        description = resolveLocalizedEmbeds(templateKey, embeds, enLocData);
-      }
-    }
-
-    results.push({ lang, description });
-  }
-
-  return results;
+  pilotTalents: Record<string, PilotTalent>
+): LocalizedDescription[] {
+  return precomputeMetaBodies(pilotMetaBody(pilot, pilotTalents));
 }
 
 /**

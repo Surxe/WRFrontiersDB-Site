@@ -77,9 +77,7 @@ const defaultName = getDefaultString(pilot.first_name) || pilot.id;
 
 const localizedDescriptions = generatePilotLocalizedMetaDescriptions(
   pilot,
-  pilotTalents,
-  pilotTalentTypes,
-  defaultName
+  pilotTalents
 );
 
 const objRefData = getObjRefData(pilot);
