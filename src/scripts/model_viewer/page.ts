@@ -37,6 +37,7 @@ import {
 import type { ResolvedBuild } from '../robot/build/types';
 import { localizePage } from '../localization';
 import { ModelViewer } from './render/viewer';
+import { isCompareLayout, type CompareLayout } from './render/compare_layout';
 import {
   buildColors,
   cssHex,
@@ -114,6 +115,7 @@ function pageElements() {
     headline: requireElement('hitbox-compare-headline', HTMLElement),
     modeButtons: requireElement('model-mode-buttons', HTMLElement),
     viewButtons: requireElement('model-view-buttons', HTMLElement),
+    layoutButtons: requireElement('model-layout-buttons', HTMLElement),
     metricButtons: requireElement('hitbox-metric-buttons', HTMLElement),
     page: requireElement('model-page', HTMLElement),
     partRefs: document.getElementById('model-part-refs'),
@@ -170,6 +172,7 @@ export class ModelPage {
   private readonly isSlotKey: SlotKeyMatcher;
   private readonly modes: ToggleGroup<CameraMode>;
   private readonly views: ToggleGroup<ViewName>;
+  private readonly layouts: ToggleGroup<CompareLayout>;
   private readonly metrics: ToggleGroup<AreaMetric>;
 
   private cameraMode: CameraMode = '3d';
@@ -177,6 +180,8 @@ export class ModelPage {
    * default one, or after the user orbits). */
   private cameraView: ViewName | null = null;
   private metric: AreaMetric = 'withWeapons';
+  /** Where B stands in the 3D view while comparing. */
+  private compareLayout: CompareLayout;
   /** Rebuilds can overlap; only the latest may touch the page. */
   private generation = 0;
   private drawn: {
@@ -203,10 +208,13 @@ export class ModelPage {
     el.meshBox.checked = state.mesh;
     el.hitboxBox.checked = state.hitbox;
     this.compareOnLoad = state.compare !== null;
+    this.compareLayout = state.compareLayout;
+    viewer?.setCompareLayout(state.compareLayout);
     if (state.compare) this.compare.replace(state.compare);
 
     this.modes = new ToggleGroup(el.modeButtons, 'mode', isCameraMode);
     this.views = new ToggleGroup(el.viewButtons, 'view', isViewName);
+    this.layouts = new ToggleGroup(el.layoutButtons, 'layout', isCompareLayout);
     this.metrics = new ToggleGroup(el.metricButtons, 'metric', isAreaMetric);
     for (const node of queryAll(el.compareBar, '[data-diff]', HTMLElement)) {
       const key = node.dataset.diff;
@@ -237,7 +245,10 @@ export class ModelPage {
       }
       let viewer: ModelViewer | null = null;
       try {
-        viewer = new ModelViewer(el.canvas);
+        viewer = new ModelViewer(el.canvas, {
+          a: text.t('buildA'),
+          b: text.t('buildB'),
+        });
       } catch (err) {
         console.error('WebGL unavailable:', err);
       }
@@ -257,6 +268,12 @@ export class ModelPage {
     const { el } = this;
     this.modes.onSelect((mode) => this.selectMode(mode));
     this.views.onSelect((view) => this.selectView(view));
+    this.layouts.onSelect((layout) => {
+      this.compareLayout = layout;
+      this.viewer?.setCompareLayout(layout);
+      this.syncCamera();
+      this.syncUrl();
+    });
     this.metrics.onSelect((metric) => {
       this.metric = metric;
       this.metrics.setPressed(metric);
@@ -286,6 +303,7 @@ export class ModelPage {
       el.compareSection.hidden = !on;
       el.compareBar.hidden = !on;
       el.buildATitle.textContent = this.text.t(on ? 'buildA' : 'build');
+      this.syncCamera();
       this.renderBuilderB();
       this.syncUrl();
       void this.rebuild();
@@ -346,6 +364,7 @@ export class ModelPage {
       {
         selection: this.store.current.selection,
         compare: this.compare.isEnabled ? this.compare.currentOverrides : null,
+        compareLayout: this.compareLayout,
         mesh: this.el.meshBox.checked,
         hitbox: this.el.hitboxBox.checked,
       },
@@ -466,6 +485,11 @@ export class ModelPage {
   private syncCamera(): void {
     this.modes.setPressed(this.cameraMode);
     this.views.setPressed(this.cameraView);
+    this.layouts.setPressed(this.compareLayout);
+    // The axis views always overlap the builds (their diff is measured so),
+    // and without WebGL there is nothing to lay out.
+    this.el.layoutButtons.hidden =
+      !this.viewer || !this.compare.isEnabled || this.cameraMode !== '3d';
     this.metrics.setPressed(this.metric);
     this.renderAreas();
   }
