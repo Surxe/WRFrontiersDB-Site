@@ -97,6 +97,48 @@ export class View {
     await this.page.waitForTimeout(SETTLE_MS);
   }
 
+  /** Swipe one finger (or two, side by side) across the middle of
+   * `selector` by (dx, dy) pixels, as real touch input: it goes through the
+   * browser's gesture handling, so `touch-action` decides between scrolling
+   * the page and the page's own handlers. Needs a touch preset. */
+  async swipe(
+    selector: string,
+    dx: number,
+    dy: number,
+    fingers: 1 | 2 = 1,
+    settleMs = SETTLE_MS
+  ): Promise<void> {
+    const box = await this.page.locator(selector).boundingBox();
+    if (!box) throw new Error(`swipe: ${selector} is not visible`);
+    const x = box.x + box.width / 2;
+    const y = box.y + box.height / 2;
+    const cdp = await this.page.context().newCDPSession(this.page);
+    const points = (k: number) =>
+      Array.from({ length: fingers }, (_, i) => ({
+        x: x + (i - (fingers - 1) / 2) * 60 + dx * k,
+        y: y + dy * k,
+        id: i,
+      }));
+    const steps = 12;
+    await cdp.send('Input.dispatchTouchEvent', {
+      type: 'touchStart',
+      touchPoints: points(0),
+    });
+    for (let i = 1; i <= steps; i++) {
+      await cdp.send('Input.dispatchTouchEvent', {
+        type: 'touchMove',
+        touchPoints: points(i / steps),
+      });
+      await this.page.waitForTimeout(16);
+    }
+    await cdp.send('Input.dispatchTouchEvent', {
+      type: 'touchEnd',
+      touchPoints: [],
+    });
+    await cdp.detach();
+    await this.page.waitForTimeout(settleMs);
+  }
+
   /** Save the current state as the next numbered shot: the element matching
    * `target` if given, else the visible page. */
   shot(name: string, caption: string, target?: string): Promise<void> {
@@ -150,6 +192,10 @@ export class Session {
     );
     await page.goto(new URL(urlPath, this.baseUrl).href, {
       waitUntil: 'networkidle',
+    });
+    // The dev server's toolbar is fixed over the page; it isn't the site.
+    await page.addStyleTag({
+      content: 'astro-dev-toolbar { display: none !important; }',
     });
     await options.ready?.(page);
     return new View(page, this, preset);

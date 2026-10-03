@@ -18,6 +18,31 @@ export const modelsMobile: Scenario = {
     await single.shot('top', 'First screen: what a phone user lands on');
     await single.fullPage('page', 'Whole page: section order and widths');
     await single.shot('viewport-3d', '3D viewport and its controls', VIEWPORT);
+    await single.page.evaluate(() =>
+      document.querySelector('#model-viewport')?.scrollIntoView()
+    );
+    await single.swipe('#model-canvas', 0, -300);
+    await single.shot(
+      'swipe-up-scrolls',
+      'One finger up over the inline viewer scrolls the page past it'
+    );
+    await single.page.evaluate(() =>
+      document.querySelector('#model-viewport')?.scrollIntoView()
+    );
+    await single.swipe('#model-canvas', 0, -150, 2);
+    await single.swipe('#model-canvas', 150, 0, 2);
+    await single.page.waitForTimeout(1500); // orbit damping settles
+    await single.shot(
+      'two-finger-orbit',
+      'Two fingers orbit instead, page left in place',
+      VIEWPORT
+    );
+    // Soon after (the hint fades), and the page: an element shot is slower.
+    await single.swipe('#model-canvas', 120, 0, 1, 300);
+    await single.shot(
+      'one-finger-hint',
+      'One finger sideways: the use-two-fingers hint'
+    );
     await single.click('[data-mode="2d"]', 2000);
     await single.shot(
       'viewport-2d',
@@ -26,6 +51,13 @@ export const modelsMobile: Scenario = {
     );
     await single.click('#model-fullscreen', 1500);
     await single.shot('fullscreen-2d', 'Fullscreen 2D: label placement');
+    await single.click('[data-mode="3d"]', 2500);
+    await single.shot('fullscreen-3d', 'Fullscreen 3D, before a swipe');
+    await single.swipe('#model-canvas', 150, 0);
+    await single.shot(
+      'fullscreen-one-finger',
+      'Fullscreen: one finger orbits, no hint'
+    );
     await single.click('#model-fullscreen', 1500);
     await single.close();
 
