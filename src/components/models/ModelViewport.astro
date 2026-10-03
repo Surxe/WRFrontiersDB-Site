@@ -119,6 +119,11 @@ const views: { view: ViewName; label: LocalizationKey }[] = [
       <path d="M9 4v5H4M20 9h-5V4M15 20v-5h5M4 15h5v5"></path>
     </svg>
   </button>
+  <!-- Flashed by ui/touch_hint.ts when one finger tries to orbit the inline
+       viewer, where one finger scrolls the page. -->
+  <p id="model-touch-hint" class="model-touch-hint" aria-hidden="true">
+    <LocalizedText tag="span" localizationKey={strings.twoFingerHint} />
+  </p>
   <div class="model-overlay model-camera-bar">
     <div
       id="model-mode-buttons"
@@ -244,7 +249,7 @@ const views: { view: ViewName; label: LocalizationKey }[] = [
     padding: 0;
     border: 1px solid var(--wrf-border);
     border-radius: var(--wrf-radius-sm);
-    background: color-mix(in srgb, var(--wrf-bg) 72%, transparent);
+    background: var(--wrf-overlay-bg);
     color: var(--wrf-text);
     cursor: pointer;
     transition:
@@ -272,11 +277,11 @@ const views: { view: ViewName; label: LocalizationKey }[] = [
     outline-offset: 2px;
   }
 
-  /* Touch: a full 44px target. */
+  /* Touch: a full tap target, as the shared controls get. */
   @media (pointer: coarse) {
     .model-icon-btn {
-      width: 2.75rem;
-      height: 2.75rem;
+      width: var(--wrf-touch-target);
+      height: var(--wrf-touch-target);
     }
   }
 
@@ -331,11 +336,26 @@ const views: { view: ViewName; label: LocalizationKey }[] = [
     display: none;
   }
 
-  /* Touch: taller, wider buttons. */
-  @media (pointer: coarse) {
-    .model-camera-bar .wrf-toggle__btn {
-      padding: 0.6rem 0.75rem;
-    }
+  .model-touch-hint {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin: 0;
+    padding: 0.5rem 0.9rem;
+    border: 1px solid var(--wrf-border);
+    border-radius: var(--wrf-radius-md);
+    background: var(--wrf-overlay-bg);
+    color: var(--wrf-text);
+    font-weight: 600;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(-50%, -50%);
+    transition: opacity var(--wrf-transition);
+  }
+
+  .model-touch-hint:global(.is-shown) {
+    opacity: 1;
   }
 
   .model-view-toggles {
@@ -345,7 +365,7 @@ const views: { view: ViewName; label: LocalizationKey }[] = [
     border: 1px solid var(--wrf-border);
     border-radius: var(--wrf-radius-sm);
     /* Translucent, like the view labels, so the robot shows through. */
-    background: color-mix(in srgb, var(--wrf-bg) 72%, transparent);
+    background: var(--wrf-overlay-bg);
   }
 
   .model-check {
@@ -406,7 +426,7 @@ const views: { view: ViewName; label: LocalizationKey }[] = [
     padding: 0.2rem 0.5rem;
     border: 1px solid var(--wrf-border);
     border-radius: var(--wrf-radius-sm);
-    background: color-mix(in srgb, var(--wrf-bg) 72%, transparent);
+    background: var(--wrf-overlay-bg);
     color: var(--wrf-text);
     font-size: 0.8rem;
     font-weight: bold;
@@ -443,7 +463,7 @@ const views: { view: ViewName; label: LocalizationKey }[] = [
     border: 1px solid var(--wrf-border);
     border-radius: var(--wrf-radius-sm);
     /* Translucent, so the robot shows through where a label overlaps it. */
-    background: color-mix(in srgb, var(--wrf-bg) 72%, transparent);
+    background: var(--wrf-overlay-bg);
     color: var(--wrf-text);
     font-size: 0.75rem;
     line-height: 1.3;
@@ -464,6 +484,12 @@ const views: { view: ViewName; label: LocalizationKey }[] = [
   .model-canvas :global(.model-view-label-part) {
     margin: 0.15rem 0;
     overflow-wrap: anywhere;
+  }
+
+  /* The narrow-canvas rows layout keeps cards short; the build panels name
+     the parts. */
+  .model-canvas :global(.model-view-labels.is-rows .model-view-label-part) {
+    display: none;
   }
 
   .model-canvas :global(.model-view-label-area) {

@@ -1,11 +1,16 @@
 /**
- * Part labels over the 2D (axis) views: one card per health pool, stacked in
- * a column down the canvas's left or right edge (whichever side its part is
- * on), with a thin line to a point on the part. The viewer projects each
- * label's anchor to canvas pixels every frame; this lays the cards out and
- * draws the lines. Cards never take pointer events, so zoom/pan still work
- * through them, and they keep clear of the controls floating over the canvas
- * (`avoid`).
+ * Part labels over the 2D (axis) views: one card per health pool, with a thin
+ * line to a point on the part. On a wide canvas the cards stack in a column
+ * down its left or right edge (whichever side its part is on). On a narrow one
+ * (a phone), side columns would squeeze the robot to a sliver, so they go in a
+ * grid of rows above and below it instead (the highest parts' cards above),
+ * compacted to the pool and its area, and the viewer frames the robot between
+ * the two bands (`bands`).
+ *
+ * The viewer projects each label's anchor to canvas pixels every frame; this
+ * lays the cards out and draws the lines. Cards never take pointer events, so
+ * zoom/pan still work through them, and they keep clear of the controls
+ * floating over the canvas (`avoid`).
  */
 import { cssHex } from '../colors';
 
@@ -21,8 +26,30 @@ export type ScreenPoint = { x: number; y: number } | null;
 
 /** Width of each label column; the 2D views keep the robot clear of it. */
 export const LABEL_GUTTER_PX = 190;
-const EDGE_PX = 8;
+/** Margin between the cards and the canvas edge. */
+export const EDGE_PX = 8;
 const GAP_PX = 6;
+/** Canvases narrower than this lay the cards out in rows, not columns. */
+const ROWS_BELOW_PX = 640;
+/** Narrowest card in the rows layout; the grid fits as many as it can. */
+const ROW_CARD_MIN_PX = 112;
+
+/** The rows layout's grid at one canvas width. */
+interface RowGrid {
+  columns: number;
+  cardWidth: number;
+  /** The tallest card's height: every row gets this much. */
+  rowHeight: number;
+  /** How many cards (those of the highest anchors) go in the top band. */
+  above: number;
+}
+
+/** Bands (canvas pixels from the top and bottom edges) the rows layout fills,
+ * which the robot keeps clear of. */
+export interface LabelBands {
+  top: number;
+  bottom: number;
+}
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
 interface Placed {
@@ -76,13 +103,70 @@ export class LabelOverlay {
     this.lastKey = '';
   }
 
-  /** The top and bottom bands (canvas pixels from each edge) a column's cards
-   * keep out of: those of the `avoid` controls over the column, each counted
-   * against the edge nearer its center. */
-  private reserved(left: boolean, width: number, height: number) {
+  /** Rows on a narrow canvas, columns on a wide one. */
+  private rows(width: number): boolean {
+    return width < ROWS_BELOW_PX;
+  }
+
+  /** Size every card for the rows layout at `width` and measure the grid.
+   * Hidden cards measure 0, so the overlay shows for the measurement. */
+  private rowGrid(width: number): RowGrid {
+    const inner = width - 2 * EDGE_PX;
+    const columns = Math.max(
+      1,
+      Math.floor((inner + GAP_PX) / (ROW_CARD_MIN_PX + GAP_PX))
+    );
+    const cardWidth = (inner - (columns - 1) * GAP_PX) / columns;
+    // Compact cards (styled in ModelViewport.astro): no part line, which the
+    // build panels show anyway.
+    this.root.classList.add('is-rows');
+    const wasHidden = this.root.hidden;
+    this.root.hidden = false;
+    let rowHeight = 0;
+    for (const { card } of this.placed) {
+      card.style.width = `${cardWidth}px`;
+      card.style.maxWidth = 'none';
+      const shown = !card.hidden;
+      card.hidden = false;
+      rowHeight = Math.max(rowHeight, card.offsetHeight);
+      card.hidden = !shown;
+    }
+    this.root.hidden = wasHidden;
+    // Fill the top band's rows first: the bottom one shares its edge with
+    // the camera bar.
+    const rowCount = Math.ceil(this.placed.length / columns);
+    const above = Math.min(
+      this.placed.length,
+      Math.ceil(rowCount / 2) * columns
+    );
+    return { columns, cardWidth, rowHeight, above };
+  }
+
+  /** Height of a band of `count` cards. */
+  private static bandHeight(count: number, grid: RowGrid): number {
+    const rows = Math.ceil(count / grid.columns);
+    return rows === 0 ? 0 : rows * (grid.rowHeight + GAP_PX);
+  }
+
+  /** In the rows layout, how far from the top and bottom edges the cards
+   * reach (controls included); null for the columns layout or no labels. */
+  bands(width: number, height: number): LabelBands | null {
+    if (this.isEmpty || !this.rows(width)) return null;
+    const grid = this.rowGrid(width);
+    const edge = this.reserved(0, width, height);
+    return {
+      top: edge.top + LabelOverlay.bandHeight(grid.above, grid),
+      bottom:
+        edge.bottom +
+        LabelOverlay.bandHeight(this.placed.length - grid.above, grid),
+    };
+  }
+
+  /** The top and bottom bands (canvas pixels from each edge) the cards in the
+   * strip `from`..`from + span` keep out of: those of the `avoid` controls
+   * over the strip, each counted against the edge nearer its center. */
+  private reserved(from: number, span: number, height: number) {
     const origin = this.root.getBoundingClientRect();
-    const column = LABEL_GUTTER_PX + EDGE_PX;
-    const from = left ? 0 : width - column;
     let top = 0;
     let bottom = 0;
     for (const node of this.avoid) {
@@ -91,7 +175,7 @@ export class LabelOverlay {
       const x0 = rect.left - origin.left;
       const y0 = rect.top - origin.top;
       const y1 = rect.bottom - origin.top;
-      if (x0 + rect.width <= from || x0 >= from + column) continue;
+      if (x0 + rect.width <= from || x0 >= from + span) continue;
       if (y0 + y1 < height) top = Math.max(top, y1);
       else bottom = Math.max(bottom, height - y0);
     }
@@ -104,9 +188,14 @@ export class LabelOverlay {
   /** Lay the cards out for their anchors' current canvas positions
    * (`points` parallel to the labels). */
   layout(points: readonly ScreenPoint[], width: number, height: number): void {
-    const edges = [true, false].map((left) =>
-      this.reserved(left, width, height)
-    );
+    const rows = this.rows(width);
+    const column = LABEL_GUTTER_PX + EDGE_PX;
+    const edges = rows
+      ? [this.reserved(0, width, height)]
+      : [
+          this.reserved(0, column, height),
+          this.reserved(width - column, column, height),
+        ];
     const key =
       `${width}x${height}:` +
       edges.map(({ top, bottom }) => `${top},${bottom}`).join(';') +
@@ -119,6 +208,11 @@ export class LabelOverlay {
     this.svg.setAttribute('width', String(width));
     this.svg.setAttribute('height', String(height));
 
+    if (rows) {
+      this.layoutRows(points, width, height, edges[0]);
+      return;
+    }
+    this.root.classList.remove('is-rows');
     const columns: {
       left: boolean;
       edge: { top: number; bottom: number };
@@ -133,6 +227,8 @@ export class LabelOverlay {
       placed.card.hidden = hidden;
       placed.line.style.display = hidden ? 'none' : '';
       placed.dot.style.display = hidden ? 'none' : '';
+      placed.card.style.width = '';
+      placed.card.style.maxWidth = '';
       if (point)
         columns[point.x < width / 2 ? 0 : 1].items.push({ placed, point });
     });
@@ -173,5 +269,67 @@ export class LabelOverlay {
         dot.setAttribute('cy', String(point.y));
       });
     }
+  }
+
+  /** The rows layout: the cards of the highest anchors in rows down from the
+   * top, the rest in rows up from the bottom (lowest anchors in the last
+   * row), each row ordered left to right by anchor and centered. */
+  private layoutRows(
+    points: readonly ScreenPoint[],
+    width: number,
+    height: number,
+    edge: { top: number; bottom: number }
+  ): void {
+    const grid = this.rowGrid(width);
+    const items: { placed: Placed; point: { x: number; y: number } }[] = [];
+    this.placed.forEach((placed, i) => {
+      const point = points[i];
+      const hidden = point === null;
+      placed.card.hidden = hidden;
+      placed.line.style.display = hidden ? 'none' : '';
+      placed.dot.style.display = hidden ? 'none' : '';
+      if (point) items.push({ placed, point });
+    });
+    items.sort((a, b) => a.point.y - b.point.y);
+    const above = items.slice(0, grid.above);
+    // Bottom band, from the bottom row up.
+    const below = items.slice(grid.above).reverse();
+    const step = grid.rowHeight + GAP_PX;
+    const inner = width - 2 * EDGE_PX;
+
+    const placeBand = (band: typeof items, top: boolean): void => {
+      for (let r = 0; r * grid.columns < band.length; r++) {
+        const row = band
+          .slice(r * grid.columns, (r + 1) * grid.columns)
+          .sort((a, b) => a.point.x - b.point.x);
+        const rowWidth =
+          row.length * grid.cardWidth + (row.length - 1) * GAP_PX;
+        const left = EDGE_PX + (inner - rowWidth) / 2;
+        const y = top
+          ? edge.top + r * step
+          : height - edge.bottom - r * step - grid.rowHeight;
+        row.forEach(({ placed, point }, k) => {
+          const { card, line, dot } = placed;
+          const x = left + k * (grid.cardWidth + GAP_PX);
+          card.style.left = `${x}px`;
+          card.style.top = `${y}px`;
+          // From the card's edge facing the robot, under the anchor where
+          // the card spans it.
+          const endX = Math.min(
+            Math.max(point.x, x + 4),
+            x + grid.cardWidth - 4
+          );
+          const endY = top ? y + card.offsetHeight : y;
+          line.setAttribute('x1', String(endX));
+          line.setAttribute('y1', String(endY));
+          line.setAttribute('x2', String(point.x));
+          line.setAttribute('y2', String(point.y));
+          dot.setAttribute('cx', String(point.x));
+          dot.setAttribute('cy', String(point.y));
+        });
+      }
+    };
+    placeBand(above, true);
+    placeBand(below, false);
   }
 }

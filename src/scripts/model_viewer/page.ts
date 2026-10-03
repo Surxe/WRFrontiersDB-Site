@@ -49,6 +49,7 @@ import { readModelUrl, writeModelUrl } from './params';
 import { renderAreaPanel, renderComparePanel } from './ui/area_panel';
 import { renderBuilder } from './ui/builder';
 import { FullscreenToggle } from './ui/fullscreen';
+import { TouchHint } from './ui/touch_hint';
 import { queryAll, requireElement } from './ui/dom';
 import { PartRefs } from './ui/part_refs';
 import { ToggleGroup } from './ui/toggle_group';
@@ -106,6 +107,7 @@ function pageElements() {
     meshBox: requireElement('model-mesh', HTMLInputElement),
     hitboxBox: requireElement('model-hitbox', HTMLInputElement),
     fullscreen: requireElement('model-fullscreen', HTMLButtonElement),
+    touchHint: requireElement('model-touch-hint', HTMLElement),
     recenter: requireElement('model-recenter', HTMLButtonElement),
     clear: requireElement('model-clear', HTMLButtonElement),
     share: requireElement('model-share', HTMLButtonElement),
@@ -338,10 +340,19 @@ export class ModelPage {
       );
       el.recenter.hidden = false;
       el.recenter.addEventListener('click', () => viewer.recenter());
-      new FullscreenToggle(el.viewport, el.fullscreen, {
-        enter: this.text.t('fullscreenEnter'),
-        exit: this.text.t('fullscreenExit'),
-      });
+      const touchHint = new TouchHint(el.canvas, el.touchHint);
+      new FullscreenToggle(
+        el.viewport,
+        el.fullscreen,
+        {
+          enter: this.text.t('fullscreenEnter'),
+          exit: this.text.t('fullscreenExit'),
+        },
+        (open) => {
+          viewer.setTouchScroll(!open);
+          touchHint.enabled = !open;
+        }
+      );
     }
     for (const box of [el.meshBox, el.hitboxBox]) {
       box.addEventListener('change', () => {
