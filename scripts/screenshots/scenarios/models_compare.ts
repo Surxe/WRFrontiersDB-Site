@@ -2,28 +2,8 @@
  * /models compare mode: the Overlap / Side by side layouts across the 3D and
  * 2D views, layer toggles, deep links, fullscreen and a phone screen.
  */
-import type { Page } from 'playwright';
 import type { Scenario } from '../harness';
-
-const A =
-  '/models?chassis=DA_Module_ChassisAnansi.2&torso=DA_Module_TorsoAnansi.1' +
-  '&Shoulder_L=DA_Module_ShoulderAnansi.0&Shoulder_R=DA_Module_ShoulderAnansi.0';
-/** B swaps every structural part, so the diff colors show. */
-const COMPARE =
-  '&compare=1&b.chassis=DA_Module_ChassisAres.2&b.torso=DA_Module_TorsoAres.1' +
-  '&b.Shoulder_L=DA_Module_ShoulderAres.0&b.Shoulder_R=DA_Module_ShoulderAres.0';
-
-const VIEWPORT = '#model-viewport';
-
-/** The viewer has drawn the build: the status line clears. */
-async function modelsReady(page: Page): Promise<void> {
-  await page.waitForFunction(
-    () => document.querySelector('#model-status')?.textContent === '',
-    null,
-    { timeout: 60_000 }
-  );
-  await page.waitForTimeout(1500);
-}
+import { A, COMPARE, modelsReady, VIEWPORT } from './models_common';
 
 export const modelsCompare: Scenario = {
   name: 'models-compare',

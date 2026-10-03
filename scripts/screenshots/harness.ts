@@ -15,15 +15,20 @@ import {
   chromium,
   type Browser,
   type Locator,
+  type BrowserContextOptions,
   type Page,
-  type ViewportSize,
 } from 'playwright';
 
-/** Viewport presets: a wide desktop and a phone. */
+/** Device presets: a wide desktop, and a phone with a touch screen (so
+ * `pointer: coarse` rules apply, as on a real one). */
 export const PRESETS = {
-  desktop: { width: 1600, height: 1000 },
-  mobile: { width: 400, height: 860 },
-} as const satisfies Record<string, ViewportSize>;
+  desktop: { viewport: { width: 1600, height: 1000 } },
+  mobile: {
+    viewport: { width: 400, height: 860 },
+    isMobile: true,
+    hasTouch: true,
+  },
+} as const satisfies Record<string, BrowserContextOptions>;
 
 export type Preset = keyof typeof PRESETS;
 
@@ -103,6 +108,12 @@ export class View {
     );
   }
 
+  /** Save the whole scrollable page (not just the visible part) as the next
+   * numbered shot, for layout reviews. */
+  fullPage(name: string, caption: string): Promise<void> {
+    return this.session.record(this, name, caption, 'full-page');
+  }
+
   close(): Promise<void> {
     return this.page.close();
   }
@@ -128,7 +139,7 @@ export class Session {
   /** Open `urlPath` (relative to the site root) in a fresh page. */
   async open(urlPath: string, options: OpenOptions = {}): Promise<View> {
     const preset = options.preset ?? 'desktop';
-    const page = await this.browser.newPage({ viewport: PRESETS[preset] });
+    const page = await this.browser.newPage(PRESETS[preset]);
     page.on('console', (message) => {
       if (message.type() === 'error') {
         this.errors.push(`${page.url()}: ${message.text()}`);
@@ -148,11 +159,13 @@ export class Session {
     view: View,
     name: string,
     caption: string,
-    target: Locator | null
+    target: Locator | 'full-page' | null
   ): Promise<void> {
     const file = `${String(this.shots.length + 1).padStart(2, '0')}-${name}.png`;
     const filePath = path.join(this.outDir, file);
-    if (target) await target.screenshot({ path: filePath });
+    if (target === 'full-page') {
+      await view.page.screenshot({ path: filePath, fullPage: true });
+    } else if (target) await target.screenshot({ path: filePath });
     else await view.page.screenshot({ path: filePath });
     const url = new URL(view.page.url());
     this.shots.push({
