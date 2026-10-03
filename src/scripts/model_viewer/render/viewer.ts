@@ -15,7 +15,18 @@ import {
   primitiveGeometry,
   type ZoneColorFn,
 } from './scene';
-import { LABEL_GUTTER_PX, LabelOverlay, type ViewLabel } from './label_overlay';
+import {
+  LABEL_GUTTER_PX,
+  LabelOverlay,
+  type ScreenPoint,
+  type ViewLabel,
+} from './label_overlay';
+import { BuildTags } from './build_tags';
+import {
+  compareOffset,
+  hitboxBounds,
+  type CompareLayout,
+} from './compare_layout';
 import { VIEWS, type ViewName } from '../../robot/hitbox_area/views';
 import { DiffState, type DiffRaster } from '../../robot/hitbox_area/measure';
 import { diffPlacements } from '../../robot/model/placement_diff';
@@ -29,7 +40,8 @@ export interface ViewerContent {
   a: Assembly;
   /** Build A's colors (unused while comparing). */
   colors: BuildColors;
-  /** Build B: both are then drawn overlapping in the diff colors. */
+  /** Build B: both are then drawn in the diff colors, overlapping or side
+   * by side (setCompareLayout). */
   b: Assembly | null;
   mesh: boolean;
   hitbox: boolean;
@@ -41,11 +53,34 @@ export interface AnchoredLabel extends ViewLabel {
   anchor: Vec3;
 }
 
+/** The builds' names, for their tags while comparing side by side. */
+export interface BuildNames {
+  a: string;
+  b: string;
+}
+
 /** Opacity of a compared build's changed meshes, so overlapping A and B
  * parts show through each other. */
 const CHANGED_MESH_OPACITY = 0.55;
 
 const FIELD_OF_VIEW = 55;
+
+/** How long the 3D camera takes to reframe on a compare layout change. */
+const EASE_MS = 450;
+
+const easeInOut = (t: number): number =>
+  t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2;
+
+/** A perspective camera pose. */
+interface Pose {
+  position: THREE.Vector3;
+  target: THREE.Vector3;
+}
+
+const flat =
+  (color: number): ZoneColorFn =>
+  () =>
+    color;
 
 /** UE direction from the robot's front (+X), turned `yawDeg` toward its right
  * (+Y) and raised `pitchDeg`. */
@@ -92,20 +127,33 @@ export class ModelViewer {
   private readonly ortho = new THREE.OrthographicCamera(-1, 1, 1, -1, 1, 1e5);
   private readonly controls: OrbitControls;
   private readonly grid: THREE.GridHelper;
-  /** The 3D view: module meshes and translucent hitboxes. */
+  /** The 3D view: module meshes and translucent hitboxes, build A's and (while
+   * comparing) build B's, B offset per the compare layout. */
   private readonly models = new THREE.Group();
+  private readonly modelsA = new THREE.Group();
+  private readonly modelsB = new THREE.Group();
   /** The axis views: flat, opaque per-pool hitbox silhouettes (or the diff
    * image while comparing). */
   private readonly silhouettes = new THREE.Group();
   private readonly labels: LabelOverlay;
   private labelAnchors: THREE.Vector3[] = [];
+  private readonly tags: BuildTags;
+  /** Atop each build's center (A, B; null: nothing drawn), while the tags
+   * show. */
+  private tagAnchors: (THREE.Vector3 | null)[] = [];
+  private content: ViewerContent | null = null;
+  private compareLayout: CompareLayout = 'overlap';
   private view: ViewName | null = null;
   private diffRasters: Partial<Record<ViewName, DiffRaster>> = {};
-  private comparing = false;
   private framed = false;
   private renderRequested = false;
+  /** An in-progress camera reframe (easeTo). */
+  private ease: { from: Pose; to: Pose; start: number } | null = null;
 
-  constructor(private readonly container: HTMLElement) {
+  constructor(
+    private readonly container: HTMLElement,
+    names: BuildNames
+  ) {
     // Transparent: the container's (design token) background shows through.
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     this.renderer.setPixelRatio(window.devicePixelRatio);
@@ -116,6 +164,10 @@ export class ModelViewer {
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableDamping = true;
     this.controls.addEventListener('change', () => this.requestRender());
+    // The user takes the camera back mid-reframe.
+    this.controls.addEventListener('start', () => {
+      this.ease = null;
+    });
 
     this.grid = new THREE.GridHelper(
       6000,
@@ -141,65 +193,45 @@ export class ModelViewer {
       group.rotation.x = -Math.PI / 2;
     }
     this.silhouettes.visible = false;
+    this.models.add(this.modelsA, this.modelsB);
 
     this.labels = new LabelOverlay(container);
+    this.tags = new BuildTags(container, [
+      { text: names.a, color: DIFF_COLORS.aOnly },
+      { text: names.b, color: DIFF_COLORS.bOnly },
+    ]);
     new ResizeObserver(() => this.resize()).observe(container);
     this.resize();
   }
 
   /** Replace the drawn builds. */
   show(content: ViewerContent): void {
-    clearGroup(this.models);
+    this.content = content;
     clearGroup(this.silhouettes);
     this.diffRasters = {};
-    this.comparing = content.b !== null;
     this.setLabels([]);
-    const layers = { mesh: content.mesh, hitbox: content.hitbox };
-
-    const draw = (
-      assembly: Assembly,
-      placement: ModulePlacement,
-      colorOf: ZoneColorFn,
-      meshOpacity = 1
-    ): void => {
-      const model = placement.modelId
-        ? assembly.models.get(placement.modelId)
-        : undefined;
-      if (!model) return;
-      addModel(this.models, model, placement.world, colorOf, {
-        ...layers,
-        meshOpacity,
-      });
-    };
-
-    const { a, b } = content;
-    if (!b) {
-      a.placements.forEach((placement, i) =>
-        draw(a, placement, (zone) => partColor(content.colors, i, zone))
-      );
-      this.addSilhouettes(a, content.colors);
-    } else {
-      // Shared parts once (grey, from A), A-only orange, B-only blue. The
-      // axis views show the measured diff image instead (setDiffRasters).
-      const { sharedA, sharedB } = diffPlacements(a.placements, b.placements);
-      const flat =
-        (color: number): ZoneColorFn =>
-        () =>
-          color;
-      a.placements.forEach((placement, i) =>
-        sharedA[i]
-          ? draw(a, placement, flat(DIFF_COLORS.shared))
-          : draw(a, placement, flat(DIFF_COLORS.aOnly), CHANGED_MESH_OPACITY)
-      );
-      b.placements.forEach((placement, i) => {
-        if (!sharedB[i]) {
-          draw(b, placement, flat(DIFF_COLORS.bOnly), CHANGED_MESH_OPACITY);
-        }
-      });
-    }
-
+    // The axis views show the measured diff image instead while comparing
+    // (setDiffRasters).
+    if (!content.b) this.addSilhouettes(content.a, content.colors);
+    this.drawModels();
     this.frameOnce();
     if (this.view) this.fitOrtho();
+    this.requestRender();
+  }
+
+  /** Overlap the compared builds in the 3D view, or stand B beside A. Eases
+   * the 3D camera to frame the new layout. */
+  setCompareLayout(layout: CompareLayout): void {
+    if (layout === this.compareLayout) return;
+    this.compareLayout = layout;
+    if (!this.content?.b) return;
+    this.drawModels();
+    if (!this.view) {
+      const to = this.perspectiveFit(
+        this.camera.position.clone().sub(this.controls.target)
+      );
+      if (to) this.easeTo(to);
+    }
     this.requestRender();
   }
 
@@ -219,11 +251,14 @@ export class ModelViewer {
   setView(view: ViewName | null): void {
     if (view === this.view) return;
     this.view = view;
+    // The axis views share the orbit target; a reframe would drag them.
+    this.ease = null;
     const axis = view !== null;
     this.models.visible = !axis;
     this.grid.visible = !axis;
     this.silhouettes.visible = axis;
     this.labels.visible = axis;
+    this.tags.visible = this.showTags;
     this.controls.enableRotate = !axis;
     this.controls.object = axis ? this.ortho : this.camera;
     if (view) {
@@ -255,6 +290,7 @@ export class ModelViewer {
       this.view ? this.silhouettes : this.models
     );
     if (box.isEmpty()) return;
+    this.ease = null;
     const offset = box
       .getBoundingSphere(new THREE.Sphere())
       .center.sub(this.controls.target);
@@ -304,6 +340,105 @@ export class ModelViewer {
     this.requestRender();
   }
 
+  private get comparing(): boolean {
+    return Boolean(this.content?.b);
+  }
+
+  /** The builds' name tags show in the 3D view while comparing side by
+   * side. */
+  private get showTags(): boolean {
+    return !this.view && this.comparing && this.compareLayout === 'side';
+  }
+
+  /** Draw the content's builds into the 3D view: one in its module colors,
+   * or two in the diff colors, B placed per the compare layout. */
+  private drawModels(): void {
+    clearGroup(this.modelsA);
+    clearGroup(this.modelsB);
+    this.modelsB.position.set(0, 0, 0);
+    this.tagAnchors = [];
+    this.tags.visible = this.showTags;
+    const content = this.content;
+    if (!content) return;
+    const layers = { mesh: content.mesh, hitbox: content.hitbox };
+
+    const draw = (
+      group: THREE.Group,
+      assembly: Assembly,
+      placement: ModulePlacement,
+      colorOf: ZoneColorFn,
+      meshOpacity = 1
+    ): void => {
+      const model = placement.modelId
+        ? assembly.models.get(placement.modelId)
+        : undefined;
+      if (!model) return;
+      addModel(group, model, placement.world, colorOf, {
+        ...layers,
+        meshOpacity,
+      });
+    };
+
+    const { a, b } = content;
+    if (!b) {
+      a.placements.forEach((placement, i) =>
+        draw(this.modelsA, a, placement, (zone) =>
+          partColor(content.colors, i, zone)
+        )
+      );
+      return;
+    }
+
+    // Shared parts grey, A-only orange, B-only blue. Overlapping, the shared
+    // parts are drawn once (from A) and the changed ones translucent, so A
+    // and B show through each other; side by side, each build is whole and
+    // opaque.
+    const apart = this.compareLayout === 'side';
+    const changedOpacity = apart ? 1 : CHANGED_MESH_OPACITY;
+    const { sharedA, sharedB } = diffPlacements(a.placements, b.placements);
+    a.placements.forEach((placement, i) =>
+      sharedA[i]
+        ? draw(this.modelsA, a, placement, flat(DIFF_COLORS.shared))
+        : draw(
+            this.modelsA,
+            a,
+            placement,
+            flat(DIFF_COLORS.aOnly),
+            changedOpacity
+          )
+    );
+    b.placements.forEach((placement, i) => {
+      if (!sharedB[i]) {
+        draw(
+          this.modelsB,
+          b,
+          placement,
+          flat(DIFF_COLORS.bOnly),
+          changedOpacity
+        );
+      } else if (apart) {
+        draw(this.modelsB, b, placement, flat(DIFF_COLORS.shared));
+      }
+    });
+    if (!apart) return;
+
+    // modelsB sits in the models group's UE space, so the offset is UE.
+    this.modelsB.position.set(
+      ...compareOffset(
+        'side',
+        hitboxBounds(a.hitboxes),
+        hitboxBounds(b.hitboxes)
+      )
+    );
+    this.models.updateMatrixWorld(true);
+    this.tagAnchors = [this.modelsA, this.modelsB].map((group) => {
+      const box = new THREE.Box3().setFromObject(group);
+      return box.isEmpty()
+        ? null
+        : box.getCenter(new THREE.Vector3()).setY(box.max.y);
+    });
+  }
+
   private requestRender(): void {
     if (this.renderRequested) return;
     this.renderRequested = true;
@@ -314,9 +449,35 @@ export class ModelViewer {
    * requesting frames) until the camera settles; otherwise nothing renders. */
   private render(): void {
     this.renderRequested = false;
+    this.stepEase();
     this.controls.update();
     this.renderer.render(this.scene, this.view ? this.ortho : this.camera);
     if (this.view && this.labelAnchors.length > 0) this.layoutLabels();
+    if (this.showTags) this.layoutTags();
+  }
+
+  /** Move the 3D camera smoothly to `to`, a frame at a time. */
+  private easeTo(to: Pose): void {
+    this.ease = {
+      from: {
+        position: this.camera.position.clone(),
+        target: this.controls.target.clone(),
+      },
+      to,
+      start: performance.now(),
+    };
+    this.requestRender();
+  }
+
+  private stepEase(): void {
+    if (!this.ease) return;
+    const { from, to, start } = this.ease;
+    const t = Math.min(1, (performance.now() - start) / EASE_MS);
+    const k = easeInOut(t);
+    this.camera.position.lerpVectors(from.position, to.position, k);
+    this.controls.target.lerpVectors(from.target, to.target, k);
+    if (t < 1) this.requestRender();
+    else this.ease = null;
   }
 
   private resize(): void {
@@ -329,31 +490,63 @@ export class ModelViewer {
     this.requestRender();
   }
 
+  /** `anchor`'s canvas position through `camera`; null when off camera. */
+  private toScreen(
+    anchor: THREE.Vector3 | null,
+    camera: THREE.Camera
+  ): ScreenPoint {
+    if (!anchor) return null;
+    const v = anchor.clone().project(camera);
+    if (Math.abs(v.x) > 1 || Math.abs(v.y) > 1 || v.z > 1) return null;
+    return {
+      x: ((v.x + 1) / 2) * this.container.clientWidth,
+      y: ((1 - v.y) / 2) * this.container.clientHeight,
+    };
+  }
+
   private layoutLabels(): void {
-    const width = this.container.clientWidth;
-    const height = this.container.clientHeight;
-    const v = new THREE.Vector3();
-    const points = this.labelAnchors.map((anchor) => {
-      v.copy(anchor).project(this.ortho);
-      if (Math.abs(v.x) > 1 || Math.abs(v.y) > 1) return null;
-      return { x: ((v.x + 1) / 2) * width, y: ((1 - v.y) / 2) * height };
-    });
-    this.labels.layout(points, width, height);
+    this.labels.layout(
+      this.labelAnchors.map((anchor) => this.toScreen(anchor, this.ortho)),
+      this.container.clientWidth,
+      this.container.clientHeight
+    );
+  }
+
+  private layoutTags(): void {
+    this.tags.layout(
+      this.tagAnchors.map((anchor) => this.toScreen(anchor, this.camera))
+    );
+  }
+
+  /** The perspective pose that frames everything drawn in the 3D view from
+   * direction `from` (scene space, robot toward camera). Null when nothing is
+   * drawn yet. */
+  private perspectiveFit(from: THREE.Vector3): Pose | null {
+    const box = new THREE.Box3().setFromObject(this.models);
+    if (box.isEmpty()) return null;
+    const sphere = box.getBoundingSphere(new THREE.Sphere());
+    // Fit the narrower of the vertical and horizontal fields of view (a tall
+    // screen crops the sides, as side-by-side builds would show).
+    const halfV = THREE.MathUtils.degToRad(this.camera.fov / 2);
+    const halfH = Math.atan(Math.tan(halfV) * this.camera.aspect);
+    const distance = sphere.radius / Math.sin(Math.min(halfV, halfH));
+    return {
+      position: sphere.center
+        .clone()
+        .addScaledVector(from.normalize(), distance),
+      target: sphere.center,
+    };
   }
 
   /** Aim the perspective camera at the robot's center from direction `from`
    * (UE, robot toward camera), far enough back to fit the whole robot. False
    * when nothing is drawn yet. */
   private aimPerspective(from: Vec3): boolean {
-    const box = new THREE.Box3().setFromObject(this.models);
-    if (box.isEmpty()) return false;
-    const sphere = box.getBoundingSphere(new THREE.Sphere());
-    const distance =
-      sphere.radius / Math.sin(THREE.MathUtils.degToRad(this.camera.fov / 2));
-    this.camera.position
-      .copy(sphere.center)
-      .addScaledVector(ueDirection(from).normalize(), distance);
-    this.controls.target.copy(sphere.center);
+    const pose = this.perspectiveFit(ueDirection(from));
+    if (!pose) return false;
+    this.ease = null;
+    this.camera.position.copy(pose.position);
+    this.controls.target.copy(pose.target);
     this.controls.update();
     this.requestRender();
     return true;

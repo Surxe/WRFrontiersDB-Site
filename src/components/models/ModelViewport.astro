@@ -8,7 +8,9 @@
 // #model-canvas (whose role="img" would hide them from assistive tech): the
 // mesh / hitbox toggles and the re-center button top-left, the fullscreen
 // button (ui/fullscreen.ts) top-right, and along the bottom the camera mode
-// (3D / flat 2D) and side buttons (none pressed at a custom 3D angle). The
+// (3D / flat 2D), the side buttons (none pressed at a custom 3D angle) and,
+// while comparing in 3D, the compare layout (A and B overlapping or side by
+// side; page.ts shows it, render/viewer.ts tags each build when apart). The
 // re-center and fullscreen buttons stay hidden until the script wires them
 // up. Fullscreen takes .model-viewport (class is-fullscreen), overlays and
 // all, so every control stays in reach.
@@ -16,6 +18,7 @@ import LocalizedText from '../LocalizedText.astro';
 import { getDefaultString } from '../../utils/localization';
 import type { ModelStrings } from '../../scripts/model_viewer/strings';
 import type { ViewName } from '../../scripts/robot/hitbox_area/views';
+import type { CompareLayout } from '../../scripts/model_viewer/render/compare_layout';
 import type { LocalizationKey } from '../../types/localization';
 
 interface Props {
@@ -27,6 +30,14 @@ const { strings } = Astro.props;
 const modes = [
   { mode: '3d', label: strings.mode3d, pressed: true },
   { mode: '2d', label: strings.mode2d, pressed: false },
+];
+const layouts: {
+  layout: CompareLayout;
+  label: LocalizationKey;
+  pressed: boolean;
+}[] = [
+  { layout: 'overlap', label: strings.layoutOverlap, pressed: true },
+  { layout: 'side', label: strings.layoutSide, pressed: false },
 ];
 const views: { view: ViewName; label: LocalizationKey }[] = [
   { view: 'front', label: strings.viewFront },
@@ -143,6 +154,27 @@ const views: { view: ViewName; label: LocalizationKey }[] = [
             class="wrf-toggle__btn"
             data-view={view}
             aria-pressed="false"
+          >
+            <LocalizedText tag="span" localizationKey={label} />
+          </button>
+        ))
+      }
+    </div>
+    <div
+      id="model-layout-buttons"
+      class="wrf-toggle wrf-toggle--sm"
+      role="group"
+      aria-label={getDefaultString(strings.compareLayout)}
+      data-model-aria-label="compareLayout"
+      hidden
+    >
+      {
+        layouts.map(({ layout, label, pressed }) => (
+          <button
+            type="button"
+            class="wrf-toggle__btn"
+            data-layout={layout}
+            aria-pressed={String(pressed)}
           >
             <LocalizedText tag="span" localizationKey={label} />
           </button>
@@ -295,6 +327,10 @@ const views: { view: ViewName; label: LocalizationKey }[] = [
     background: color-mix(in srgb, var(--wrf-surface) 85%, transparent);
   }
 
+  .model-camera-bar .wrf-toggle[hidden] {
+    display: none;
+  }
+
   /* Touch: taller, wider buttons. */
   @media (pointer: coarse) {
     .model-camera-bar .wrf-toggle__btn {
@@ -347,6 +383,35 @@ const views: { view: ViewName; label: LocalizationKey }[] = [
     margin: 0.5rem 0 0;
     color: var(--wrf-text-muted);
     font-size: 0.85rem;
+  }
+
+  /* Build name tags over the 3D view while comparing side by side
+     (render/build_tags.ts): each centered just above its build. */
+  .model-canvas :global(.model-build-tags) {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .model-canvas :global(.model-build-tags[hidden]),
+  .model-canvas :global(.model-build-tag[hidden]) {
+    display: none;
+  }
+
+  .model-canvas :global(.model-build-tag) {
+    position: absolute;
+    display: flex;
+    gap: 0.35rem;
+    align-items: center;
+    padding: 0.2rem 0.5rem;
+    border: 1px solid var(--wrf-border);
+    border-radius: var(--wrf-radius-sm);
+    background: color-mix(in srgb, var(--wrf-bg) 72%, transparent);
+    color: var(--wrf-text);
+    font-size: 0.8rem;
+    font-weight: bold;
+    white-space: nowrap;
+    transform: translate(-50%, calc(-100% - 0.5rem));
   }
 
   /* 2D view labels (render/label_overlay.ts). */

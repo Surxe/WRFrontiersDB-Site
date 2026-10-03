@@ -25,6 +25,8 @@
  *
  *   compare    1 — compare build A (the build params) against build B
  *   b.<slot>   B's swaps from A, one per changed slot; empty = emptied in B
+ *   layout     side — stand B beside A in the 3D view (default: overlapping).
+ *              Only written while comparing.
  *
  * ## View params
  *
@@ -45,11 +47,13 @@ import {
   type BuildOverrides,
 } from '../robot/build/compare';
 import type { BuildSelection } from '../robot/build/types';
+import type { CompareLayout } from './render/compare_layout';
 
 export interface ModelPageState {
   selection: BuildSelection;
   /** B's overrides while comparing, else null. */
   compare: BuildOverrides | null;
+  compareLayout: CompareLayout;
   mesh: boolean;
   hitbox: boolean;
 }
@@ -73,6 +77,7 @@ export function readModelUrl(
       readFlag(params, 'compare') === true
         ? readOverrides(params, isSlotKey)
         : null,
+    compareLayout: params.get('layout') === 'side' ? 'side' : 'overlap',
     mesh: readFlag(params, 'mesh') ?? true,
     hitbox: readFlag(params, 'hitbox') ?? true,
   };
@@ -88,7 +93,11 @@ export function writeModelUrl(
   writeSelection(params, state.selection, isSlotKey);
   writeOverrides(params, state.compare ?? {}, isSlotKey);
   params.delete('compare');
-  if (state.compare) params.set('compare', '1');
+  params.delete('layout');
+  if (state.compare) {
+    params.set('compare', '1');
+    if (state.compareLayout === 'side') params.set('layout', 'side');
+  }
   for (const flag of FLAGS) params.set(flag, state[flag] ? '1' : '0');
   history.replaceState(null, '', url);
 }
