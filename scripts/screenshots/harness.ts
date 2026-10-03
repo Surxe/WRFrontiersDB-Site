@@ -15,15 +15,20 @@ import {
   chromium,
   type Browser,
   type Locator,
+  type BrowserContextOptions,
   type Page,
-  type ViewportSize,
 } from 'playwright';
 
-/** Viewport presets: a wide desktop and a phone. */
+/** Device presets: a wide desktop, and a phone with a touch screen (so
+ * `pointer: coarse` rules apply, as on a real one). */
 export const PRESETS = {
-  desktop: { width: 1600, height: 1000 },
-  mobile: { width: 400, height: 860 },
-} as const satisfies Record<string, ViewportSize>;
+  desktop: { viewport: { width: 1600, height: 1000 } },
+  mobile: {
+    viewport: { width: 400, height: 860 },
+    isMobile: true,
+    hasTouch: true,
+  },
+} as const satisfies Record<string, BrowserContextOptions>;
 
 export type Preset = keyof typeof PRESETS;
 
@@ -92,6 +97,48 @@ export class View {
     await this.page.waitForTimeout(SETTLE_MS);
   }
 
+  /** Swipe one finger (or two, side by side) across the middle of
+   * `selector` by (dx, dy) pixels, as real touch input: it goes through the
+   * browser's gesture handling, so `touch-action` decides between scrolling
+   * the page and the page's own handlers. Needs a touch preset. */
+  async swipe(
+    selector: string,
+    dx: number,
+    dy: number,
+    fingers: 1 | 2 = 1,
+    settleMs = SETTLE_MS
+  ): Promise<void> {
+    const box = await this.page.locator(selector).boundingBox();
+    if (!box) throw new Error(`swipe: ${selector} is not visible`);
+    const x = box.x + box.width / 2;
+    const y = box.y + box.height / 2;
+    const cdp = await this.page.context().newCDPSession(this.page);
+    const points = (k: number) =>
+      Array.from({ length: fingers }, (_, i) => ({
+        x: x + (i - (fingers - 1) / 2) * 60 + dx * k,
+        y: y + dy * k,
+        id: i,
+      }));
+    const steps = 12;
+    await cdp.send('Input.dispatchTouchEvent', {
+      type: 'touchStart',
+      touchPoints: points(0),
+    });
+    for (let i = 1; i <= steps; i++) {
+      await cdp.send('Input.dispatchTouchEvent', {
+        type: 'touchMove',
+        touchPoints: points(i / steps),
+      });
+      await this.page.waitForTimeout(16);
+    }
+    await cdp.send('Input.dispatchTouchEvent', {
+      type: 'touchEnd',
+      touchPoints: [],
+    });
+    await cdp.detach();
+    await this.page.waitForTimeout(settleMs);
+  }
+
   /** Save the current state as the next numbered shot: the element matching
    * `target` if given, else the visible page. */
   shot(name: string, caption: string, target?: string): Promise<void> {
@@ -101,6 +148,12 @@ export class View {
       caption,
       target ? this.page.locator(target) : null
     );
+  }
+
+  /** Save the whole scrollable page (not just the visible part) as the next
+   * numbered shot, for layout reviews. */
+  fullPage(name: string, caption: string): Promise<void> {
+    return this.session.record(this, name, caption, 'full-page');
   }
 
   close(): Promise<void> {
@@ -128,7 +181,7 @@ export class Session {
   /** Open `urlPath` (relative to the site root) in a fresh page. */
   async open(urlPath: string, options: OpenOptions = {}): Promise<View> {
     const preset = options.preset ?? 'desktop';
-    const page = await this.browser.newPage({ viewport: PRESETS[preset] });
+    const page = await this.browser.newPage(PRESETS[preset]);
     page.on('console', (message) => {
       if (message.type() === 'error') {
         this.errors.push(`${page.url()}: ${message.text()}`);
@@ -140,6 +193,10 @@ export class Session {
     await page.goto(new URL(urlPath, this.baseUrl).href, {
       waitUntil: 'networkidle',
     });
+    // The dev server's toolbar is fixed over the page; it isn't the site.
+    await page.addStyleTag({
+      content: 'astro-dev-toolbar { display: none !important; }',
+    });
     await options.ready?.(page);
     return new View(page, this, preset);
   }
@@ -148,11 +205,13 @@ export class Session {
     view: View,
     name: string,
     caption: string,
-    target: Locator | null
+    target: Locator | 'full-page' | null
   ): Promise<void> {
     const file = `${String(this.shots.length + 1).padStart(2, '0')}-${name}.png`;
     const filePath = path.join(this.outDir, file);
-    if (target) await target.screenshot({ path: filePath });
+    if (target === 'full-page') {
+      await view.page.screenshot({ path: filePath, fullPage: true });
+    } else if (target) await target.screenshot({ path: filePath });
     else await view.page.screenshot({ path: filePath });
     const url = new URL(view.page.url());
     this.shots.push({

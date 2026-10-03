@@ -21,8 +21,9 @@ import {
   type Scenario,
 } from './harness';
 import { modelsCompare } from './scenarios/models_compare';
+import { modelsMobile } from './scenarios/models_mobile';
 
-const SCENARIOS: readonly Scenario[] = [modelsCompare];
+const SCENARIOS: readonly Scenario[] = [modelsCompare, modelsMobile];
 
 const ROOT = path.resolve(import.meta.dirname, '../..');
 

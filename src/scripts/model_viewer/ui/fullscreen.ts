@@ -2,8 +2,9 @@
  * The viewport's fullscreen toggle. Uses the Fullscreen API where the browser
  * allows it on an element, else (iPhone Safari) pins the viewport over the page
  * with CSS (class `is-pinned`). Either way the viewport carries `is-fullscreen`
- * while open, so one set of styles covers both (ModelViewport.astro); the viewer's ResizeObserver
- * refits the camera to the new size. The button's label (not aria-pressed)
+ * while open, so one set of styles covers both (ModelViewport.astro); the
+ * viewer's ResizeObserver refits the camera to the new size, and `onChange`
+ * hands touch gestures to the camera (one finger scrolls the page otherwise). The button's label (not aria-pressed)
  * says what it will do, as its icon does.
  */
 
@@ -23,7 +24,9 @@ export class FullscreenToggle {
   constructor(
     private readonly target: HTMLElement,
     private readonly button: HTMLButtonElement,
-    private readonly labels: FullscreenLabels
+    private readonly labels: FullscreenLabels,
+    /** Called with the new state on every open and close. */
+    private readonly onChange: (open: boolean) => void = () => {}
   ) {
     button.addEventListener('click', () => this.toggle());
     // The API also closes on Esc / the back gesture; follow it either way.
@@ -77,5 +80,6 @@ export class FullscreenToggle {
     const label = open ? this.labels.exit : this.labels.enter;
     this.button.setAttribute('aria-label', label);
     this.button.title = label;
+    this.onChange(open);
   }
 }

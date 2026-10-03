@@ -12,7 +12,7 @@ The following areas are currently missing, not yet implemented, or in need of wo
 
 - [ ] **Modules page headers**: [On the modules page, the headers are currently id's / refs instead of localized texts.]
 - [ ] **Module page descriptions not embedded**: [On detail module pages, the descriptions do not yet support localization or stat embedment.]
-- [ ] **Mobile support**: [Mobile is only partially supported: some pages (e.g. `/models`) have responsive rules, but most layouts are not yet designed for narrow screens.]
+- [ ] **Mobile support**: [Mobile is only partially supported: `/models` is designed for phones (see the `models-mobile` screenshot scenario), but most other layouts are not yet designed for narrow screens.]
 - [ ] **Faction object type**: [Faction object type is not yet supported on the site, so other objects that reference it will display placeholders, id's, or refs]
 - [ ] **Currency object type**: [Currency object type is not yet supported on the site, so other objects that reference it will display placeholders, id's, or refs]
 

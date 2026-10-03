@@ -46,7 +46,9 @@ npm run screenshots -- models-compare --out /srv/dev/scratch/<topic>-shots
 A scenario is a `Scenario` (`scripts/screenshots/harness.ts`): a name, a
 one-line description, and `run(session)`. Put it in
 `scripts/screenshots/scenarios/<snake_name>.ts` and add it to `SCENARIOS` in
-`scripts/screenshots/run.ts`. `scenarios/models_compare.ts` is the model:
+`scripts/screenshots/run.ts`. `scenarios/models_compare.ts` is the model;
+/models scenarios share their builds and readiness check through
+`scenarios/models_common.ts`:
 
 ```ts
 const view = await session.open('/models?...', { ready: modelsReady });
@@ -60,8 +62,11 @@ const phone = await session.open('/models?...', { preset: 'mobile' });
 
 - **Name each state** after what it shows. Captions say what the reviewer
   should check.
-- **Presets:** `desktop` (1600x1000) and `mobile` (400x860). Add one to
-  `PRESETS` rather than inlining viewport sizes.
+- **Presets:** `desktop` (1600x1000) and `mobile` (400x860, touch, so
+  `pointer: coarse` rules apply). Add one to `PRESETS` rather than inlining
+  viewport sizes.
+- **Whole page:** `view.fullPage(name, caption)` saves the full scrollable page,
+  for checking section order on a phone.
 - **Readiness:** pass `ready` when network idle isn't enough. The /models
   viewer is ready once `#model-status` empties, then a short pause for the
   first frame.

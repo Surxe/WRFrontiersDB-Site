@@ -71,8 +71,17 @@ const localizedDescriptions = generateTemplateMetaDescriptions(
             />
           </button>
         </div>
+        <!-- Mouse or touch wording, by pointer (the styles below). -->
         <p class="model-controls-hint">
-          <LocalizedText tag="span" localizationKey={strings.controlsHint} />
+          <span class="model-hint-mouse">
+            <LocalizedText tag="span" localizationKey={strings.controlsHint} />
+          </span>
+          <span class="model-hint-touch">
+            <LocalizedText
+              tag="span"
+              localizationKey={strings.controlsHintTouch}
+            />
+          </span>
         </p>
       </div>
     </header>
@@ -128,6 +137,20 @@ const localizedDescriptions = generateTemplateMetaDescriptions(
     font-size: 0.9rem;
   }
 
+  .model-controls-hint .model-hint-touch {
+    display: none;
+  }
+
+  @media (pointer: coarse) {
+    .model-controls-hint .model-hint-mouse {
+      display: none;
+    }
+
+    .model-controls-hint .model-hint-touch {
+      display: inline;
+    }
+  }
+
   .model-layout {
     /* The build panels' column width. */
     --model-side: minmax(240px, 300px);
@@ -181,6 +204,12 @@ const localizedDescriptions = generateTemplateMetaDescriptions(
     .model-layout :global(.model-compare-b) {
       grid-column: auto;
       grid-row: auto;
+    }
+
+    /* One column: build B right under build A, so both part lists come
+       before the viewport rather than B landing below the area tables. */
+    .model-stage {
+      order: 1;
     }
   }
 

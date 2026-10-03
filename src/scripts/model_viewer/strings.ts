@@ -30,6 +30,8 @@ export const MODEL_STRINGS = {
   metaDescription: site('Models_Meta_Description'),
   intro: site('Models_Intro'),
   controlsHint: site('Models_Controls_Hint'),
+  controlsHintTouch: site('Models_Controls_Hint_Touch'),
+  twoFingerHint: site('Models_Two_Finger_Hint'),
   viewerLabel: site('Models_Viewer_Label'),
   viewRobotLink: site('Models_View_Robot_Link'),
   viewLoadoutLink: site('Models_View_Loadout_Link'),

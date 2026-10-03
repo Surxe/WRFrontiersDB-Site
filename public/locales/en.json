@@ -37,6 +37,8 @@
     "Models_Meta_Description": "Build any War Robots: Frontiers robot part by part and view its live hitbox and untextured model.",
     "Models_Intro": "Pick a chassis, torso, shoulders and weapons to see any robot's model and hitboxes, or compare two builds to see how their hitbox areas differ.",
     "Models_Controls_Hint": "Drag to orbit, right-drag to pan, scroll to zoom.",
+    "Models_Controls_Hint_Touch": "Two fingers to orbit and zoom the model; fullscreen to orbit with one.",
+    "Models_Two_Finger_Hint": "Use two fingers to move the model",
     "Models_Viewer_Label": "3D model viewer",
     "Models_View_Robot_Link": "View this robot in the 3D model viewer",
     "Models_View_Loadout_Link": "View this loadout in the 3D model viewer",

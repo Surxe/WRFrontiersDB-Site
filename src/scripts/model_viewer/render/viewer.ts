@@ -16,6 +16,7 @@ import {
   type ZoneColorFn,
 } from './scene';
 import {
+  EDGE_PX,
   LABEL_GUTTER_PX,
   LabelOverlay,
   type ScreenPoint,
@@ -126,6 +127,8 @@ export class ModelViewer {
   private readonly camera: THREE.PerspectiveCamera;
   private readonly ortho = new THREE.OrthographicCamera(-1, 1, 1, -1, 1, 1e5);
   private readonly controls: OrbitControls;
+  /** One finger scrolls the page (see setTouchScroll). */
+  private touchScroll = true;
   private readonly grid: THREE.GridHelper;
   /** The 3D view: module meshes and translucent hitboxes, build A's and (while
    * comparing) build B's, B offset per the compare layout. */
@@ -168,6 +171,17 @@ export class ModelViewer {
     this.controls.addEventListener('start', () => {
       this.ease = null;
     });
+    // Two-finger gestures stay with the camera even where one finger scrolls
+    // the page (setTouchScroll); without this the browser pans the page.
+    this.renderer.domElement.addEventListener(
+      'touchmove',
+      (event) => {
+        if (this.touchScroll && event.touches.length > 1)
+          event.preventDefault();
+      },
+      { passive: false }
+    );
+    this.applyTouch();
 
     this.grid = new THREE.GridHelper(
       6000,
@@ -261,6 +275,7 @@ export class ModelViewer {
     this.tags.visible = this.showTags;
     this.controls.enableRotate = !axis;
     this.controls.object = axis ? this.ortho : this.camera;
+    this.applyTouch();
     if (view) {
       if (this.comparing) this.showDiffPlane(view);
       this.fitOrtho();
@@ -275,6 +290,34 @@ export class ModelViewer {
     // Straight down is a degenerate orbit; lean back a hair so the robot's
     // front stays at the top of the screen, as in the 2D Top view.
     this.aimPerspective(side === 'top' ? [-0.01, 0, 1] : [-dx, -dy, -dz]);
+  }
+
+  /** Whether one finger scrolls the page past the canvas (the viewer inline
+   * in the page) rather than moving the camera (fullscreen). Two fingers move
+   * the camera either way. */
+  setTouchScroll(on: boolean): void {
+    this.touchScroll = on;
+    this.applyTouch();
+  }
+
+  /** Touch gestures for the scroll mode and camera mode. Scrolling, one
+   * finger is the page's, so two fingers orbit (3D) or pan (2D) as well as
+   * zoom. */
+  private applyTouch(): void {
+    const canvas = this.renderer.domElement;
+    if (this.touchScroll) {
+      canvas.style.touchAction = 'pan-y';
+      this.controls.touches = {
+        ONE: null,
+        TWO: this.view ? THREE.TOUCH.DOLLY_PAN : THREE.TOUCH.DOLLY_ROTATE,
+      };
+    } else {
+      canvas.style.touchAction = 'none';
+      this.controls.touches = {
+        ONE: THREE.TOUCH.ROTATE,
+        TWO: THREE.TOUCH.DOLLY_PAN,
+      };
+    }
   }
 
   /** Keep the axis views' part labels clear of these controls over the
@@ -334,8 +377,8 @@ export class ModelViewer {
     this.labelAnchors = labels.map(({ anchor }) =>
       this.silhouettes.localToWorld(new THREE.Vector3(...anchor))
     );
-    // Make room for the label columns (or give it back); only on a change,
-    // as refitting drops the user's zoom and pan.
+    // Make room for the labels (or give it back); only on a change, as
+    // refitting drops the user's zoom and pan.
     if (this.view && hadLabels !== labels.length > 0) this.fitOrtho();
     this.requestRender();
   }
@@ -583,32 +626,45 @@ export class ModelViewer {
   }
 
   /** Aim the orthographic camera down the active view's axis, framing the
-   * whole robot. */
+   * whole robot clear of the part labels. Every view frames the same size
+   * (the robot's longest side), so switching views keeps the scale. */
   private fitOrtho(): void {
     if (!this.view) return;
     const box = new THREE.Box3().setFromObject(this.silhouettes);
     if (box.isEmpty()) return;
     const sphere = box.getBoundingSphere(new THREE.Sphere());
+    const size = box.getSize(new THREE.Vector3());
+    // Any axis view shows two of the box's sides, so this square holds it.
+    const extent = Math.max(size.x, size.y, size.z, 1e-6) * 1.05;
     const width = this.container.clientWidth;
     const height = Math.max(1, this.container.clientHeight);
-    // With labels, shrink the robot to fit between their columns.
-    const gutter = this.labels.isEmpty
-      ? 0
-      : Math.min(LABEL_GUTTER_PX, width * 0.25);
-    const r =
-      sphere.radius *
-      1.05 *
-      Math.max(1, height / Math.max(1, width - 2 * gutter));
-    const aspect = width / height;
+    // The pixel box the robot fits in: between the label rows on a narrow
+    // canvas, between the label columns on a wide one.
+    const bands = this.labels.bands(width, height);
+    let fitWidth = width;
+    let fitTop = 0;
+    let fitHeight = height;
+    if (bands) {
+      fitWidth = width - 2 * EDGE_PX;
+      fitTop = bands.top;
+      fitHeight = height - bands.top - bands.bottom;
+    } else if (!this.labels.isEmpty) {
+      fitWidth = width - 2 * Math.min(LABEL_GUTTER_PX, width * 0.25);
+    }
+    const scale =
+      Math.min(Math.max(1, fitWidth), Math.max(1, fitHeight)) / extent;
+    // Pixels from the canvas top to the robot's center.
+    const centerY = fitTop + Math.max(1, fitHeight) / 2;
+    const r = sphere.radius;
     this.ortho.up.set(0, 1, 0);
     if (this.view === 'top') this.ortho.up.set(1, 0, 0); // robot's front up
     this.ortho.position
       .copy(sphere.center)
       .addScaledVector(ueDirection(VIEWS[this.view].dir), -r * 4);
-    this.ortho.left = -r * aspect;
-    this.ortho.right = r * aspect;
-    this.ortho.top = r;
-    this.ortho.bottom = -r;
+    this.ortho.left = -width / 2 / scale;
+    this.ortho.right = width / 2 / scale;
+    this.ortho.top = centerY / scale;
+    this.ortho.bottom = -(height - centerY) / scale;
     this.ortho.near = 1;
     this.ortho.far = r * 10;
     this.ortho.zoom = 1;
