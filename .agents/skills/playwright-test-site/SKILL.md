@@ -38,8 +38,10 @@ root at `.mcp.json`:
 
 When the MCP tools are not loaded in the current session (e.g. the server was added
 mid-session and can't hot-load), the same checks can be run with a throwaway Node
-script. Install `playwright` into a scratch dir (`npm i playwright`), launch
-`chromium.launch({ headless: true })`, and drive the dev-server URL. This is the
+script. `playwright` is a pinned devDependency, so import it from the repo.
+Launch through `launchBrowser()` in `scripts/screenshots/harness.ts`, which
+also makes WebGL work headless; see the `screenshot-review` skill, which runs
+repeatable named screenshot scenarios. Then drive the dev-server URL. This is the
 method used to confirm layout bugs like the shoulder-legend overlap: navigate,
 `page.evaluate` to measure `getBoundingClientRect()` for collisions, then
 `element.screenshot()` the region. Sweep several viewport widths (see
@@ -49,7 +51,7 @@ flex-wrap bugs that only appear on narrow viewports.
 ## Prerequisites
 
 - Node.js and npm installed
-- Playwright dependencies available (MCP via `.mcp.json`, or a scratch `npm i playwright`)
+- Playwright dependencies available (MCP via `.mcp.json`, or the pinned `playwright` devDependency)
 - Chromium cached at `~/.cache/ms-playwright` (already present on this box)
 - Dev server running (`npm run dev`, default `http://localhost:4321/`) or a preview build
 - Working directory resolved for npm commands

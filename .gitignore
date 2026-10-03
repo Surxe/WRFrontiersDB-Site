@@ -1,5 +1,7 @@
 # build output
 dist/
+# screenshot review output (npm run screenshots)
+/screenshots/
 # generated types
 .astro/
 
