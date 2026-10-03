@@ -26,6 +26,8 @@ assume 4321 without checking.
 - Use `npm run build` + `npm run preview` when you specifically need to verify
   the production build rather than dev.
 - Stop the background server when finished.
+- To capture screenshots of a change for review, use the `screenshot-review`
+  skill (`npm run screenshots`). It starts and stops its own dev server.
 
 > Tool note: whatever agent runs this, launch the server as a non-blocking
 > background process and poll its output for the port - do not wait on it in the
