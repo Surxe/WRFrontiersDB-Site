@@ -7,7 +7,7 @@
     "build": "astro build",
     "build:custom-domain": "CUSTOM_DOMAIN=true astro build",
     "build:github-pages": "astro build",
-    "build:slugs": "tsx scripts/build-slugs.ts",
+    "sync:slugs": "tsx scripts/sync-slugs.ts",
     "screenshots": "tsx scripts/screenshots/run.ts",
     "preview": "astro preview",
     "astro": "astro",
