@@ -57,7 +57,7 @@ String-based references linking game objects together using the format `OBJID_[T
 
 ### Slug
 
-URL-friendly identifiers for routing that replace raw object IDs. Slugs are human-readable, lowercase with hyphens, and generated at build time with mappings stored in `slug_map.json`.
+URL-friendly identifiers for routing that replace raw object IDs. Slugs are human-readable, lowercase with hyphens, and decided by WRFrontiersDB-Data, which publishes the id -> slug mapping as `index/slug_map.json` (copied to `public/slug_map.json` at build time).
 
 ### Production Status
 

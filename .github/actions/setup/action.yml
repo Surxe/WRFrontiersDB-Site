@@ -32,8 +32,8 @@ runs:
       shell: bash
       run: npm ci
 
-    # slug_map.json is a generated build input (gitignored); the slug collision
-    # test and astro build both read it, so produce it live first.
-    - name: Generate slug map
+    # The slug map comes from the data repo (index/slug_map.json); the slug
+    # collision test and astro build both read the copy in public/.
+    - name: Copy slug map
       shell: bash
-      run: npm run build:slugs
+      run: npm run sync:slugs
