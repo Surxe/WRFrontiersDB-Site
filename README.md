@@ -33,6 +33,11 @@ its `tools/wrfdb_data/slug_map.py` builds `index/slug_map.json`, which the Disco
 reads too. Run `sync:slugs` after cloning and after pulling new data; CI and the
 pipeline copy it on every build.
 
+Meta descriptions (per language) are decided here, in `src/utils/meta_description.ts`;
+`src/utils/object_meta_descriptions.ts` gives each object page its own, and the build
+also publishes all of them as `/meta_descriptions.json` (type -> id -> language), with
+the CI run that built it as `build_id`. The Discord bot uses those for its embeds.
+
 AI agent docs live in `.agents/`; run `bash .agents/setup-symlinks.sh` once per
 checkout (see [.agents/README.md](.agents/README.md)).
 

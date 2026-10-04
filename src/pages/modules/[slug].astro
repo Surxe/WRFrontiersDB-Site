@@ -1,11 +1,5 @@
 ---
-import type {
-  Module,
-  ModuleRarity,
-  ModuleStatsTable,
-} from '../../types/module';
-import type { CharacterModule } from '../../types/character_module';
-import type { Ability } from '../../types/ability';
+import type { Module, ModuleRarity } from '../../types/module';
 import type { Rarity } from '../../types/rarity';
 import Breadcrumb from '../../components/Breadcrumb.astro';
 import Icon from '../../components/Icon.astro';
@@ -20,11 +14,7 @@ import {
 import { getDefaultString } from '../../utils/localization';
 import { generateModuleLocalizedMetaDescriptions } from '../../utils/meta_description';
 import { resolveObjectRef } from '../../utils/object_resolver';
-import type { ModuleStat } from '../../types/module';
-import {
-  getModuleStatValueChoices,
-  getModuleAbilityStats,
-} from '../../utils/stat';
+import { getModuleLeadStats } from '../../utils/object_meta_descriptions';
 import StatEmbedLocalizedText from '../../components/StatEmbedLocalizedText.astro';
 import LevelSwitcher from '../../components/LevelSwitcher.astro';
 import ObjRef from '../../components/obj_ref/ObjRef.astro';
@@ -67,41 +57,17 @@ const moduleGroupId = module.module_group_ref
   ? refToId(module.module_group_ref)
   : undefined;
 
-// Get stat choices for leveled descriptions
-const allModuleStats = getParseObjects<ModuleStat>('Objects/ModuleStat.json');
-const allModuleStatsTables = getParseObjects<ModuleStatsTable>(
-  'Objects/ModuleStatsTable.json'
-);
+// The stats and abilities the page leads with, at its initial (top) level;
+// the meta description shows the same.
+const { statValueChoices, abilityStats, initialLevel } =
+  getModuleLeadStats(module);
+const maxLevel = module.module_scalars?.levels?.variables?.length || 0;
 
-const statValueChoices = getModuleStatValueChoices(
-  module,
-  allModuleStats,
-  allModuleStatsTables,
-  getDefaultString(module.description)
-);
-
-// Get ability-linked descriptions
-const allCharacterModules = getParseObjects<CharacterModule>(
-  'Objects/CharacterModule.json'
-);
-const allAbilities = getParseObjects<Ability>('Objects/Ability.json');
 const allModuleClasses = getParseObjects<ModuleClass>(
   'Objects/ModuleClass.json'
 );
 const allModuleTags = getParseObjects<ModuleTag>('Objects/ModuleTag.json');
 const allFactions = getParseObjects<Faction>('Objects/Faction.json');
-
-const abilityStats = getModuleAbilityStats(
-  module,
-  allCharacterModules,
-  allAbilities,
-  allModuleStats,
-  allModuleStatsTables
-);
-
-const maxLevel = module.module_scalars?.levels?.variables?.length || 0;
-// Modules open at their top level; the meta description uses the same level.
-const initialLevel = Math.max(maxLevel - 1, 0);
 
 if (!module.name) {
   throw new Error(`Module with id ${id} is missing name. 

@@ -26,7 +26,7 @@ import { refToId } from '../../utils/object_reference';
 import ObjRef from '../../components/obj_ref/ObjRef.astro';
 import TalentDisplay from '../../components/pilot/TalentDisplay.astro';
 import CurrencyAmount from '../../components/CurrencyAmount.astro';
-import { generatePilotLocalizedMetaDescriptions } from '../../utils/meta_description';
+import { getObjectMetaDescriptions } from '../../utils/object_meta_descriptions';
 import PilotsNavBox from '../../components/nav/PilotsNavBox.astro';
 import { PILOT_TYPE_LEGENDARY_REF } from '../../utils/constants';
 import { getPilotDetailBreadcrumbs } from '../../utils/breadcrumb';
@@ -75,10 +75,7 @@ const sellPriceCurrency = pilot.sell_price?.currency_ref
 // Extract English text as fallback
 const defaultName = getDefaultString(pilot.first_name) || pilot.id;
 
-const localizedDescriptions = generatePilotLocalizedMetaDescriptions(
-  pilot,
-  pilotTalents
-);
+const localizedDescriptions = getObjectMetaDescriptions('Pilot', id);
 
 const objRefData = getObjRefData(pilot);
 ---
