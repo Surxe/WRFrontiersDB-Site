@@ -9,7 +9,7 @@ import { getAllVirtualBots, getVirtualBotById } from '../../utils/bot_modules';
 import type { CharacterPreset } from '../../types/character_preset';
 import type { Module, ModuleType } from '../../types/module';
 import { getDefaultString } from '../../utils/localization';
-import { generateRobotLocalizedMetaDescriptions } from '../../utils/meta_description';
+import { getObjectMetaDescriptions } from '../../utils/object_meta_descriptions';
 import { refToId } from '../../utils/object_reference';
 import { findChassis } from '../../scripts/robot/build/classify';
 import ModelViewerLink from '../../components/models/ModelViewerLink.astro';
@@ -43,10 +43,7 @@ export function getRobotDetailBreadcrumbs(botName: string) {
   ];
 }
 
-const localizedDescriptions = generateRobotLocalizedMetaDescriptions(
-  bot,
-  getDefaultString(bot.name) || bot.id
-);
+const localizedDescriptions = getObjectMetaDescriptions('VirtualBot', bot.id);
 
 // Deep link into the 3D viewer: the chassis alone is enough -- the viewer fills
 // the required torso and shoulders with this bot's own core modules and leaves

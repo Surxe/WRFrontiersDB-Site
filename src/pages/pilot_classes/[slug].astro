@@ -10,7 +10,7 @@ import {
   generateSlugBasedStaticPaths,
 } from '../../utils/parse_object';
 import { getDefaultString } from '../../utils/localization';
-import { generateTemplateMetaDescriptions } from '../../utils/meta_description';
+import { getObjectMetaDescriptions } from '../../utils/object_meta_descriptions';
 import PilotClassesNavBox from '../../components/nav/PilotClassesNavBox.astro';
 import { getPilotClassDetailBreadcrumbs } from '../../utils/breadcrumb';
 
@@ -27,11 +27,7 @@ const pilotClass = getParseObject<PilotClass>(id, 'Objects/PilotClass.json');
 const defaultName = getDefaultString(pilotClass.name) || pilotClass.id;
 
 // Generate localized meta descriptions
-const localizedDescriptions = generateTemplateMetaDescriptions(
-  { Key: 'PilotClass_Meta_Description', TableNamespace: 'Web_UI' },
-  { name: pilotClass.name },
-  defaultName
-);
+const localizedDescriptions = getObjectMetaDescriptions('PilotClass', id);
 ---
 
 <ParseObjectPage

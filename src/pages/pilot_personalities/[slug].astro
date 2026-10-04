@@ -11,7 +11,7 @@ import {
 } from '../../utils/parse_object';
 import { getDefaultString } from '../../utils/localization';
 import { getPilotPersonalityDetailBreadcrumbs } from '../../utils/breadcrumb';
-import { generateTemplateMetaDescriptions } from '../../utils/meta_description';
+import { getObjectMetaDescriptions } from '../../utils/object_meta_descriptions';
 import PilotPersonalitiesNavBox from '../../components/nav/PilotPersonalitiesNavBox.astro';
 
 export async function getStaticPaths() {
@@ -31,11 +31,7 @@ const defaultName =
   getDefaultString(pilotPersonality.name) || pilotPersonality.id;
 
 // Generate localized meta descriptions
-const localizedDescriptions = generateTemplateMetaDescriptions(
-  { Key: 'PilotPersonality_Meta_Description', TableNamespace: 'Web_UI' },
-  { name: pilotPersonality.name },
-  defaultName
-);
+const localizedDescriptions = getObjectMetaDescriptions('PilotPersonality', id);
 ---
 
 <ParseObjectPage

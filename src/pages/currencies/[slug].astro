@@ -14,7 +14,7 @@ export async function getStaticPaths() {
   return generateSlugBasedStaticPaths('Currency');
 }
 
-import { generateCurrencyLocalizedMetaDescriptions } from '../../utils/meta_description';
+import { getObjectMetaDescriptions } from '../../utils/object_meta_descriptions';
 import Icon from '../../components/Icon.astro';
 import ObjectPageScripts from '../../components/ObjectPageScripts.astro';
 
@@ -23,10 +23,7 @@ const currency = getParseObject<Currency>(id, 'Objects/Currency.json');
 
 const defaultName = getDefaultString(currency.name) || currency.id;
 
-const localizedDescriptions = generateCurrencyLocalizedMetaDescriptions(
-  currency,
-  defaultName
-);
+const localizedDescriptions = getObjectMetaDescriptions('Currency', id);
 ---
 
 <ParseObjectPage

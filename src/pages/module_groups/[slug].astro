@@ -9,13 +9,12 @@ import {
   generateSlugBasedStaticPaths,
   getParseObject,
 } from '../../utils/parse_object';
-import { generateTemplateMetaDescriptions } from '../../utils/meta_description';
+import { getObjectMetaDescriptions } from '../../utils/object_meta_descriptions';
 import { getModuleGroupDetailBreadcrumbs } from '../../utils/breadcrumb';
 import { prepareObjectList } from '../../utils/list';
 import type { Module } from '../../types/module';
 import type { ModuleGroup } from '../../types/module_group';
 import ObjRef from '../../components/obj_ref/ObjRef.astro';
-import { getDefaultString } from '../../utils/localization';
 import { getObjRefData } from '../../utils/obj_ref';
 import TextElements from '../../components/obj_ref/TextElements.astro';
 import { refToId } from '../../utils/object_reference';
@@ -56,18 +55,7 @@ const filteredModules = prepareObjectList(Object.fromEntries(allGroupModules), {
 });
 
 // Generate localized meta descriptions
-const localizedDescriptions = generateTemplateMetaDescriptions(
-  { Key: 'ModuleGroup_Meta_Description', TableNamespace: 'Web_UI' },
-  {
-    groupName: group.name,
-    groupDescription: group.description || {
-      Key: '',
-      TableNamespace: '',
-      en: '',
-    },
-  },
-  getDefaultString(group.name) || id
-);
+const localizedDescriptions = getObjectMetaDescriptions('ModuleGroup', id);
 
 const objRefData = getObjRefData(group);
 ---
