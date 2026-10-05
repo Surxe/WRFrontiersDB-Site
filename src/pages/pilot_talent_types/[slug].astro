@@ -13,7 +13,7 @@ import {
   generateSlugBasedStaticPaths,
 } from '../../utils/parse_object';
 import { getStatValueChoices } from '../../utils/stat';
-import { generatePilotTalentTypeLocalizedMetaDescriptions } from '../../utils/meta_description';
+import { getObjectMetaDescriptions } from '../../utils/object_meta_descriptions';
 import PilotTalentTypesNavBox from '../../components/nav/PilotTalentTypesNavBox.astro';
 import { getPilotTalentTypeDetailBreadcrumbs } from '../../utils/breadcrumb';
 
@@ -41,13 +41,7 @@ const talentsForThisType = Object.values(pilotTalents).filter(
 );
 
 // Generate localized meta descriptions
-const localizedDescriptions = generatePilotTalentTypeLocalizedMetaDescriptions(
-  pilotTalentType,
-  talentsForThisType.map(
-    (talent) => [talent.id, talent] as [string, PilotTalent]
-  ),
-  id
-);
+const localizedDescriptions = getObjectMetaDescriptions('PilotTalentType', id);
 ---
 
 <ParseObjectPage

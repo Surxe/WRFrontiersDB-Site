@@ -26,17 +26,13 @@ The build scripts set the `CUSTOM_DOMAIN` environment variable which configures 
 
 ## Slug Management
 
-### Rebuilding Slugs
-
-After modifying slug generation logic or adding new object types, rebuild the slug map:
+Slugs (the URL path segment of each object page) are decided in WRFrontiersDB-Data:
+`tools/wrfdb_data/slug_map.py` builds `index/slug_map.json`, and the Orchestrator
+rebuilds it after every parse. The Site only copies it:
 
 ```bash
-npm run build:slugs
+npm run sync:slugs
 ```
 
-This updates `public/slug_map.json`
-
-**When to rebuild slugs:**
-
-- Adding new object types to the site
-- Modifying slug generation logic
+This updates `public/slug_map.json` (gitignored). To add an object type or change a
+slug rule, change the data repo's tool, rebuild the map there, then sync.

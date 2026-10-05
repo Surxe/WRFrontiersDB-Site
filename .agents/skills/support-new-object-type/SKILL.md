@@ -30,5 +30,5 @@ Ensure you have answers from the user for the following questions:
 8. **Call** `generateSlugBasedStaticPaths("{parseObject}")`
 9. **Add link** to homepage ([index.astro](../../src/pages/index.astro))
 10. **Configure breadcrumbs** in `src/components/Breadcrumbs.astro`'s `getBreadcrumbPath` function
-11. **Configure slug generation** in `src/utils/slug_generator.ts`'s `generateSlugForObjectType` function and add to list of supported object types in `scripts/build-slugs.ts`
-12. **Rebuild slugs**: `npm run build:slugs`
+11. **Configure slug generation** in WRFrontiersDB-Data (a separate PR there): add the type to `OBJECT_TYPES` in `tools/wrfdb_data/slug_map.py`, plus a rule in `_slug_for` if it doesn't slug by English name, then rebuild with `PYTHONPATH=tools python3 -m wrfdb_data slug-map`
+12. **Copy slugs**: `npm run sync:slugs` (with the data checkout on that branch)

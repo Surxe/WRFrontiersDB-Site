@@ -10,9 +10,8 @@ import {
   generateSlugBasedStaticPaths,
 } from '../../utils/parse_object';
 import { getCharacterPresetDetailBreadcrumbs } from '../../utils/breadcrumb';
-import { getDefaultString } from '../../utils/localization';
 import { getObjRefData } from '../../utils/obj_ref';
-import { generateCharacterPresetLocalizedMetaDescriptions } from '../../utils/meta_description';
+import { getObjectMetaDescriptions } from '../../utils/object_meta_descriptions';
 import TextElements from '../../components/obj_ref/TextElements.astro';
 import type { CharacterPreset } from '../../types/character_preset';
 import { selectionFromPreset } from '../../scripts/robot/build/graph';
@@ -34,12 +33,7 @@ const modules = getParseObjects('Objects/Module.json');
 
 const objRefData = preset ? getObjRefData(preset) : null;
 
-const localizedDescriptions = preset
-  ? generateCharacterPresetLocalizedMetaDescriptions(
-      preset,
-      getDefaultString(preset.name) || preset.id
-    )
-  : [];
+const localizedDescriptions = getObjectMetaDescriptions('CharacterPreset', id);
 ---
 
 <ParseObjectPage

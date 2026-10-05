@@ -2,7 +2,8 @@
  * Slug resolution utilities for converting between IDs and slugs
  */
 
-import type { SlugMap } from './slug_generator';
+/** Object id -> page slug, from WRFrontiersDB-Data's index/slug_map.json. */
+export type SlugMap = Record<string, string>;
 
 // Build-time slug map (will be populated during build)
 let slugMap: SlugMap = {};

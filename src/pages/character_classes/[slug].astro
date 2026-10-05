@@ -10,7 +10,7 @@ import {
   generateSlugBasedStaticPaths,
 } from '../../utils/parse_object';
 import { getDefaultString } from '../../utils/localization';
-import { generateCharacterClassLocalizedMetaDescriptions } from '../../utils/meta_description';
+import { getObjectMetaDescriptions } from '../../utils/object_meta_descriptions';
 import CharacterClassesNavBox from '../../components/nav/CharacterClassesNavBox.astro';
 import { getCharacterClassDetailBreadcrumbs } from '../../utils/breadcrumb';
 
@@ -28,10 +28,7 @@ const characterClass = getParseObject<CharacterClass>(
 
 const defaultName = getDefaultString(characterClass.name) || characterClass.id;
 
-const localizedDescriptions = generateCharacterClassLocalizedMetaDescriptions(
-  characterClass,
-  defaultName
-);
+const localizedDescriptions = getObjectMetaDescriptions('CharacterClass', id);
 ---
 
 <ParseObjectPage localizedDescriptions={localizedDescriptions} type="article">
