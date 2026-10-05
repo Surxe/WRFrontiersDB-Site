@@ -6,10 +6,9 @@ export interface Props {
   id?: string;
   tag: string;
   localizationKey: LocalizationKey;
-  stripColorMarkup?: boolean;
 }
 
-const { id, tag, localizationKey, stripColorMarkup = false } = Astro.props;
+const { id, tag, localizationKey } = Astro.props;
 const Tag = tag as any;
 
 const namespace = localizationKey.TableNamespace;
@@ -27,12 +26,7 @@ localization can resolve the proper text for the current language. InvariantStri
 only used as a static element when no Key+TableNamespace are present.
 -->{
   hasLocalizableKey ? (
-    <Tag
-      id={id}
-      data-loc-key={key}
-      data-loc-namespace={namespace}
-      data-strip-color-markup={stripColorMarkup}
-    >
+    <Tag id={id} data-loc-key={key} data-loc-namespace={namespace}>
       {defaultText}
     </Tag>
   ) : (

@@ -2,11 +2,25 @@ import * as fs from 'fs';
 import * as path from 'path';
 import type { LocalizationKey } from '../types/localization';
 import _langs from '../../public/langs.json';
+import {
+  stripGameMarkup,
+  stripGameMarkupFromLocData,
+  styleTagNames,
+} from '../../public/js/game_markup.js';
 
 const serverLocalizationCache: Record<
   string,
   Record<string, Record<string, string>>
 > = {};
+
+/** Each language's game style tag names, read before its markup is stripped. */
+const serverStyleTagCache: Record<string, Set<string>> = {};
+
+/** The game's style tag names in `lang` (see game_markup.js), for stripGameMarkup. */
+export function gameStyleTagNames(lang: string): Set<string> {
+  loadLocalizationData(lang);
+  return serverStyleTagCache[lang] ?? new Set();
+}
 
 /**
  * Load localization data from local file system
@@ -26,7 +40,12 @@ export function loadLocalizationData(lang: string) {
     let gameData = {};
     if (fs.existsSync(localizationPath)) {
       const data = fs.readFileSync(localizationPath, 'utf8');
-      gameData = JSON.parse(data);
+      const rawGameData = JSON.parse(data);
+      serverStyleTagCache[lang] = styleTagNames(rawGameData);
+      gameData = stripGameMarkupFromLocData(
+        rawGameData,
+        serverStyleTagCache[lang]
+      );
     }
 
     const localPath = path.join(
@@ -63,23 +82,16 @@ export function getDefaultString(
   }
   // Prefer the en localization if Key+TableNamespace exist (it is the proper English text).
   // Only fall back to InvariantString when there is no Key+TableNamespace present.
-  if (localizationKey.Key && localizationKey.TableNamespace) {
-    if (localizationKey.en) {
-      return localizationKey.en;
-    }
-    if (localizationKey.InvariantString) {
-      return localizationKey.InvariantString;
-    }
+  const order =
+    localizationKey.Key && localizationKey.TableNamespace
+      ? [localizationKey.en, localizationKey.InvariantString]
+      : [localizationKey.InvariantString, localizationKey.en];
+  const text = order.find(Boolean);
+  if (!text) {
     throw new Error('LocalizationKey has no InvariantString or en field');
   }
-  if (localizationKey.InvariantString) {
-    return localizationKey.InvariantString;
-  }
-  if (localizationKey.en) {
-    return localizationKey.en;
-  }
-
-  throw new Error('LocalizationKey has no InvariantString or en field');
+  // `en` is copied from the game's localization, so it carries its markup.
+  return stripGameMarkup(text, gameStyleTagNames('en'));
 }
 
 /**

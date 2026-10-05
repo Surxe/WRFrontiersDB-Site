@@ -36,7 +36,8 @@ pipeline copy it on every build.
 Meta descriptions (per language) are decided here, in `src/utils/meta_description.ts`;
 `src/utils/object_meta_descriptions.ts` gives each object page its own, and the build
 also publishes all of them as `/meta_descriptions.json` (type -> id -> language), with
-the CI run that built it as `build_id`. The Discord bot uses those for its embeds.
+the CI run that built it as `build_id`. The Discord bot uses those for its embeds, as
+they are: plain text, with the game's rich-text markup already stripped.
 
 AI agent docs live in `.agents/`; run `bash .agents/setup-symlinks.sh` once per
 checkout (see [.agents/README.md](.agents/README.md)).

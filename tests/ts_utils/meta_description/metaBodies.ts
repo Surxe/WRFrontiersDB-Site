@@ -57,6 +57,14 @@ describe('precomputeMetaBodies', () => {
       )
     ).toBe(true);
   });
+
+  it('strips game markup from every body', () => {
+    expect(
+      precomputeMetaBodies(
+        () => 'Supply Gear: <Orange>Supply Gear</> modules'
+      ).every((b) => b.description === 'Supply Gear: Supply Gear modules')
+    ).toBe(true);
+  });
 });
 
 describe('pilotMetaBody', () => {
@@ -84,8 +92,8 @@ describe('statEmbeddedText / pilotTalentMetaBody', () => {
     },
   };
 
-  it('embeds the chosen stat value and strips markup', () => {
-    const key = text('Reload  <b>{Reload}</b> faster.');
+  it('embeds the chosen stat value, whitespace collapsed', () => {
+    const key = text('Reload  {Reload} faster.');
     expect(statEmbeddedText(key, choices, 'en')).toBe('Reload 5% faster.');
     expect(statEmbeddedText(key, choices, 'en', 1)).toBe('Reload 10% faster.');
   });

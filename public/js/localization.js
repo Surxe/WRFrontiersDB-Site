@@ -9,21 +9,7 @@ import {
   replaceStatPlaceholdersFromChoiceMap,
 } from './stat_formatting.js';
 import { updateNumberElements } from './number_formatting.js';
-
-/**
- * Removes color markup patterns from text
- * Patterns like <Orange>Gear</> become Gear
- * @param {string} text - Text to process
- * @returns {string} Text with color markup removed
- */
-function removeColorMarkup(text) {
-  if (!text || typeof text !== 'string') {
-    return text;
-  }
-
-  // Remove patterns like <Color>text</> where Color can be any word
-  return text.replace(/<(\w+)>([^<]*)<\/>/g, '$2');
-}
+import { escapeHtml, stripGameMarkupFromLocData } from './game_markup.js';
 
 // Localization cache shared across all pages
 const localizationCache = {};
@@ -48,7 +34,7 @@ export async function loadLanguage(lang, version) {
 
     if (!gameResponse.ok) throw new Error(`HTTP ${gameResponse.status}`);
 
-    const gameData = await gameResponse.json();
+    const gameData = stripGameMarkupFromLocData(await gameResponse.json());
     let localData = {};
 
     if (localResponse && localResponse.ok) {
@@ -131,7 +117,10 @@ export function updateLocalizedElements(locData, selectors) {
       const fallback = element.dataset.locFallback || element.textContent;
 
       if (namespace && key) {
-        let localizedText = getLocalizedText(locData, namespace, key, fallback);
+        // Escaped first: the stat values added below are HTML, the text is not.
+        let localizedText = escapeHtml(
+          getLocalizedText(locData, namespace, key, fallback)
+        );
 
         // Handle stat replacements if data-stat-value-choices exists
         const statValueChoices = element.dataset.statValueChoices;
@@ -183,18 +172,14 @@ export function updateLocalizedElements(locData, selectors) {
                 replacement = embedValue.en;
               }
               const regex = new RegExp(`\\{${embedKey}\\}`, 'g');
-              localizedText = localizedText.replace(regex, replacement);
+              localizedText = localizedText.replace(
+                regex,
+                escapeHtml(replacement)
+              );
             }
           } catch (error) {
             console.warn('Failed to parse loc embeds:', error);
           }
-        }
-
-        // Apply color markup stripping if requested
-        const shouldStripColorMarkup =
-          element.dataset.stripColorMarkup === 'true';
-        if (shouldStripColorMarkup) {
-          localizedText = removeColorMarkup(localizedText);
         }
 
         element.innerHTML = localizedText;

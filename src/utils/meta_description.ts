@@ -6,6 +6,7 @@ import {
   resolveLocalizationKey,
   loadLocalizationData,
   localizeText,
+  gameStyleTagNames,
 } from './localization';
 import type { Pilot, PilotTalent, PilotTalentType } from '../types/pilot';
 import type { CharacterPreset } from '../types/character_preset';
@@ -18,6 +19,7 @@ import { refToId } from './object_reference';
 import { getCoreModuleCategory } from './core_modules';
 import { MODULE_CATEGORY_IDS } from './constants';
 import langs from '../../public/langs.json';
+import { stripGameMarkup } from '../../public/js/game_markup.js';
 
 /** One precomputed meta description body, for a single language. */
 export interface LocalizedDescription {
@@ -33,16 +35,19 @@ const DEFAULT_LANG = 'en';
 /**
  * Precompute a meta description body for every supported language. A language
  * whose body comes out empty falls back to the English body, and English falls
- * back to `fallback`.
+ * back to `fallback`. Bodies are plain text: game markup is always stripped,
+ * since they are also served to other consumers (meta_descriptions.json).
  */
 export function precomputeMetaBodies(
   buildBody: MetaBodyBuilder,
   fallback = ''
 ): LocalizedDescription[] {
-  const english = buildBody(DEFAULT_LANG) || fallback;
+  const build = (lang: string) =>
+    stripGameMarkup(buildBody(lang), gameStyleTagNames(lang));
+  const english = build(DEFAULT_LANG) || fallback;
   return Object.keys(langs).map((lang) => ({
     lang,
-    description: (lang === DEFAULT_LANG ? english : buildBody(lang)) || english,
+    description: (lang === DEFAULT_LANG ? english : build(lang)) || english,
   }));
 }
 
@@ -75,7 +80,7 @@ export function generateTemplateMetaDescriptions(
 
 /**
  * Localize `text` into `lang` and fill its `{stat}` placeholders from the given
- * stat choice (level), as plain text: no markup, whitespace collapsed.
+ * stat choice (level), as plain text: whitespace collapsed.
  */
 export function statEmbeddedText(
   text: LocalizationKey | undefined,
@@ -93,10 +98,7 @@ export function statEmbeddedText(
       locData
     );
   }
-  return localized
-    .replace(/<[^>]*>/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
+  return localized.replace(/\s+/g, ' ').trim();
 }
 
 /** Pilot talent body: its description with stat values embedded. */
