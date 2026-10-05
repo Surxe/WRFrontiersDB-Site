@@ -1,5 +1,5 @@
 name: Build site
-description: Build the Astro site and upload it as the GitHub Pages artifact
+description: Build the Astro site, record which Data commit it was built from, and upload it as the GitHub Pages artifact
 
 runs:
   using: composite
@@ -9,6 +9,14 @@ runs:
       run: npm run build
       env:
         CUSTOM_DOMAIN: 'true'
+
+    # Served as /deploy.json, and uploaded as the deploy-record run artifact
+    # that the Orchestrator copies into its deploy state.
+    - name: Record deploy
+      uses: Surxe/WRFrontiersDB-Data/.github/actions/record-deploy@deploy-record
+      with:
+        data-path: WRFrontiersDB-Data
+        out: dist/deploy.json
 
     - name: Upload Pages artifact
       uses: actions/upload-pages-artifact@v3

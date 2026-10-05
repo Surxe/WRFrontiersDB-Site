@@ -1,22 +1,15 @@
 name: Set up site
 description: Check out game data, install dependencies, and generate the slug map
 
-inputs:
-  data-repo-pat:
-    description: PAT with read access to Surxe/WRFrontiersDB-Data
-    required: true
-
 runs:
   using: composite
   steps:
-    # Checkout data repo (uses PAT ONLY for this step)
+    # Data's shared checkout (public repo, no token); the build records the same
+    # checkout's commit in /deploy.json.
     - name: Checkout Data Repo
-      uses: actions/checkout@v4
+      uses: Surxe/WRFrontiersDB-Data/.github/actions/checkout-data@deploy-record
       with:
-        repository: Surxe/WRFrontiersDB-Data
-        token: ${{ inputs.data-repo-pat }}
         path: WRFrontiersDB-Data
-        ref: main
 
     - name: Symlink WRFrontiersDB-Data to public
       shell: bash

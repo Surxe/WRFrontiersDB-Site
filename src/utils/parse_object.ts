@@ -15,6 +15,20 @@ function readJsonFile(filePath: string): Record<string, ParseObject> | null {
 }
 
 /**
+ * The game version of the data being built from (`current/version.txt`), or
+ * null if the data checkout has none.
+ */
+export function readDataVersion(): string | null {
+  const versionPath = path.join(
+    process.cwd(),
+    'WRFrontiersDB-Data/current/version.txt'
+  );
+  return fs.existsSync(versionPath)
+    ? fs.readFileSync(versionPath, 'utf8').trim()
+    : null;
+}
+
+/**
  * Load parse objects from the current directory
  * Set each object's parseObjectClass attr based on the file name
  * @param parseObjectFile - The object file (e.g., "Objects/Module.json")
