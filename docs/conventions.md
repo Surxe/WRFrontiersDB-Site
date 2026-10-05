@@ -27,16 +27,18 @@ Example: [modules/[slug].astro](../src/pages/modules/[slug].astro)
 - Localization keys stored in JSON objects: `{ Key: string, TableNamespace: string, en: string }`
 - `en` value used as default/fallback text in SSR HTML
 - Game localization data exists in `WRFrontiersDB-Data/current/Localization/` directory
+- Game strings carry rich-text markup (`<Orange>Gear</>`, `<img id="Alloy"/>`); the site never renders it. `stripGameMarkup()` (`public/js/game_markup.js`, shared with the client) removes it when the dictionaries load, in `getDefaultString()`, and from every meta description body. Style tags are the names a language closes with `</>` somewhere, so an unclosed one is stripped too, while never-closed story text (`<LIE>` in a pilot bio) is kept
 - Site localization data exists in `public/locales/` directory
 - Meta descriptions live in `src/utils/meta_description.ts`. Each object type has a body builder (`pilotMetaBody`, `pilotTalentMetaBody`, `moduleMetaBody`, or `templateMetaBody` for Web_UI templates) that returns the body for one language
-- `precomputeMetaBodies(buildBody)` runs a builder for every language (empty bodies fall back to English); the `generate*LocalizedMetaDescriptions()` wrappers do this per type
-- Stat-bearing text goes through `statEmbeddedText()`: localized per language, stats embedded at a given level (modules use their top level, as the page does), markup stripped
+- `precomputeMetaBodies(buildBody)` runs a builder for every language (empty bodies fall back to English) and strips game markup from each body; the `generate*LocalizedMetaDescriptions()` wrappers do this per type
+- Stat-bearing text goes through `statEmbeddedText()`: localized per language, stats embedded at a given level (modules use their top level, as the page does), whitespace collapsed
 - Templates support variable embedding: `{variable_name}` replaced with object data
 - Each language gets separate `<meta name="description" lang="{lang}">` tag in HTML head; the unlabelled description and og/twitter tags (what link embeds read) carry the English body
 
 ### Client-side (runtime)
 
 - `LocalizedText` component renders elements with `data-loc-key` and `data-loc-namespace` attributes
+- `updateLocalizedElements()` sets `innerHTML` (stat values are wrapped in HTML), so localized text and embeds are passed through `escapeHtml()` first
 - The language lives in the `?lang=` URL query param: `getCurrentLanguage()` reads it (default `en`), and the language selector calls `setCurrentLanguage()`, which navigates to the same URL with `lang` updated
 - An inline script in `Page.astro` redirects to `?lang=en` when the param is missing or invalid, and internal links are rewritten to carry `lang`
 - `localStorage` holds only the number separator preference (`number_formatting.js`), not the language
