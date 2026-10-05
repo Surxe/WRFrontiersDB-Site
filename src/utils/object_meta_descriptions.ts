@@ -1,5 +1,3 @@
-import * as fs from 'fs';
-import * as path from 'path';
 import type { Ability } from '../types/ability';
 import type { CharacterClass } from '../types/character_class';
 import type { CharacterModule } from '../types/character_module';
@@ -30,7 +28,11 @@ import {
   generateRobotLocalizedMetaDescriptions,
   generateTemplateMetaDescriptions,
 } from './meta_description';
-import { generateSlugBasedStaticPaths, getParseObjects } from './parse_object';
+import {
+  generateSlugBasedStaticPaths,
+  getParseObjects,
+  readDataVersion,
+} from './parse_object';
 import {
   type ModuleAbilityRenderData,
   getModuleAbilityStats,
@@ -228,15 +230,6 @@ function pageIds(objectType: MetaObjectType, load: ObjectLoader): string[] {
   return generateSlugBasedStaticPaths(objectType).map((p) => p.props.id);
 }
 
-function readDataVersion(): string {
-  return fs
-    .readFileSync(
-      path.join(process.cwd(), 'WRFrontiersDB-Data/current/version.txt'),
-      'utf8'
-    )
-    .trim();
-}
-
 export function buildMetaDescriptionsDocument(): MetaDescriptionsDocument {
   const cache = new Map<string, Record<string, unknown>>();
   const load: ObjectLoader = <T>(file: string) => {
@@ -256,9 +249,13 @@ export function buildMetaDescriptionsDocument(): MetaDescriptionsDocument {
     }
     descriptions[objectType] = byId;
   }
+  const version = readDataVersion();
+  if (version === null) {
+    throw new Error('WRFrontiersDB-Data/current/version.txt is missing');
+  }
   return {
     build_id: process.env.GITHUB_RUN_ID || null,
-    version: readDataVersion(),
+    version,
     descriptions,
   };
 }

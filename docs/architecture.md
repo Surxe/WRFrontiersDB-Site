@@ -5,6 +5,14 @@
 - **External data source**: Separate repository as subfolder containing parsed game data
 - **Structure**: `current/Objects/{ParseObject}.json` and `current/Localization/{lang}.json`
 - **Data is read-only**: Site consumes but never modifies WRFrontiersDB-Data files
+- **CI checkout**: `.github/actions/setup` uses Data's shared `checkout-data` action
+  (Data is public, so no token), at `main`.
+- **Which data is live**: the build writes `/deploy.json` with Data's `record-deploy`
+  action: the Data commit (`data_commit`, `data_commit_date_utc`, `data_version`) plus
+  this repo's commit and the CI run. Check it with
+  `curl -s https://wrf-db.info/deploy.json | jq`, or both frontends at once with the
+  Orchestrator's `bin/wrf-deployed`. `/meta_descriptions.json` separately carries
+  `build_id` (the CI run) for the Discord bot's stale-CDN check.
 
 ## Static Site Generation
 

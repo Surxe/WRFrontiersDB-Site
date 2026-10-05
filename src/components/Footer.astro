@@ -1,16 +1,7 @@
 ---
-import * as fs from 'fs';
-import * as path from 'path';
+import { readDataVersion } from '../utils/parse_object';
 
-const versionPath = path.join(
-  process.cwd(),
-  'WRFrontiersDB-Data/current/version.txt'
-);
-
-let gameVersion = 'Unknown';
-if (fs.existsSync(versionPath)) {
-  gameVersion = fs.readFileSync(versionPath, 'utf8').trim();
-}
+const gameVersion = readDataVersion() ?? 'Unknown';
 ---
 
 <footer class="site-footer">
