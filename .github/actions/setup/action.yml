@@ -7,7 +7,7 @@ runs:
     # Data's shared checkout (public repo, no token); the build records the same
     # checkout's commit in /deploy.json.
     - name: Checkout Data Repo
-      uses: Surxe/WRFrontiersDB-Data/.github/actions/checkout-data@deploy-record
+      uses: Surxe/WRFrontiersDB-Data/.github/actions/checkout-data@main
       with:
         path: WRFrontiersDB-Data
 

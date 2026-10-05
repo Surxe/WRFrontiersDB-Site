@@ -26,8 +26,6 @@ jobs:
           submodules: recursive
 
       - uses: ./.github/actions/setup
-        with:
-          data-repo-pat: ${{ secrets.DATA_REPO_PAT }}
 
       - uses: ./.github/actions/check
 
