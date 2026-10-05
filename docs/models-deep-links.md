@@ -15,15 +15,15 @@ yourself.
 Each filled slot is one param. The key says where the part mounts, and the
 value is a Module id:
 
-| Key | Slot |
-| --- | --- |
-| `chassis` | Chassis (the root of the build) |
-| `torso` | Torso, mounted on the chassis |
-| `Shoulder_L`, `Shoulder_R` | Left and right shoulders, mounted on the torso |
+| Key                                                            | Slot                                                                                                      |
+| -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `chassis`                                                      | Chassis (the root of the build)                                                                           |
+| `torso`                                                        | Torso, mounted on the chassis                                                                             |
+| `Shoulder_L`, `Shoulder_R`                                     | Left and right shoulders, mounted on the torso                                                            |
 | `Shoulder_L.Shoulder_Weapon_0`, `Shoulder_L.Shoulder_Weapon_1` | Weapons in the left shoulder. A shoulder has 0, 1 or 2 weapon slots. The same keys exist for `Shoulder_R` |
-| `Torso_Weapon_0` | Weapon mounted on the torso, if the torso has a weapon slot |
-| `Ability` | Supply gear |
-| `UltAbility` | Cycle gear |
+| `Torso_Weapon_0`                                               | Weapon mounted on the torso, if the torso has a weapon slot                                               |
+| `Ability`                                                      | Supply gear                                                                                               |
+| `UltAbility`                                                   | Cycle gear                                                                                                |
 
 Nested keys are socket names joined by `.`, so a socket added to the game later
 gets a key automatically.
@@ -58,12 +58,12 @@ them from the data file or from a viewer URL.
 The viewer can compare build A (the build params above) with a second build B.
 B is written as its differences from A:
 
-| Param | Value | Meaning |
-| --- | --- | --- |
-| `compare` | `1` | Turn compare on. Without it, `b.` params are ignored |
+| Param          | Value     | Meaning                                                               |
+| -------------- | --------- | --------------------------------------------------------------------- |
+| `compare`      | `1`       | Turn compare on. Without it, `b.` params are ignored                  |
 | `b.<slot key>` | Module id | B uses this module in that slot, e.g. `b.torso=DA_Module_TorsoAres.1` |
-| `b.<slot key>` | empty | B leaves that slot empty, e.g. `b.Ability=` |
-| `layout` | `side` | Show B next to A in the 3D view. Without it, the builds overlap |
+| `b.<slot key>` | empty     | B leaves that slot empty, e.g. `b.Ability=`                           |
+| `layout`       | `side`    | Show B next to A in the 3D view. Without it, the builds overlap       |
 
 Every slot without a `b.` param is the same in B as in A. If B gets a shoulder
 with different weapon slots, each new slot takes one of A's weapons of the
@@ -73,11 +73,11 @@ matching class (light or heavy) when one fits.
 
 ## View and language params
 
-| Param | Values | Default | Meaning |
-| --- | --- | --- | --- |
-| `mesh` | `0`, `1` | `1` | Show the module meshes |
-| `hitbox` | `0`, `1` | `1` | Show the collision hitboxes |
-| `lang` | `de`, `en`, `es`, `fr`, `ja`, `ko`, `pl`, `pt-BR`, `ru`, `tr`, `zh-Hans`, `zh-Hant` | `en` | UI language (used on every page of the site) |
+| Param    | Values                                                                              | Default | Meaning                                      |
+| -------- | ----------------------------------------------------------------------------------- | ------- | -------------------------------------------- |
+| `mesh`   | `0`, `1`                                                                            | `1`     | Show the module meshes                       |
+| `hitbox` | `0`, `1`                                                                            | `1`     | Show the collision hitboxes                  |
+| `lang`   | `de`, `en`, `es`, `fr`, `ja`, `ko`, `pl`, `pt-BR`, `ru`, `tr`, `zh-Hans`, `zh-Hant` | `en`    | UI language (used on every page of the site) |
 
 A missing or unknown `lang` redirects to the same URL with `lang=en`, so you
 can leave it out.
