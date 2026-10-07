@@ -18,6 +18,8 @@ import type { ModuleAbilityRenderData } from './stat';
 import { refToId } from './object_reference';
 import { getCoreModuleCategory } from './core_modules';
 import { MODULE_CATEGORY_IDS } from './constants';
+import type { ModuleStatLine } from './module_stats';
+import { formatStatLine } from './stat_display';
 import langs from '../../public/langs.json';
 import { stripGameMarkup } from '../../public/js/game_markup.js';
 
@@ -151,35 +153,53 @@ export function generatePilotLocalizedMetaDescriptions(
   return precomputeMetaBodies(pilotMetaBody(pilot, pilotTalents));
 }
 
+/** One stat summary line in `lang` (`Max Speed: 109km/h`, `Light Weapon ×2`). */
+export function moduleStatLineText(line: ModuleStatLine, lang: string): string {
+  if (line.kind === 'stat')
+    return formatStatLine(line.display, line.value, lang);
+  const label = localizeText(line.label, lang);
+  return label ? `${label} ×${line.count}` : '';
+}
+
 /**
  * Module body: the same text the module page leads with, stats at `level`
  * (the page's initial level). That is the module's own description, or else
- * one line per ability, prefixed with the ability name. Chassis (whose
- * abilities are the same dash and jump on every robot) and modules with no
- * text (weapons, shoulders) use the generic module template.
+ * one line per ability, prefixed with the ability name, followed by the armor
+ * modules' stat summary (`statLines`, see getModuleStatLines). Chassis show
+ * only their stats: their abilities are the same dash and jump on every robot.
+ * Modules with neither (weapons without text) use the generic module template.
  */
 export function moduleMetaBody(
   module: Module,
   statValueChoices: StatValueChoices,
   abilityStats: ModuleAbilityRenderData[],
-  level = 0
+  level = 0,
+  statLines: ModuleStatLine[] = []
 ): MetaBodyBuilder {
   const fallback = templateMetaBody('Module_Meta_Description', {
     name: module.name ?? module.id,
   });
-  if (getCoreModuleCategory(module)?.id === MODULE_CATEGORY_IDS.chassis) {
-    return fallback;
-  }
-  const showsAbilities = abilityStats.length > 0 && !!module.abilities_scalars;
+  const isChassis =
+    getCoreModuleCategory(module)?.id === MODULE_CATEGORY_IDS.chassis;
+  const showsAbilities =
+    !isChassis && abilityStats.length > 0 && !!module.abilities_scalars;
 
   return (lang) => {
+    const stats = statLines
+      .map((line) => moduleStatLineText(line, lang))
+      .filter((line) => line);
     if (module.description && !showsAbilities) {
+      const text = statEmbeddedText(
+        module.description,
+        statValueChoices,
+        lang,
+        level
+      );
       return (
-        statEmbeddedText(module.description, statValueChoices, lang, level) ||
-        fallback(lang)
+        [text, ...stats].filter((line) => line).join('\n') || fallback(lang)
       );
     }
-    const lines = showsAbilities
+    const abilityLines = showsAbilities
       ? abilityStats
           .map(({ ability, statValueChoices: abilityChoices }) => {
             const text = statEmbeddedText(
@@ -193,7 +213,7 @@ export function moduleMetaBody(
           })
           .filter((line) => line)
       : [];
-    return lines.join('\n') || fallback(lang);
+    return [...abilityLines, ...stats].join('\n') || fallback(lang);
   };
 }
 
@@ -202,10 +222,11 @@ export function generateModuleLocalizedMetaDescriptions(
   module: Module,
   statValueChoices: StatValueChoices,
   abilityStats: ModuleAbilityRenderData[],
-  level = 0
+  level = 0,
+  statLines: ModuleStatLine[] = []
 ): LocalizedDescription[] {
   return precomputeMetaBodies(
-    moduleMetaBody(module, statValueChoices, abilityStats, level)
+    moduleMetaBody(module, statValueChoices, abilityStats, level, statLines)
   );
 }
 

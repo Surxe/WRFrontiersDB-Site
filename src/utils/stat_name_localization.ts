@@ -6,7 +6,7 @@ import { resolveObjectRef } from './object_resolver';
 /**
  * Minimal shape of a Stat.json entry.
  */
-interface RawStat {
+export interface RawStat {
   id: string;
   module_stat_ref: string;
 }

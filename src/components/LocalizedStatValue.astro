@@ -1,6 +1,7 @@
 ---
 import type { LocalizationKey } from '../types/localization';
 import { formatStatValue } from '../../public/js/stat_formatting.js';
+import { DEFAULT_STAT_DECIMAL_PLACES } from '../utils/stat_display';
 
 export interface Props {
   tag?: string;
@@ -25,8 +26,7 @@ const {
 } = Astro.props;
 const Tag = tag as any;
 
-// By default, match the old fmt behavior of limiting to 1 decimal place if not specified
-const finalDecimalPlaces = decimalPlaces ?? 1;
+const finalDecimalPlaces = decimalPlaces ?? DEFAULT_STAT_DECIMAL_PLACES;
 
 const finalChoices = choices ?? (value !== undefined ? { 0: value } : {});
 const hasChoices = Object.keys(finalChoices).length > 0;

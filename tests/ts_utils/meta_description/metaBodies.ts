@@ -1,12 +1,16 @@
 import { describe, it, expect } from 'vitest';
 import langs from '../../../public/langs.json';
 import {
+  moduleMetaBody,
+  moduleStatLineText,
   precomputeMetaBodies,
   pilotMetaBody,
   pilotTalentMetaBody,
   statEmbeddedText,
 } from '../../../src/utils/meta_description';
 import type { Pilot, PilotTalent } from '../../../src/types/pilot';
+import type { Module } from '../../../src/types/module';
+import type { ModuleStatLine } from '../../../src/utils/module_stats';
 import type { StatValueChoices } from '../../../src/types/stat';
 
 // Keys without Key/TableNamespace resolve to their InvariantString in every
@@ -101,5 +105,55 @@ describe('statEmbeddedText / pilotTalentMetaBody', () => {
   it('uses the talent description as the talent body', () => {
     const t = talent('T_D.0', 'Delta', 'Reload {Reload} faster.');
     expect(pilotTalentMetaBody(t, choices)('en')).toBe('Reload 5% faster.');
+  });
+});
+
+describe('moduleMetaBody stat summary', () => {
+  const statLine = (
+    label: string,
+    value: number,
+    unitScaler = 1
+  ): ModuleStatLine => ({
+    kind: 'stat',
+    display: {
+      labelKey: text(label),
+      pattern: '{Amount}{Unit}',
+      shortKey: label,
+      unitScaler,
+    },
+    value,
+  });
+  const lines: ModuleStatLine[] = [
+    { kind: 'slots', label: text('Light Weapon'), count: 2 },
+    statLine('Armor', 52100),
+    statLine('Shield Cooldown Reduction', 0.05, 100),
+  ];
+  const mod = (fields: Partial<Module>) =>
+    ({
+      id: 'M.0',
+      parseObjectClass: 'Module',
+      name: text('Ares'),
+      ...fields,
+    }) as unknown as Module;
+
+  it('formats each line in the language', () => {
+    expect(moduleStatLineText(lines[0], 'en')).toBe('Light Weapon ×2');
+    expect(moduleStatLineText(lines[1], 'en')).toBe('Armor: 52,100');
+    expect(moduleStatLineText(lines[2], 'en')).toBe(
+      'Shield Cooldown Reduction: 5'
+    );
+  });
+
+  it('shows the stats when the module has no text', () => {
+    expect(moduleMetaBody(mod({}), {}, [], 0, lines)('en')).toBe(
+      'Light Weapon ×2\nArmor: 52,100\nShield Cooldown Reduction: 5'
+    );
+  });
+
+  it('keeps the module text first', () => {
+    const withText = mod({ description: text('Pulls a target in.') });
+    expect(moduleMetaBody(withText, {}, [], 0, [lines[1]])('en')).toBe(
+      'Pulls a target in.\nArmor: 52,100'
+    );
   });
 });
