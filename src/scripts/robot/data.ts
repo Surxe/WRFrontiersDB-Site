@@ -1,9 +1,10 @@
 /**
  * Runtime (browser) access to the game data a robot build needs: the parsed
- * object tables and the per-module model files, fetched from the data repo the
- * site serves at `/WRFrontiersDB-Data/current`.
+ * object tables, the per-module model files and the build-code registry,
+ * fetched from the data repo the site serves at `/WRFrontiersDB-Data/`.
  */
 import type { BuildTables } from './build/types';
+import { BuildCodec, type BuildCodesDoc } from './build/code';
 import type { CharacterModule } from '../../types/character_module';
 import type { Module, ModuleType } from '../../types/module';
 import type { ModuleSocketType } from '../../types/module_socket_type';
@@ -11,6 +12,7 @@ import type { ModuleModel } from '../../types/model';
 import type { VirtualBot } from '../../types/virtual_bot';
 
 const DATA_ROOT = '/WRFrontiersDB-Data/current';
+const BUILD_CODES_URL = '/WRFrontiersDB-Data/index/build_codes.json';
 
 /** Every table a build is resolved, placed and measured against. */
 export interface RobotTables extends BuildTables {
@@ -47,6 +49,11 @@ export async function loadRobotTables(): Promise<RobotTables> {
       objects<CharacterModule>('CharacterModule'),
     ]);
   return { modules, moduleTypes, socketTypes, bots, characterModules };
+}
+
+/** The build-code codec over the data repo's registry (`index/build_codes.json`). */
+export async function loadBuildCodec(): Promise<BuildCodec> {
+  return new BuildCodec(await fetchJson<BuildCodesDoc>(BUILD_CODES_URL));
 }
 
 /** A module's exported model (`Models/<CharacterModule id>.json`). */

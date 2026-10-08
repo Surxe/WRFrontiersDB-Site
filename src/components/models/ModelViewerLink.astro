@@ -4,7 +4,7 @@
 import LocalizedText from '../LocalizedText.astro';
 import { resolveLocalizationKey } from '../../utils/localization';
 import { MODEL_STRINGS } from '../../scripts/model_viewer/strings';
-import { modelsPageHref } from '../../scripts/model_viewer/params';
+import { buildTimeModelsHref } from '../../utils/build_codes';
 import type { BuildSelection } from '../../scripts/robot/build/types';
 
 interface Props {
@@ -22,7 +22,7 @@ const label = resolveLocalizationKey(ref.Key, ref.TableNamespace);
 ---
 
 <p class="model-viewer-link">
-  <a href={modelsPageHref(selection)}>
+  <a href={buildTimeModelsHref(selection)}>
     <LocalizedText tag="span" localizationKey={label} /> →
   </a>
 </p>

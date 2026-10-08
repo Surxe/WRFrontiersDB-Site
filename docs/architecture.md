@@ -81,7 +81,8 @@ Two layers:
 - **`src/scripts/model_viewer/`: the /models page.** `page.ts` (the
   controller) wires the stores to `render/` (the three.js viewer, which only
   draws assemblies) and `ui/` (builder dropdowns, area panel, 2D labels).
-  The page's URL format (build, compare and view params) is documented in
+  The page's URL format (build codes, readable build and compare params,
+  view params) is documented in
   `docs/models-deep-links.md`.
 
 Mount-correction constants live in `src/utils/constants.ts`; see the

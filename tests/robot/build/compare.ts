@@ -13,6 +13,7 @@ import {
   CompareStore,
   readOverrides,
   resolveComparison,
+  toOverrides,
   writeOverrides,
   type Comparison,
 } from '../../../src/scripts/robot/build/compare';
@@ -36,6 +37,26 @@ const aSelection: BuildSelection = {
   'Shoulder_R.Shoulder_Weapon_1': LIGHT,
 };
 const a = resolveBuild(aSelection, tables, index);
+
+describe('toOverrides', () => {
+  it('is empty when B equals A', () => {
+    expect(toOverrides(a, a)).toEqual({});
+  });
+
+  it('keeps new empty slots empty instead of letting weapon fill take them', () => {
+    const b = resolveBuild({ ...aSelection, Shoulder_L: TWIN }, tables, index);
+    expect(b.selection['Shoulder_L.Shoulder_Weapon_0']).toBe(undefined);
+    const overrides = toOverrides(a, b);
+    expect(overrides).toEqual({
+      Shoulder_L: TWIN,
+      'Shoulder_L.Shoulder_Weapon_0': null,
+      'Shoulder_L.Shoulder_Weapon_1': null,
+    });
+    expect(resolveComparison(a, overrides, tables, index).b.selection).toEqual(
+      b.selection
+    );
+  });
+});
 
 describe('resolveComparison', () => {
   it('B equals A with no overrides', () => {
