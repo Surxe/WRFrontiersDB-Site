@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  getModuleStatLines,
+  getModuleStatRows,
   moduleArmorStatKeys,
   moduleLevelStats,
   moduleWeaponSlots,
@@ -247,19 +247,23 @@ describe('moduleWeaponSlots', () => {
   });
 });
 
-describe('getModuleStatLines', () => {
+describe('getModuleStatRows', () => {
   const summary = (m: Module) =>
-    getModuleStatLines(m, 1, load).map((line) =>
-      line.kind === 'stat'
-        ? [line.display.shortKey, line.value]
-        : ['slots', line.count]
+    getModuleStatRows(m, 1, load).map((row) =>
+      row.map((line) =>
+        line.kind === 'stat'
+          ? [line.display.shortKey, line.value]
+          : ['slots', line.count]
+      )
     );
 
-  it('summarizes a chassis, leaving out missing stats', () => {
+  it('summarizes a chassis in rows, leaving out missing stats and empty rows', () => {
     expect(summary(chassis)).toEqual([
-      ['MaxSpeed', 3027.7778],
-      ['PelvisArmor', 62500],
-      ['LegsArmor', 64400],
+      [['MaxSpeed', 3027.7778]],
+      [
+        ['PelvisArmor', 62500],
+        ['LegsArmor', 64400],
+      ],
     ]);
   });
 
@@ -275,10 +279,12 @@ describe('getModuleStatLines', () => {
         module({ ...fields, module_type_ref: 'OBJID_ModuleType::Shoulder.0' })
       )
     ).toEqual([
-      ['slots', 2],
-      ['Armor', 52100],
-      ['ShieldAmt', 29000],
-      ['WeightDrain', 12],
+      [
+        ['slots', 2],
+        ['WeightDrain', 12],
+        ['Armor', 52100],
+      ],
+      [['ShieldAmt', 29000]],
     ]);
     expect(
       summary(
@@ -287,10 +293,7 @@ describe('getModuleStatLines', () => {
           module_type_ref: 'OBJID_ModuleType::TitanShoulder.0',
         })
       )
-    ).toEqual([
-      ['Armor', 52100],
-      ['ShieldAmt', 29000],
-    ]);
+    ).toEqual([[['Armor', 52100]], [['ShieldAmt', 29000]]]);
   });
 
   it('leaves out zero stats and has nothing for non-armor modules', () => {

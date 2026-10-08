@@ -1,6 +1,6 @@
 import type { LocalizationKey } from '../types/localization';
 import type { ModuleStat } from '../types/module';
-import { localizeText, loadLocalizationData } from './localization';
+import { loadLocalizationData } from './localization';
 import { resolveObjectRef } from './object_resolver';
 import { getParseObjects } from './parse_object';
 import { getStatMetadata } from './stat';
@@ -89,16 +89,4 @@ export function formatStatDisplayValue(
     display.decimalPlaces ?? DEFAULT_STAT_DECIMAL_PLACES,
     loadLocalizationData(lang) ?? {}
   );
-}
-
-/** `Label: value` in `lang`, or '' when the stat has no name there. */
-export function formatStatLine(
-  display: StatDisplay,
-  rawValue: number,
-  lang: string
-): string {
-  const label = localizeText(display.labelKey, lang);
-  return label
-    ? `${label}: ${formatStatDisplayValue(display, rawValue, lang)}`
-    : '';
 }
