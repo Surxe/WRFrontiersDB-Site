@@ -112,8 +112,9 @@ These work with both build codes and readable params.
 | `hitbox` | `0`, `1`                                                                            | `1`       | Show the collision hitboxes                                             |
 | `lang`   | `de`, `en`, `es`, `fr`, `ja`, `ko`, `pl`, `pt-BR`, `ru`, `tr`, `zh-Hans`, `zh-Hant` | `en`      | UI language (used on every page of the site)                            |
 
-A missing or unknown `lang` redirects to the same URL with `lang=en`, so you
-can leave it out.
+The viewer writes `mesh` and `hitbox` only when a layer is off (`0`). A missing
+or unknown `lang` redirects to the same URL with `lang=en`, so you can leave it
+out.
 
 ## Examples
 
@@ -138,7 +139,7 @@ https://wrf-db.info/models?a=10000&b=322002&layout=side
 The Ares chassis with hitboxes only (no meshes) and the UI in German:
 
 ```text
-https://wrf-db.info/models?chassis=DA_Module_ChassisAres.2&mesh=0&hitbox=1&lang=de
+https://wrf-db.info/models?chassis=DA_Module_ChassisAres.2&mesh=0&lang=de
 ```
 
 Testing a torso swap: A is the stock Ares, and B is the same robot with only

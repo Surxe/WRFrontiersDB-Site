@@ -36,8 +36,8 @@
  *
  *   layout     side — stand B beside A in the 3D view (default: overlapping).
  *              Only written while comparing.
- *   mesh       0 | 1 — render the module meshes. Default 1.
- *   hitbox     0 | 1 — render collision hitboxes. Default 1.
+ *   mesh       0 | 1 — render the module meshes. Default 1; only 0 is written.
+ *   hitbox     0 | 1 — render collision hitboxes. Default 1; only 0 is written.
  *
  * Unknown params (e.g. `lang`) are preserved on write.
  */
@@ -202,7 +202,10 @@ export function writeModelQuery(
   if (state.compare && state.compareLayout === 'side') {
     params.set('layout', 'side');
   }
-  for (const flag of FLAGS) params.set(flag, state[flag] ? '1' : '0');
+  for (const flag of FLAGS) {
+    if (state[flag]) params.delete(flag);
+    else params.set(flag, '0');
+  }
 }
 
 /** The page state the current URL encodes. */

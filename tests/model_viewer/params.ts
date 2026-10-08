@@ -87,9 +87,7 @@ describe('writeModelQuery', () => {
       compare: { selection: v2.build, overrides: { torso: 'ignored' } },
       compareLayout: 'side',
     });
-    expect(query).toBe(
-      `lang=de&a=${v1.code}&b=${v2.code}&layout=side&mesh=1&hitbox=1`
-    );
+    expect(query).toBe(`lang=de&a=${v1.code}&b=${v2.code}&layout=side`);
   });
 
   it('drops b and layout when not comparing', () => {
@@ -98,7 +96,18 @@ describe('writeModelQuery', () => {
       selection: v1.build,
       compare: null,
     });
-    expect(query).toBe(`a=${v1.code}&mesh=1&hitbox=1`);
+    expect(query).toBe(`a=${v1.code}`);
+  });
+
+  it('writes mesh and hitbox only when off', () => {
+    const query = write('mesh=0&hitbox=1&lang=en', {
+      ...view,
+      selection: v1.build,
+      compare: null,
+      mesh: true,
+      hitbox: false,
+    });
+    expect(query).toBe(`hitbox=0&lang=en&a=${v1.code}`);
   });
 
   it('falls back to readable params when a build cannot be encoded', () => {
