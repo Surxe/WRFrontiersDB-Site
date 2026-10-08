@@ -146,9 +146,11 @@ describe('moduleMetaBody stat summary', () => {
   });
 
   it('shows the stats when the module has no text', () => {
-    expect(moduleMetaBody(mod({}), {}, [], 0, [lines.slice(0, 2), lines.slice(2)])('en')).toBe(
-      'Light Weapon ×2\nArmor: 52,100\nShield Cooldown Reduction: 5'
-    );
+    expect(
+      moduleMetaBody(mod({}), {}, [], 0, [lines.slice(0, 2), lines.slice(2)])(
+        'en'
+      )
+    ).toBe('Light Weapon ×2\nArmor: 52,100\nShield Cooldown Reduction: 5');
   });
 
   it('keeps the module text first', () => {

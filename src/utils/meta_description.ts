@@ -203,7 +203,12 @@ export function moduleLeadBody(
 
   return (lang) => {
     if (module.description && !showsAbilities) {
-      return statEmbeddedText(module.description, statValueChoices, lang, level);
+      return statEmbeddedText(
+        module.description,
+        statValueChoices,
+        lang,
+        level
+      );
     }
     if (!showsAbilities) return '';
     return abilityStats
@@ -240,12 +245,9 @@ export function moduleMetaBody(
   const lead = moduleLeadBody(module, statValueChoices, abilityStats, level);
 
   return (lang) => {
-    const stats = statRows
-      .flat()
-      .map((line) => moduleStatLineText(line, lang));
+    const stats = statRows.flat().map((line) => moduleStatLineText(line, lang));
     return (
-      [lead(lang), ...stats].filter((line) => line).join('\n') ||
-      fallback(lang)
+      [lead(lang), ...stats].filter((line) => line).join('\n') || fallback(lang)
     );
   };
 }
