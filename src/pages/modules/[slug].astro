@@ -59,7 +59,7 @@ const moduleGroupId = module.module_group_ref
 
 // The stats and abilities the page leads with, at its initial (top) level;
 // the meta description shows the same.
-const { statValueChoices, abilityStats, initialLevel, statLines } =
+const { statValueChoices, abilityStats, initialLevel, statRows } =
   getModuleLeadStats(module);
 const maxLevel = module.module_scalars?.levels?.variables?.length || 0;
 
@@ -83,7 +83,7 @@ const localizedDescriptions = generateModuleLocalizedMetaDescriptions(
   statValueChoices,
   abilityStats,
   initialLevel,
-  statLines
+  statRows
 );
 
 // Core Module Factory Bots logic

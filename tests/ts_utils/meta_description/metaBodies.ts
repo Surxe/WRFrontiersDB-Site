@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import langs from '../../../public/langs.json';
 import {
   moduleMetaBody,
+  generateModuleStatSummaries,
   moduleStatLineText,
   precomputeMetaBodies,
   pilotMetaBody,
@@ -145,15 +146,40 @@ describe('moduleMetaBody stat summary', () => {
   });
 
   it('shows the stats when the module has no text', () => {
-    expect(moduleMetaBody(mod({}), {}, [], 0, lines)('en')).toBe(
-      'Light Weapon ×2\nArmor: 52,100\nShield Cooldown Reduction: 5'
-    );
+    expect(
+      moduleMetaBody(mod({}), {}, [], 0, [lines.slice(0, 2), lines.slice(2)])(
+        'en'
+      )
+    ).toBe('Light Weapon ×2\nArmor: 52,100\nShield Cooldown Reduction: 5');
   });
 
   it('keeps the module text first', () => {
     const withText = mod({ description: text('Pulls a target in.') });
-    expect(moduleMetaBody(withText, {}, [], 0, [lines[1]])('en')).toBe(
+    expect(moduleMetaBody(withText, {}, [], 0, [[lines[1]]])('en')).toBe(
       'Pulls a target in.\nArmor: 52,100'
     );
+  });
+
+  it('gives consumers the lead text and the stats as rows of fields', () => {
+    const withText = mod({ description: text('Pulls a target in.') });
+    const summaries = generateModuleStatSummaries(withText, {}, [], 0, [
+      lines.slice(0, 2),
+      lines.slice(2),
+    ]);
+    expect(summaries?.en).toEqual({
+      lead: 'Pulls a target in.',
+      rows: [
+        [
+          { name: 'Light Weapon', value: '×2' },
+          { name: 'Armor', value: '52,100' },
+        ],
+        [{ name: 'Shield Cooldown Reduction', value: '5' }],
+      ],
+    });
+    expect(Object.keys(summaries ?? {})).toContain('de');
+  });
+
+  it('has no summary without stats', () => {
+    expect(generateModuleStatSummaries(mod({}), {}, [], 0, [])).toBeNull();
   });
 });

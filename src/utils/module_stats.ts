@@ -26,40 +26,38 @@ type StatField = string | typeof ARMOR | typeof WEAPON_SLOTS;
 const ARMOR = Symbol('armor');
 const WEAPON_SLOTS = Symbol('weapon slots');
 
+/** One row of a summary: lines shown side by side (an embed row). */
+export type ModuleStatRow = ModuleStatLine[];
+
 /**
- * The stat summary of each armor module category, for standard and titan modules.
- * Stats that are missing or 0 are left out, so e.g. titan chassis (no weight or
- * energy capacity) and titan parts (no weight used) need no list of their own.
+ * The stat summary of each armor module category, for standard and titan modules,
+ * as rows of fields. Stats that are missing or 0 are left out (and so are rows
+ * left empty), so e.g. titan chassis (no weight or energy capacity) and titan
+ * parts (no weight used) need no list of their own.
  */
-const STAT_FIELDS: Record<
+const STAT_ROWS: Record<
   string,
-  { standard: StatField[]; titan: StatField[] }
+  { standard: StatField[][]; titan: StatField[][] }
 > = {
   [MODULE_CATEGORY_IDS.chassis]: {
     standard: [
-      'MaxSpeed',
-      'Mobility',
-      ARMOR,
-      'FuelCapacity',
-      'LoadCapacity',
-      'EnergyCapacity',
+      ['LoadCapacity', 'EnergyCapacity'],
+      ['MaxSpeed', 'Mobility', 'FuelCapacity'],
+      [ARMOR],
     ],
     titan: [
-      'MaxSpeed',
-      'Mobility',
-      ARMOR,
-      'FuelCapacity',
-      'LoadCapacity',
-      'EnergyCapacity',
+      ['LoadCapacity', 'EnergyCapacity'],
+      ['MaxSpeed', 'Mobility', 'FuelCapacity'],
+      [ARMOR],
     ],
   },
   [MODULE_CATEGORY_IDS.torso]: {
-    standard: [ARMOR, WEAPON_SLOTS, 'WeightDrain'],
-    titan: [ARMOR, WEAPON_SLOTS, 'WeightDrain'],
+    standard: [[WEAPON_SLOTS, 'WeightDrain', ARMOR]],
+    titan: [[WEAPON_SLOTS, 'WeightDrain', ARMOR]],
   },
   [MODULE_CATEGORY_IDS.shoulder]: {
-    standard: [WEAPON_SLOTS, ARMOR, ...SHIELD_STAT_KEYS, 'WeightDrain'],
-    titan: [ARMOR, ...SHIELD_STAT_KEYS],
+    standard: [[WEAPON_SLOTS, 'WeightDrain', ARMOR], [...SHIELD_STAT_KEYS]],
+    titan: [[ARMOR], [...SHIELD_STAT_KEYS]],
   },
 };
 
@@ -146,13 +144,13 @@ function isWeaponSocketType(
 
 /**
  * The stat summary of an armor module (chassis, torso, shoulder) at `level`
- * (0-based); [] for other modules.
+ * (0-based), as rows; [] for other modules.
  */
-export function getModuleStatLines(
+export function getModuleStatRows(
   module: Module,
   level: number,
   load: ObjectLoader = loadFreshObjects
-): ModuleStatLine[] {
+): ModuleStatRow[] {
   const moduleType = resolveObjectRef(
     module.module_type_ref,
     load<ModuleType>('Objects/ModuleType.json')
@@ -160,10 +158,10 @@ export function getModuleStatLines(
   const categoryId = moduleType?.module_category_ref
     ? refToId(moduleType.module_category_ref)
     : undefined;
-  const fieldSet = categoryId ? STAT_FIELDS[categoryId] : undefined;
-  if (!fieldSet) return [];
-  const fields =
-    moduleType?.character_type === 'Titan' ? fieldSet.titan : fieldSet.standard;
+  const rowSet = categoryId ? STAT_ROWS[categoryId] : undefined;
+  if (!rowSet) return [];
+  const rows =
+    moduleType?.character_type === 'Titan' ? rowSet.titan : rowSet.standard;
 
   const values = moduleLevelStats(module, level);
   const stats = load<RawStat>('Objects/Stat.json');
@@ -180,7 +178,7 @@ export function getModuleStatLines(
     ];
   };
 
-  return fields.flatMap((field): ModuleStatLine[] => {
+  const fieldLines = (field: StatField): ModuleStatLine[] => {
     if (field === ARMOR) {
       return moduleArmorStatKeys(
         module,
@@ -200,5 +198,8 @@ export function getModuleStatLines(
       }));
     }
     return statLine(field);
-  });
+  };
+  return rows
+    .map((row) => row.flatMap(fieldLines))
+    .filter((row) => row.length > 0);
 }
