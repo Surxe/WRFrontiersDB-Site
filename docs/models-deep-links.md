@@ -166,10 +166,32 @@ const href = `https://wrf-db.info/models?${params}`;
 Inside an HTML `href` attribute, `&` may be written as `&amp;`. Browsers decode
 it before the viewer reads the URL.
 
+### From another app
+
+Other sites can write build codes too. The Site serves the codec at
+`https://wrf-db.info/build-code.js` and its registry at
+`https://wrf-db.info/build_codes.json`, both straight from the data it was
+built with, so the codes they make always open here:
+
+```js
+import { BuildCodec } from 'https://wrf-db.info/build-code.js';
+
+const codec = new BuildCodec(
+  await (await fetch('https://wrf-db.info/build_codes.json')).json()
+);
+const href = `https://wrf-db.info/models?a=${codec.encode(build)}`;
+```
+
+The data repo's `docs/build-codes.md` ("Using build codes in your app") covers
+making a build, errors, Python, sharing builds in Discord, and what stays
+stable.
+
 ## Source
 
 The URL format is defined in `src/scripts/model_viewer/params.ts`, with the
 readable build and compare parsing in `src/scripts/robot/build/params.ts` and
 `src/scripts/robot/build/compare.ts`. Build codes come from the data repo's
 codec (`tools/js/build_code.js`), wrapped in `src/scripts/robot/build/code.ts`.
-Links rendered into other pages go through `src/utils/build_codes.ts`.
+Links rendered into other pages go through `src/utils/build_codes.ts`, which
+also reads the two public files (`src/pages/build-code.js.ts`,
+`src/pages/build_codes.json.ts`).

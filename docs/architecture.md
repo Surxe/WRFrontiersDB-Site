@@ -13,6 +13,11 @@
   `curl -s https://wrf-db.info/deploy.json | jq`, or both frontends at once with the
   Orchestrator's `bin/wrf-deployed`. `/meta_descriptions.json` separately carries
   `build_id` (the CI run) for the Discord bot's stale-CDN check.
+- **Build codes for other apps**: the build also serves Data's build-code codec and
+  registry, verbatim, as `/build-code.js` and `/build_codes.json`
+  (`src/pages/build-code.js.ts`, `src/pages/build_codes.json.ts`). The model viewer
+  loads the same `/build_codes.json`. The URLs are a public contract (Data's
+  `docs/build-codes.md`).
 
 ## Static Site Generation
 

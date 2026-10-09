@@ -1,7 +1,9 @@
 /**
  * Build-time `/models` links for pages rendered by Astro (robot and preset
- * pages). The browser loads the build-code registry with `loadBuildCodec`
- * (scripts/robot/data.ts) instead.
+ * pages), and the build-code files the Site serves to other apps
+ * (`/build-code.js`, `/build_codes.json`; see the data repo's
+ * docs/build-codes.md). The browser loads the registry with `loadBuildCodec`
+ * (scripts/robot/data.ts).
  */
 import fs from 'fs';
 import path from 'path';
@@ -18,6 +20,27 @@ import type { Module, ModuleType } from '../types/module';
 import type { ModuleSocketType } from '../types/module_socket_type';
 import type { VirtualBot } from '../types/virtual_bot';
 
+/** The data repo's build-code files, as the Site serves them to other apps. */
+export const BUILD_CODE_FILES = {
+  codec: 'tools/js/build_code.js',
+  registry: 'index/build_codes.json',
+} as const;
+
+const dataPath = (rel: string): string =>
+  path.join(process.cwd(), 'WRFrontiersDB-Data', rel);
+
+/** One of the data repo's build-code files, verbatim. Throws if the checkout
+ * doesn't have it, so a deploy never ships without the public files. */
+export function readBuildCodeFile(file: keyof typeof BUILD_CODE_FILES): string {
+  const filePath = dataPath(BUILD_CODE_FILES[file]);
+  if (!fs.existsSync(filePath)) {
+    throw new Error(
+      `${filePath} not found; check out a WRFrontiersDB-Data version with build codes`
+    );
+  }
+  return fs.readFileSync(filePath, 'utf8');
+}
+
 let cachedCodec: BuildCodec | null | undefined;
 let cachedBuild: { tables: BuildTables; index: CompatibilityIndex } | undefined;
 
@@ -25,13 +48,9 @@ let cachedBuild: { tables: BuildTables; index: CompatibilityIndex } | undefined;
  * the data checkout has no registry (links then use readable params). */
 export function buildTimeBuildCodec(): BuildCodec | null {
   if (cachedCodec === undefined) {
-    const registryPath = path.join(
-      process.cwd(),
-      'WRFrontiersDB-Data/index/build_codes.json'
-    );
-    cachedCodec = fs.existsSync(registryPath)
+    cachedCodec = fs.existsSync(dataPath(BUILD_CODE_FILES.registry))
       ? new BuildCodec(
-          JSON.parse(fs.readFileSync(registryPath, 'utf8')) as BuildCodesDoc
+          JSON.parse(readBuildCodeFile('registry')) as BuildCodesDoc
         )
       : null;
   }
