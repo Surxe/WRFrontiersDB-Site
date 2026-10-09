@@ -39,6 +39,10 @@ also publishes all of them as `/meta_descriptions.json` (type -> id -> language)
 the CI run that built it as `build_id`. The Discord bot uses those for its embeds, as
 they are: plain text, with the game's rich-text markup already stripped.
 
+The build also serves the data repo's build-code codec and registry as
+`/build-code.js` and `/build_codes.json`, so other apps can link to `/models` builds
+(`docs/models-deep-links.md`).
+
 AI agent docs live in `.agents/`; run `bash .agents/setup-symlinks.sh` once per
 checkout (see [.agents/README.md](.agents/README.md)).
 

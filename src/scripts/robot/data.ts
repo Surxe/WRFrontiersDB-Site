@@ -12,7 +12,8 @@ import type { ModuleModel } from '../../types/model';
 import type { VirtualBot } from '../../types/virtual_bot';
 
 const DATA_ROOT = '/WRFrontiersDB-Data/current';
-const BUILD_CODES_URL = '/WRFrontiersDB-Data/index/build_codes.json';
+/** The public copy (src/pages/build_codes.json.ts) other apps use too. */
+const BUILD_CODES_URL = '/build_codes.json';
 
 /** Every table a build is resolved, placed and measured against. */
 export interface RobotTables extends BuildTables {
