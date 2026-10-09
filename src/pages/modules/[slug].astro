@@ -59,7 +59,7 @@ const moduleGroupId = module.module_group_ref
 
 // The stats and abilities the page leads with, at its initial (top) level;
 // the meta description shows the same.
-const { statValueChoices, abilityStats, initialLevel } =
+const { statValueChoices, abilityStats, initialLevel, statRows } =
   getModuleLeadStats(module);
 const maxLevel = module.module_scalars?.levels?.variables?.length || 0;
 
@@ -82,7 +82,8 @@ const localizedDescriptions = generateModuleLocalizedMetaDescriptions(
   module,
   statValueChoices,
   abilityStats,
-  initialLevel
+  initialLevel,
+  statRows
 );
 
 // Core Module Factory Bots logic
@@ -125,7 +126,7 @@ const objRefData = getObjRefData(module);
 <ParseObjectPage
   title={objRefData.text}
   localizedDescriptions={localizedDescriptions}
-  headerImage={module.image_path as string}
+  metaImage={module.inventory_icon_path}
   type="article"
 >
   <Breadcrumb breadcrumbs={getModuleDetailBreadcrumbs(module)} />

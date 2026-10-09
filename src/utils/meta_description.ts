@@ -18,6 +18,8 @@ import type { ModuleAbilityRenderData } from './stat';
 import { refToId } from './object_reference';
 import { getCoreModuleCategory } from './core_modules';
 import { MODULE_CATEGORY_IDS } from './constants';
+import type { ModuleStatLine, ModuleStatRow } from './module_stats';
+import { formatStatDisplayValue } from './stat_display';
 import langs from '../../public/langs.json';
 import { stripGameMarkup } from '../../public/js/game_markup.js';
 
@@ -151,49 +153,102 @@ export function generatePilotLocalizedMetaDescriptions(
   return precomputeMetaBodies(pilotMetaBody(pilot, pilotTalents));
 }
 
+/** One stat summary field in `lang`, or null when it has no name there. */
+export interface StatSummaryField {
+  name: string;
+  value: string;
+}
+
+export function moduleStatField(
+  line: ModuleStatLine,
+  lang: string
+): StatSummaryField | null {
+  const name =
+    line.kind === 'stat'
+      ? localizeText(line.display.labelKey, lang)
+      : localizeText(line.label, lang);
+  if (!name) return null;
+  const value =
+    line.kind === 'stat'
+      ? formatStatDisplayValue(line.display, line.value, lang)
+      : `×${line.count}`;
+  return { name, value };
+}
+
+/** One stat summary line in `lang` (`Max Speed: 109km/h`, `Light Weapon ×2`). */
+export function moduleStatLineText(line: ModuleStatLine, lang: string): string {
+  const field = moduleStatField(line, lang);
+  if (!field) return '';
+  return line.kind === 'stat'
+    ? `${field.name}: ${field.value}`
+    : `${field.name} ${field.value}`;
+}
+
 /**
- * Module body: the same text the module page leads with, stats at `level`
- * (the page's initial level). That is the module's own description, or else
- * one line per ability, prefixed with the ability name. Chassis (whose
- * abilities are the same dash and jump on every robot) and modules with no
- * text (weapons, shoulders) use the generic module template.
+ * The text a module page leads with, stats at `level` (the page's initial
+ * level): the module's own description, or else one line per ability, prefixed
+ * with the ability name. Chassis have none: their abilities are the same dash
+ * and jump on every robot. '' when there is no text.
  */
-export function moduleMetaBody(
+export function moduleLeadBody(
   module: Module,
   statValueChoices: StatValueChoices,
   abilityStats: ModuleAbilityRenderData[],
   level = 0
 ): MetaBodyBuilder {
-  const fallback = templateMetaBody('Module_Meta_Description', {
-    name: module.name ?? module.id,
-  });
-  if (getCoreModuleCategory(module)?.id === MODULE_CATEGORY_IDS.chassis) {
-    return fallback;
-  }
-  const showsAbilities = abilityStats.length > 0 && !!module.abilities_scalars;
+  const isChassis =
+    getCoreModuleCategory(module)?.id === MODULE_CATEGORY_IDS.chassis;
+  const showsAbilities =
+    !isChassis && abilityStats.length > 0 && !!module.abilities_scalars;
 
   return (lang) => {
     if (module.description && !showsAbilities) {
-      return (
-        statEmbeddedText(module.description, statValueChoices, lang, level) ||
-        fallback(lang)
+      return statEmbeddedText(
+        module.description,
+        statValueChoices,
+        lang,
+        level
       );
     }
-    const lines = showsAbilities
-      ? abilityStats
-          .map(({ ability, statValueChoices: abilityChoices }) => {
-            const text = statEmbeddedText(
-              ability.description,
-              abilityChoices,
-              lang,
-              level
-            );
-            const name = localizeText(ability.name, lang);
-            return name && text ? `${name}: ${text}` : text;
-          })
-          .filter((line) => line)
-      : [];
-    return lines.join('\n') || fallback(lang);
+    if (!showsAbilities) return '';
+    return abilityStats
+      .map(({ ability, statValueChoices: abilityChoices }) => {
+        const text = statEmbeddedText(
+          ability.description,
+          abilityChoices,
+          lang,
+          level
+        );
+        const name = localizeText(ability.name, lang);
+        return name && text ? `${name}: ${text}` : text;
+      })
+      .filter((line) => line)
+      .join('\n');
+  };
+}
+
+/**
+ * Module body: its lead text ({@link moduleLeadBody}) followed by the armor
+ * modules' stat summary (`statRows`, see getModuleStatRows), one line per stat.
+ * Modules with neither (weapons without text) use the generic module template.
+ */
+export function moduleMetaBody(
+  module: Module,
+  statValueChoices: StatValueChoices,
+  abilityStats: ModuleAbilityRenderData[],
+  level = 0,
+  statRows: ModuleStatRow[] = []
+): MetaBodyBuilder {
+  const fallback = templateMetaBody('Module_Meta_Description', {
+    name: module.name ?? module.id,
+  });
+  const lead = moduleLeadBody(module, statValueChoices, abilityStats, level);
+
+  return (lang) => {
+    const stats = statRows.flat().map((line) => moduleStatLineText(line, lang));
+    return (
+      [lead(lang), ...stats].filter((line) => line).join('\n') || fallback(lang)
+    );
   };
 }
 
@@ -202,10 +257,50 @@ export function generateModuleLocalizedMetaDescriptions(
   module: Module,
   statValueChoices: StatValueChoices,
   abilityStats: ModuleAbilityRenderData[],
-  level = 0
+  level = 0,
+  statRows: ModuleStatRow[] = []
 ): LocalizedDescription[] {
   return precomputeMetaBodies(
-    moduleMetaBody(module, statValueChoices, abilityStats, level)
+    moduleMetaBody(module, statValueChoices, abilityStats, level, statRows)
+  );
+}
+
+/**
+ * A module's stat summary in one language, for consumers that lay the stats
+ * out themselves (the Discord bot's embed fields): its lead text, without the
+ * stats, and the stats as rows of fields.
+ */
+export interface StatSummary {
+  lead: string;
+  rows: StatSummaryField[][];
+}
+
+/** Module: its {@link StatSummary} in every language; null without stats. */
+export function generateModuleStatSummaries(
+  module: Module,
+  statValueChoices: StatValueChoices,
+  abilityStats: ModuleAbilityRenderData[],
+  level = 0,
+  statRows: ModuleStatRow[] = []
+): Record<string, StatSummary> | null {
+  if (statRows.length === 0) return null;
+  const leads = precomputeMetaBodies(
+    moduleLeadBody(module, statValueChoices, abilityStats, level)
+  );
+  return Object.fromEntries(
+    leads.map(({ lang, description }) => [
+      lang,
+      {
+        lead: description,
+        rows: statRows
+          .map((row) =>
+            row
+              .map((line) => moduleStatField(line, lang))
+              .filter((field): field is StatSummaryField => field !== null)
+          )
+          .filter((row) => row.length > 0),
+      },
+    ])
   );
 }
 

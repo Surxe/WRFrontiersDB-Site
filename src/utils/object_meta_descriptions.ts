@@ -16,12 +16,15 @@ import type {
 import type { StatValueChoices } from '../types/stat';
 import type { VirtualBot } from '../types/virtual_bot';
 import { getDefaultString } from './localization';
+import { type ModuleStatRow, getModuleStatRows } from './module_stats';
 import {
   type LocalizedDescription,
+  type StatSummary,
   generateCharacterClassLocalizedMetaDescriptions,
   generateCharacterPresetLocalizedMetaDescriptions,
   generateCurrencyLocalizedMetaDescriptions,
   generateModuleLocalizedMetaDescriptions,
+  generateModuleStatSummaries,
   generatePilotLocalizedMetaDescriptions,
   generatePilotTalentLocalizedMetaDescriptions,
   generatePilotTalentTypeLocalizedMetaDescriptions,
@@ -31,6 +34,8 @@ import {
 import {
   generateSlugBasedStaticPaths,
   getParseObjects,
+  type ObjectLoader,
+  loadFreshObjects,
   readDataVersion,
 } from './parse_object';
 import {
@@ -40,10 +45,7 @@ import {
   getStatValueChoices,
 } from './stat';
 
-/** Reads `Objects/<Type>.json` (getParseObjects, or a cached stand-in). */
-export type ObjectLoader = <T>(parseObjectFile: string) => Record<string, T>;
-
-const loadFresh: ObjectLoader = (file) => getParseObjects(file);
+const loadFresh: ObjectLoader = loadFreshObjects;
 
 function objectOf<T>(load: ObjectLoader, type: string, id: string): T {
   const obj = load<T>(`Objects/${type}.json`)[id];
@@ -56,6 +58,8 @@ export interface ModuleLeadStats {
   statValueChoices: StatValueChoices;
   abilityStats: ModuleAbilityRenderData[];
   initialLevel: number;
+  /** Armor modules' stat summary at the initial level, as rows (meta description only). */
+  statRows: ModuleStatRow[];
 }
 
 export function getModuleLeadStats(
@@ -67,6 +71,7 @@ export function getModuleLeadStats(
     'Objects/ModuleStatsTable.json'
   );
   const maxLevel = module.module_scalars?.levels?.variables?.length || 0;
+  const initialLevel = Math.max(maxLevel - 1, 0);
   return {
     statValueChoices: getModuleStatValueChoices(
       module,
@@ -81,7 +86,8 @@ export function getModuleLeadStats(
       moduleStats,
       moduleStatsTables
     ),
-    initialLevel: Math.max(maxLevel - 1, 0),
+    initialLevel,
+    statRows: getModuleStatRows(module, initialLevel, load),
   };
 }
 
@@ -103,15 +109,14 @@ const META_BUILDERS = {
     ),
   Module: (id, load) => {
     const module = objectOf<Module>(load, 'Module', id);
-    const { statValueChoices, abilityStats, initialLevel } = getModuleLeadStats(
-      module,
-      load
-    );
+    const { statValueChoices, abilityStats, initialLevel, statRows } =
+      getModuleLeadStats(module, load);
     return generateModuleLocalizedMetaDescriptions(
       module,
       statValueChoices,
       abilityStats,
-      initialLevel
+      initialLevel,
+      statRows
     );
   },
   PilotTalent: (id, load) => {
@@ -221,6 +226,32 @@ export interface MetaDescriptionsDocument {
   version: string;
   /** Object type -> object id -> language -> description. */
   descriptions: Record<string, Record<string, Record<string, string>>>;
+  /**
+   * Module id -> language -> its stat summary laid out as rows, with the lead
+   * text (the description without the stats) beside it. Only armor modules
+   * (chassis, torsos, shoulders) have one.
+   */
+  stat_summaries: Record<string, Record<string, StatSummary>>;
+}
+
+function moduleStatSummaries(
+  load: ObjectLoader
+): MetaDescriptionsDocument['stat_summaries'] {
+  const summaries: MetaDescriptionsDocument['stat_summaries'] = {};
+  for (const id of pageIds('Module', load)) {
+    const module = objectOf<Module>(load, 'Module', id);
+    const { statValueChoices, abilityStats, initialLevel, statRows } =
+      getModuleLeadStats(module, load);
+    const summary = generateModuleStatSummaries(
+      module,
+      statValueChoices,
+      abilityStats,
+      initialLevel,
+      statRows
+    );
+    if (summary) summaries[id] = summary;
+  }
+  return summaries;
 }
 
 function pageIds(objectType: MetaObjectType, load: ObjectLoader): string[] {
@@ -257,5 +288,6 @@ export function buildMetaDescriptionsDocument(): MetaDescriptionsDocument {
     build_id: process.env.GITHUB_RUN_ID || null,
     version,
     descriptions,
+    stat_summaries: moduleStatSummaries(load),
   };
 }

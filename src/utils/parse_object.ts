@@ -71,6 +71,12 @@ export function getParseObjects<T = ParseObject>(
   return {};
 }
 
+/** Reads `Objects/<Type>.json` (getParseObjects, or a cached stand-in). */
+export type ObjectLoader = <T>(parseObjectFile: string) => Record<string, T>;
+
+/** An ObjectLoader that reads the file on every call. */
+export const loadFreshObjects: ObjectLoader = (file) => getParseObjects(file);
+
 // Get a specific parse object by ID
 export function getParseObject<T = ParseObject>(
   id: string,
