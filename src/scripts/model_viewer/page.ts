@@ -13,14 +13,16 @@
 import { assemble, ModelCache, type Assembly } from '../robot/assembly';
 import {
   fetchModuleModel,
+  loadBuildCodec,
   loadRobotTables,
   type RobotTables,
 } from '../robot/data';
+import type { BuildCodec } from '../robot/build/code';
 import { buildCompatibilityIndex } from '../robot/build/compatibility';
-import { toPresetModules } from '../robot/build/graph';
+import { resolveBuild, toPresetModules } from '../robot/build/graph';
 import { slotKeyMatcher, type SlotKeyMatcher } from '../robot/build/params';
 import { BuildStore } from '../robot/build/store';
-import { CompareStore } from '../robot/build/compare';
+import { CompareStore, toOverrides } from '../robot/build/compare';
 import {
   compareHitboxes,
   measureHitboxes,
@@ -172,6 +174,8 @@ export class ModelPage {
   private readonly models = new ModelCache(fetchModuleModel);
   private readonly partRefs: PartRefs;
   private readonly isSlotKey: SlotKeyMatcher;
+  /** Why the URL's build codes were ignored, shown until the build changes. */
+  private notice: string | null = null;
   private readonly modes: ToggleGroup<CameraMode>;
   private readonly views: ToggleGroup<ViewName>;
   private readonly layouts: ToggleGroup<CompareLayout>;
@@ -198,21 +202,33 @@ export class ModelPage {
     private readonly el: PageElements,
     private readonly tables: RobotTables,
     private readonly text: ModelText,
+    private readonly codec: BuildCodec,
     /** Null when WebGL could not start: the builder and areas still work. */
     private readonly viewer: ModelViewer | null
   ) {
     const index = buildCompatibilityIndex(tables);
     this.isSlotKey = slotKeyMatcher(index.socketNames);
-    const state = readModelUrl(window.location.search, this.isSlotKey);
+    const state = readModelUrl(window.location.search, this.isSlotKey, codec);
     this.store = new BuildStore(tables, index, state.selection);
     this.compare = new CompareStore(this.store, tables, index);
+    if (state.codeProblem) {
+      this.notice = text.t(
+        state.codeProblem === 'tooNew'
+          ? 'statusCodeTooNew'
+          : 'statusCodeInvalid'
+      );
+    }
     this.partRefs = new PartRefs(el.partRefs);
     el.meshBox.checked = state.mesh;
     el.hitboxBox.checked = state.hitbox;
-    this.compareOnLoad = state.compare !== null;
+    this.compareOnLoad = state.compare !== null || state.compareBuild !== null;
     this.compareLayout = state.compareLayout;
     viewer?.setCompareLayout(state.compareLayout);
     if (state.compare) this.compare.replace(state.compare);
+    if (state.compareBuild) {
+      const b = resolveBuild(state.compareBuild, tables, index);
+      this.compare.replace(toOverrides(this.store.current, b));
+    }
 
     this.modes = new ToggleGroup(el.modeButtons, 'mode', isCameraMode);
     this.views = new ToggleGroup(el.viewButtons, 'view', isViewName);
@@ -232,8 +248,9 @@ export class ModelPage {
       const strings = parseModelStrings(el.page.dataset.strings ?? '');
       // English until the reader's language loads.
       text = new ModelText(strings, null);
-      const [tables, localization] = await Promise.all([
+      const [tables, codec, localization] = await Promise.all([
         loadRobotTables(),
+        loadBuildCodec(),
         localizePage().catch((err: unknown) => {
           console.error('localization failed:', err);
           return null;
@@ -254,7 +271,7 @@ export class ModelPage {
       } catch (err) {
         console.error('WebGL unavailable:', err);
       }
-      new ModelPage(el, tables, text, viewer).run();
+      new ModelPage(el, tables, text, codec, viewer).run();
     } catch (err) {
       console.error('model viewer init failed:', err);
       const error = err instanceof Error ? err.message : String(err);
@@ -362,24 +379,33 @@ export class ModelPage {
     }
 
     // Reflect the resolved state back into the URL so the landing view (deep
-    // linked or default) is immediately shareable.
+    // linked or default) is immediately shareable. A link whose codes could
+    // not be read is left as it is until the build changes.
     this.renderBuilderA(this.store.current);
-    this.syncUrl();
+    if (!this.notice) this.syncUrl();
     this.syncCamera();
     if (this.compareOnLoad) this.compare.setEnabled(true);
     else void this.rebuild();
   }
 
   private syncUrl(): void {
+    this.notice = null;
+    const cmp = this.compare.isEnabled ? this.compare.current : null;
     writeModelUrl(
       {
         selection: this.store.current.selection,
-        compare: this.compare.isEnabled ? this.compare.currentOverrides : null,
+        compare: cmp
+          ? {
+              selection: cmp.b.selection,
+              overrides: this.compare.currentOverrides,
+            }
+          : null,
         compareLayout: this.compareLayout,
         mesh: this.el.meshBox.checked,
         hitbox: this.el.hitboxBox.checked,
       },
-      this.isSlotKey
+      this.isSlotKey,
+      this.codec
     );
   }
 
@@ -433,11 +459,14 @@ export class ModelPage {
         ...a.missingModels,
         ...(b?.missingModels ?? []),
       ]);
-      this.el.status.textContent = !this.viewer
+      const problem = !this.viewer
         ? this.text.t('statusNoWebGl')
         : missing.size > 0
           ? this.text.t('statusMissingModels', { count: missing.size })
           : '';
+      this.el.status.textContent = [this.notice, problem]
+        .filter(Boolean)
+        .join(' ');
 
       // Measure once the new build has painted: the raycast takes a moment.
       await afterPaint();

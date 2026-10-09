@@ -75,6 +75,30 @@ export function changedSlots(a: ResolvedBuild, b: ResolvedBuild): Set<SlotKey> {
   );
 }
 
+/**
+ * The overrides that make B a given build: the inverse of
+ * {@link resolveComparison}, for a B read as a whole (a `b=` build code).
+ * Every slot of B that differs from A is overridden, and so is every empty
+ * slot A doesn't have, so weapon fill can't put one of A's weapons there.
+ */
+export function toOverrides(
+  a: ResolvedBuild,
+  b: ResolvedBuild
+): BuildOverrides {
+  const aKeys = new Set(a.slots.map((slot) => slot.key));
+  const overrides: BuildOverrides = {};
+  for (const slot of b.slots) {
+    const aModule = a.selection[slot.key] ?? null;
+    if (
+      slot.moduleId !== aModule ||
+      (slot.moduleId === null && !aKeys.has(slot.key))
+    ) {
+      overrides[slot.key] = slot.moduleId;
+    }
+  }
+  return overrides;
+}
+
 /** Resolve B from A and the overrides (see module docs). */
 export function resolveComparison(
   a: ResolvedBuild,

@@ -134,6 +134,8 @@ export const MODEL_STRINGS = {
   statusMissingModels: site('Models_Status_Missing_Models'),
   statusBuildFailed: site('Models_Status_Build_Failed'),
   statusInitFailed: site('Models_Status_Init_Failed'),
+  statusCodeTooNew: site('Models_Status_Code_Too_New'),
+  statusCodeInvalid: site('Models_Status_Code_Invalid'),
 } as const satisfies Record<string, LocalizationRef>;
 
 export type ModelStringId = keyof typeof MODEL_STRINGS;

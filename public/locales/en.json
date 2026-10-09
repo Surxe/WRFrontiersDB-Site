@@ -121,7 +121,9 @@
     "Models_Status_No_WebGL": "3D view unavailable: WebGL could not start.",
     "Models_Status_Missing_Models": "{count} models missing",
     "Models_Status_Build_Failed": "Failed to build model: {error}",
-    "Models_Status_Init_Failed": "Could not start the viewer. Check the browser console. ({error})"
+    "Models_Status_Init_Failed": "Could not start the viewer. Check the browser console. ({error})",
+    "Models_Status_Code_Too_New": "This build uses parts newer than this site's data. Showing the default robot.",
+    "Models_Status_Code_Invalid": "This link's build code isn't valid. Showing the default robot."
   },
   "ModuleGroups": {
     "GRP_TitanShoulders_Name": "Titan Shoulder"

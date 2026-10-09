@@ -16,7 +16,7 @@ Static Astro site displaying War Robots Frontiers game data from WRFrontiersDB-D
 - [Browser Data Access](browser-data-access.md) - Testing data accessibility and patterns
 - [Weapon Mount Findings](weapon_mount_findings.md) - Source investigation behind the /models mount-correction constants
 - Robot models / `/models` page: see Architecture > "Robot builds and 3D models"
-- [Models Deep Links](models-deep-links.md) - Query-param format for linking into `/models` (shareable with external sites)
+- [Models Deep Links](models-deep-links.md) - Build codes and query params for linking into `/models` (shareable with external sites)
 
 ## Critical Rules
 

@@ -11,6 +11,7 @@ export default [
       'dist/',
       'node_modules/',
       '.astro/',
+      'WRFrontiersDB-Data/',
       'public/WRFrontiersDB-Data/',
       '.agents/',
       'vendor/',
