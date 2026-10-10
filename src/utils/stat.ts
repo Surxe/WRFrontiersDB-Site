@@ -103,7 +103,8 @@ export function scaleStatValue(
  * to the corresponding ModuleStat short keys. Other level keys map through the
  * module's stats table, else through Stat.json (`stats`): the Parser names some
  * level keys differently from the table (a cycle gear's `ChargeDuration` is the
- * table's `ChargeDrain`).
+ * table's `ChargeDrain`). Numeric level constants (a supply gear's `MaxCharges`)
+ * map the same way, with the one value at every level.
  *
  * @param module - The module object
  * @param moduleStats - Record of all ModuleStat objects
@@ -130,6 +131,7 @@ export function getModuleStatValueChoices(
   }
 
   const variables = scalars.levels.variables;
+  const constants = scalars.levels.constants ?? {};
   const table = module.module_stats_table_ref
     ? resolveObjectRef(module.module_stats_table_ref, moduleStatsTables)
     : undefined;
@@ -143,7 +145,7 @@ export function getModuleStatValueChoices(
       : undefined,
   };
 
-  Object.keys(variables[0]).forEach((key) => {
+  [...Object.keys(variables[0]), ...Object.keys(constants)].forEach((key) => {
     if (
       key === 'PrimaryParameter' ||
       key === 'SecondaryParameter' ||
@@ -170,8 +172,8 @@ export function getModuleStatValueChoices(
     };
 
     variables.forEach((variable, index) => {
-      const value = variable[key] as number | undefined;
-      if (value !== undefined) {
+      const value = variable[key] ?? constants[key];
+      if (typeof value === 'number') {
         statValueChoices[shortKey].choices[index] = scaleStatValue(
           statObject,
           value,

@@ -13,6 +13,7 @@ const moduleStats: Record<string, ModuleStat> = {
   'Duration.0': stat('Duration.0', 'Duration'),
   'Cooldown.0': stat('Cooldown.0', 'Cooldown'),
   'ChargeDrain.0': stat('ChargeDrain.0', 'ChargeDrain'),
+  'Consumables.0': stat('Consumables.0', 'Consum'),
 };
 
 const tables = {
@@ -30,6 +31,10 @@ const stats = {
     id: 'ChargeDuration',
     module_stat_ref: 'OBJID_ModuleStat::ChargeDrain.0',
   },
+  MaxCharges: {
+    id: 'MaxCharges',
+    module_stat_ref: 'OBJID_ModuleStat::Consumables.0',
+  },
 };
 
 const gear = {
@@ -38,6 +43,7 @@ const gear = {
   module_scalars: {
     primary_stat_ref: 'OBJID_ModuleStat::Duration.0',
     levels: {
+      constants: { MaxCharges: 4, ID: 'Gear' },
       variables: [
         { PrimaryParameter: 3, Cooldown: 40, ChargeDuration: 399 },
         { PrimaryParameter: 4, Cooldown: 35, ChargeDuration: 300 },
@@ -66,6 +72,17 @@ describe('getModuleStatValueChoices', () => {
     expect(
       choicesOf(gear, moduleStats, tables, undefined, stats).ChargeDrain
     ).toEqual({ 0: 399, 1: 300 });
+  });
+
+  it('gives a numeric level constant the same value at every level', () => {
+    const choices = choicesOf(gear, moduleStats, tables, undefined, stats);
+    expect(choices.Consum).toEqual({ 0: 4, 1: 4 });
+    expect(Object.keys(choices).sort()).toEqual([
+      'ChargeDrain',
+      'Consum',
+      'Cooldown',
+      'Duration',
+    ]);
   });
 
   it('keeps only the stats the description uses', () => {
