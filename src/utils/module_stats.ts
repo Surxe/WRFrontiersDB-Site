@@ -30,8 +30,8 @@ const WEAPON_SLOTS = Symbol('weapon slots');
 export type ModuleStatRow = ModuleStatLine[];
 
 /**
- * The stat summary of each armor module category, for standard and titan modules,
- * as rows of fields. Stats that are missing or 0 are left out (and so are rows
+ * The stat summary of each module category that has one (armor modules and
+ * supply / cycle gear), for standard and titan modules, as rows of fields. Stats that are missing or 0 are left out (and so are rows
  * left empty), so e.g. titan chassis (no weight or energy capacity) and titan
  * parts (no weight used) need no list of their own.
  */
@@ -58,6 +58,10 @@ const STAT_ROWS: Record<
   [MODULE_CATEGORY_IDS.shoulder]: {
     standard: [[WEAPON_SLOTS, 'WeightDrain', ARMOR], [...SHIELD_STAT_KEYS]],
     titan: [[ARMOR], [...SHIELD_STAT_KEYS]],
+  },
+  [MODULE_CATEGORY_IDS.ability]: {
+    standard: [['WeightDrain', 'EnergyDrain']],
+    titan: [['WeightDrain', 'EnergyDrain']],
   },
 };
 
@@ -143,8 +147,8 @@ function isWeaponSocketType(
 }
 
 /**
- * The stat summary of an armor module (chassis, torso, shoulder) at `level`
- * (0-based), as rows; [] for other modules.
+ * The stat summary of an armor module (chassis, torso, shoulder) or a gear
+ * module (supply, cycle) at `level` (0-based), as rows; [] for other modules.
  */
 export function getModuleStatRows(
   module: Module,

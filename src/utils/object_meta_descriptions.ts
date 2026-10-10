@@ -58,7 +58,7 @@ export interface ModuleLeadStats {
   statValueChoices: StatValueChoices;
   abilityStats: ModuleAbilityRenderData[];
   initialLevel: number;
-  /** Armor modules' stat summary at the initial level, as rows (meta description only). */
+  /** The module's stat summary at the initial level, as rows (meta description only). */
   statRows: ModuleStatRow[];
 }
 
@@ -229,7 +229,7 @@ export interface MetaDescriptionsDocument {
   /**
    * Module id -> language -> its stat summary laid out as rows, with the lead
    * text (the description without the stats) beside it. Only armor modules
-   * (chassis, torsos, shoulders) have one.
+   * (chassis, torsos, shoulders) and supply / cycle gear have one.
    */
   stat_summaries: Record<string, Record<string, StatSummary>>;
 }

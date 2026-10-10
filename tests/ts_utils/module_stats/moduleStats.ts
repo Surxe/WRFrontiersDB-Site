@@ -296,7 +296,23 @@ describe('getModuleStatRows', () => {
     ).toEqual([[['Armor', 52100]], [['ShieldAmt', 29000]]]);
   });
 
-  it('leaves out zero stats and has nothing for non-armor modules', () => {
+  it('gives gear its weight and energy cost', () => {
+    const gear = (constants: Record<string, number>) =>
+      summary(
+        module({ module_type_ref: 'OBJID_ModuleType::Ability.0', constants })
+      );
+    expect(gear({ WeightDrain: 2, EnergyDrain: 1 })).toEqual([
+      [
+        ['WeightDrain', 2],
+        ['EnergyDrain', 1],
+      ],
+    ]);
+    expect(gear({ WeightDrain: 0, EnergyDrain: 6 })).toEqual([
+      [['EnergyDrain', 6]],
+    ]);
+  });
+
+  it('leaves out zero stats and has nothing for weapons', () => {
     const zeroWeight = module({
       module_type_ref: 'OBJID_ModuleType::Shoulder.0',
       constants: { WeightDrain: 0 },
