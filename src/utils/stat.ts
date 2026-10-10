@@ -6,7 +6,10 @@ import type { PilotTalent } from '../types/pilot';
 import { getDefaultString } from './localization';
 import { resolveObjectRef } from './object_resolver';
 import { getParseObjects } from './parse_object';
-import { MODULE_STAT_UNIT_FALLBACK_MAP } from './stat_name_localization';
+import {
+  MODULE_STAT_UNIT_FALLBACK_MAP,
+  type RawStat,
+} from './stat_name_localization';
 
 /**
  * Builds StatValueChoices from a stats array and ModuleStat objects.
@@ -97,17 +100,23 @@ export function scaleStatValue(
  * Builds StatValueChoices for a module's leveled descriptions.
  *
  * Maps PrimaryParameter and SecondaryParameter from levels.variables
- * to the corresponding ModuleStat short keys.
+ * to the corresponding ModuleStat short keys. Other level keys map through the
+ * module's stats table, else through Stat.json (`stats`): the Parser names some
+ * level keys differently from the table (a cycle gear's `ChargeDuration` is the
+ * table's `ChargeDrain`). Numeric level constants (a supply gear's `MaxCharges`)
+ * map the same way, with the one value at every level.
  *
  * @param module - The module object
  * @param moduleStats - Record of all ModuleStat objects
+ * @param stats - Record of all Stat objects (Stat.json)
  * @returns StatValueChoices object for use with StatEmbedLocalizedText component
  */
 export function getModuleStatValueChoices(
   module: Module,
   moduleStats: Record<string, ModuleStat>,
   moduleStatsTables: Record<string, ModuleStatsTable>,
-  descriptionString?: string
+  descriptionString?: string,
+  stats: Record<string, RawStat> = {}
 ): StatValueChoices {
   const statValueChoices: StatValueChoices = {};
 
@@ -122,6 +131,7 @@ export function getModuleStatValueChoices(
   }
 
   const variables = scalars.levels.variables;
+  const constants = scalars.levels.constants ?? {};
   const table = module.module_stats_table_ref
     ? resolveObjectRef(module.module_stats_table_ref, moduleStatsTables)
     : undefined;
@@ -135,22 +145,18 @@ export function getModuleStatValueChoices(
       : undefined,
   };
 
-  if (table) {
-    Object.keys(variables[0]).forEach((key) => {
-      if (
-        key !== 'PrimaryParameter' &&
-        key !== 'SecondaryParameter' &&
-        key !== 'upgrade_cost_ref' &&
-        key !== 'scrap_rewards_refs' &&
-        table.stats_refs[key]
-      ) {
-        statsMapping[key] = resolveObjectRef(
-          table.stats_refs[key],
-          moduleStats
-        );
-      }
-    });
-  }
+  [...Object.keys(variables[0]), ...Object.keys(constants)].forEach((key) => {
+    if (
+      key === 'PrimaryParameter' ||
+      key === 'SecondaryParameter' ||
+      key === 'upgrade_cost_ref' ||
+      key === 'scrap_rewards_refs'
+    ) {
+      return;
+    }
+    const statRef = table?.stats_refs[key] ?? stats[key]?.module_stat_ref;
+    if (statRef) statsMapping[key] = resolveObjectRef(statRef, moduleStats);
+  });
 
   Object.entries(statsMapping).forEach(([key, statObject]) => {
     if (!statObject) return;
@@ -166,8 +172,8 @@ export function getModuleStatValueChoices(
     };
 
     variables.forEach((variable, index) => {
-      const value = variable[key] as number | undefined;
-      if (value !== undefined) {
+      const value = variable[key] ?? constants[key];
+      if (typeof value === 'number') {
         statValueChoices[shortKey].choices[index] = scaleStatValue(
           statObject,
           value,
