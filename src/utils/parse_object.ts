@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type { StaticPathsResult, ParseObject } from '../types/parse_object';
+import { withSiteOwnedName } from './site_owned_names';
 
 /**
  * Simple file reader
@@ -54,11 +55,13 @@ export function getParseObjects<T = ParseObject>(
       const fileName = parseObjectFile.split('/').pop() || '';
       const parseObjectClass = fileName.split('.')[0];
 
-      // Add parseObjectClass to each object
+      // Add parseObjectClass to each object, and the site's key to a name the site owns
       const objectsWithType: Record<string, T> = {};
       for (const [key, value] of Object.entries(data)) {
+        const name = withSiteOwnedName(parseObjectClass, key, value.name);
         objectsWithType[key] = {
           ...(value as object),
+          ...(name !== value.name && { name }),
           parseObjectClass,
         } as T;
       }
