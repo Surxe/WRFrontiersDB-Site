@@ -228,8 +228,9 @@ export function moduleLeadBody(
 }
 
 /**
- * Module body: its lead text ({@link moduleLeadBody}) followed by the armor
- * modules' stat summary (`statRows`, see getModuleStatRows), one line per stat.
+ * Module body: its lead text ({@link moduleLeadBody}) followed by its stat
+ * summary (`statRows`, see getModuleStatRows: armor modules and gear), one line
+ * per stat.
  * Modules with neither (weapons without text) use the generic module template.
  */
 export function moduleMetaBody(
