@@ -15,6 +15,7 @@ import type {
 } from '../types/pilot';
 import type { StatValueChoices } from '../types/stat';
 import type { VirtualBot } from '../types/virtual_bot';
+import type { RawStat } from './stat_name_localization';
 import { getDefaultString } from './localization';
 import { type ModuleStatRow, getModuleStatRows } from './module_stats';
 import {
@@ -77,7 +78,8 @@ export function getModuleLeadStats(
       module,
       moduleStats,
       moduleStatsTables,
-      getDefaultString(module.description)
+      getDefaultString(module.description),
+      load<RawStat>('Objects/Stat.json')
     ),
     abilityStats: getModuleAbilityStats(
       module,
