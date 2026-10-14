@@ -50,11 +50,11 @@ import {
 import { readModelUrl, writeModelUrl } from './params';
 import { renderAreaPanel, renderComparePanel } from './ui/area_panel';
 import { renderBuilder } from './ui/builder';
-import { FullscreenToggle } from './ui/fullscreen';
+import { FullscreenToggle } from '../viewer3d/ui/fullscreen';
 import { TouchHint } from './ui/touch_hint';
-import { queryAll, requireElement } from './ui/dom';
+import { queryAll, requireElement } from '../viewer3d/ui/dom';
 import { PartRefs } from './ui/part_refs';
-import { ToggleGroup } from './ui/toggle_group';
+import { ToggleGroup } from '../viewer3d/ui/toggle_group';
 import { compareViewLabels, singleViewLabels } from './ui/view_labels';
 import {
   MODEL_STRINGS,
@@ -353,7 +353,7 @@ export class ModelPage {
     const { viewer } = this;
     if (viewer) {
       viewer.avoidLabelsUnder(
-        queryAll(el.viewport, '.model-overlay', HTMLElement)
+        queryAll(el.viewport, '.viewer-overlay', HTMLElement)
       );
       el.recenter.hidden = false;
       el.recenter.addEventListener('click', () => viewer.recenter());

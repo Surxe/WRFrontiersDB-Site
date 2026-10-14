@@ -13,6 +13,7 @@
  * floating over the canvas (`avoid`).
  */
 import { cssHex } from '../colors';
+import type { ScreenPoint } from '../../viewer3d/anchored_tags';
 
 export interface ViewLabel {
   /** Card content (built by view_labels.ts). */
@@ -21,8 +22,7 @@ export interface ViewLabel {
   color: number;
 }
 
-/** Canvas pixels; null when the anchor is off camera. */
-export type ScreenPoint = { x: number; y: number } | null;
+export type { ScreenPoint };
 
 /** Width of each label column; the 2D views keep the robot clear of it. */
 export const LABEL_GUTTER_PX = 190;

@@ -41,7 +41,9 @@ src/
   utils/          # Build-time helpers (TypeScript + Node.js)
   scripts/        # Client TypeScript bundled by Astro <script> tags
     robot/        # Headless robot builds, models, hitbox areas (browser + Node)
+    viewer3d/     # What the 3D viewers share (stage, materials, anchored tags, ui/)
     model_viewer/ # The /models page (three.js viewer + DOM UI)
+    data/         # Runtime fetching from the data repo (fetchJson)
   types/          # TypeScript interfaces
 public/
   js/             # Client-side scripts (plain JavaScript)

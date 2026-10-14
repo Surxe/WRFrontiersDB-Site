@@ -3,6 +3,7 @@
  * object tables, the per-module model files and the build-code registry,
  * fetched from the data repo the site serves at `/WRFrontiersDB-Data/`.
  */
+import { fetchJson } from '../data/fetch';
 import type { BuildTables } from './build/types';
 import { BuildCodec, type BuildCodesDoc } from './build/code';
 import type { CharacterModule } from '../../types/character_module';
@@ -18,23 +19,6 @@ const BUILD_CODES_URL = '/build_codes.json';
 /** Every table a build is resolved, placed and measured against. */
 export interface RobotTables extends BuildTables {
   characterModules: Record<string, CharacterModule>;
-}
-
-const jsonCache = new Map<string, Promise<unknown>>();
-
-/** Fetch and parse a JSON file once per page; later calls share the result. */
-export function fetchJson<T>(url: string): Promise<T> {
-  let promise = jsonCache.get(url);
-  if (!promise) {
-    promise = fetch(url).then((res) => {
-      if (!res.ok) throw new Error(`${url}: HTTP ${res.status}`);
-      return res.json();
-    });
-    jsonCache.set(url, promise);
-    // A failed fetch may be retried later.
-    promise.catch(() => jsonCache.delete(url));
-  }
-  return promise as Promise<T>;
 }
 
 const objects = <T>(name: string): Promise<Record<string, T>> =>

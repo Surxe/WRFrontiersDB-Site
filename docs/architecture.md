@@ -83,9 +83,17 @@ Two layers:
     const { areas } = measureHitboxes(assembly.hitboxes);
     ```
 
+- **`src/scripts/viewer3d/`: what the 3D viewers share.** `stage.ts` is the
+  base class of every viewer: renderer, scene and lights, the Unreal-to-three
+  axis transform (`toUeSpace`), frames on demand, resizing, projecting to the
+  canvas, camera framing and easing. Plus `materials.ts` (`MaterialCache`,
+  `clearGroup`), `anchored_tags.ts` (cards following projected points) and
+  `ui/` (fullscreen, toggle groups, DOM helpers). The page chrome around the
+  canvas is `components/viewer/Viewport.astro`.
 - **`src/scripts/model_viewer/`: the /models page.** `page.ts` (the
-  controller) wires the stores to `render/` (the three.js viewer, which only
-  draws assemblies) and `ui/` (builder dropdowns, area panel, 2D labels).
+  controller) wires the stores to `render/` (the three.js viewer, a `Stage`
+  that only draws assemblies) and `ui/` (builder dropdowns, area panel, 2D
+  labels).
   The page's URL format (build codes, readable build and compare params,
   view params) is documented in
   `docs/models-deep-links.md`.

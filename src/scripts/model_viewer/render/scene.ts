@@ -1,8 +1,9 @@
 /**
  * three.js geometry for placed modules: untextured meshes and hitbox
- * primitives, plus disposal of whatever a build added to the scene.
+ * primitives.
  */
 import * as THREE from 'three';
+import { MaterialCache } from '../../viewer3d/materials';
 import { isFxMesh } from '../../robot/model/mesh';
 import {
   hitboxPrimitives,
@@ -30,20 +31,6 @@ export function primitiveGeometry(p: HitboxPrimitive): THREE.BufferGeometry {
           new THREE.BoxGeometry(...p.extent)
         : new THREE.SphereGeometry(p.radius, 24, 16);
   return geometry.applyMatrix4(p.m);
-}
-
-/** One material per color, shared by the meshes of a build. */
-class MaterialCache<M extends THREE.Material> {
-  private readonly byColor = new Map<number, M>();
-  constructor(private readonly create: (color: number) => M) {}
-  get(color: number): M {
-    let material = this.byColor.get(color);
-    if (!material) {
-      material = this.create(color);
-      this.byColor.set(color, material);
-    }
-    return material;
-  }
 }
 
 function addMeshes(
@@ -124,19 +111,4 @@ export function addModel(
 ): void {
   if (layers.mesh) addMeshes(group, model, world, colorOf, layers.meshOpacity);
   if (layers.hitbox) addHitboxes(group, model, world, colorOf);
-}
-
-/** Remove `group`'s children, freeing their GPU geometry, materials and
- * textures. */
-export function clearGroup(group: THREE.Group): void {
-  group.traverse((node) => {
-    if (!(node instanceof THREE.Mesh)) return;
-    node.geometry.dispose();
-    const materials: THREE.Material[] = [node.material].flat();
-    for (const material of materials) {
-      if (material instanceof THREE.MeshBasicMaterial) material.map?.dispose();
-      material.dispose();
-    }
-  });
-  group.clear();
 }

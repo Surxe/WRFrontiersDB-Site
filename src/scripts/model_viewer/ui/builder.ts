@@ -8,7 +8,7 @@
  */
 import { isProdReady, isTitanModule } from '../../robot/build/classify';
 import { createPicker, type PickerGroup } from './part_picker';
-import { h } from './dom';
+import { h } from '../../viewer3d/ui/dom';
 import { moduleName } from './format';
 import type { PartRefs } from './part_refs';
 import type { ModelText } from '../strings';
