@@ -97,6 +97,15 @@ Two layers:
   The page's URL format (build codes, readable build and compare params,
   view params) is documented in
   `docs/models-deep-links.md`.
+- **`src/scripts/map_viewer/`: the /maps page.** `page.ts` loads
+  `Objects/Map.json` and the chosen map's files from `current/Maps/` (cooked by
+  the Parser: `<Map>.glb`, `<Map>.foliage.glb`, `<Map>.<Mode>.glb`, the pins in
+  `<Map>.json`; schema in `src/types/map.ts`), `render/map_viewer.ts` is a
+  `Stage` with a free-flying pointer-lock camera (meshopt-compressed,
+  instanced glTF via `GLTFLoader` + `MeshoptDecoder`), and `pins.ts` draws a
+  mode's pins and their labels. URL params (`map`, `mode`, `foliage`) are in
+  `params.ts`. The maps ride in the Pages artifact with the data repo; the
+  build action fails above 1000 MB (the cap is 1 GB) and warns above 900.
 
 Mount-correction constants live in `src/utils/constants.ts`; see the
 `model-correction` skill and `docs/weapon_mount_findings.md`.

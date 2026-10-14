@@ -750,3 +750,21 @@ export function getModelsBreadcrumbs(): BreadcrumbTrail {
     },
   ];
 }
+
+/**
+ * Generate breadcrumb trail for the 3D maps page
+ */
+export function getMapsBreadcrumbs(): BreadcrumbTrail {
+  return [
+    {
+      label: resolveLocalizationKey('Breadcrumb_Home', 'Web_UI'),
+      href: '/',
+      isCurrent: false,
+    },
+    {
+      label: resolveLocalizationKey('Breadcrumb_Maps', 'Web_UI'),
+      href: '/maps',
+      isCurrent: true,
+    },
+  ];
+}

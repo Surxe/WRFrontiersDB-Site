@@ -43,6 +43,7 @@ src/
     robot/        # Headless robot builds, models, hitbox areas (browser + Node)
     viewer3d/     # What the 3D viewers share (stage, materials, anchored tags, ui/)
     model_viewer/ # The /models page (three.js viewer + DOM UI)
+    map_viewer/   # The /maps page (fly-through map viewer + pins)
     data/         # Runtime fetching from the data repo (fetchJson)
   types/          # TypeScript interfaces
 public/
@@ -55,6 +56,7 @@ tests/            # Test files organized by type
   components/     # Tests for components
   robot/          # Tests for src/scripts/robot (mirrors its tree)
   model_viewer/   # Tests for src/scripts/model_viewer
+  map_viewer/     # Tests for src/scripts/map_viewer
 WRFrontiersDB-Data/  # External data repository (read-only)
   current/        # Current game data
 ```
