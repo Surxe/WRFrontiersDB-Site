@@ -1,7 +1,7 @@
 /**
  * The /maps page controller: loads the map list (`Objects/Map.json`), wires
- * the map / mode pickers, the foliage toggle and the 3D / 2D camera mode to
- * the viewer, and keeps the URL in step (params.ts).
+ * the map / mode pickers, the foliage toggle, the laser reset and the 3D / 2D
+ * camera mode to the viewer, and keeps the URL in step (params.ts).
  */
 import { fetchJson } from '../data/fetch';
 import { localizePage } from '../localization';
@@ -31,6 +31,7 @@ function pageElements() {
     foliage: requireElement('map-foliage', HTMLInputElement),
     fly: requireElement('map-fly', HTMLButtonElement),
     speed: requireElement('map-speed', HTMLElement),
+    resetLasers: requireElement('map-reset-lasers', HTMLButtonElement),
     cameraButtons: requireElement('map-camera-mode', HTMLElement),
     controls: queryAll(document, '[data-camera-controls]', HTMLElement),
   };
@@ -192,6 +193,11 @@ export class MapPage {
     this.syncCamera();
     viewer.onSpeedChange((speed) => {
       el.speed.textContent = text.t('speed', { speed: Math.round(speed) });
+    });
+    // Lasers clear with the map (viewer.clear), not the mode.
+    el.resetLasers.addEventListener('click', () => viewer.clearLasers());
+    viewer.onLaserChange((count) => {
+      el.resetLasers.disabled = count === 0;
     });
 
     const url = readMapUrl(window.location.search);

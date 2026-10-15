@@ -59,6 +59,8 @@ const controls = [
       strings.controlUpDown,
       strings.controlFast,
       strings.controlSpeed,
+      strings.controlShoot,
+      strings.controlResetLasers,
       strings.controlRelease,
       strings.controlFullscreen,
     ],
@@ -162,7 +164,17 @@ const legend: { color: number; label: LocalizationKey }[] = [
           <LocalizedText tag="span" localizationKey={strings.foliage} />
         </label>
         <span id="map-speed" class="map-speed"></span>
+        <button
+          type="button"
+          id="map-reset-lasers"
+          class="map-reset-lasers"
+          disabled
+        >
+          <LocalizedText tag="span" localizationKey={strings.resetLasers} />
+        </button>
       </div>
+      <!-- Where a left click shoots; shown while flying. -->
+      <div class="map-crosshair" aria-hidden="true"></div>
       <div class="viewer-overlay viewer-bottom-bar">
         <CameraModeToggle
           id="map-camera-mode"
@@ -306,6 +318,60 @@ const legend: { color: number; label: LocalizationKey }[] = [
     color: var(--wrf-text-muted);
     font-size: 0.85rem;
     font-variant-numeric: tabular-nums;
+  }
+
+  .map-reset-lasers {
+    padding: 0.1rem 0.5rem;
+    border: 1px solid var(--wrf-border);
+    border-radius: var(--wrf-radius-sm);
+    background: transparent;
+    color: var(--wrf-text);
+    font: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+
+  .map-reset-lasers:hover:not(:disabled) {
+    border-color: var(--wrf-accent);
+    color: var(--wrf-accent);
+  }
+
+  .map-reset-lasers:disabled {
+    color: var(--wrf-text-muted);
+    cursor: default;
+    opacity: 0.6;
+  }
+
+  /* A plus with a gap at its middle, light with a dark outline so it reads
+     on sky and ground alike. */
+  .map-crosshair {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    display: none;
+    width: 22px;
+    height: 22px;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    /* Not theme colors: it is drawn over the map, not the page. */
+    --crosshair-line: #fff; /* wrf-allow-hex: crosshair over the 3D view */
+    --crosshair-edge: #000; /* wrf-allow-hex: crosshair outline */
+
+    background:
+      linear-gradient(var(--crosshair-line), var(--crosshair-line)) center top /
+        2px 8px no-repeat,
+      linear-gradient(var(--crosshair-line), var(--crosshair-line)) center
+        bottom / 2px 8px no-repeat,
+      linear-gradient(var(--crosshair-line), var(--crosshair-line)) left
+        center / 8px 2px no-repeat,
+      linear-gradient(var(--crosshair-line), var(--crosshair-line)) right
+        center / 8px 2px no-repeat;
+    filter: drop-shadow(0 0 1px var(--crosshair-edge))
+      drop-shadow(0 0 1px var(--crosshair-edge));
+  }
+
+  :global(.is-flying) > .map-crosshair {
+    display: block;
   }
 
   .map-fly {

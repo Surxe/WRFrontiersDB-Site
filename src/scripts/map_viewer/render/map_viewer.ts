@@ -8,6 +8,9 @@
  *   by height (height_tint.ts) and the pins draw flat over it (pins.ts).
  * Each mode keeps its own camera, so switching back returns to where it was.
  *
+ * In 3D, a left click shoots a laser where the crosshair points (lasers.ts);
+ * lasers stay until cleared (R, the page's reset button, or another map).
+ *
  * The map files are glTF (meters, Y up), drawn scaled to centimeters so they
  * line up with the pins, which are in Unreal space (toUeSpace). Frames are
  * drawn on demand, and continuously while the pointer is locked.
@@ -27,6 +30,7 @@ import {
 import { Stage, ueDirection } from '../../viewer3d/stage';
 import { PinLayer, type PinLabelText, type PinMarker } from '../pins';
 import { HeightTint } from './height_tint';
+import { CenterPick, LaserLayer } from './lasers';
 import type { Vec3 } from '../../../types/map';
 
 const FIELD_OF_VIEW = 70;
@@ -64,6 +68,12 @@ const HEAD_PX = 22;
 const HEAD_CM = 600;
 /** Seen from above, power-up labels show from this zoom in (cm per pixel). */
 const POWERUP_LABEL_CM_PER_PX = 30;
+
+/** Where a laser starts relative to the eye (cm, camera space: x right,
+ * y up), as from a gun held low and right, so the beam shows once shot. */
+const MUZZLE = new THREE.Vector3(100, -60, 0);
+/** A laser that hits nothing ends this far out, cm. */
+const MISS_LENGTH = 200_000;
 
 /** Key -> movement in camera space: x right, y up (world), z forward. */
 const MOVES: Readonly<Record<string, Vec3>> = {
@@ -122,6 +132,9 @@ export class MapViewer extends Stage {
     mode: 0,
   };
   private readonly pins: PinLayer;
+  private readonly lasers = new LaserLayer();
+  private readonly pick: CenterPick;
+  private laserListener: (count: number) => void = () => {};
   private readonly held = new Set<string>();
   private speed = DEFAULT_SPEED;
   private lastFrame: number | null = null;
@@ -138,7 +151,8 @@ export class MapViewer extends Stage {
     this.world.scale.setScalar(METERS);
     this.world.add(this.layers.base, this.layers.foliage, this.layers.mode);
     this.pins = new PinLayer(container);
-    this.scene.add(this.world, this.pins.group);
+    this.pick = new CenterPick(this.renderer);
+    this.scene.add(this.world, this.pins.group, this.lasers.group);
     this.addLights();
 
     this.controls = new PointerLockControls(this.camera, this.canvas);
@@ -148,6 +162,13 @@ export class MapViewer extends Stage {
     window.addEventListener('blur', () => this.held.clear());
     document.addEventListener('keydown', (event) => this.onKey(event, true));
     document.addEventListener('keyup', (event) => this.onKey(event, false));
+    // While the pointer is locked, clicks go to the canvas wherever the
+    // (hidden) mouse is.
+    document.addEventListener('mousedown', (event) => {
+      if (event.button !== 0 || !this.controls.isLocked) return;
+      event.preventDefault();
+      this.shoot();
+    });
     this.canvas.addEventListener(
       'wheel',
       (event) => {
@@ -210,6 +231,19 @@ export class MapViewer extends Stage {
     listener(this.speed / METERS);
   }
 
+  /** Call `listener` with the number of lasers whenever it changes. */
+  onLaserChange(listener: (count: number) => void): void {
+    this.laserListener = listener;
+    listener(this.lasers.count);
+  }
+
+  clearLasers(): void {
+    if (this.lasers.count === 0) return;
+    this.lasers.clear();
+    this.laserListener(0);
+    this.requestRender();
+  }
+
   /** Load a glTF file into one of the layers, replacing what it held. */
   async load(
     layer: Layer,
@@ -251,6 +285,7 @@ export class MapViewer extends Stage {
       clearLayer(this.layers[layer]);
     }
     this.pins.set([], { beacon: String, probe: String });
+    this.clearLasers();
     this.playable = null;
     this.orthoScale = null;
     this.requestRender();
@@ -393,6 +428,29 @@ export class MapViewer extends Stage {
     };
   }
 
+  /** Shoot a laser from the muzzle to what the crosshair is on. */
+  private shoot(): void {
+    // The camera may have moved since the last frame drew.
+    this.camera.updateMatrixWorld();
+    const { width, height } = this.canvasSize();
+    this.pins.group.visible = false;
+    this.lasers.group.visible = false;
+    let distance: number | null;
+    try {
+      distance = this.pick.distance(this.scene, this.camera, width, height);
+    } finally {
+      this.pins.group.visible = true;
+      this.lasers.group.visible = true;
+    }
+    const eye = this.camera.position;
+    const forward = this.camera.getWorldDirection(new THREE.Vector3());
+    const end = eye.clone().addScaledVector(forward, distance ?? MISS_LENGTH);
+    const muzzle = this.camera.localToWorld(MUZZLE.clone());
+    this.lasers.add(muzzle, end, distance !== null);
+    this.laserListener(this.lasers.count);
+    this.requestRender();
+  }
+
   private fly(seconds: number): void {
     const step = new THREE.Vector3();
     for (const code of this.held) {
@@ -418,6 +476,11 @@ export class MapViewer extends Stage {
 
   private onKey(event: KeyboardEvent, down: boolean): void {
     if (!this.controls.isLocked) return;
+    if (event.code === 'KeyR') {
+      event.preventDefault();
+      if (down && !event.repeat) this.clearLasers();
+      return;
+    }
     const isMove = event.code in MOVES || event.code.startsWith('Shift');
     if (!isMove) return;
     // Space would scroll the page, arrows too.
