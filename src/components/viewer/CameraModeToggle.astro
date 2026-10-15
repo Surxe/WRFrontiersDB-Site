@@ -1,0 +1,48 @@
+---
+// The 3D / 2D camera mode buttons a viewer shows along its bottom bar
+// (src/scripts/viewer3d/camera_mode.ts): a .wrf-toggle whose buttons carry
+// data-camera="3d" / "2d", for a ToggleGroup keyed `camera`. 3D starts
+// pressed; the page script presses the mode it opens in.
+import LocalizedText from '../LocalizedText.astro';
+import { getDefaultString } from '../../utils/localization';
+import type { CameraMode } from '../../scripts/viewer3d/camera_mode';
+import type { LocalizationKey } from '../../types/localization';
+
+interface Props {
+  id: string;
+  /** The group's accessible name. */
+  label: LocalizationKey;
+  /** Attributes for the page script on the group (e.g. to relocalize its
+   * label). */
+  labelAttrs?: Record<string, string>;
+  mode3d: LocalizationKey;
+  mode2d: LocalizationKey;
+}
+
+const { id, label, labelAttrs = {}, mode3d, mode2d } = Astro.props;
+const modes: { mode: CameraMode; label: LocalizationKey }[] = [
+  { mode: '3d', label: mode3d },
+  { mode: '2d', label: mode2d },
+];
+---
+
+<div
+  id={id}
+  class="wrf-toggle wrf-toggle--sm"
+  role="group"
+  aria-label={getDefaultString(label)}
+  {...labelAttrs}
+>
+  {
+    modes.map(({ mode, label }) => (
+      <button
+        type="button"
+        class="wrf-toggle__btn"
+        data-camera={mode}
+        aria-pressed={String(mode === '3d')}
+      >
+        <LocalizedText tag="span" localizationKey={label} />
+      </button>
+    ))
+  }
+</div>

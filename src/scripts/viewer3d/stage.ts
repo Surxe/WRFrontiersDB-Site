@@ -135,7 +135,12 @@ export abstract class Stage {
     object: THREE.Object3D,
     from: THREE.Vector3
   ): Pose | null {
-    const box = new THREE.Box3().setFromObject(object);
+    return this.boxFit(new THREE.Box3().setFromObject(object), from);
+  }
+
+  /** The camera pose that frames `box` (scene space) from direction `from`.
+   * Null when it is empty. */
+  protected boxFit(box: THREE.Box3, from: THREE.Vector3): Pose | null {
     if (box.isEmpty()) return null;
     const sphere = box.getBoundingSphere(new THREE.Sphere());
     // Fit the narrower of the vertical and horizontal fields of view (a tall

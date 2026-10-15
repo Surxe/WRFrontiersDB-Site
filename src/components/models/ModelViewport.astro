@@ -13,6 +13,7 @@
 // render/viewer.ts tags each build when apart). The re-center button stays
 // hidden until the script wires it up.
 import LocalizedText from '../LocalizedText.astro';
+import CameraModeToggle from '../viewer/CameraModeToggle.astro';
 import Viewport from '../viewer/Viewport.astro';
 import { getDefaultString } from '../../utils/localization';
 import type { ModelStrings } from '../../scripts/model_viewer/strings';
@@ -26,10 +27,6 @@ interface Props {
 
 const { strings } = Astro.props;
 
-const modes = [
-  { mode: '3d', label: strings.mode3d, pressed: true },
-  { mode: '2d', label: strings.mode2d, pressed: false },
-];
 const layouts: {
   layout: CompareLayout;
   label: LocalizationKey;
@@ -94,27 +91,14 @@ const views: { view: ViewName; label: LocalizationKey }[] = [
   <p id="model-touch-hint" class="model-touch-hint" aria-hidden="true">
     <LocalizedText tag="span" localizationKey={strings.twoFingerHint} />
   </p>
-  <div class="viewer-overlay model-camera-bar">
-    <div
+  <div class="viewer-overlay viewer-bottom-bar">
+    <CameraModeToggle
       id="model-mode-buttons"
-      class="wrf-toggle wrf-toggle--sm"
-      role="group"
-      aria-label={getDefaultString(strings.cameraMode)}
-      data-model-aria-label="cameraMode"
-    >
-      {
-        modes.map(({ mode, label, pressed }) => (
-          <button
-            type="button"
-            class="wrf-toggle__btn"
-            data-mode={mode}
-            aria-pressed={String(pressed)}
-          >
-            <LocalizedText tag="span" localizationKey={label} />
-          </button>
-        ))
-      }
-    </div>
+      label={strings.cameraMode}
+      labelAttrs={{ 'data-model-aria-label': 'cameraMode' }}
+      mode3d={strings.mode3d}
+      mode2d={strings.mode2d}
+    />
     <div
       id="model-view-buttons"
       class="wrf-toggle wrf-toggle--sm"
@@ -167,29 +151,6 @@ const views: { view: ViewName; label: LocalizationKey }[] = [
     display: flex;
     align-items: stretch;
     gap: 0.4rem;
-  }
-
-  /* Centered along the bottom; wraps to two rows on narrow screens. Only the
-     groups take pointer events, so the gaps still orbit the camera. */
-  .model-camera-bar {
-    position: absolute;
-    right: var(--viewer-inset-right, 0.5rem);
-    bottom: var(--viewer-inset-bottom, 0.5rem);
-    left: var(--viewer-inset-left, 0.5rem);
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.4rem;
-    pointer-events: none;
-  }
-
-  .model-camera-bar .wrf-toggle {
-    pointer-events: auto;
-    background: color-mix(in srgb, var(--wrf-surface) 85%, transparent);
-  }
-
-  .model-camera-bar .wrf-toggle[hidden] {
-    display: none;
   }
 
   .model-touch-hint {

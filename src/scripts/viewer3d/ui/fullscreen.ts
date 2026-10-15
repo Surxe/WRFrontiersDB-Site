@@ -6,8 +6,10 @@
  * viewer's ResizeObserver refits the camera to the new size, and `onChange`
  * hands touch gestures to the camera (one finger scrolls the page otherwise). The button's label (not aria-pressed)
  * says what it will do, as its icon does. A first-person viewer passes
- * `pointerLock`: going fullscreen then also captures the mouse there, from
- * the same click, so mouse-look starts at once.
+ * `pointerLock` (null while it needs no mouse capture): going fullscreen then
+ * also captures the mouse there, from
+ * the same click, so mouse-look starts at once; `enter()` while already open
+ * just recaptures it (after Esc released it).
  */
 
 export interface FullscreenLabels {
@@ -29,8 +31,8 @@ export class FullscreenToggle {
     private readonly labels: FullscreenLabels,
     /** Called with the new state on every open and close. */
     private readonly onChange: (open: boolean) => void = () => {},
-    /** Element to lock the pointer to on entering fullscreen. */
-    private readonly pointerLock?: HTMLElement
+    /** Element to lock the pointer to on entering fullscreen, if any. */
+    private readonly pointerLock: () => HTMLElement | null = () => null
   ) {
     button.addEventListener('click', () => this.toggle());
     // The API also closes on Esc / the back gesture; follow it either way.
@@ -50,7 +52,12 @@ export class FullscreenToggle {
     else void this.enter();
   }
 
-  private async enter(): Promise<void> {
+  /** Open (needs a user gesture), or if open, recapture the pointer. */
+  async enter(): Promise<void> {
+    if (this.open) {
+      this.lockPointer();
+      return;
+    }
     // iPhone Safari leaves fullscreenEnabled undefined.
     if (document.fullscreenEnabled) {
       try {
@@ -66,9 +73,10 @@ export class FullscreenToggle {
   }
 
   private lockPointer(): void {
-    if (!this.pointerLock?.requestPointerLock) return;
+    const target = this.pointerLock();
+    if (!target?.requestPointerLock) return;
     // Refused (e.g. no user gesture left): the viewer's own prompt still works.
-    void Promise.resolve(this.pointerLock.requestPointerLock()).catch(() => {});
+    void Promise.resolve(target.requestPointerLock()).catch(() => {});
   }
 
   private exit(): void {

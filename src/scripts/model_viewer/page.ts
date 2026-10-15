@@ -54,6 +54,7 @@ import { FullscreenToggle } from '../viewer3d/ui/fullscreen';
 import { TouchHint } from './ui/touch_hint';
 import { queryAll, requireElement } from '../viewer3d/ui/dom';
 import { PartRefs } from './ui/part_refs';
+import { isCameraMode, type CameraMode } from '../viewer3d/camera_mode';
 import { ToggleGroup } from '../viewer3d/ui/toggle_group';
 import { compareViewLabels, singleViewLabels } from './ui/view_labels';
 import {
@@ -62,11 +63,6 @@ import {
   parseModelStrings,
   type ModelStringId,
 } from './strings';
-
-type CameraMode = '3d' | '2d';
-
-const isCameraMode = (value: unknown): value is CameraMode =>
-  value === '3d' || value === '2d';
 
 const isAreaMetric = (value: unknown): value is AreaMetric =>
   value === 'alone' || value === 'withWeapons';
@@ -230,7 +226,7 @@ export class ModelPage {
       this.compare.replace(toOverrides(this.store.current, b));
     }
 
-    this.modes = new ToggleGroup(el.modeButtons, 'mode', isCameraMode);
+    this.modes = new ToggleGroup(el.modeButtons, 'camera', isCameraMode);
     this.views = new ToggleGroup(el.viewButtons, 'view', isViewName);
     this.layouts = new ToggleGroup(el.layoutButtons, 'layout', isCompareLayout);
     this.metrics = new ToggleGroup(el.metricButtons, 'metric', isAreaMetric);

@@ -87,9 +87,12 @@ Two layers:
   base class of every viewer: renderer, scene and lights, the Unreal-to-three
   axis transform (`toUeSpace`), frames on demand, resizing, projecting to the
   canvas, camera framing and easing. Plus `materials.ts` (`MaterialCache`,
-  `clearGroup`), `anchored_tags.ts` (cards following projected points) and
-  `ui/` (fullscreen, toggle groups, DOM helpers). The page chrome around the
-  canvas is `components/viewer/Viewport.astro`.
+  `clearGroup`), `anchored_tags.ts` (cards following projected points),
+  `ortho.ts` (aiming and sizing the 2D modes' orthographic cameras),
+  `camera_mode.ts` (the 3D / 2D mode) and `ui/` (fullscreen, toggle groups,
+  DOM helpers). The page chrome around the canvas is
+  `components/viewer/Viewport.astro`, and the 3D / 2D buttons
+  `components/viewer/CameraModeToggle.astro`.
 - **`src/scripts/model_viewer/`: the /models page.** `page.ts` (the
   controller) wires the stores to `render/` (the three.js viewer, a `Stage`
   that only draws assemblies) and `ui/` (builder dropdowns, area panel, 2D
@@ -97,6 +100,17 @@ Two layers:
   The page's URL format (build codes, readable build and compare params,
   view params) is documented in
   `docs/models-deep-links.md`.
+- **`src/scripts/map_viewer/`: the /maps page.** `page.ts` loads
+  `Objects/Map.json` and the chosen map's files from `current/Maps/` (cooked by
+  the Parser: `<Map>.glb`, `<Map>.foliage.glb`, `<Map>.<Mode>.glb`, the pins in
+  `<Map>.json`; schema in `src/types/map.ts`), `render/map_viewer.ts` is a
+  `Stage` with two camera modes, a free-flying pointer-lock camera (3D) and
+  an orthographic view straight down with the ground tinted by height
+  (2D, `render/height_tint.ts`), over meshopt-compressed, instanced glTF
+  (`GLTFLoader` + `MeshoptDecoder`); `pins.ts` draws a mode's pins and their
+  labels in either. URL params (`map`, `mode`, `foliage`, `view`) are in
+  `params.ts`. The maps ride in the Pages artifact with the data repo; the
+  build action fails above 1000 MB (the cap is 1 GB) and warns above 900.
 
 Mount-correction constants live in `src/utils/constants.ts`; see the
 `model-correction` skill and `docs/weapon_mount_findings.md`.

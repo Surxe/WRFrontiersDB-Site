@@ -18,6 +18,22 @@ runs:
         data-path: WRFrontiersDB-Data
         out: dist/deploy.json
 
+    # GitHub Pages caps a published site at 1 GB, and the artifact holds the
+    # site plus the data repo (maps included). upload-pages-artifact leaves
+    # .git out, so this does too.
+    - name: Check the Pages size
+      shell: bash
+      run: |
+        size_mb=$(du -sm --exclude=.git dist | cut -f1)
+        echo "dist: ${size_mb} MB (GitHub Pages cap: 1 GB)"
+        if [ "$size_mb" -gt 1000 ]; then
+          echo "::error::dist is ${size_mb} MB, over the 1000 MB guard for the 1 GB Pages cap"
+          exit 1
+        fi
+        if [ "$size_mb" -gt 900 ]; then
+          echo "::warning::dist is ${size_mb} MB, close to the 1 GB Pages cap"
+        fi
+
     - name: Upload Pages artifact
       uses: actions/upload-pages-artifact@v3
       with:

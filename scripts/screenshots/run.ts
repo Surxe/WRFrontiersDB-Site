@@ -20,10 +20,11 @@ import {
   type DevServer,
   type Scenario,
 } from './harness';
+import { maps } from './scenarios/maps';
 import { modelsCompare } from './scenarios/models_compare';
 import { modelsMobile } from './scenarios/models_mobile';
 
-const SCENARIOS: readonly Scenario[] = [modelsCompare, modelsMobile];
+const SCENARIOS: readonly Scenario[] = [modelsCompare, modelsMobile, maps];
 
 const ROOT = path.resolve(import.meta.dirname, '../..');
 

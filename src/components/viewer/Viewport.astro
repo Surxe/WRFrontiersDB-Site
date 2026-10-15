@@ -9,7 +9,8 @@
 // would hide them from assistive tech): the `start` slot comes before the
 // fullscreen button, the default slot after it. Each overlay control carries
 // .viewer-overlay; .viewer-icon-btn / .viewer-icon are the square icon
-// buttons. Styles a viewer puts on what it draws inside the canvas go through
+// buttons, and .viewer-bottom-bar centers .wrf-toggle groups along the bottom
+// (e.g. CameraModeToggle.astro). Styles a viewer puts on what it draws inside the canvas go through
 // :global(#<id>-canvas ...).
 import LocalizedText from '../LocalizedText.astro';
 import { getDefaultString } from '../../utils/localization';
@@ -186,6 +187,29 @@ const { id, label, labelAttrs = {}, loading, status, fullscreen } = Astro.props;
 
   :global(.is-fullscreen) .viewer-fullscreen-icon--exit {
     display: block;
+  }
+
+  /* Centered along the bottom; wraps to two rows on narrow screens. Only the
+     groups take pointer events, so the gaps still reach the canvas. */
+  :global(.viewer-bottom-bar) {
+    position: absolute;
+    right: var(--viewer-inset-right, 0.5rem);
+    bottom: var(--viewer-inset-bottom, 0.5rem);
+    left: var(--viewer-inset-left, 0.5rem);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.4rem;
+    pointer-events: none;
+  }
+
+  :global(.viewer-bottom-bar .wrf-toggle) {
+    pointer-events: auto;
+    background: color-mix(in srgb, var(--wrf-surface) 85%, transparent);
+  }
+
+  :global(.viewer-bottom-bar .wrf-toggle[hidden]) {
+    display: none;
   }
 
   .viewer-canvas {

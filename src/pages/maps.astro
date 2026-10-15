@@ -1,0 +1,449 @@
+---
+// /maps: fly through each map in first person, or look straight down on it
+// (the 3D / 2D buttons), with a game mode's pins (src/scripts/map_viewer). The pickers are built from Objects/Map.json here;
+// the script loads the chosen map's files (Maps/, cooked by the Parser) and
+// hides the modes the chosen map lacks. Without map data the page still
+// builds and says so at runtime.
+import Page from '../components/Page.astro';
+import Breadcrumb from '../components/Breadcrumb.astro';
+import LocalizedText from '../components/LocalizedText.astro';
+import CameraModeToggle from '../components/viewer/CameraModeToggle.astro';
+import Viewport from '../components/viewer/Viewport.astro';
+import { getMapsBreadcrumbs } from '../utils/breadcrumb';
+import { generateTemplateMetaDescriptions } from '../utils/meta_description';
+import { getParseObjects } from '../utils/parse_object';
+import {
+  getDefaultString,
+  resolveLocalizationKeys,
+} from '../utils/localization';
+import { MAP_STRINGS } from '../scripts/map_viewer/strings';
+import { cssHex } from '../scripts/viewer3d/colors';
+import { PIN_COLORS, TEAM_COLORS } from '../scripts/map_viewer/colors';
+import { sortMaps } from '../scripts/map_viewer/params';
+import type { GameMap, MapMode } from '../types/map';
+import type { LocalizationKey } from '../types/localization';
+
+const strings = resolveLocalizationKeys(MAP_STRINGS);
+const description = getDefaultString(strings.metaDescription);
+const localizedDescriptions = generateTemplateMetaDescriptions(
+  strings.metaDescription,
+  {},
+  getDefaultString(strings.title) ?? 'Maps'
+);
+
+const mapLabel = (map: GameMap): LocalizationKey =>
+  map.name ??
+  (map.id === 'FiringRange'
+    ? strings.firingRange
+    : { InvariantString: map.id });
+const modeLabel = (mode: MapMode): LocalizationKey =>
+  mode.name ?? { InvariantString: mode.id };
+const maps = sortMaps(
+  Object.values(getParseObjects<GameMap>('Objects/Map.json')),
+  (map) => getDefaultString(mapLabel(map)) ?? map.id
+);
+// Every mode any map has, in the order the maps list them.
+const modes = new Map<string, MapMode>();
+for (const map of maps) {
+  for (const mode of map.modes)
+    if (!modes.has(mode.id)) modes.set(mode.id, mode);
+}
+
+// Per camera mode; the script shows the active mode's.
+const controls = [
+  {
+    mode: '3d',
+    keys: [
+      strings.controlMove,
+      strings.controlLook,
+      strings.controlUpDown,
+      strings.controlFast,
+      strings.controlSpeed,
+      strings.controlRelease,
+      strings.controlFullscreen,
+    ],
+  },
+  {
+    mode: '2d',
+    keys: [strings.controlPan, strings.controlZoom, strings.controlFullscreen],
+  },
+];
+const legend: { color: number; label: LocalizationKey }[] = [
+  { color: TEAM_COLORS[0], label: strings.teamBlue },
+  { color: TEAM_COLORS[1], label: strings.teamRed },
+  { color: PIN_COLORS.beacon!, label: strings.pinBeacon },
+  { color: PIN_COLORS.warp_probe!, label: strings.pinWarpProbe },
+  { color: PIN_COLORS.powerup_spawner!, label: strings.pinPowerup },
+  { color: PIN_COLORS.drill!, label: strings.pinDrill },
+];
+---
+
+<Page
+  title={strings.title}
+  description={description}
+  localizedDescriptions={localizedDescriptions}
+>
+  <!-- data-strings: the UI strings, for text the page script builds
+       (strings.ts). An attribute, as the browser decodes its entities. -->
+  <main id="map-page" class="map-page" data-strings={JSON.stringify(strings)}>
+    <Breadcrumb breadcrumbs={getMapsBreadcrumbs()} />
+    <header class="map-header">
+      <LocalizedText tag="h1" localizationKey={strings.title} />
+      <LocalizedText tag="p" localizationKey={strings.intro} />
+    </header>
+
+    <div class="map-pickers">
+      <div class="map-picker-row">
+        <span class="map-picker-label">
+          <LocalizedText tag="span" localizationKey={strings.map} />
+        </span>
+        <div
+          id="map-picker"
+          class="wrf-toggle wrf-toggle--sm map-toggle"
+          role="group"
+          aria-label={getDefaultString(strings.map)}
+          data-map-aria-label="map"
+        >
+          {
+            maps.map((map) => (
+              <button
+                type="button"
+                class="wrf-toggle__btn"
+                data-map={map.id}
+                aria-pressed="false"
+              >
+                <LocalizedText tag="span" localizationKey={mapLabel(map)} />
+              </button>
+            ))
+          }
+        </div>
+      </div>
+      <div class="map-picker-row">
+        <span class="map-picker-label">
+          <LocalizedText tag="span" localizationKey={strings.mode} />
+        </span>
+        <div
+          id="map-mode-picker"
+          class="wrf-toggle wrf-toggle--sm map-toggle"
+          role="group"
+          aria-label={getDefaultString(strings.mode)}
+          data-map-aria-label="mode"
+        >
+          {
+            [...modes.values()].map((mode) => (
+              <button
+                type="button"
+                class="wrf-toggle__btn"
+                data-mode={mode.id}
+                aria-pressed="false"
+              >
+                <LocalizedText tag="span" localizationKey={modeLabel(mode)} />
+              </button>
+            ))
+          }
+        </div>
+        <p id="map-no-modes" class="map-no-modes" hidden>
+          <LocalizedText tag="span" localizationKey={strings.noModes} />
+        </p>
+      </div>
+    </div>
+
+    <Viewport
+      id="map"
+      label={strings.viewerLabel}
+      labelAttrs={{ 'data-map-aria-label': 'viewerLabel' }}
+      loading={strings.loadingViewer}
+      status={strings.statusLoading}
+      fullscreen={strings.fullscreenEnter}
+    >
+      <div slot="start" class="viewer-overlay map-overlay-start">
+        <label class="map-check">
+          <input type="checkbox" id="map-foliage" checked />
+          <LocalizedText tag="span" localizationKey={strings.foliage} />
+        </label>
+        <span id="map-speed" class="map-speed"></span>
+      </div>
+      <div class="viewer-overlay viewer-bottom-bar">
+        <CameraModeToggle
+          id="map-camera-mode"
+          label={strings.cameraMode}
+          labelAttrs={{ 'data-map-aria-label': 'cameraMode' }}
+          mode3d={strings.mode3d}
+          mode2d={strings.mode2d}
+        />
+      </div>
+      <!-- Goes fullscreen and captures the mouse; hidden while flying and in
+           2D. -->
+      <button type="button" id="map-fly" class="map-fly" hidden>
+        <LocalizedText tag="span" localizationKey={strings.fly} />
+        <span class="map-fly-hint">
+          <LocalizedText tag="span" localizationKey={strings.flyHint} />
+        </span>
+      </button>
+      <p class="map-desktop-only">
+        <LocalizedText tag="span" localizationKey={strings.desktopOnly} />
+      </p>
+    </Viewport>
+
+    <div class="map-help">
+      <section>
+        <LocalizedText tag="h2" localizationKey={strings.controls} />
+        {
+          controls.map(({ mode, keys }) => (
+            <ul data-camera-controls={mode} hidden={mode !== '3d'}>
+              {keys.map((key) => (
+                <li>
+                  <LocalizedText tag="span" localizationKey={key} />
+                </li>
+              ))}
+            </ul>
+          ))
+        }
+      </section>
+      <section>
+        <LocalizedText tag="h2" localizationKey={strings.pins} />
+        <ul class="map-legend">
+          {
+            legend.map(({ color, label }) => (
+              <li>
+                <span
+                  class="map-swatch"
+                  style={`background: ${cssHex(color)}`}
+                />
+                <LocalizedText tag="span" localizationKey={label} />
+              </li>
+            ))
+          }
+        </ul>
+        <p class="map-legend-note">
+          <LocalizedText tag="span" localizationKey={strings.pinShapes} />
+        </p>
+      </section>
+    </div>
+  </main>
+</Page>
+
+<script>
+  import '../scripts/map_viewer/index.ts';
+</script>
+
+<style>
+  .map-page {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 1rem;
+  }
+
+  .map-header :global(h1) {
+    margin: 0 0 0.25rem;
+  }
+
+  .map-header :global(p) {
+    margin: 0 0 1rem;
+    color: var(--wrf-text-muted);
+  }
+
+  .map-pickers {
+    display: grid;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .map-picker-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+  }
+
+  .map-picker-label {
+    min-width: 6rem;
+    color: var(--wrf-text-muted);
+    font-size: 0.9rem;
+  }
+
+  .map-toggle {
+    flex-wrap: wrap;
+  }
+
+  /* page.ts hides the modes the map lacks, or the whole group. */
+  :global(.map-toggle[hidden]),
+  .map-toggle :global(.wrf-toggle__btn[hidden]) {
+    display: none;
+  }
+
+  .map-no-modes {
+    margin: 0;
+    color: var(--wrf-text-muted);
+    font-size: 0.9rem;
+  }
+
+  .map-no-modes[hidden] {
+    display: none;
+  }
+
+  .map-overlay-start {
+    position: absolute;
+    top: var(--viewer-inset-top, 0.5rem);
+    left: var(--viewer-inset-left, 0.5rem);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.3rem 0.6rem;
+    border: 1px solid var(--wrf-border);
+    border-radius: var(--wrf-radius-sm);
+    background: var(--wrf-overlay-bg);
+  }
+
+  .map-check {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.85rem;
+  }
+
+  .map-speed {
+    color: var(--wrf-text-muted);
+    font-size: 0.85rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .map-fly {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.75rem 1.25rem;
+    border: 1px solid var(--wrf-border);
+    border-radius: var(--wrf-radius-md);
+    background: var(--wrf-overlay-bg);
+    color: var(--wrf-text);
+    font-weight: 600;
+    cursor: pointer;
+    transform: translate(-50%, -50%);
+  }
+
+  .map-fly[hidden] {
+    display: none;
+  }
+
+  .map-fly:hover {
+    border-color: var(--wrf-accent);
+    color: var(--wrf-accent);
+  }
+
+  .map-fly-hint {
+    color: var(--wrf-text-muted);
+    font-size: 0.8rem;
+    font-weight: normal;
+  }
+
+  /* Flying needs a mouse and keyboard: on touch screens the note replaces
+     the prompt. */
+  .map-desktop-only {
+    display: none;
+  }
+
+  @media (pointer: coarse) {
+    .map-fly {
+      display: none;
+    }
+
+    .map-desktop-only {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      display: block;
+      margin: 0;
+      padding: 0.5rem 0.9rem;
+      border: 1px solid var(--wrf-border);
+      border-radius: var(--wrf-radius-md);
+      background: var(--wrf-overlay-bg);
+      transform: translate(-50%, -50%);
+    }
+  }
+
+  /* Pin labels (pins.ts), centered just above their pin. Cards take no
+     pointer events, so the canvas keeps the mouse. */
+  :global(#map-canvas .map-pin-tags) {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  :global(#map-canvas .map-pin-tags[hidden]),
+  :global(#map-canvas .map-pin-tag[hidden]) {
+    display: none;
+  }
+
+  :global(#map-canvas .map-pin-tag) {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.2rem 0.45rem;
+    border: 1px solid var(--wrf-border);
+    border-left-width: 4px;
+    border-radius: var(--wrf-radius-sm);
+    background: var(--wrf-overlay-bg);
+    color: var(--wrf-text);
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+    transform: translate(-50%, -100%);
+  }
+
+  :global(#map-canvas .map-pin-powerup) {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+  }
+
+  .map-help {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .map-help :global(h2) {
+    margin: 0 0 0.5rem;
+    font-size: 1.1rem;
+  }
+
+  .map-help ul {
+    margin: 0;
+    padding-left: 1.2rem;
+  }
+
+  .map-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 1rem;
+    padding-left: 0;
+    list-style: none;
+  }
+
+  .map-legend li {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .map-legend-note {
+    margin: 0.5rem 0 0;
+    color: var(--wrf-text-muted);
+    font-size: 0.85rem;
+  }
+
+  .map-swatch {
+    display: inline-block;
+    width: 0.8rem;
+    height: 0.8rem;
+    border-radius: 2px;
+  }
+</style>
