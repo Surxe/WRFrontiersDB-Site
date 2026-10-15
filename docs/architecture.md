@@ -87,9 +87,12 @@ Two layers:
   base class of every viewer: renderer, scene and lights, the Unreal-to-three
   axis transform (`toUeSpace`), frames on demand, resizing, projecting to the
   canvas, camera framing and easing. Plus `materials.ts` (`MaterialCache`,
-  `clearGroup`), `anchored_tags.ts` (cards following projected points) and
-  `ui/` (fullscreen, toggle groups, DOM helpers). The page chrome around the
-  canvas is `components/viewer/Viewport.astro`.
+  `clearGroup`), `anchored_tags.ts` (cards following projected points),
+  `ortho.ts` (aiming and sizing the 2D modes' orthographic cameras),
+  `camera_mode.ts` (the 3D / 2D mode) and `ui/` (fullscreen, toggle groups,
+  DOM helpers). The page chrome around the canvas is
+  `components/viewer/Viewport.astro`, and the 3D / 2D buttons
+  `components/viewer/CameraModeToggle.astro`.
 - **`src/scripts/model_viewer/`: the /models page.** `page.ts` (the
   controller) wires the stores to `render/` (the three.js viewer, a `Stage`
   that only draws assemblies) and `ui/` (builder dropdowns, area panel, 2D

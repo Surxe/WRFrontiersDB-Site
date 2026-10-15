@@ -13,6 +13,7 @@
 // render/viewer.ts tags each build when apart). The re-center button stays
 // hidden until the script wires it up.
 import LocalizedText from '../LocalizedText.astro';
+import CameraModeToggle from '../viewer/CameraModeToggle.astro';
 import Viewport from '../viewer/Viewport.astro';
 import { getDefaultString } from '../../utils/localization';
 import type { ModelStrings } from '../../scripts/model_viewer/strings';
@@ -26,10 +27,6 @@ interface Props {
 
 const { strings } = Astro.props;
 
-const modes = [
-  { mode: '3d', label: strings.mode3d, pressed: true },
-  { mode: '2d', label: strings.mode2d, pressed: false },
-];
 const layouts: {
   layout: CompareLayout;
   label: LocalizationKey;
@@ -95,26 +92,13 @@ const views: { view: ViewName; label: LocalizationKey }[] = [
     <LocalizedText tag="span" localizationKey={strings.twoFingerHint} />
   </p>
   <div class="viewer-overlay model-camera-bar">
-    <div
+    <CameraModeToggle
       id="model-mode-buttons"
-      class="wrf-toggle wrf-toggle--sm"
-      role="group"
-      aria-label={getDefaultString(strings.cameraMode)}
-      data-model-aria-label="cameraMode"
-    >
-      {
-        modes.map(({ mode, label, pressed }) => (
-          <button
-            type="button"
-            class="wrf-toggle__btn"
-            data-mode={mode}
-            aria-pressed={String(pressed)}
-          >
-            <LocalizedText tag="span" localizationKey={label} />
-          </button>
-        ))
-      }
-    </div>
+      label={strings.cameraMode}
+      labelAttrs={{ 'data-model-aria-label': 'cameraMode' }}
+      mode3d={strings.mode3d}
+      mode2d={strings.mode2d}
+    />
     <div
       id="model-view-buttons"
       class="wrf-toggle wrf-toggle--sm"

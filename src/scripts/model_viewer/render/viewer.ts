@@ -27,6 +27,7 @@ import { VIEWS, type ViewName } from '../../robot/hitbox_area/views';
 import { DiffState, type DiffRaster } from '../../robot/hitbox_area/measure';
 import { diffPlacements } from '../../robot/model/placement_diff';
 import { DIFF_COLORS, partColor, type BuildColors } from '../colors';
+import { aimOrtho } from '../../viewer3d/ortho';
 import { Stage, toUeSpace, ueDirection } from '../../viewer3d/stage';
 import type { Assembly } from '../../robot/assembly';
 import type { ModulePlacement } from '../../robot/model/mount';
@@ -532,26 +533,20 @@ export class ModelViewer extends Stage {
     } else if (!this.labels.isEmpty) {
       fitWidth = width - 2 * Math.min(LABEL_GUTTER_PX, width * 0.25);
     }
-    const scale =
-      Math.min(Math.max(1, fitWidth), Math.max(1, fitHeight)) / extent;
-    // Pixels from the canvas top to the robot's center.
-    const centerY = fitTop + Math.max(1, fitHeight) / 2;
     const r = sphere.radius;
-    this.ortho.up.set(0, 1, 0);
-    if (this.view === 'top') this.ortho.up.set(1, 0, 0); // robot's front up
-    this.ortho.position
-      .copy(sphere.center)
-      .addScaledVector(ueDirection(VIEWS[this.view].dir), -r * 4);
-    this.ortho.left = -width / 2 / scale;
-    this.ortho.right = width / 2 / scale;
-    this.ortho.top = centerY / scale;
-    this.ortho.bottom = -(height - centerY) / scale;
-    this.ortho.near = 1;
-    this.ortho.far = r * 10;
-    this.ortho.zoom = 1;
-    this.ortho.updateProjectionMatrix();
+    aimOrtho(this.ortho, {
+      center: sphere.center,
+      look: ueDirection(VIEWS[this.view].dir),
+      // The top view puts the robot's front up.
+      up: new THREE.Vector3(...(this.view === 'top' ? [1, 0, 0] : [0, 1, 0])),
+      distance: r * 4,
+      near: 1,
+      far: r * 10,
+      extent,
+      canvas: { width, height },
+      fit: { width: fitWidth, top: fitTop, height: fitHeight },
+    });
     this.controls.target.copy(sphere.center);
-    this.ortho.lookAt(sphere.center);
     this.requestRender();
   }
 
