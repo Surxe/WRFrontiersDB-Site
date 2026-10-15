@@ -3,7 +3,7 @@
  * localized name) that ModelPartRefs.astro pre-renders, so dropdowns and
  * labels show parts exactly as the rest of the site does.
  */
-import { queryAll } from './dom';
+import { queryAll } from '../../viewer3d/ui/dom';
 
 export class PartRefs {
   private readonly byId = new Map<string, Element>();

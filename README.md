@@ -3,7 +3,8 @@
 Static [Astro](https://astro.build) site for the War Robots: Frontiers database,
 published at [wrf-db.info](https://wrf-db.info). It builds a page for every game
 object (modules, pilots, robots, character presets, ...) from the latest game
-data, plus a 3D robot model viewer at `/models`. Text is localized client-side
+data, plus a 3D robot model viewer at `/models` and a fly-through 3D map viewer
+at `/maps`. Text is localized client-side
 into every game language.
 
 ## Setup

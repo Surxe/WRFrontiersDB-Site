@@ -1,0 +1,244 @@
+---
+// The chrome every 3D viewer shares (src/scripts/viewer3d): the viewport
+// (#<id>-viewport, what fullscreen takes: class is-fullscreen, overlays and
+// all), the render target (#<id>-canvas; the viewer mounts its transparent
+// WebGL canvas there, over this element's background) with its loading text
+// (#<id>-loading), the fullscreen button (#<id>-fullscreen, top-right, hidden
+// until ui/fullscreen.ts wires it up) and the status line under it
+// (#<id>-status). Controls float over the canvas, outside it (its role="img"
+// would hide them from assistive tech): the `start` slot comes before the
+// fullscreen button, the default slot after it. Each overlay control carries
+// .viewer-overlay; .viewer-icon-btn / .viewer-icon are the square icon
+// buttons, and .viewer-bottom-bar centers .wrf-toggle groups along the bottom
+// (e.g. CameraModeToggle.astro). Styles a viewer puts on what it draws inside the canvas go through
+// :global(#<id>-canvas ...).
+import LocalizedText from '../LocalizedText.astro';
+import { getDefaultString } from '../../utils/localization';
+import type { LocalizationKey } from '../../types/localization';
+
+interface Props {
+  /** Prefix of the element ids, e.g. `model` -> #model-canvas. */
+  id: string;
+  /** The canvas's accessible name. */
+  label: LocalizationKey;
+  /** Attributes for the page script on the canvas (e.g. to relocalize its
+   * label). */
+  labelAttrs?: Record<string, string>;
+  loading: LocalizationKey;
+  status: LocalizationKey;
+  fullscreen: LocalizationKey;
+}
+
+const { id, label, labelAttrs = {}, loading, status, fullscreen } = Astro.props;
+---
+
+<div id={`${id}-viewport`} class="viewer-viewport">
+  <div
+    id={`${id}-canvas`}
+    class="viewer-canvas"
+    role="img"
+    aria-label={getDefaultString(label)}
+    {...labelAttrs}
+  >
+    <div id={`${id}-loading`} class="viewer-canvas-loading">
+      <LocalizedText tag="span" localizationKey={loading} />
+    </div>
+  </div>
+  <slot name="start" />
+  <button
+    type="button"
+    id={`${id}-fullscreen`}
+    class="viewer-overlay viewer-icon-btn viewer-fullscreen-btn"
+    aria-label={getDefaultString(fullscreen)}
+    title={getDefaultString(fullscreen)}
+    hidden
+  >
+    <svg
+      class="viewer-icon viewer-fullscreen-icon--enter"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"></path>
+    </svg>
+    <svg
+      class="viewer-icon viewer-fullscreen-icon--exit"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d="M9 4v5H4M20 9h-5V4M15 20v-5h5M4 15h5v5"></path>
+    </svg>
+  </button>
+  <slot />
+</div>
+<p id={`${id}-status`} class="viewer-status" aria-live="polite">
+  <LocalizedText tag="span" localizationKey={status} />
+</p>
+
+<style>
+  .viewer-viewport {
+    position: relative;
+  }
+
+  /* Overlays keep clear of notches and rounded corners in fullscreen. */
+  .viewer-viewport:global(.is-fullscreen) {
+    --viewer-inset-top: calc(0.75rem + env(safe-area-inset-top, 0px));
+    --viewer-inset-left: calc(0.75rem + env(safe-area-inset-left, 0px));
+    --viewer-inset-right: calc(0.75rem + env(safe-area-inset-right, 0px));
+    --viewer-inset-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+
+    display: flex;
+    flex-direction: column;
+    background: var(--wrf-bg);
+  }
+
+  /* The CSS fallback (no Fullscreen API; ui/fullscreen.ts): cover the page.
+     dvh tracks mobile browser chrome as it shows and hides. */
+  .viewer-viewport:global(.is-pinned) {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    height: 100vh;
+    height: 100dvh;
+  }
+
+  .viewer-viewport:global(.is-fullscreen) .viewer-canvas {
+    flex: 1;
+    min-height: 0;
+    height: auto;
+    border: none;
+    border-radius: 0;
+  }
+
+  :global(html.viewer-fullscreen-lock),
+  :global(html.viewer-fullscreen-lock body) {
+    overflow: hidden;
+  }
+
+  .viewer-fullscreen-btn {
+    position: absolute;
+    top: var(--viewer-inset-top, 0.5rem);
+    right: var(--viewer-inset-right, 0.5rem);
+  }
+
+  /* Square icon buttons, translucent like the toggles. Global: viewers put
+     their own in the overlay slots. */
+  :global(.viewer-icon-btn) {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+    border: 1px solid var(--wrf-border);
+    border-radius: var(--wrf-radius-sm);
+    background: var(--wrf-overlay-bg);
+    color: var(--wrf-text);
+    cursor: pointer;
+    transition:
+      background var(--wrf-transition),
+      border-color var(--wrf-transition),
+      color var(--wrf-transition),
+      transform 0.1s ease;
+  }
+
+  :global(.viewer-icon-btn[hidden]) {
+    display: none;
+  }
+
+  :global(.viewer-icon-btn:hover) {
+    border-color: var(--wrf-accent);
+    color: var(--wrf-accent);
+  }
+
+  :global(.viewer-icon-btn:active) {
+    transform: scale(0.94);
+  }
+
+  :global(.viewer-icon-btn:focus-visible) {
+    outline: 2px solid var(--wrf-accent);
+    outline-offset: 2px;
+  }
+
+  /* Touch: a full tap target, as the shared controls get. */
+  @media (pointer: coarse) {
+    :global(.viewer-icon-btn) {
+      width: var(--wrf-touch-target);
+      height: var(--wrf-touch-target);
+    }
+  }
+
+  :global(.viewer-icon) {
+    width: 1.25rem;
+    height: 1.25rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .viewer-fullscreen-icon--exit,
+  :global(.is-fullscreen) .viewer-fullscreen-icon--enter {
+    display: none;
+  }
+
+  :global(.is-fullscreen) .viewer-fullscreen-icon--exit {
+    display: block;
+  }
+
+  /* Centered along the bottom; wraps to two rows on narrow screens. Only the
+     groups take pointer events, so the gaps still reach the canvas. */
+  :global(.viewer-bottom-bar) {
+    position: absolute;
+    right: var(--viewer-inset-right, 0.5rem);
+    bottom: var(--viewer-inset-bottom, 0.5rem);
+    left: var(--viewer-inset-left, 0.5rem);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.4rem;
+    pointer-events: none;
+  }
+
+  :global(.viewer-bottom-bar .wrf-toggle) {
+    pointer-events: auto;
+    background: color-mix(in srgb, var(--wrf-surface) 85%, transparent);
+  }
+
+  :global(.viewer-bottom-bar .wrf-toggle[hidden]) {
+    display: none;
+  }
+
+  .viewer-canvas {
+    position: relative;
+    width: 100%;
+    height: 640px;
+    overflow: hidden;
+    background: var(--wrf-bg);
+    border: 1px solid var(--wrf-border);
+    border-radius: var(--wrf-radius-md);
+  }
+
+  .viewer-canvas :global(canvas) {
+    display: block;
+  }
+
+  .viewer-canvas-loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--wrf-text-muted);
+  }
+
+  .viewer-status {
+    min-height: 1.2em;
+    margin: 0.5rem 0 0;
+    color: var(--wrf-text-muted);
+    font-size: 0.85rem;
+  }
+</style>

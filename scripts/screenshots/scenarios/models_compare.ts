@@ -37,13 +37,13 @@ export const modelsCompare: Scenario = {
     await cmp.shot('side-orbited', 'Orbited: tags follow the builds', VIEWPORT);
     await cmp.click('[data-view="front"]');
     await cmp.shot('side-front', '3D Front button frames both', VIEWPORT);
-    await cmp.click('[data-mode="2d"]', 2000);
+    await cmp.click('[data-camera="2d"]', 2000);
     await cmp.shot(
       'side-then-2d',
       '2D: overlapped diff image; toggle and tags hidden',
       VIEWPORT
     );
-    await cmp.click('[data-mode="3d"]');
+    await cmp.click('[data-camera="3d"]');
     await cmp.shot('back-to-3d', 'Back to 3D: still side by side', VIEWPORT);
     await cmp.click('#model-mesh');
     await cmp.shot('side-hitbox-only', 'Mesh off: B stays put', VIEWPORT);

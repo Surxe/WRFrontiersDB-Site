@@ -9,17 +9,12 @@
  */
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import {
-  addModel,
-  clearGroup,
-  primitiveGeometry,
-  type ZoneColorFn,
-} from './scene';
+import { addModel, primitiveGeometry, type ZoneColorFn } from './scene';
+import { clearGroup } from '../../viewer3d/materials';
 import {
   EDGE_PX,
   LABEL_GUTTER_PX,
   LabelOverlay,
-  type ScreenPoint,
   type ViewLabel,
 } from './label_overlay';
 import { BuildTags } from './build_tags';
@@ -32,6 +27,8 @@ import { VIEWS, type ViewName } from '../../robot/hitbox_area/views';
 import { DiffState, type DiffRaster } from '../../robot/hitbox_area/measure';
 import { diffPlacements } from '../../robot/model/placement_diff';
 import { DIFF_COLORS, partColor, type BuildColors } from '../colors';
+import { aimOrtho } from '../../viewer3d/ortho';
+import { Stage, toUeSpace, ueDirection } from '../../viewer3d/stage';
 import type { Assembly } from '../../robot/assembly';
 import type { ModulePlacement } from '../../robot/model/mount';
 import type { Vec3 } from '../../../types/model';
@@ -66,18 +63,6 @@ const CHANGED_MESH_OPACITY = 0.55;
 
 const FIELD_OF_VIEW = 55;
 
-/** How long the 3D camera takes to reframe on a compare layout change. */
-const EASE_MS = 450;
-
-const easeInOut = (t: number): number =>
-  t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2;
-
-/** A perspective camera pose. */
-interface Pose {
-  position: THREE.Vector3;
-  target: THREE.Vector3;
-}
-
 const flat =
   (color: number): ZoneColorFn =>
   () =>
@@ -99,11 +84,6 @@ function fromFront(yawDeg: number, pitchDeg: number): Vec3 {
  * from the robot's right and above. */
 const DEFAULT_CAMERA_FROM = fromFront(20, 12);
 
-/** A UE direction in scene space: data is Z-up UE, three.js Y-up; see the
- * model groups' transform. */
-const ueDirection = ([x, y, z]: Vec3): THREE.Vector3 =>
-  new THREE.Vector3(x, z, y);
-
 const cssColor = (element: Element, token: string): THREE.Color =>
   new THREE.Color(getComputedStyle(element).getPropertyValue(token).trim());
 
@@ -121,10 +101,7 @@ const RGBA_BY_STATE: ReadonlyMap<number, readonly number[]> = new Map(
   ])
 );
 
-export class ModelViewer {
-  private readonly renderer: THREE.WebGLRenderer;
-  private readonly scene = new THREE.Scene();
-  private readonly camera: THREE.PerspectiveCamera;
+export class ModelViewer extends Stage {
   private readonly ortho = new THREE.OrthographicCamera(-1, 1, 1, -1, 1, 1e5);
   private readonly controls: OrbitControls;
   /** One finger scrolls the page (see setTouchScroll). */
@@ -149,28 +126,15 @@ export class ModelViewer {
   private view: ViewName | null = null;
   private diffRasters: Partial<Record<ViewName, DiffRaster>> = {};
   private framed = false;
-  private renderRequested = false;
-  /** An in-progress camera reframe (easeTo). */
-  private ease: { from: Pose; to: Pose; start: number } | null = null;
 
-  constructor(
-    private readonly container: HTMLElement,
-    names: BuildNames
-  ) {
-    // Transparent: the container's (design token) background shows through.
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    this.renderer.setPixelRatio(window.devicePixelRatio);
-    container.append(this.renderer.domElement);
-
-    this.camera = new THREE.PerspectiveCamera(FIELD_OF_VIEW, 1, 1, 1e5);
+  constructor(container: HTMLElement, names: BuildNames) {
+    super(container, { fov: FIELD_OF_VIEW, near: 1, far: 1e5 });
     this.camera.position.set(900, 700, 1400);
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableDamping = true;
     this.controls.addEventListener('change', () => this.requestRender());
     // The user takes the camera back mid-reframe.
-    this.controls.addEventListener('start', () => {
-      this.ease = null;
-    });
+    this.controls.addEventListener('start', () => this.cancelEase());
     // Two-finger gestures stay with the camera even where one finger scrolls
     // the page (setTouchScroll); without this the browser pans the page.
     this.renderer.domElement.addEventListener(
@@ -189,23 +153,12 @@ export class ModelViewer {
       cssColor(container, '--wrf-border'),
       cssColor(container, '--wrf-surface')
     );
-    this.scene.add(
-      this.grid,
-      new THREE.HemisphereLight(0xbfd4ff, 0x22242a, 1.6),
-      this.models,
-      this.silhouettes
-    );
-    const sun = new THREE.DirectionalLight(0xffffff, 2.2);
-    sun.position.set(1200, 1600, 900);
-    this.scene.add(sun);
+    this.scene.add(this.grid, this.models, this.silhouettes);
+    this.addLights();
 
-    // UE is Z-up and left-handed, three.js Y-up and right-handed: negate UE Y
-    // (scale applies before rotation), then rotate Z up to Y, so the robot's
-    // sides stay true to the game. Net effect: UE (x, y, z) -> (x, z, y).
-    for (const group of [this.models, this.silhouettes]) {
-      group.scale.y = -1;
-      group.rotation.x = -Math.PI / 2;
-    }
+    // Build data is Unreal's (Z-up, left-handed); the robot's sides stay
+    // true to the game.
+    for (const group of [this.models, this.silhouettes]) toUeSpace(group);
     this.silhouettes.visible = false;
     this.models.add(this.modelsA, this.modelsB);
 
@@ -214,8 +167,7 @@ export class ModelViewer {
       { text: names.a, color: DIFF_COLORS.aOnly },
       { text: names.b, color: DIFF_COLORS.bOnly },
     ]);
-    new ResizeObserver(() => this.resize()).observe(container);
-    this.resize();
+    this.observeResize();
   }
 
   /** Replace the drawn builds. */
@@ -242,9 +194,10 @@ export class ModelViewer {
     this.drawModels();
     if (!this.view) {
       const to = this.perspectiveFit(
+        this.models,
         this.camera.position.clone().sub(this.controls.target)
       );
-      if (to) this.easeTo(to);
+      if (to) this.easeTo(to, this.controls.target);
     }
     this.requestRender();
   }
@@ -266,7 +219,7 @@ export class ModelViewer {
     if (view === this.view) return;
     this.view = view;
     // The axis views share the orbit target; a reframe would drag them.
-    this.ease = null;
+    this.cancelEase();
     const axis = view !== null;
     this.models.visible = !axis;
     this.grid.visible = !axis;
@@ -333,7 +286,7 @@ export class ModelViewer {
       this.view ? this.silhouettes : this.models
     );
     if (box.isEmpty()) return;
-    this.ease = null;
+    this.cancelEase();
     const offset = box
       .getBoundingSphere(new THREE.Sphere())
       .center.sub(this.controls.target);
@@ -482,69 +435,18 @@ export class ModelViewer {
     });
   }
 
-  private requestRender(): void {
-    if (this.renderRequested) return;
-    this.renderRequested = true;
-    requestAnimationFrame(() => this.render());
-  }
-
   /** One frame. Damping keeps `controls.update()` firing `change` (and so
    * requesting frames) until the camera settles; otherwise nothing renders. */
-  private render(): void {
-    this.renderRequested = false;
-    this.stepEase();
+  protected override frame(): void {
     this.controls.update();
     this.renderer.render(this.scene, this.view ? this.ortho : this.camera);
     if (this.view && this.labelAnchors.length > 0) this.layoutLabels();
     if (this.showTags) this.layoutTags();
   }
 
-  /** Move the 3D camera smoothly to `to`, a frame at a time. */
-  private easeTo(to: Pose): void {
-    this.ease = {
-      from: {
-        position: this.camera.position.clone(),
-        target: this.controls.target.clone(),
-      },
-      to,
-      start: performance.now(),
-    };
-    this.requestRender();
-  }
-
-  private stepEase(): void {
-    if (!this.ease) return;
-    const { from, to, start } = this.ease;
-    const t = Math.min(1, (performance.now() - start) / EASE_MS);
-    const k = easeInOut(t);
-    this.camera.position.lerpVectors(from.position, to.position, k);
-    this.controls.target.lerpVectors(from.target, to.target, k);
-    if (t < 1) this.requestRender();
-    else this.ease = null;
-  }
-
-  private resize(): void {
-    const width = this.container.clientWidth;
-    const height = Math.max(1, this.container.clientHeight);
-    this.camera.aspect = width / height;
-    this.camera.updateProjectionMatrix();
-    this.renderer.setSize(width, height);
+  protected override resize(): void {
+    super.resize();
     if (this.view) this.fitOrtho();
-    this.requestRender();
-  }
-
-  /** `anchor`'s canvas position through `camera`; null when off camera. */
-  private toScreen(
-    anchor: THREE.Vector3 | null,
-    camera: THREE.Camera
-  ): ScreenPoint {
-    if (!anchor) return null;
-    const v = anchor.clone().project(camera);
-    if (Math.abs(v.x) > 1 || Math.abs(v.y) > 1 || v.z > 1) return null;
-    return {
-      x: ((v.x + 1) / 2) * this.container.clientWidth,
-      y: ((1 - v.y) / 2) * this.container.clientHeight,
-    };
   }
 
   private layoutLabels(): void {
@@ -561,33 +463,13 @@ export class ModelViewer {
     );
   }
 
-  /** The perspective pose that frames everything drawn in the 3D view from
-   * direction `from` (scene space, robot toward camera). Null when nothing is
-   * drawn yet. */
-  private perspectiveFit(from: THREE.Vector3): Pose | null {
-    const box = new THREE.Box3().setFromObject(this.models);
-    if (box.isEmpty()) return null;
-    const sphere = box.getBoundingSphere(new THREE.Sphere());
-    // Fit the narrower of the vertical and horizontal fields of view (a tall
-    // screen crops the sides, as side-by-side builds would show).
-    const halfV = THREE.MathUtils.degToRad(this.camera.fov / 2);
-    const halfH = Math.atan(Math.tan(halfV) * this.camera.aspect);
-    const distance = sphere.radius / Math.sin(Math.min(halfV, halfH));
-    return {
-      position: sphere.center
-        .clone()
-        .addScaledVector(from.normalize(), distance),
-      target: sphere.center,
-    };
-  }
-
   /** Aim the perspective camera at the robot's center from direction `from`
    * (UE, robot toward camera), far enough back to fit the whole robot. False
    * when nothing is drawn yet. */
   private aimPerspective(from: Vec3): boolean {
-    const pose = this.perspectiveFit(ueDirection(from));
+    const pose = this.perspectiveFit(this.models, ueDirection(from));
     if (!pose) return false;
-    this.ease = null;
+    this.cancelEase();
     this.camera.position.copy(pose.position);
     this.controls.target.copy(pose.target);
     this.controls.update();
@@ -651,26 +533,20 @@ export class ModelViewer {
     } else if (!this.labels.isEmpty) {
       fitWidth = width - 2 * Math.min(LABEL_GUTTER_PX, width * 0.25);
     }
-    const scale =
-      Math.min(Math.max(1, fitWidth), Math.max(1, fitHeight)) / extent;
-    // Pixels from the canvas top to the robot's center.
-    const centerY = fitTop + Math.max(1, fitHeight) / 2;
     const r = sphere.radius;
-    this.ortho.up.set(0, 1, 0);
-    if (this.view === 'top') this.ortho.up.set(1, 0, 0); // robot's front up
-    this.ortho.position
-      .copy(sphere.center)
-      .addScaledVector(ueDirection(VIEWS[this.view].dir), -r * 4);
-    this.ortho.left = -width / 2 / scale;
-    this.ortho.right = width / 2 / scale;
-    this.ortho.top = centerY / scale;
-    this.ortho.bottom = -(height - centerY) / scale;
-    this.ortho.near = 1;
-    this.ortho.far = r * 10;
-    this.ortho.zoom = 1;
-    this.ortho.updateProjectionMatrix();
+    aimOrtho(this.ortho, {
+      center: sphere.center,
+      look: ueDirection(VIEWS[this.view].dir),
+      // The top view puts the robot's front up.
+      up: new THREE.Vector3(...(this.view === 'top' ? [1, 0, 0] : [0, 1, 0])),
+      distance: r * 4,
+      near: 1,
+      far: r * 10,
+      extent,
+      canvas: { width, height },
+      fit: { width: fitWidth, top: fitTop, height: fitHeight },
+    });
     this.controls.target.copy(sphere.center);
-    this.ortho.lookAt(sphere.center);
     this.requestRender();
   }
 

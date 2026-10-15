@@ -20,7 +20,7 @@ import type {
   PoolArea,
 } from '../../robot/hitbox_area/measure';
 import { partColor, type BuildColors } from '../colors';
-import { h, swatch } from './dom';
+import { h, swatch } from '../../viewer3d/ui/dom';
 import {
   deltaClass,
   formatArea,

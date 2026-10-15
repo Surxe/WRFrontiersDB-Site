@@ -1,20 +1,20 @@
 ---
-// The three.js render target + status line. src/scripts/model_viewer mounts the
-// WebGL canvas into #model-canvas (render/viewer.ts; transparent, over this
-// element's background) and writes progress into #model-status. In the 2D
-// views it also overlays part labels there (render/label_overlay.ts, content
-// from ui/view_labels.ts), hence the :global styles. Controls float over the
-// canvas (.model-overlay, which the 2D labels keep clear of), outside
-// #model-canvas (whose role="img" would hide them from assistive tech): the
-// mesh / hitbox toggles and the re-center button top-left, the fullscreen
-// button (ui/fullscreen.ts) top-right, and along the bottom the camera mode
-// (3D / flat 2D), the side buttons (none pressed at a custom 3D angle) and,
-// while comparing in 3D, the compare layout (A and B overlapping or side by
-// side; page.ts shows it, render/viewer.ts tags each build when apart). The
-// re-center and fullscreen buttons stay hidden until the script wires them
-// up. Fullscreen takes .model-viewport (class is-fullscreen), overlays and
-// all, so every control stays in reach.
+// The /models viewer: the shared viewport chrome (../viewer/Viewport.astro:
+// #model-canvas, #model-status, the fullscreen button) with the model
+// viewer's controls over it. src/scripts/model_viewer mounts the WebGL canvas
+// into #model-canvas (render/viewer.ts) and writes progress into
+// #model-status. In the 2D views it also overlays part labels there
+// (render/label_overlay.ts, content from ui/view_labels.ts), hence the
+// :global(#model-canvas ...) styles. Controls (.viewer-overlay, which the 2D
+// labels keep clear of): the mesh / hitbox toggles and the re-center button
+// top-left, and along the bottom the camera mode (3D / flat 2D), the side
+// buttons (none pressed at a custom 3D angle) and, while comparing in 3D, the
+// compare layout (A and B overlapping or side by side; page.ts shows it,
+// render/viewer.ts tags each build when apart). The re-center button stays
+// hidden until the script wires it up.
 import LocalizedText from '../LocalizedText.astro';
+import CameraModeToggle from '../viewer/CameraModeToggle.astro';
+import Viewport from '../viewer/Viewport.astro';
 import { getDefaultString } from '../../utils/localization';
 import type { ModelStrings } from '../../scripts/model_viewer/strings';
 import type { ViewName } from '../../scripts/robot/hitbox_area/views';
@@ -27,10 +27,6 @@ interface Props {
 
 const { strings } = Astro.props;
 
-const modes = [
-  { mode: '3d', label: strings.mode3d, pressed: true },
-  { mode: '2d', label: strings.mode2d, pressed: false },
-];
 const layouts: {
   layout: CompareLayout;
   label: LocalizationKey;
@@ -48,19 +44,15 @@ const views: { view: ViewName; label: LocalizationKey }[] = [
 ];
 ---
 
-<div id="model-viewport" class="model-viewport">
-  <div
-    id="model-canvas"
-    class="model-canvas"
-    role="img"
-    aria-label={getDefaultString(strings.viewerLabel)}
-    data-model-aria-label="viewerLabel"
-  >
-    <div id="model-loading" class="model-canvas-loading">
-      <LocalizedText tag="span" localizationKey={strings.loadingViewer} />
-    </div>
-  </div>
-  <div class="model-overlay model-overlay-start">
+<Viewport
+  id="model"
+  label={strings.viewerLabel}
+  labelAttrs={{ 'data-model-aria-label': 'viewerLabel' }}
+  loading={strings.loadingViewer}
+  status={strings.statusLoading}
+  fullscreen={strings.fullscreenEnter}
+>
+  <div slot="start" class="viewer-overlay model-overlay-start">
     <div class="model-view-toggles">
       <label class="model-check">
         <input type="checkbox" id="model-mesh" checked />
@@ -75,7 +67,7 @@ const views: { view: ViewName; label: LocalizationKey }[] = [
     <button
       type="button"
       id="model-recenter"
-      class="model-icon-btn"
+      class="viewer-icon-btn"
       aria-label={getDefaultString(strings.recenter)}
       title={getDefaultString(strings.recenter)}
       data-model-aria-label="recenter"
@@ -83,7 +75,7 @@ const views: { view: ViewName; label: LocalizationKey }[] = [
       hidden
     >
       <svg
-        class="model-icon"
+        class="viewer-icon"
         viewBox="0 0 24 24"
         aria-hidden="true"
         focusable="false"
@@ -94,57 +86,19 @@ const views: { view: ViewName; label: LocalizationKey }[] = [
       </svg>
     </button>
   </div>
-  <button
-    type="button"
-    id="model-fullscreen"
-    class="model-overlay model-icon-btn model-fullscreen-btn"
-    aria-label={getDefaultString(strings.fullscreenEnter)}
-    title={getDefaultString(strings.fullscreenEnter)}
-    hidden
-  >
-    <svg
-      class="model-icon model-fullscreen-icon--enter"
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"></path>
-    </svg>
-    <svg
-      class="model-icon model-fullscreen-icon--exit"
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <path d="M9 4v5H4M20 9h-5V4M15 20v-5h5M4 15h5v5"></path>
-    </svg>
-  </button>
   <!-- Flashed by ui/touch_hint.ts when one finger tries to orbit the inline
        viewer, where one finger scrolls the page. -->
   <p id="model-touch-hint" class="model-touch-hint" aria-hidden="true">
     <LocalizedText tag="span" localizationKey={strings.twoFingerHint} />
   </p>
-  <div class="model-overlay model-camera-bar">
-    <div
+  <div class="viewer-overlay viewer-bottom-bar">
+    <CameraModeToggle
       id="model-mode-buttons"
-      class="wrf-toggle wrf-toggle--sm"
-      role="group"
-      aria-label={getDefaultString(strings.cameraMode)}
-      data-model-aria-label="cameraMode"
-    >
-      {
-        modes.map(({ mode, label, pressed }) => (
-          <button
-            type="button"
-            class="wrf-toggle__btn"
-            data-mode={mode}
-            aria-pressed={String(pressed)}
-          >
-            <LocalizedText tag="span" localizationKey={label} />
-          </button>
-        ))
-      }
-    </div>
+      label={strings.cameraMode}
+      labelAttrs={{ 'data-model-aria-label': 'cameraMode' }}
+      mode3d={strings.mode3d}
+      mode2d={strings.mode2d}
+    />
     <div
       id="model-view-buttons"
       class="wrf-toggle wrf-toggle--sm"
@@ -187,153 +141,16 @@ const views: { view: ViewName; label: LocalizationKey }[] = [
       }
     </div>
   </div>
-</div>
-<p id="model-status" class="model-status" aria-live="polite">
-  <LocalizedText tag="span" localizationKey={strings.statusLoading} />
-</p>
+</Viewport>
 
 <style>
-  .model-viewport {
-    position: relative;
-  }
-
-  /* Overlays keep clear of notches and rounded corners in fullscreen. */
-  .model-viewport:global(.is-fullscreen) {
-    --model-inset-top: calc(0.75rem + env(safe-area-inset-top, 0px));
-    --model-inset-left: calc(0.75rem + env(safe-area-inset-left, 0px));
-    --model-inset-right: calc(0.75rem + env(safe-area-inset-right, 0px));
-    --model-inset-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
-
-    display: flex;
-    flex-direction: column;
-    background: var(--wrf-bg);
-  }
-
-  /* The CSS fallback (no Fullscreen API; ui/fullscreen.ts): cover the page.
-     dvh tracks mobile browser chrome as it shows and hides. */
-  .model-viewport:global(.is-pinned) {
-    position: fixed;
-    inset: 0;
-    z-index: 1000;
-    height: 100vh;
-    height: 100dvh;
-  }
-
-  .model-viewport:global(.is-fullscreen) .model-canvas {
-    flex: 1;
-    min-height: 0;
-    height: auto;
-    border: none;
-    border-radius: 0;
-  }
-
-  :global(html.model-fullscreen-lock),
-  :global(html.model-fullscreen-lock body) {
-    overflow: hidden;
-  }
-
-  .model-fullscreen-btn {
-    position: absolute;
-    top: var(--model-inset-top, 0.5rem);
-    right: var(--model-inset-right, 0.5rem);
-  }
-
-  /* Square icon buttons, translucent like the toggles. */
-  .model-icon-btn {
-    display: flex;
-    flex: none;
-    align-items: center;
-    justify-content: center;
-    width: 2.25rem;
-    height: 2.25rem;
-    padding: 0;
-    border: 1px solid var(--wrf-border);
-    border-radius: var(--wrf-radius-sm);
-    background: var(--wrf-overlay-bg);
-    color: var(--wrf-text);
-    cursor: pointer;
-    transition:
-      background var(--wrf-transition),
-      border-color var(--wrf-transition),
-      color var(--wrf-transition),
-      transform 0.1s ease;
-  }
-
-  .model-icon-btn[hidden] {
-    display: none;
-  }
-
-  .model-icon-btn:hover {
-    border-color: var(--wrf-accent);
-    color: var(--wrf-accent);
-  }
-
-  .model-icon-btn:active {
-    transform: scale(0.94);
-  }
-
-  .model-icon-btn:focus-visible {
-    outline: 2px solid var(--wrf-accent);
-    outline-offset: 2px;
-  }
-
-  /* Touch: a full tap target, as the shared controls get. */
-  @media (pointer: coarse) {
-    .model-icon-btn {
-      width: var(--wrf-touch-target);
-      height: var(--wrf-touch-target);
-    }
-  }
-
-  .model-icon {
-    width: 1.25rem;
-    height: 1.25rem;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-
-  .model-fullscreen-icon--exit,
-  :global(.is-fullscreen) .model-fullscreen-icon--enter {
-    display: none;
-  }
-
-  :global(.is-fullscreen) .model-fullscreen-icon--exit {
-    display: block;
-  }
-
   .model-overlay-start {
     position: absolute;
-    top: var(--model-inset-top, 0.5rem);
-    left: var(--model-inset-left, 0.5rem);
+    top: var(--viewer-inset-top, 0.5rem);
+    left: var(--viewer-inset-left, 0.5rem);
     display: flex;
     align-items: stretch;
     gap: 0.4rem;
-  }
-
-  /* Centered along the bottom; wraps to two rows on narrow screens. Only the
-     groups take pointer events, so the gaps still orbit the camera. */
-  .model-camera-bar {
-    position: absolute;
-    right: var(--model-inset-right, 0.5rem);
-    bottom: var(--model-inset-bottom, 0.5rem);
-    left: var(--model-inset-left, 0.5rem);
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.4rem;
-    pointer-events: none;
-  }
-
-  .model-camera-bar .wrf-toggle {
-    pointer-events: auto;
-    background: color-mix(in srgb, var(--wrf-surface) 85%, transparent);
-  }
-
-  .model-camera-bar .wrf-toggle[hidden] {
-    display: none;
   }
 
   .model-touch-hint {
@@ -375,50 +192,20 @@ const views: { view: ViewName; label: LocalizationKey }[] = [
     font-size: 0.85rem;
   }
 
-  .model-canvas {
-    position: relative;
-    width: 100%;
-    height: 640px;
-    overflow: hidden;
-    background: var(--wrf-bg);
-    border: 1px solid var(--wrf-border);
-    border-radius: var(--wrf-radius-md);
-  }
-
-  .model-canvas :global(canvas) {
-    display: block;
-  }
-
-  .model-canvas-loading {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--wrf-text-muted);
-  }
-
-  .model-status {
-    min-height: 1.2em;
-    margin: 0.5rem 0 0;
-    color: var(--wrf-text-muted);
-    font-size: 0.85rem;
-  }
-
   /* Build name tags over the 3D view while comparing side by side
      (render/build_tags.ts): each centered just above its build. */
-  .model-canvas :global(.model-build-tags) {
+  :global(#model-canvas .model-build-tags) {
     position: absolute;
     inset: 0;
     pointer-events: none;
   }
 
-  .model-canvas :global(.model-build-tags[hidden]),
-  .model-canvas :global(.model-build-tag[hidden]) {
+  :global(#model-canvas .model-build-tags[hidden]),
+  :global(#model-canvas .model-build-tag[hidden]) {
     display: none;
   }
 
-  .model-canvas :global(.model-build-tag) {
+  :global(#model-canvas .model-build-tag) {
     position: absolute;
     display: flex;
     gap: 0.35rem;
@@ -435,28 +222,28 @@ const views: { view: ViewName; label: LocalizationKey }[] = [
   }
 
   /* 2D view labels (render/label_overlay.ts). */
-  .model-canvas :global(.model-view-labels) {
+  :global(#model-canvas .model-view-labels) {
     position: absolute;
     inset: 0;
     pointer-events: none;
   }
 
-  .model-canvas :global(.model-view-labels[hidden]),
-  .model-canvas :global(.model-view-label[hidden]) {
+  :global(#model-canvas .model-view-labels[hidden]),
+  :global(#model-canvas .model-view-label[hidden]) {
     display: none;
   }
 
-  .model-canvas :global(.model-view-labels svg) {
+  :global(#model-canvas .model-view-labels svg) {
     position: absolute;
     inset: 0;
   }
 
-  .model-canvas :global(.model-view-labels line) {
+  :global(#model-canvas .model-view-labels line) {
     stroke-width: 1;
     opacity: 0.7;
   }
 
-  .model-canvas :global(.model-view-label) {
+  :global(#model-canvas .model-view-label) {
     position: absolute;
     max-width: 174px;
     padding: 0.3rem 0.45rem;
@@ -469,30 +256,30 @@ const views: { view: ViewName; label: LocalizationKey }[] = [
     line-height: 1.3;
   }
 
-  .model-canvas :global(.model-view-label-head) {
+  :global(#model-canvas .model-view-label-head) {
     display: flex;
     gap: 0.3rem;
     align-items: center;
     font-weight: bold;
   }
 
-  .model-canvas :global(.model-view-label .model-swatch) {
+  :global(#model-canvas .model-view-label .model-swatch) {
     width: 0.65rem;
     height: 0.65rem;
   }
 
-  .model-canvas :global(.model-view-label-part) {
+  :global(#model-canvas .model-view-label-part) {
     margin: 0.15rem 0;
     overflow-wrap: anywhere;
   }
 
   /* The narrow-canvas rows layout keeps cards short; the build panels name
      the parts. */
-  .model-canvas :global(.model-view-labels.is-rows .model-view-label-part) {
+  :global(#model-canvas .model-view-labels.is-rows .model-view-label-part) {
     display: none;
   }
 
-  .model-canvas :global(.model-view-label-area) {
+  :global(#model-canvas .model-view-label-area) {
     font-variant-numeric: tabular-nums;
   }
 </style>

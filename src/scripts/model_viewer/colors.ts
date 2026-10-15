@@ -133,7 +133,4 @@ export function partColor(
   );
 }
 
-/** `0xrrggbb` -> `#rrggbb`. */
-export function cssHex(color: number): string {
-  return `#${color.toString(16).padStart(6, '0')}`;
-}
+export { cssHex } from '../viewer3d/colors';

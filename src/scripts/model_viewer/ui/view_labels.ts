@@ -15,7 +15,7 @@ import type {
 import type { ViewName } from '../../robot/hitbox_area/views';
 import { DIFF_COLORS, partColor, type BuildColors } from '../colors';
 import { matchPools } from './area_panel';
-import { h, swatch } from './dom';
+import { h, swatch } from '../../viewer3d/ui/dom';
 import { formatArea, formatDelta, moduleName, poolName } from './format';
 import type { AnchoredLabel } from '../render/viewer';
 import type { PartRefs } from './part_refs';

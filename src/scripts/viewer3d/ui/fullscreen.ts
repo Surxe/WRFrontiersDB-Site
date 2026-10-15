@@ -2,10 +2,14 @@
  * The viewport's fullscreen toggle. Uses the Fullscreen API where the browser
  * allows it on an element, else (iPhone Safari) pins the viewport over the page
  * with CSS (class `is-pinned`). Either way the viewport carries `is-fullscreen`
- * while open, so one set of styles covers both (ModelViewport.astro); the
+ * while open, so one set of styles covers both (components/viewer/Viewport.astro); the
  * viewer's ResizeObserver refits the camera to the new size, and `onChange`
  * hands touch gestures to the camera (one finger scrolls the page otherwise). The button's label (not aria-pressed)
- * says what it will do, as its icon does.
+ * says what it will do, as its icon does. A first-person viewer passes
+ * `pointerLock` (null while it needs no mouse capture): going fullscreen then
+ * also captures the mouse there, from
+ * the same click, so mouse-look starts at once; `enter()` while already open
+ * just recaptures it (after Esc released it).
  */
 
 export interface FullscreenLabels {
@@ -14,7 +18,7 @@ export interface FullscreenLabels {
 }
 
 /** Page scroll is locked while the CSS fallback covers the page. */
-const LOCK_CLASS = 'model-fullscreen-lock';
+const LOCK_CLASS = 'viewer-fullscreen-lock';
 
 export class FullscreenToggle {
   private open = false;
@@ -26,7 +30,9 @@ export class FullscreenToggle {
     private readonly button: HTMLButtonElement,
     private readonly labels: FullscreenLabels,
     /** Called with the new state on every open and close. */
-    private readonly onChange: (open: boolean) => void = () => {}
+    private readonly onChange: (open: boolean) => void = () => {},
+    /** Element to lock the pointer to on entering fullscreen, if any. */
+    private readonly pointerLock: () => HTMLElement | null = () => null
   ) {
     button.addEventListener('click', () => this.toggle());
     // The API also closes on Esc / the back gesture; follow it either way.
@@ -46,17 +52,31 @@ export class FullscreenToggle {
     else void this.enter();
   }
 
-  private async enter(): Promise<void> {
+  /** Open (needs a user gesture), or if open, recapture the pointer. */
+  async enter(): Promise<void> {
+    if (this.open) {
+      this.lockPointer();
+      return;
+    }
     // iPhone Safari leaves fullscreenEnabled undefined.
     if (document.fullscreenEnabled) {
       try {
         await this.target.requestFullscreen({ navigationUI: 'hide' });
+        this.lockPointer();
         return;
       } catch (err) {
         console.warn('fullscreen refused, pinning instead:', err);
       }
     }
     this.setPinned(true);
+    this.lockPointer();
+  }
+
+  private lockPointer(): void {
+    const target = this.pointerLock();
+    if (!target?.requestPointerLock) return;
+    // Refused (e.g. no user gesture left): the viewer's own prompt still works.
+    void Promise.resolve(target.requestPointerLock()).catch(() => {});
   }
 
   private exit(): void {

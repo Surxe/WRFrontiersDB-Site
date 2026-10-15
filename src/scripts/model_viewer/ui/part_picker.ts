@@ -9,7 +9,7 @@
  * that takes focus on open. Typing on the closed button opens it with that
  * text; Escape clears the query before closing.
  */
-import { h } from './dom';
+import { h } from '../../viewer3d/ui/dom';
 import {
   ElementFilter,
   type FilterGroup,

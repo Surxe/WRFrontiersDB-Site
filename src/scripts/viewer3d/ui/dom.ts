@@ -1,5 +1,5 @@
 /**
- * Small typed DOM helpers for the /models page's runtime-built UI.
+ * Small typed DOM helpers for the 3D viewer pages' runtime-built UI.
  */
 import { cssHex } from '../colors';
 

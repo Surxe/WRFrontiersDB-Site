@@ -43,7 +43,7 @@ export const modelsMobile: Scenario = {
       'one-finger-hint',
       'One finger sideways: the use-two-fingers hint'
     );
-    await single.click('[data-mode="2d"]', 2000);
+    await single.click('[data-camera="2d"]', 2000);
     await single.shot(
       'viewport-2d',
       '2D: part labels around the robot',
@@ -51,7 +51,7 @@ export const modelsMobile: Scenario = {
     );
     await single.click('#model-fullscreen', 1500);
     await single.shot('fullscreen-2d', 'Fullscreen 2D: label placement');
-    await single.click('[data-mode="3d"]', 2500);
+    await single.click('[data-camera="3d"]', 2500);
     await single.shot('fullscreen-3d', 'Fullscreen 3D, before a swipe');
     await single.swipe('#model-canvas', 150, 0);
     await single.shot(
@@ -66,7 +66,7 @@ export const modelsMobile: Scenario = {
       ready: modelsReady,
     });
     await cmp.fullPage('compare-page', 'Compare: where build B lands');
-    await cmp.click('[data-mode="2d"]', 2000);
+    await cmp.click('[data-camera="2d"]', 2000);
     await cmp.shot('compare-2d', 'Compare 2D: diff labels', VIEWPORT);
     await cmp.close();
   },
