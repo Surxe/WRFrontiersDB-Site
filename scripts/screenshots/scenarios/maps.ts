@@ -1,7 +1,8 @@
 /**
  * /maps: the start view behind the first team's spawn with a mode's pins,
  * switching modes and maps, mode-only geometry (Mont's drill), the foliage
- * toggle, a map without game modes, and the page around the viewer. Flying
+ * toggle, a map without game modes, the 2D view from above (by button and by
+ * link) and back, and the page around the viewer. Flying
  * needs pointer lock, which a headless browser has no mouse for.
  */
 import type { Page } from 'playwright';
@@ -24,7 +25,8 @@ export const maps: Scenario = {
   name: 'maps',
   description:
     '/maps: start views with pins (EM1, Mont, Tortuga), mode switch, ' +
-    'mode geometry, foliage on/off, a map without modes, the whole page.',
+    'mode geometry, foliage on/off, a map without modes, 2D from above, ' +
+    'the whole page.',
   async run(session) {
     const em1 = await session.open('/maps?map=EM1&mode=BeaconRush', {
       ready: mapReady,
@@ -51,7 +53,26 @@ export const maps: Scenario = {
       'Mont, TDM+: power-up labels, the drill (mode geometry) and its ring',
       VIEWPORT
     );
+    await mont.click('[data-camera="2d"]', 3000);
+    await mont.shot(
+      'mont-tdm-plus-2d',
+      'Mont, TDM+ in 2D: from above, tinted by height, pins over the drill',
+      VIEWPORT
+    );
+    await mont.click('[data-camera="3d"]', 2000);
+    await mont.shot('mont-back-to-3d', 'Back in 3D, where it was', VIEWPORT);
     await mont.close();
+
+    const crash = await session.open(
+      '/maps?map=CrashSite&mode=BeaconRush&view=2d',
+      { ready: mapReady }
+    );
+    await crash.shot(
+      'crashsite-2d',
+      'CrashSite, Warp Rush, opened in 2D by link: beacons and their zones',
+      VIEWPORT
+    );
+    await crash.close();
 
     const tortuga = await session.open('/maps?map=Tortuga&mode=CTF', {
       ready: mapReady,

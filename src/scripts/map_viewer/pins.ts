@@ -9,6 +9,10 @@
  * Every marker stands on a pole tall enough to be found from across a map (a
  * robot is 8 to 15 m tall); a ring on the ground is a zone at its true radius
  * (a beacon's or probe's capture zone, the drill's damage zone).
+ *
+ * Seen from above (`flat`, the 2D view) the poles go, zones are also filled,
+ * markers draw over the map (roofs and the drill would hide them) and grow
+ * to stay findable when zoomed out (`setHeadScale`).
  */
 import * as THREE from 'three';
 import { AnchoredTags, type ScreenPoint } from '../viewer3d/anchored_tags';
@@ -16,7 +20,7 @@ import { cssHex } from '../viewer3d/colors';
 import { clearGroup, MaterialCache } from '../viewer3d/materials';
 import { toUeSpace } from '../viewer3d/stage';
 import { PIN_COLORS, teamColor } from './colors';
-import type { Pin, PinType, Vec3 } from '../../types/map';
+import type { MapPins, Pin, PinType, Vec3 } from '../../types/map';
 
 /** What the page knows about a power-up (`Objects/Powerup.json`). */
 export interface PowerupInfo {
@@ -90,6 +94,28 @@ export function describePins(
   });
 }
 
+/** Below the lowest pin and above the highest, the 2D view's height tint
+ * ends (cm): pins stand on the ground robots fight on. */
+const TINT_BELOW = 2500;
+const TINT_ABOVE = 7500;
+
+/** The UE Z range (cm) to tint the map's ground over: around every mode's
+ * pins, else the playable space (whose height is far beyond the ground's),
+ * else null. */
+export function tintRange(pins: MapPins): [number, number] | null {
+  const heights = Object.values(pins.modes).flatMap((mode) =>
+    mode.pins.map(({ position }) => position[2])
+  );
+  if (heights.length > 0) {
+    return [
+      Math.min(...heights) - TINT_BELOW,
+      Math.max(...heights) + TINT_ABOVE,
+    ];
+  }
+  const box = pins.playable_box;
+  return box ? [box[0][2], box[1][2]] : null;
+}
+
 /** The first team's first spawn point, where the camera starts. */
 export function firstSpawn(pins: readonly Pin[]): Pin | null {
   return (
@@ -104,6 +130,10 @@ export function firstSpawn(pins: readonly Pin[]): Pin | null {
 const POLE_HEIGHT = 2500;
 const POLE_RADIUS = 40;
 const RING_WIDTH = 120;
+/** A zone's fill, seen from above. */
+const ZONE_FILL_OPACITY = 0.18;
+/** Seen from above, markers draw after the map, over it. */
+const FLAT_RENDER_ORDER = 10;
 /** Upload zones have no radius in the data (their trigger is tiny). */
 const UPLOAD_ZONE_RADIUS = 1000;
 /** Power-up labels show within this distance (cm): a mode can have a dozen
@@ -180,6 +210,10 @@ export class PinLayer {
   private readonly tags: AnchoredTags;
   /** Each label's anchor, in world space, and how far away it still shows. */
   private anchors: { point: THREE.Vector3; range: number }[] = [];
+  private poles: THREE.Mesh[] = [];
+  private heads: THREE.Mesh[] = [];
+  private fills: THREE.Mesh[] = [];
+  private flat = false;
 
   constructor(container: HTMLElement) {
     toUeSpace(this.group);
@@ -203,8 +237,21 @@ export class PinLayer {
           side: THREE.DoubleSide,
         })
     );
+    const fill = new MaterialCache(
+      (color) =>
+        new THREE.MeshBasicMaterial({
+          color,
+          transparent: true,
+          opacity: ZONE_FILL_OPACITY,
+          depthWrite: false,
+          side: THREE.DoubleSide,
+        })
+    );
     const cards: HTMLElement[] = [];
     const anchors: { point: THREE.Vector3; range: number }[] = [];
+    this.poles = [];
+    this.heads = [];
+    this.fills = [];
     for (const marker of markers) {
       const [x, y, z] = marker.position;
       const top = z + POLE_HEIGHT;
@@ -219,6 +266,8 @@ export class PinLayer {
       const head = new THREE.Mesh(headGeometry(marker), material);
       head.position.set(x, y, top);
       this.group.add(pole, head);
+      this.poles.push(pole);
+      this.heads.push(head);
 
       const radius =
         marker.zoneRadius ??
@@ -229,7 +278,13 @@ export class PinLayer {
           zone.get(marker.color)
         );
         ring.position.set(x, y, z + 40);
-        this.group.add(ring);
+        const disc = new THREE.Mesh(
+          new THREE.CircleGeometry(radius, 64),
+          fill.get(marker.color)
+        );
+        disc.position.set(x, y, z + 30);
+        this.group.add(ring, disc);
+        this.fills.push(disc);
       }
 
       const card = labelCard(marker, text);
@@ -242,6 +297,7 @@ export class PinLayer {
       }
     }
     this.tags.setCards(cards);
+    this.setFlat(this.flat);
     this.group.updateMatrixWorld(true);
     this.anchors = anchors.map(({ point, range }) => ({
       point: this.group.localToWorld(point),
@@ -254,15 +310,35 @@ export class PinLayer {
     this.tags.visible = on;
   }
 
-  /** Move the labels to their anchors' canvas positions, hiding those out
-   * of range of `eye`. */
+  /** Draw for the view from above (true) or the 3D view. */
+  setFlat(flat: boolean): void {
+    this.flat = flat;
+    for (const pole of this.poles) pole.visible = !flat;
+    for (const disc of this.fills) disc.visible = flat;
+    if (!flat) this.setHeadScale(1);
+    this.group.traverse((node) => {
+      if (!(node instanceof THREE.Mesh)) return;
+      node.renderOrder = flat ? FLAT_RENDER_ORDER : 0;
+      for (const material of [node.material].flat()) {
+        material.depthTest = !flat;
+      }
+    });
+  }
+
+  /** Grow each marker's head by `scale` (1: true size). */
+  setHeadScale(scale: number): void {
+    for (const head of this.heads) head.scale.setScalar(scale);
+  }
+
+  /** Move the labels to their anchors' canvas positions, hiding those
+   * `inRange` turns down (it gets each label's range, cm). */
   layout(
     project: (anchor: THREE.Vector3) => ScreenPoint,
-    eye: THREE.Vector3
+    inRange: (anchor: THREE.Vector3, range: number) => boolean
   ): void {
     this.tags.layout(
       this.anchors.map(({ point, range }) =>
-        point.distanceTo(eye) <= range ? project(point) : null
+        inRange(point, range) ? project(point) : null
       )
     );
   }

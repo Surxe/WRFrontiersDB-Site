@@ -1,7 +1,12 @@
 /**
- * The 3D map viewer: a free-flying first-person camera (noclip, no physics)
- * over a cooked map (WRFrontiersDB-Parser maps/cook.py), with a mode's pins
- * on top. Desktop only: mouse-look needs pointer lock, moving a keyboard.
+ * The map viewer over a cooked map (WRFrontiersDB-Parser maps/cook.py), with
+ * a mode's pins on top, in two camera modes:
+ * - 3D: a free-flying first-person camera (noclip, no physics). Desktop only:
+ *   mouse-look needs pointer lock, moving a keyboard.
+ * - 2D: straight down on the playable space, Unreal's +X up the screen
+ *   (fixed), panned by dragging and zoomed by the wheel; the ground is tinted
+ *   by height (height_tint.ts) and the pins draw flat over it (pins.ts).
+ * Each mode keeps its own camera, so switching back returns to where it was.
  *
  * The map files are glTF (meters, Y up), drawn scaled to centimeters so they
  * line up with the pins, which are in Unreal space (toUeSpace). Frames are
@@ -10,9 +15,18 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+import { MapControls } from 'three/addons/controls/MapControls.js';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
+import type { CameraMode } from '../../viewer3d/camera_mode';
+import {
+  aimOrtho,
+  orthoUnitsPerPixel,
+  sizeOrtho,
+  type CanvasSize,
+} from '../../viewer3d/ortho';
 import { Stage, ueDirection } from '../../viewer3d/stage';
 import { PinLayer, type PinLabelText, type PinMarker } from '../pins';
+import { HeightTint } from './height_tint';
 import type { Vec3 } from '../../../types/map';
 
 const FIELD_OF_VIEW = 70;
@@ -35,6 +49,21 @@ const MAX_FRAME_S = 0.1;
 const START_BACK = 4000;
 const START_UP = 2000;
 const START_SIDE = 2500;
+
+/** The 2D view looks straight down, Unreal's +X up the screen. */
+const DOWN = new THREE.Vector3(0, -1, 0);
+const NORTH = ueDirection([1, 0, 0]);
+/** Room above the highest ground and below the lowest, cm. */
+const TOP_CLEARANCE = 10_000;
+/** How far the 2D view zooms out and in from the playable space. */
+const MIN_ZOOM = 0.5;
+const MAX_ZOOM = 64;
+/** Seen from above, a marker's head is drawn at least this wide (px), its
+ * true size being about HEAD_CM. */
+const HEAD_PX = 22;
+const HEAD_CM = 600;
+/** Seen from above, power-up labels show from this zoom in (cm per pixel). */
+const POWERUP_LABEL_CM_PER_PX = 30;
 
 /** Key -> movement in camera space: x right, y up (world), z forward. */
 const MOVES: Readonly<Record<string, Vec3>> = {
@@ -69,6 +98,14 @@ export interface LoadProgress {
 
 export class MapViewer extends Stage {
   private readonly controls: PointerLockControls;
+  private readonly ortho = new THREE.OrthographicCamera(-1, 1, 1, -1, 1, FAR);
+  private readonly mapControls: MapControls;
+  private cameraMode: CameraMode = '3d';
+  /** The 2D view's scale at zoom 1 (cm per pixel); null until it is aimed. */
+  private orthoScale: number | null = null;
+  /** The playable space (scene space), which the 2D view frames. */
+  private playable: THREE.Box3 | null = null;
+  private readonly heightTint = new HeightTint();
   private readonly loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
   /** glTF content, scaled from meters to centimeters. */
   private readonly world = new THREE.Group();
@@ -97,6 +134,7 @@ export class MapViewer extends Stage {
       foliage: this.material(MATERIALS.foliage),
       mode: this.material(MATERIALS.mode),
     };
+    this.heightTint.apply(this.materials.base);
     this.world.scale.setScalar(METERS);
     this.world.add(this.layers.base, this.layers.foliage, this.layers.mode);
     this.pins = new PinLayer(container);
@@ -121,11 +159,43 @@ export class MapViewer extends Stage {
       },
       { passive: false }
     );
+
+    // Before the controls, which take the camera's up as theirs.
+    this.ortho.up.copy(NORTH);
+    this.mapControls = new MapControls(this.ortho, this.canvas);
+    this.mapControls.enableRotate = false;
+    // Looking straight down, the screen's axes are the ground's.
+    this.mapControls.screenSpacePanning = true;
+    this.mapControls.zoomToCursor = true;
+    this.mapControls.minZoom = MIN_ZOOM;
+    this.mapControls.maxZoom = MAX_ZOOM;
+    this.mapControls.enabled = false;
+    this.mapControls.addEventListener('change', () => this.requestRender());
     this.observeResize();
   }
 
   get locked(): boolean {
     return this.controls.isLocked;
+  }
+
+  /** Fly in 3D, or look down on the map in 2D (releasing the mouse). */
+  setCameraMode(mode: CameraMode): void {
+    if (mode === this.cameraMode) return;
+    this.cameraMode = mode;
+    const flat = mode === '2d';
+    if (flat && this.controls.isLocked) this.controls.unlock();
+    this.held.clear();
+    this.mapControls.enabled = flat;
+    this.heightTint.enabled = flat;
+    this.pins.setFlat(flat);
+    if (flat && this.orthoScale === null) this.aimTop();
+    this.requestRender();
+  }
+
+  /** Tint the ground from `low` to `high` (UE Z, cm) in the 2D view. */
+  setHeightRange(low: number, high: number): void {
+    this.heightTint.setRange(low, high);
+    this.requestRender();
   }
 
   /** Call `listener` when flying starts (true) or stops (false). */
@@ -181,6 +251,8 @@ export class MapViewer extends Stage {
       clearLayer(this.layers[layer]);
     }
     this.pins.set([], { beacon: String, probe: String });
+    this.playable = null;
+    this.orthoScale = null;
     this.requestRender();
   }
 
@@ -201,16 +273,15 @@ export class MapViewer extends Stage {
     spawn: { position: Vec3; yaw: number } | null,
     box: readonly [Vec3, Vec3] | null
   ): void {
+    this.playable = box
+      ? new THREE.Box3().setFromPoints(box.map((corner) => ueDirection(corner)))
+      : null;
+    this.aimTop();
     if (!spawn) {
       // Not the map's own bounds: the landscape reaches far beyond play.
       const from = ueDirection([-1, -1, 0.8]);
-      const pose = box
-        ? this.boxFit(
-            new THREE.Box3().setFromPoints(
-              box.map((corner) => ueDirection(corner))
-            ),
-            from
-          )
+      const pose = this.playable
+        ? this.boxFit(this.playable, from)
         : this.perspectiveFit(this.layers.base, from);
       if (!pose) return;
       this.camera.position.copy(pose.position);
@@ -249,6 +320,10 @@ export class MapViewer extends Stage {
   }
 
   protected override frame(): void {
+    if (this.cameraMode === '2d') {
+      this.frameTop();
+      return;
+    }
     const now = performance.now();
     const moving = this.controls.isLocked && this.held.size > 0;
     if (moving && this.lastFrame !== null) {
@@ -256,8 +331,66 @@ export class MapViewer extends Stage {
     }
     this.lastFrame = moving ? now : null;
     this.renderer.render(this.scene, this.camera);
-    this.pins.layout((anchor) => this.toScreen(anchor), this.camera.position);
+    const eye = this.camera.position;
+    this.pins.layout(
+      (anchor) => this.toScreen(anchor),
+      (anchor, range) => anchor.distanceTo(eye) <= range
+    );
     if (moving) this.requestRender();
+  }
+
+  protected override resize(): void {
+    super.resize();
+    if (this.orthoScale !== null) {
+      sizeOrtho(this.ortho, this.canvasSize(), this.orthoScale);
+      this.requestRender();
+    }
+  }
+
+  private frameTop(): void {
+    const cmPerPixel = orthoUnitsPerPixel(this.ortho, this.canvasSize());
+    this.pins.setHeadScale(Math.max(1, (HEAD_PX * cmPerPixel) / HEAD_CM));
+    this.renderer.render(this.scene, this.ortho);
+    this.pins.layout(
+      (anchor) => this.toScreen(anchor, this.ortho),
+      (_, range) => range === Infinity || cmPerPixel <= POWERUP_LABEL_CM_PER_PX
+    );
+  }
+
+  /** Aim the 2D view down on the playable space (else the whole map). */
+  private aimTop(): void {
+    const ground = new THREE.Box3().setFromObject(this.layers.base);
+    const box = this.playable ?? ground;
+    if (box.isEmpty()) return;
+    const center = box.getCenter(new THREE.Vector3());
+    const size = box.getSize(new THREE.Vector3());
+    const top = ground.isEmpty()
+      ? box.max.y
+      : Math.max(box.max.y, ground.max.y);
+    const bottom = ground.isEmpty()
+      ? box.min.y
+      : Math.min(box.min.y, ground.min.y);
+    const distance = top - center.y + TOP_CLEARANCE;
+    this.orthoScale = aimOrtho(this.ortho, {
+      center,
+      look: DOWN,
+      up: NORTH,
+      distance,
+      near: 1,
+      far: distance + (center.y - bottom) + TOP_CLEARANCE,
+      extent: Math.max(size.x, size.z) * 1.05,
+      canvas: this.canvasSize(),
+    });
+    this.mapControls.target.copy(center);
+    this.mapControls.update();
+    this.requestRender();
+  }
+
+  private canvasSize(): CanvasSize {
+    return {
+      width: this.container.clientWidth,
+      height: Math.max(1, this.container.clientHeight),
+    };
   }
 
   private fly(seconds: number): void {

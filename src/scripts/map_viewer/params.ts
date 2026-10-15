@@ -10,23 +10,29 @@
  *             Default: the map's first mode.
  *   foliage   0 | 1 — draw trees, bushes and grass. Default 1; only 0 is
  *             written.
+ *   view      3d | 2d — fly in first person, or look straight down on the
+ *             map. Default 3d; only 2d is written.
  *
  * Unknown params (e.g. `lang`) are preserved on write.
  */
+import { isCameraMode, type CameraMode } from '../viewer3d/camera_mode';
 import type { GameMap } from '../../types/map';
 
 export interface MapUrlState {
   map: string | null;
   mode: string | null;
   foliage: boolean;
+  view: CameraMode;
 }
 
 /** The page state a query encodes, as given (not checked against the maps). */
 export function readMapQuery(params: URLSearchParams): MapUrlState {
+  const view = params.get('view');
   return {
     map: params.get('map') || null,
     mode: params.get('mode') || null,
     foliage: params.get('foliage') !== '0',
+    view: isCameraMode(view) ? view : '3d',
   };
 }
 
@@ -35,10 +41,13 @@ export function writeMapQuery(
   params: URLSearchParams,
   state: MapUrlState
 ): void {
-  for (const key of ['map', 'mode', 'foliage'] as const) params.delete(key);
+  for (const key of ['map', 'mode', 'foliage', 'view'] as const) {
+    params.delete(key);
+  }
   if (state.map) params.set('map', state.map);
   if (state.mode) params.set('mode', state.mode);
   if (!state.foliage) params.set('foliage', '0');
+  if (state.view === '2d') params.set('view', '2d');
 }
 
 /** The picker's order: the maps the queues pick, by name, then the others

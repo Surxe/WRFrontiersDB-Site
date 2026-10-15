@@ -37,6 +37,9 @@ export const MAP_STRINGS = {
   fly: site('Maps_Fly'),
   flyHint: site('Maps_Fly_Hint'),
   speed: site('Maps_Speed'),
+  cameraMode: site('Models_Camera_Mode'),
+  mode3d: site('Models_Mode_3D'),
+  mode2d: site('Models_Mode_2D'),
 
   // Controls
   controls: site('Maps_Controls'),
@@ -47,6 +50,8 @@ export const MAP_STRINGS = {
   controlSpeed: site('Maps_Control_Speed'),
   controlRelease: site('Maps_Control_Release'),
   controlFullscreen: site('Maps_Control_Fullscreen'),
+  controlPan: site('Maps_Control_Pan'),
+  controlZoom: site('Maps_Control_Zoom'),
 
   // Pins
   pins: site('Maps_Pins'),

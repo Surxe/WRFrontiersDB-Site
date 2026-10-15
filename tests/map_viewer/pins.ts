@@ -3,13 +3,14 @@ import {
   describePins,
   firstSpawn,
   powerupName,
+  tintRange,
 } from '../../src/scripts/map_viewer/pins';
 import {
   NO_TEAM_COLOR,
   PIN_COLORS,
   TEAM_COLORS,
 } from '../../src/scripts/map_viewer/colors';
-import type { Pin } from '../../src/types/map';
+import type { MapPins, Pin } from '../../src/types/map';
 
 const at = (x: number): [number, number, number] => [x, 0, 0];
 
@@ -112,5 +113,55 @@ describe('firstSpawn', () => {
       firstSpawn([{ type: 'spawn', team: 1, position: at(1), yaw: 0 }])?.team
     ).toBe(1);
     expect(firstSpawn([{ type: 'drill', position: at(1), yaw: 0 }])).toBeNull();
+  });
+});
+
+describe('tintRange', () => {
+  const mapPins = (
+    heights: number[][],
+    box: MapPins['playable_box'] = null
+  ): MapPins => ({
+    version: 1,
+    input_hash: '',
+    map: 'Test',
+    units: 'cm',
+    playable_box: box,
+    files: { base: 'Maps/Test.glb', foliage: null },
+    modes: Object.fromEntries(
+      heights.map((zs, i) => [
+        `Mode${i}`,
+        {
+          sublevels: [],
+          file: null,
+          pins: zs.map(
+            (z): Pin => ({ type: 'spawn', position: [0, 0, z], yaw: 0 })
+          ),
+        },
+      ])
+    ),
+  });
+
+  it("spans every mode's pins, with room below and above", () => {
+    expect(tintRange(mapPins([[12_000, 15_000], [20_000]]))).toEqual([
+      9_500, 27_500,
+    ]);
+  });
+
+  it('falls back to the playable space without pins', () => {
+    expect(
+      tintRange(
+        mapPins(
+          [[]],
+          [
+            [0, 0, -100],
+            [1, 1, 900],
+          ]
+        )
+      )
+    ).toEqual([-100, 900]);
+  });
+
+  it('has none without pins or a playable space', () => {
+    expect(tintRange(mapPins([]))).toBeNull();
   });
 });

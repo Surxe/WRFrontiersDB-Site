@@ -1,12 +1,13 @@
 ---
-// /maps: fly through each map in first person, with a game mode's pins
-// (src/scripts/map_viewer). The pickers are built from Objects/Map.json here;
+// /maps: fly through each map in first person, or look straight down on it
+// (the 3D / 2D buttons), with a game mode's pins (src/scripts/map_viewer). The pickers are built from Objects/Map.json here;
 // the script loads the chosen map's files (Maps/, cooked by the Parser) and
 // hides the modes the chosen map lacks. Without map data the page still
 // builds and says so at runtime.
 import Page from '../components/Page.astro';
 import Breadcrumb from '../components/Breadcrumb.astro';
 import LocalizedText from '../components/LocalizedText.astro';
+import CameraModeToggle from '../components/viewer/CameraModeToggle.astro';
 import Viewport from '../components/viewer/Viewport.astro';
 import { getMapsBreadcrumbs } from '../utils/breadcrumb';
 import { generateTemplateMetaDescriptions } from '../utils/meta_description';
@@ -48,14 +49,24 @@ for (const map of maps) {
     if (!modes.has(mode.id)) modes.set(mode.id, mode);
 }
 
+// Per camera mode; the script shows the active mode's.
 const controls = [
-  strings.controlMove,
-  strings.controlLook,
-  strings.controlUpDown,
-  strings.controlFast,
-  strings.controlSpeed,
-  strings.controlRelease,
-  strings.controlFullscreen,
+  {
+    mode: '3d',
+    keys: [
+      strings.controlMove,
+      strings.controlLook,
+      strings.controlUpDown,
+      strings.controlFast,
+      strings.controlSpeed,
+      strings.controlRelease,
+      strings.controlFullscreen,
+    ],
+  },
+  {
+    mode: '2d',
+    keys: [strings.controlPan, strings.controlZoom, strings.controlFullscreen],
+  },
 ];
 const legend: { color: number; label: LocalizationKey }[] = [
   { color: TEAM_COLORS[0], label: strings.teamBlue },
@@ -152,7 +163,17 @@ const legend: { color: number; label: LocalizationKey }[] = [
         </label>
         <span id="map-speed" class="map-speed"></span>
       </div>
-      <!-- Goes fullscreen and captures the mouse; hidden while flying. -->
+      <div class="viewer-overlay viewer-bottom-bar">
+        <CameraModeToggle
+          id="map-camera-mode"
+          label={strings.cameraMode}
+          labelAttrs={{ 'data-map-aria-label': 'cameraMode' }}
+          mode3d={strings.mode3d}
+          mode2d={strings.mode2d}
+        />
+      </div>
+      <!-- Goes fullscreen and captures the mouse; hidden while flying and in
+           2D. -->
       <button type="button" id="map-fly" class="map-fly" hidden>
         <LocalizedText tag="span" localizationKey={strings.fly} />
         <span class="map-fly-hint">
@@ -167,15 +188,17 @@ const legend: { color: number; label: LocalizationKey }[] = [
     <div class="map-help">
       <section>
         <LocalizedText tag="h2" localizationKey={strings.controls} />
-        <ul>
-          {
-            controls.map((key) => (
-              <li>
-                <LocalizedText tag="span" localizationKey={key} />
-              </li>
-            ))
-          }
-        </ul>
+        {
+          controls.map(({ mode, keys }) => (
+            <ul data-camera-controls={mode} hidden={mode !== '3d'}>
+              {keys.map((key) => (
+                <li>
+                  <LocalizedText tag="span" localizationKey={key} />
+                </li>
+              ))}
+            </ul>
+          ))
+        }
       </section>
       <section>
         <LocalizedText tag="h2" localizationKey={strings.pins} />

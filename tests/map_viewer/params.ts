@@ -24,8 +24,10 @@ const MAPS = [
 describe('readMapQuery', () => {
   it('reads map, mode and foliage', () => {
     expect(
-      readMapQuery(new URLSearchParams('map=Mont&mode=Spearhead&foliage=0'))
-    ).toEqual({ map: 'Mont', mode: 'Spearhead', foliage: false });
+      readMapQuery(
+        new URLSearchParams('map=Mont&mode=Spearhead&foliage=0&view=2d')
+      )
+    ).toEqual({ map: 'Mont', mode: 'Spearhead', foliage: false, view: '2d' });
   });
 
   it('defaults to no choice and foliage on', () => {
@@ -33,7 +35,12 @@ describe('readMapQuery', () => {
       map: null,
       mode: null,
       foliage: true,
+      view: '3d',
     });
+  });
+
+  it('reads an unknown view as 3d', () => {
+    expect(readMapQuery(new URLSearchParams('view=top')).view).toBe('3d');
   });
 });
 
@@ -46,12 +53,29 @@ describe('writeMapQuery', () => {
 
   it('writes the state and keeps other params', () => {
     expect(
-      write('lang=es&mode=CTF', { map: 'EM1', mode: null, foliage: false })
+      write('lang=es&mode=CTF', {
+        map: 'EM1',
+        mode: null,
+        foliage: false,
+        view: '3d',
+      })
     ).toBe('lang=es&map=EM1&foliage=0');
   });
 
+  it('writes only the 2D view', () => {
+    const state = { map: null, mode: null, foliage: true } as const;
+    expect(write('', { ...state, view: '3d' })).toBe('');
+    expect(write('view=2d', { ...state, view: '3d' })).toBe('');
+    expect(write('', { ...state, view: '2d' })).toBe('view=2d');
+  });
+
   it('round-trips', () => {
-    const state = { map: 'Mont', mode: 'BeaconRush', foliage: true };
+    const state = {
+      map: 'Mont',
+      mode: 'BeaconRush',
+      foliage: true,
+      view: '2d' as const,
+    };
     expect(readMapQuery(new URLSearchParams(write('', state)))).toEqual(state);
   });
 });

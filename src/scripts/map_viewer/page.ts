@@ -1,15 +1,16 @@
 /**
  * The /maps page controller: loads the map list (`Objects/Map.json`), wires
- * the map / mode pickers and the foliage toggle to the viewer, and keeps the
- * URL in step (params.ts).
+ * the map / mode pickers, the foliage toggle and the 3D / 2D camera mode to
+ * the viewer, and keeps the URL in step (params.ts).
  */
 import { fetchJson } from '../data/fetch';
 import { localizePage } from '../localization';
 import { FullscreenToggle } from '../viewer3d/ui/fullscreen';
 import { queryAll, requireElement } from '../viewer3d/ui/dom';
+import { isCameraMode, type CameraMode } from '../viewer3d/camera_mode';
 import { ToggleGroup } from '../viewer3d/ui/toggle_group';
 import { readMapUrl, resolveSelection, sortMaps, writeMapUrl } from './params';
-import { describePins, firstSpawn, type PowerupInfo } from './pins';
+import { describePins, firstSpawn, tintRange, type PowerupInfo } from './pins';
 import { MapViewer, type LoadProgress } from './render/map_viewer';
 import { isMapStringId, MapText, parseMapStrings } from './strings';
 import type { GameMap, MapPins } from '../../types/map';
@@ -30,6 +31,8 @@ function pageElements() {
     foliage: requireElement('map-foliage', HTMLInputElement),
     fly: requireElement('map-fly', HTMLButtonElement),
     speed: requireElement('map-speed', HTMLElement),
+    cameraButtons: requireElement('map-camera-mode', HTMLElement),
+    controls: queryAll(document, '[data-camera-controls]', HTMLElement),
   };
 }
 
@@ -62,6 +65,8 @@ export class MapPage {
   private map: GameMap | null = null;
   private mode: string | null = null;
   private foliage: boolean;
+  private cameraMode: CameraMode;
+  private locked = false;
   private pins: MapPins | null = null;
   /** The map whose foliage is loaded (it loads on first show). */
   private foliageLoaded: string | null = null;
@@ -69,6 +74,7 @@ export class MapPage {
   private generation = 0;
   private readonly mapPicker: ToggleGroup<string>;
   private readonly modePicker: ToggleGroup<string>;
+  private readonly cameraPicker: ToggleGroup<CameraMode>;
 
   private constructor(
     private readonly el: PageElements,
@@ -77,10 +83,17 @@ export class MapPage {
     private readonly text: MapText,
     private readonly viewer: MapViewer
   ) {
-    this.foliage = readMapUrl(window.location.search).foliage;
+    const url = readMapUrl(window.location.search);
+    this.foliage = url.foliage;
+    this.cameraMode = url.view;
     el.foliage.checked = this.foliage;
     this.mapPicker = new ToggleGroup(el.mapButtons, 'map', isString);
     this.modePicker = new ToggleGroup(el.modeButtons, 'mode', isString);
+    this.cameraPicker = new ToggleGroup(
+      el.cameraButtons,
+      'camera',
+      isCameraMode
+    );
   }
 
   static async start(): Promise<void> {
@@ -155,9 +168,9 @@ export class MapPage {
       el.fullscreen,
       { enter: text.t('fullscreenEnter'), exit: text.t('fullscreenExit') },
       () => {},
-      viewer.canvas
+      // 2D needs no mouse capture.
+      () => (this.cameraMode === '3d' ? viewer.canvas : null)
     );
-    el.fly.hidden = false;
     el.fly.addEventListener('click', () => void fullscreen.enter());
     document.addEventListener('keydown', (event) => {
       if (event.code !== 'KeyF' || event.repeat || isTyping(event)) return;
@@ -165,9 +178,18 @@ export class MapPage {
       fullscreen.toggle();
     });
     viewer.onLockChange((locked) => {
-      el.fly.hidden = locked;
-      el.viewport.classList.toggle('is-flying', locked);
+      this.locked = locked;
+      this.syncCamera();
     });
+    this.cameraPicker.onSelect((mode) => {
+      if (mode === this.cameraMode) return;
+      this.cameraMode = mode;
+      viewer.setCameraMode(mode);
+      this.syncCamera();
+      this.syncUrl();
+    });
+    viewer.setCameraMode(this.cameraMode);
+    this.syncCamera();
     viewer.onSpeedChange((speed) => {
       el.speed.textContent = text.t('speed', { speed: Math.round(speed) });
     });
@@ -212,6 +234,8 @@ export class MapPage {
       ]);
       if (generation !== this.generation) return;
       this.pins = pins;
+      const range = tintRange(pins);
+      if (range) viewer.setHeightRange(...range);
       const modePins = this.mode ? (pins.modes[this.mode]?.pins ?? []) : [];
       viewer.placeStart(firstSpawn(modePins), pins.playable_box);
       el.status.textContent = '';
@@ -267,11 +291,25 @@ export class MapPage {
     this.el.noModes.hidden = modes.size > 0;
   }
 
+  /** The fly prompt, speed and controls list for the camera mode. */
+  private syncCamera(): void {
+    const { el } = this;
+    const flat = this.cameraMode === '2d';
+    this.cameraPicker.setPressed(this.cameraMode);
+    el.fly.hidden = flat || this.locked;
+    el.speed.hidden = flat;
+    el.viewport.classList.toggle('is-flying', this.locked);
+    for (const list of el.controls) {
+      list.hidden = list.dataset.cameraControls !== this.cameraMode;
+    }
+  }
+
   private syncUrl(): void {
     writeMapUrl({
       map: this.map?.id ?? null,
       mode: this.mode,
       foliage: this.foliage,
+      view: this.cameraMode,
     });
   }
 }
