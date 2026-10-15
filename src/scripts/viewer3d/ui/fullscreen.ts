@@ -7,7 +7,8 @@
  * hands touch gestures to the camera (one finger scrolls the page otherwise). The button's label (not aria-pressed)
  * says what it will do, as its icon does. A first-person viewer passes
  * `pointerLock`: going fullscreen then also captures the mouse there, from
- * the same click, so mouse-look starts at once.
+ * the same click, so mouse-look starts at once; `enter()` while already open
+ * just recaptures it (after Esc released it).
  */
 
 export interface FullscreenLabels {
@@ -50,7 +51,12 @@ export class FullscreenToggle {
     else void this.enter();
   }
 
-  private async enter(): Promise<void> {
+  /** Open (needs a user gesture), or if open, recapture the pointer. */
+  async enter(): Promise<void> {
+    if (this.open) {
+      this.lockPointer();
+      return;
+    }
     // iPhone Safari leaves fullscreenEnabled undefined.
     if (document.fullscreenEnabled) {
       try {

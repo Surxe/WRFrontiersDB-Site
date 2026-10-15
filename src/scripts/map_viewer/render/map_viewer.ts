@@ -47,9 +47,9 @@ const MOVES: Readonly<Record<string, Vec3>> = {
   KeyA: [-1, 0, 0],
   ArrowLeft: [-1, 0, 0],
   Space: [0, 1, 0],
-  KeyE: [0, 1, 0],
+  KeyQ: [0, 1, 0],
   KeyC: [0, -1, 0],
-  KeyQ: [0, -1, 0],
+  KeyE: [0, -1, 0],
 };
 
 /** The map's look: untextured, as the model viewer draws robots. */
@@ -126,11 +126,6 @@ export class MapViewer extends Stage {
 
   get locked(): boolean {
     return this.controls.isLocked;
-  }
-
-  /** Capture the mouse and start flying (needs a user gesture). */
-  lock(): void {
-    this.controls.lock();
   }
 
   /** Call `listener` when flying starts (true) or stops (false). */

@@ -55,6 +55,7 @@ const controls = [
   strings.controlFast,
   strings.controlSpeed,
   strings.controlRelease,
+  strings.controlFullscreen,
 ];
 const legend: { color: number; label: LocalizationKey }[] = [
   { color: TEAM_COLORS[0], label: strings.teamBlue },
@@ -151,7 +152,7 @@ const legend: { color: number; label: LocalizationKey }[] = [
         </label>
         <span id="map-speed" class="map-speed"></span>
       </div>
-      <!-- Captures the mouse (pointer lock); hidden while flying. -->
+      <!-- Goes fullscreen and captures the mouse; hidden while flying. -->
       <button type="button" id="map-fly" class="map-fly" hidden>
         <LocalizedText tag="span" localizationKey={strings.fly} />
         <span class="map-fly-hint">

@@ -46,6 +46,7 @@ export const MAP_STRINGS = {
   controlFast: site('Maps_Control_Fast'),
   controlSpeed: site('Maps_Control_Speed'),
   controlRelease: site('Maps_Control_Release'),
+  controlFullscreen: site('Maps_Control_Fullscreen'),
 
   // Pins
   pins: site('Maps_Pins'),

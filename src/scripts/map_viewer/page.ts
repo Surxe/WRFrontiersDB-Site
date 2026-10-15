@@ -47,6 +47,17 @@ function localizeAttributes(text: MapText): void {
 
 const isString = (value: unknown): value is string => typeof value === 'string';
 
+/** A key meant for a text field or a browser shortcut, not the page. */
+function isTyping(event: KeyboardEvent): boolean {
+  if (event.ctrlKey || event.metaKey || event.altKey) return true;
+  const target = event.target;
+  return (
+    target instanceof HTMLElement &&
+    (target.isContentEditable ||
+      target.matches('textarea, select, input:not([type=checkbox])'))
+  );
+}
+
 export class MapPage {
   private map: GameMap | null = null;
   private mode: string | null = null;
@@ -139,8 +150,20 @@ export class MapPage {
       this.syncUrl();
     });
 
+    const fullscreen = new FullscreenToggle(
+      el.viewport,
+      el.fullscreen,
+      { enter: text.t('fullscreenEnter'), exit: text.t('fullscreenExit') },
+      () => {},
+      viewer.canvas
+    );
     el.fly.hidden = false;
-    el.fly.addEventListener('click', () => viewer.lock());
+    el.fly.addEventListener('click', () => void fullscreen.enter());
+    document.addEventListener('keydown', (event) => {
+      if (event.code !== 'KeyF' || event.repeat || isTyping(event)) return;
+      event.preventDefault();
+      fullscreen.toggle();
+    });
     viewer.onLockChange((locked) => {
       el.fly.hidden = locked;
       el.viewport.classList.toggle('is-flying', locked);
@@ -148,13 +171,6 @@ export class MapPage {
     viewer.onSpeedChange((speed) => {
       el.speed.textContent = text.t('speed', { speed: Math.round(speed) });
     });
-    new FullscreenToggle(
-      el.viewport,
-      el.fullscreen,
-      { enter: text.t('fullscreenEnter'), exit: text.t('fullscreenExit') },
-      () => {},
-      viewer.canvas
-    );
 
     const url = readMapUrl(window.location.search);
     const { map, mode } = resolveSelection(this.maps, url.map, url.mode);
