@@ -1,7 +1,12 @@
 import type { ArmorZone } from '../types/armor_zone';
 import type { CharacterModule } from '../types/character_module';
 import type { LocalizationKey } from '../types/localization';
-import type { Module, ModuleStat, ModuleType } from '../types/module';
+import type {
+  Module,
+  ModuleCategory,
+  ModuleStat,
+  ModuleType,
+} from '../types/module';
 import type { ModuleSocketType } from '../types/module_socket_type';
 import { MODULE_CATEGORY_IDS } from './constants';
 import { refToId } from './object_reference';
@@ -18,7 +23,8 @@ import {
 export type ModuleStatLine =
   /** A stat value, e.g. `Max Speed: 109km/h`. */
   | { kind: 'stat'; display: StatDisplay; value: number }
-  /** A count of one weapon socket type, e.g. `Light Weapon ×2`. */
+  /** A count of one weapon socket type, e.g. `Light Weapon ×2`; or `Weapons ×0`
+   * for a part without weapon sockets whose module group has parts with some. */
   | { kind: 'slots'; label?: LocalizationKey; count: number };
 
 /** A summary field: a Stat.json key, the module's armor per zone, or its weapon slots. */
@@ -133,6 +139,41 @@ export function moduleWeaponSlots(
   return slots;
 }
 
+const weaponSlotGroupsCache = new WeakMap<object, Set<string>>();
+
+/**
+ * Whether any module in `module`'s module group has weapon sockets (shoulders,
+ * torsos), so a part of it without any can say so (`×0`) instead of leaving the
+ * count out, which reads as unknown.
+ */
+function groupHasWeaponSlots(module: Module, load: ObjectLoader): boolean {
+  if (!module.module_group_ref) return false;
+  const modules = load<Module>('Objects/Module.json');
+  let groups = weaponSlotGroupsCache.get(modules);
+  if (!groups) {
+    const socketTypes = load<ModuleSocketType>('Objects/ModuleSocketType.json');
+    const moduleTypes = load<ModuleType>('Objects/ModuleType.json');
+    groups = new Set(
+      Object.values(modules)
+        .filter(
+          (m) =>
+            m.module_group_ref &&
+            moduleWeaponSlots(m, socketTypes, moduleTypes).length > 0
+        )
+        .map((m) => m.module_group_ref as string)
+    );
+    weaponSlotGroupsCache.set(modules, groups);
+  }
+  return groups.has(module.module_group_ref);
+}
+
+/** The weapon category's name (`Weapons`), labelling a count of 0 weapon slots. */
+function weaponCategoryName(load: ObjectLoader): LocalizationKey | undefined {
+  return load<ModuleCategory>('Objects/ModuleCategory.json')[
+    MODULE_CATEGORY_IDS.weapon
+  ]?.name;
+}
+
 function isWeaponSocketType(
   socketType: ModuleSocketType,
   moduleTypes: Record<string, ModuleType>
@@ -191,11 +232,15 @@ export function getModuleStatRows(
       ).flatMap(statLine);
     }
     if (field === WEAPON_SLOTS) {
-      return moduleWeaponSlots(
+      const slots = moduleWeaponSlots(
         module,
         load<ModuleSocketType>('Objects/ModuleSocketType.json'),
         load<ModuleType>('Objects/ModuleType.json')
-      ).map(({ socketType, count }) => ({
+      );
+      if (slots.length === 0 && groupHasWeaponSlots(module, load)) {
+        return [{ kind: 'slots', label: weaponCategoryName(load), count: 0 }];
+      }
+      return slots.map(({ socketType, count }) => ({
         kind: 'slots',
         label: socketType.name,
         count,
