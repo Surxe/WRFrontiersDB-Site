@@ -35,6 +35,34 @@ const OBJECTS: Record<string, Record<string, unknown>> = {
       module_category_ref: 'OBJID_ModuleCategory::DA_ModuleCategory_Ability.0',
     },
   },
+  'Objects/ModuleCategory.json': {
+    'DA_ModuleCategory_Weapon.0': {
+      id: 'DA_ModuleCategory_Weapon.0',
+      name: text('Weapons'),
+    },
+  },
+  'Objects/Module.json': {
+    'ArmedShoulder.0': {
+      id: 'ArmedShoulder.0',
+      module_group_ref: 'OBJID_ModuleGroup::armed',
+      sockets: [
+        {
+          name: 'W0',
+          socket_type_ref: 'OBJID_ModuleSocketType::LightSocket.0',
+        },
+      ],
+    },
+    'GearOnlyShoulder.0': {
+      id: 'GearOnlyShoulder.0',
+      module_group_ref: 'OBJID_ModuleGroup::unarmed',
+      sockets: [
+        {
+          name: 'G',
+          socket_type_ref: 'OBJID_ModuleSocketType::AbilitySocket.0',
+        },
+      ],
+    },
+  },
   'Objects/ModuleSocketType.json': {
     'LightSocket.0': {
       id: 'LightSocket.0',
@@ -294,6 +322,30 @@ describe('getModuleStatRows', () => {
         })
       )
     ).toEqual([[['Armor', 52100]], [['ShieldAmt', 29000]]]);
+  });
+
+  it('shows 0 weapon slots only when a part of the module group has some', () => {
+    const unarmedShoulder = (group: string) =>
+      module({
+        module_type_ref: 'OBJID_ModuleType::Shoulder.0',
+        module_group_ref: `OBJID_ModuleGroup::${group}`,
+        constants: { WeightDrain: 12 },
+      });
+    const rows = getModuleStatRows(unarmedShoulder('armed'), 1, load);
+    expect(rows[0][0]).toEqual({
+      kind: 'slots',
+      label: text('Weapons'),
+      count: 0,
+    });
+    expect(summary(unarmedShoulder('armed'))).toEqual([
+      [
+        ['slots', 0],
+        ['WeightDrain', 12],
+      ],
+    ]);
+    expect(summary(unarmedShoulder('unarmed'))).toEqual([
+      [['WeightDrain', 12]],
+    ]);
   });
 
   it('gives gear its weight and energy cost', () => {
