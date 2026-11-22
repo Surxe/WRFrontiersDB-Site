@@ -118,6 +118,10 @@ export class TunedCharacterMovement extends CharacterMovementComponent {
   readonly airControlBlockers = new Blockers();
   readonly walkingModeBlockers = new Blockers();
   readonly movementInputBlockers = new Blockers();
+  /** OnCharacterMovementUpdated, which PerformMovement broadcasts at its
+   * end: WRF binds `ASCharacter::CharacterMovementUpdated` to it (fuel
+   * regeneration, ability ticks; robot_character.ts). */
+  onMovementUpdated: ((deltaSeconds: number) => void) | null = null;
 
   constructor(
     collision: CollisionWorld,
@@ -189,7 +193,8 @@ export class TunedCharacterMovement extends CharacterMovementComponent {
   /**
    * ConsumeInputVector (WRF `0x145589150`: keeps the previous input while
    * MovementInputBlockers holds on the ground), the stock update, then
-   * PhysicsRotation with the frame's time and LastUpdateVelocity.
+   * PhysicsRotation with the frame's time and LastUpdateVelocity, then
+   * OnCharacterMovementUpdated.
    */
   override performMovement(deltaSeconds: number, inputVector: Vec3): void {
     if (!(this.movementInputBlockers.active && this.isMovingOnGround()))
@@ -198,6 +203,7 @@ export class TunedCharacterMovement extends CharacterMovementComponent {
     if (this.params.orientRotationToMovement)
       physicsRotation(this, f32(deltaSeconds));
     this.lastUpdateVelocity = this.velocity;
+    this.onMovementUpdated?.(f32(deltaSeconds));
   }
 
   override teleport(location: Vec3): void {

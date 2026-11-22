@@ -23,7 +23,10 @@ import {
   readDriveOptions,
 } from '../../src/scripts/map_viewer/drive/options';
 import { startPoint } from '../../src/scripts/movement/start_point';
-import { parseCharacterMovement } from '../../src/scripts/movement/data/character';
+import {
+  parseCharacterMovement,
+  parseFuelResource,
+} from '../../src/scripts/movement/data/character';
 import { parseMapPhysics } from '../../src/scripts/movement/data/map_physics';
 import { worldSetup } from '../../src/scripts/movement/world_setup';
 
@@ -63,6 +66,7 @@ const tables = {
   characterModules: objects('CharacterModule'),
   modules: objects('Module'),
   abilities: objects('Ability'),
+  fuel: parseFuelResource(objects('Character')),
 };
 
 const stat = (a: number[]) => {
@@ -133,7 +137,13 @@ function benchMap(map: string): void {
     killZ: engine.killZ,
     values: [...optionValues(options), ...engine.values],
   });
-  const idle = { forward: 0, right: 0, viewYaw: 0, viewPitch: 0 };
+  const idle = {
+    forward: 0,
+    right: 0,
+    viewYaw: 0,
+    viewPitch: 0,
+    jump: false,
+  };
   for (let i = 0; i < 180; i++) session.update(1 / 60, idle);
 
   if (values.containment) {
@@ -151,6 +161,7 @@ function benchMap(map: string): void {
           right: 0,
           viewYaw: heading,
           viewPitch: 0,
+          jump: false,
         });
         if (r.fellOutOfWorld) killed++;
         const l = session.movement.location;
@@ -189,6 +200,7 @@ function benchMap(map: string): void {
         right: 0,
         viewYaw: yaw,
         viewPitch: 0,
+        jump: false,
       });
       coll.push(r.queries.ms);
       upd.push(r.simMs);

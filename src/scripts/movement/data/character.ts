@@ -80,3 +80,41 @@ export function parseCharacterMovement(
   out.bOrientRotationToMovement = orient;
   return out as unknown as CharacterMovementDefaults;
 }
+
+/** `gameplay_resources[Type = Fuel]` (`FSGameplayResource`, findings
+ * step 5): the fuel maximum and flat regeneration BP_Character sets. */
+export interface FuelResourceDefaults {
+  id: string;
+  MaxValue: number;
+  RegenPerSecond: number;
+}
+
+/** Read the pawn's fuel resource from `Character.json`. */
+export function parseFuelResource(
+  characters: Readonly<Record<string, unknown>>,
+  id: string = DEFAULT_PAWN_ID
+): FuelResourceDefaults {
+  const entry = characters[id] as Record<string, unknown> | undefined;
+  if (!entry || typeof entry !== 'object')
+    throw new Error(`Character.json has no ${id}`);
+  const list = entry.gameplay_resources;
+  if (!Array.isArray(list))
+    throw new Error(`Character.json ${id}: no gameplay_resources`);
+  const fuel = (list as Record<string, unknown>[]).filter(
+    (r) => r.Type === 'Fuel'
+  );
+  if (fuel.length !== 1)
+    throw new Error(
+      `Character.json ${id}.gameplay_resources: ${fuel.length} Fuel entries, expected 1`
+    );
+  const out: Record<string, unknown> = { id };
+  for (const name of ['MaxValue', 'RegenPerSecond'] as const) {
+    const value = fuel[0][name];
+    if (typeof value !== 'number' || !Number.isFinite(value))
+      throw new Error(
+        `Character.json ${id}.gameplay_resources[Fuel].${name}: missing or not a number`
+      );
+    out[name] = value;
+  }
+  return out as unknown as FuelResourceDefaults;
+}

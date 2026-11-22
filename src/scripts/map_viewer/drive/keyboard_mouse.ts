@@ -1,8 +1,14 @@
 /**
  * Keyboard and mouse to the movement's plain input state, while the pointer
  * is locked on the viewer's canvas (the same lock fly mode uses):
- * WASD / arrows move, the mouse looks. Number keys pick a speed tier (0: the
- * game's blend) and T respawns; both are reported through callbacks.
+ * WASD / arrows move, the mouse looks, Space (held) is the Jump Jet. Number
+ * keys pick a speed tier (0: the game's blend) and T respawns; both are
+ * reported through callbacks.
+ *
+ * Space is claimed (preventDefault on down and up) and focus is taken off
+ * the page's buttons when the pointer is captured: otherwise Space
+ * activates the focused button, which after going fullscreen is the
+ * viewer's fullscreen toggle (08-prototype.md, "Known issues").
  */
 import type { InputState } from '../../movement/input/input_state';
 
@@ -14,6 +20,8 @@ const FORWARD = new Set(['KeyW', 'ArrowUp']);
 const BACK = new Set(['KeyS', 'ArrowDown']);
 const RIGHT = new Set(['KeyD', 'ArrowRight']);
 const LEFT = new Set(['KeyA', 'ArrowLeft']);
+/** The game's default jump binding. */
+const JUMP = 'Space';
 
 export interface InputCallbacks {
   /** A digit key: 1-9 use tier 0-8 alone, 0 returns to the game's blend. */
@@ -49,6 +57,8 @@ export class KeyboardMouseInput {
       'pointerlockchange',
       () => {
         if (!this.locked) this.held.clear();
+        else if (document.activeElement instanceof HTMLElement)
+          document.activeElement.blur();
       },
       { signal }
     );
@@ -72,6 +82,7 @@ export class KeyboardMouseInput {
       right: axis(RIGHT, LEFT),
       viewYaw: this.yaw,
       viewPitch: this.pitch,
+      jump: this.held.has(JUMP),
     };
   }
 
@@ -86,7 +97,8 @@ export class KeyboardMouseInput {
       FORWARD.has(code) ||
       BACK.has(code) ||
       RIGHT.has(code) ||
-      LEFT.has(code)
+      LEFT.has(code) ||
+      code === JUMP
     ) {
       event.preventDefault();
       if (down) this.held.add(code);

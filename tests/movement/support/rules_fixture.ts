@@ -14,8 +14,15 @@ import {
 } from '../../../src/scripts/movement/collision/exact/colliders';
 import { parseChassis } from '../../../src/scripts/movement/data/chassis';
 import { parseChassisLevel } from '../../../src/scripts/movement/data/chassis_level';
-import { parseCharacterMovement } from '../../../src/scripts/movement/data/character';
-import { parseJetpackAirControl } from '../../../src/scripts/movement/data/jump_ability';
+import {
+  parseCharacterMovement,
+  parseFuelResource,
+} from '../../../src/scripts/movement/data/character';
+import {
+  parseJetpack,
+  parseJetpackAirControl,
+} from '../../../src/scripts/movement/data/jump_ability';
+import { RobotCharacter } from '../../../src/scripts/movement/rules/robot_character';
 import { parseMapPhysics } from '../../../src/scripts/movement/data/map_physics';
 import { parseMovementType } from '../../../src/scripts/movement/data/movement_type';
 import { vec, type Vec3 } from '../../../src/scripts/movement/math/vec';
@@ -214,4 +221,26 @@ export const restingZ = (floorZ: number): number =>
 export function settle(c: TunedCharacterMovement, seconds = 0.5): void {
   for (let t = 0; t < seconds; t += 1 / 60)
     c.performMovement(1 / 60, vec(0, 0, 0));
+}
+
+/** Loki as a robot (Jump Jet and fuel, findings step 5) on fixture
+ * geometry; `gravityScale` replaces BP_Character's (the G1 candidates). */
+export function lokiRobot(
+  hulls: HullCollider[],
+  location: Vec3,
+  options: { gravityScale?: number; fuelMax?: number } = {}
+): RobotCharacter {
+  const c = lokiOn(hulls, location);
+  if (options.gravityScale !== undefined)
+    c.params.gravityScale = Math.fround(options.gravityScale);
+  const fuel = parseFuelResource(readTable('Character'));
+  const robot = new RobotCharacter(
+    c,
+    options.fuelMax === undefined
+      ? fuel
+      : { ...fuel, MaxValue: options.fuelMax },
+    parseJetpack(readTable('Ability'), readTable('CharacterModule'), LOKI)
+  );
+  robot.respawn(location);
+  return robot;
 }

@@ -41,6 +41,9 @@ export interface StockParams {
   maintainHorizontalGroundVelocity: boolean;
   canWalkOffLedges: boolean;
   alwaysCheckFloor: boolean;
+  /** UCharacterMovementComponent::Mass, kg: AddForce and AddImpulse
+   * (without bVelocityChange) divide by it. */
+  mass: number;
   /** RotationRate.Yaw, deg/s (PhysicsRotation lives in the rules layer). */
   rotationRateYaw: number;
   orientRotationToMovement: boolean;
@@ -74,6 +77,7 @@ export const UE_DEFAULTS: Readonly<StockParams> = {
   maintainHorizontalGroundVelocity: true,
   canWalkOffLedges: true,
   alwaysCheckFloor: true,
+  mass: 100,
   rotationRateYaw: 360,
   orientRotationToMovement: false,
 };
