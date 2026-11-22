@@ -43,6 +43,11 @@ export interface SweepOptions {
    * without MOVECOMP_NeverIgnoreBlockingOverlaps). Plain world sweeps
    * report every starting overlap. */
   ignoreOverlapsMovingOut?: boolean;
+  /** The capsule's rotation (x, y, z, w; UE passes the component's
+   * quaternion). It enters only Chaos's float32 impact point on parallel
+   * contacts, and there only on shapes rotated out of the horizontal plane
+   * (findings/chaos-contact-point.md). Default: identity. */
+  rotation?: readonly [number, number, number, number];
 }
 
 /** Query counters, for the debug overlay and the measurements. */

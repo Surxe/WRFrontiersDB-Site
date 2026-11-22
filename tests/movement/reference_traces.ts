@@ -71,18 +71,12 @@ const TOLERANCE = {
 } as const;
 
 /**
- * Class C ticks inside an otherwise gated scenario: parallel-contact ties
- * (decision D23), reported, not gated. Every other tick of the scenario is.
+ * Class C ticks inside an otherwise gated scenario, reported, not gated.
+ * Every other tick of the scenario is. None left: wall_45_slide tick 132
+ * (a parallel contact, D23) is gated since the layer takes Chaos's impact
+ * point there (session 3.5, findings/chaos-contact-point.md).
  */
-const TIE_TICKS: Record<string, { ticks: number[]; why: string }> = {
-  wall_45_slide: {
-    ticks: [132],
-    why:
-      'parallel-contact tie: on a vertical wall every point of the capsule core is equally close; ' +
-      "Chaos's float32 GJK returns an interior point (ImpactPoint.Z 752.0) where the layer reports the top end (802.15), " +
-      'so UE passes StepUp one tick earlier; position 0.000 cm, velocity 1.04 cm/s on this tick',
-  },
-};
+const TIE_TICKS: Record<string, { ticks: number[]; why: string }> = {};
 
 // The commandlet's procedural mesh (WrfMoveRefCommandlet.cpp AddMeshBox):
 // 8 corners, 12 triangles, reversed for -geom=meshflip (UE-facing winding).
@@ -221,28 +215,21 @@ const SHAPE_CLASS: Record<string, 'A' | 'B'> = {
   penetration_floor_falling: 'B',
 };
 
-const PARALLEL =
-  'parallel-contact impact point (D23): on a contact parallel to the capsule axis Chaos float32 GJK returns an interior point ' +
-  'where the layer reports the core top end, so StepUp passes its first gate in UE and not in the port; a successful StepUp ' +
-  'keeps the step-up velocity (bJustTeleported) where the port derives it from the slide';
-
 /**
  * Class C from a tick on: the scenario is gated (its class) before it and
  * reported after it, since every later tick inherits the difference.
+ * Parallel contacts on faces (hull_pillar_slide from 131, mesh_onesided_front
+ * from 142, corner_90 from 159, corner_60_v from 146) are gated since the
+ * layer takes Chaos's impact point (findings/chaos-contact-point.md).
  */
 const C_FROM: Record<string, { tick: number; why: string }> = {
   hull_pillar_slide: {
-    tick: 131,
-    why: `${PARALLEL} (UE ImpactPoint.Z 747.47, top end 802.15; every contact with the facet)`,
-  },
-  mesh_onesided_front: {
-    tick: 142,
-    why: `${PARALLEL} (UE ImpactPoint.Z 752.02)`,
-  },
-  corner_90: { tick: 159, why: `${PARALLEL} (UE ImpactPoint.Z 757.14)` },
-  corner_60_v: {
-    tick: 146,
-    why: `a tie between two shapes at the V's apex (D19: UE reports the left wall, the layer the right one) and ${PARALLEL}`,
+    tick: 181,
+    why:
+      "an edge contact parallel to the capsule axis (the pillar's vertical edge): Chaos's float32 GJK ends on a degenerate " +
+      'simplex there, so its distance (up to 0.003 cm off the exact one) and point (up to 0.16 cm off the edge) are reproduced ' +
+      'bit for bit only from bit-identical inputs; the inputs already differ by about 1e-4 cm (UE runs its floor sweeps through ' +
+      'the same float32 GJK, the layer is exact), and the slide around the edge amplifies it (StepUp branch at tick 203)',
   },
   landscape_slope_hole: {
     tick: 138,
