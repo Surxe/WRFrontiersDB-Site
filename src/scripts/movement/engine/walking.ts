@@ -10,6 +10,7 @@
 import {
   addScaled,
   equals,
+  f32,
   isNearlyZero,
   KINDA_SMALL_NUMBER,
   planeProject,
@@ -33,6 +34,19 @@ import type {
 
 const GRAVITY_DIR = vec(0, 0, -1);
 
+/** `remainingTime + timeTick * (1 - Min(1, ActualDist / DesiredDist))`,
+ * in float as UE computes it (PhysWalking, StartFalling). */
+const refund = (
+  remainingTime: number,
+  timeTick: number,
+  actualDist: number,
+  desiredDist: number
+): number =>
+  f32(
+    remainingTime +
+      f32(timeTick * f32(1 - Math.min(1, f32(actualDist / desiredDist))))
+  );
+
 /** UCharacterMovementComponent::PhysWalking. */
 export function physWalking(
   c: CharacterMovementComponent,
@@ -43,7 +57,8 @@ export function physWalking(
   let iterations = iterationsIn;
   c.justTeleported = false;
   let checkedFall = false;
-  let remainingTime = deltaTime;
+  // float remainingTime, timeTick (UE's types; the split is float).
+  let remainingTime = f32(deltaTime);
   const startingMode = c.movementMode;
 
   while (
@@ -52,8 +67,8 @@ export function physWalking(
   ) {
     iterations++;
     c.justTeleported = false;
-    const timeTick = c.getSimulationTimeStep(remainingTime, iterations);
-    remainingTime -= timeTick;
+    const timeTick = f32(c.getSimulationTimeStep(remainingTime, iterations));
+    remainingTime = f32(remainingTime - timeTick);
 
     const oldLocation = c.location;
     const oldFloor = c.currentFloor.clone();
@@ -84,11 +99,15 @@ export function physWalking(
       if (c.movementMode !== startingMode) {
         // Ended up in another mode (the step-up-and-over flow): refund the
         // unused time and keep moving in the new mode.
-        const desiredDist = size(delta);
+        const desiredDist = f32(size(delta));
         if (desiredDist > KINDA_SMALL_NUMBER) {
-          const actualDist = size2D(sub(c.location, oldLocation));
-          remainingTime +=
-            timeTick * (1 - Math.min(1, actualDist / desiredDist));
+          const actualDist = f32(size2D(sub(c.location, oldLocation)));
+          remainingTime = refund(
+            remainingTime,
+            timeTick,
+            actualDist,
+            desiredDist
+          );
         }
         c.startNewPhysics(remainingTime, iterations);
         return;
@@ -342,13 +361,12 @@ export function startFalling(
   delta: Vec3,
   subLoc: Vec3
 ): void {
-  const desiredDist = size(delta);
-  const actualDist = size2D(sub(c.location, subLoc));
+  const desiredDist = f32(size(delta));
+  const actualDist = f32(size2D(sub(c.location, subLoc)));
   const remainingTime =
     desiredDist < KINDA_SMALL_NUMBER
       ? 0
-      : remainingTimeIn +
-        timeTick * (1 - Math.min(1, actualDist / desiredDist));
+      : refund(remainingTimeIn, timeTick, actualDist, desiredDist);
   if (c.isMovingOnGround()) c.setMovementMode('falling');
   c.startNewPhysics(remainingTime, iterations);
 }

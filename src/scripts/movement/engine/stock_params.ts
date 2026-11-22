@@ -8,8 +8,12 @@
  */
 
 export interface StockParams {
-  /** cm/s^2; UPhysicsSettingsCore::DefaultGravityZ times GravityScale (1). */
+  /** cm/s^2; the world's gravity (UPhysicsSettingsCore::DefaultGravityZ
+   * unless the world settings override it). */
   gravityZ: number;
+  /** UCharacterMovementComponent::GravityScale; GetGravityZ is the float
+   * product gravityZ x gravityScale. */
+  gravityScale: number;
   /** cm/s; APhysicsVolume::TerminalVelocity (DefaultTerminalVelocity). */
   terminalVelocity: number;
   maxWalkSpeed: number;
@@ -41,6 +45,7 @@ export interface StockParams {
 
 export const UE_DEFAULTS: Readonly<StockParams> = {
   gravityZ: -980,
+  gravityScale: 1,
   terminalVelocity: 4000,
   maxWalkSpeed: 600,
   maxAcceleration: 2048,

@@ -276,6 +276,8 @@ export class MapPage {
     void this.viewer
       .startDrive({
         collisionFile,
+        mapId: map.id,
+        physics: map.physics,
         mode: this.mode,
         spawn,
         playableBox,

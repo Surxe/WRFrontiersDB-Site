@@ -38,6 +38,9 @@ export interface GameMap {
   };
   /** In the queue screen's order. */
   modes: MapMode[];
+  /** World movement physics (GravityZ, TerminalVelocity, KillZ); drive
+   * mode parses it (movement/data/map_physics.ts). */
+  physics?: unknown;
 }
 
 export type Vec3 = [number, number, number];

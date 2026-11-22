@@ -16,6 +16,15 @@ export const SMALL_NUMBER = 1e-8;
 export const KINDA_SMALL_NUMBER = 1e-4;
 export const DELTA = 0.00001;
 
+/**
+ * Round to float32. UE 5.4 keeps positions and velocities in doubles
+ * (FVector) but times, speeds, accelerations, curve values and most CMC
+ * properties in `float`; the port rounds where UE's declared type is
+ * float, so sub-step splits and speed limits match UE bit for bit
+ * (tolerance class A, stages/mvp.md).
+ */
+export const f32 = Math.fround;
+
 export const vec = (x: number, y: number, z: number): Vec3 => ({ x, y, z });
 
 export const ZERO: Vec3 = vec(0, 0, 0);

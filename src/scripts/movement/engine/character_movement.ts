@@ -19,6 +19,7 @@
 import {
   clampedToMaxSize,
   dot,
+  f32,
   planeProject,
   safeNormal2D,
   scale,
@@ -65,7 +66,7 @@ export class CharacterMovementComponent extends MovementComponent {
     params: Partial<StockParams> = {}
   ) {
     super(collision, capsule, location);
-    this.params = { ...UE_DEFAULTS, ...params };
+    this.params = floatParams({ ...UE_DEFAULTS, ...params });
   }
 
   // ---- Simulation entry points ----
@@ -76,7 +77,9 @@ export class CharacterMovementComponent extends MovementComponent {
    * acceleration, then run the current movement mode for `deltaSeconds`.
    * `inputVector` is the requested direction, length up to 1.
    */
-  performMovement(deltaSeconds: number, inputVector: Vec3): void {
+  performMovement(deltaSecondsIn: number, inputVector: Vec3): void {
+    // UCharacterMovementComponent::TickComponent(float DeltaTime).
+    const deltaSeconds = f32(deltaSecondsIn);
     this.acceleration = this.scaleInputAcceleration(
       this.constrainInputAcceleration(inputVector)
     );
@@ -133,9 +136,10 @@ export class CharacterMovementComponent extends MovementComponent {
     return this.movementMode === 'falling';
   }
 
-  /** GetGravityZ: world gravity times GravityScale (folded into params). */
+  /** GetGravityZ: the physics volume's gravity (the world's) times
+   * GravityScale, a float product (`Super::GetGravityZ() * GravityScale`). */
   getGravityZ(): number {
-    return this.params.gravityZ;
+    return f32(this.params.gravityZ * this.params.gravityScale);
   }
 
   /** The physics volume's TerminalVelocity. */
@@ -189,9 +193,9 @@ export class CharacterMovementComponent extends MovementComponent {
     return input;
   }
 
-  /** ScaleInputAcceleration. */
+  /** ScaleInputAcceleration (`float GetMaxAcceleration()`). */
   scaleInputAcceleration(input: Vec3): Vec3 {
-    return scale(clampedToMaxSize(input, 1), this.getMaxAcceleration());
+    return scale(clampedToMaxSize(input, 1), f32(this.getMaxAcceleration()));
   }
 
   computeAnalogInputModifier(): number {
@@ -431,16 +435,20 @@ export class CharacterMovementComponent extends MovementComponent {
 
   // ---- UMovementComponent overrides ----
 
-  /** UCharacterMovementComponent::GetSimulationTimeStep. */
+  /**
+   * UCharacterMovementComponent::GetSimulationTimeStep, in float as UE runs
+   * it: a 0.3 s frame is 5 x 0.05 + 2 x 0.025 (7 sub-steps), where doubles
+   * give 6 (09-editor.md 2.6).
+   */
   getSimulationTimeStep(remainingTime: number, iterations: number): number {
-    let time = remainingTime;
+    let time = f32(remainingTime);
     if (
       time > this.params.maxSimulationTimeStep &&
       iterations < this.params.maxSimulationIterations
     ) {
-      time = Math.min(this.params.maxSimulationTimeStep, time * 0.5);
+      time = Math.min(this.params.maxSimulationTimeStep, f32(time * 0.5));
     }
-    return Math.max(MIN_TICK_TIME, time);
+    return Math.max(f32(MIN_TICK_TIME), time);
   }
 
   /** UCharacterMovementComponent::GetPenetrationAdjustment. */
@@ -543,4 +551,13 @@ export class CharacterMovementComponent extends MovementComponent {
       ? falling.handleSlopeBoosting(this, result, delta, time, normal, hit)
       : result;
   }
+}
+
+/** Every number in StockParams is a `float` UPROPERTY in UE (int32 for
+ * MaxSimulationIterations, which is exact either way). */
+function floatParams(p: StockParams): StockParams {
+  const out = { ...p } as Record<string, number | boolean>;
+  for (const [k, v] of Object.entries(out))
+    if (typeof v === 'number') out[k] = f32(v);
+  return out as unknown as StockParams;
 }

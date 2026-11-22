@@ -159,6 +159,8 @@ describe('UE box traces on the exact collision layer', () => {
       const tie = TIE_TICKS[trace.scenario];
       for (const k of r.perTick) {
         expect(k.modeOk, `tick ${k.i}: movement mode`).toBe(true);
+        expect(k.moveDtOk, `tick ${k.i}: frame clamp (moveDt)`).toBe(true);
+        expect(k.substepsOk, `tick ${k.i}: sub-step split`).toBe(true);
         expect(k.dp, `tick ${k.i}: position (cm)`).toBeLessThanOrEqual(tol.pos);
         if (tie?.ticks.includes(k.i)) {
           if (k.dv > tol.vel)

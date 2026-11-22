@@ -82,16 +82,17 @@ export function parseRichCurve(raw: unknown, where: string): RichCurve {
       throw new Error(`${where} key ${index}: missing Time or Value`);
     }
     return {
-      time: key.Time,
-      value: key.Value,
+      // FRichCurveKey's fields are float.
+      time: Math.fround(key.Time),
+      value: Math.fround(key.Value),
       interpMode: key.InterpMode as InterpMode,
-      arriveTangent: key.ArriveTangent ?? 0,
-      leaveTangent: key.LeaveTangent ?? 0,
+      arriveTangent: Math.fround(key.ArriveTangent ?? 0),
+      leaveTangent: Math.fround(key.LeaveTangent ?? 0),
     };
   });
   const defaultValue =
     typeof data.DefaultValue === 'number' && data.DefaultValue < MAX_FLT
-      ? data.DefaultValue
+      ? Math.fround(data.DefaultValue)
       : null;
   return {
     keys,
@@ -101,7 +102,13 @@ export function parseRichCurve(raw: unknown, where: string): RichCurve {
   };
 }
 
-/** UE::Curves::BezierInterp. */
+const f32 = Math.fround;
+
+/** FMath::Lerp on floats: `A + Alpha * (B - A)`, each step rounded. */
+const lerp32 = (a: number, b: number, alpha: number): number =>
+  f32(a + f32(alpha * f32(b - a)));
+
+/** UE::Curves::BezierInterp (float). */
 function bezierInterp(
   p0: number,
   p1: number,
@@ -109,48 +116,59 @@ function bezierInterp(
   p3: number,
   alpha: number
 ): number {
-  const p01 = p0 + (p1 - p0) * alpha;
-  const p12 = p1 + (p2 - p1) * alpha;
-  const p23 = p2 + (p3 - p2) * alpha;
-  const p012 = p01 + (p12 - p01) * alpha;
-  const p123 = p12 + (p23 - p12) * alpha;
-  return p012 + (p123 - p012) * alpha;
+  const p01 = lerp32(p0, p1, alpha);
+  const p12 = lerp32(p1, p2, alpha);
+  const p23 = lerp32(p2, p3, alpha);
+  const p012 = lerp32(p01, p12, alpha);
+  const p123 = lerp32(p12, p23, alpha);
+  return lerp32(p012, p123, alpha);
 }
 
-/** UE::Curves::EvalForTwoKeys (unweighted). */
+/** UE::Curves::EvalForTwoKeys (unweighted), in float as UE runs it. */
 function evalForTwoKeys(key1: CurveKey, key2: CurveKey, time: number): number {
-  const diff = key2.time - key1.time;
+  const diff = f32(key2.time - key1.time);
   if (!(diff > 0)) return key1.value;
   if (key1.interpMode === 'RCIM_Constant') {
     return time < key2.time ? key1.value : key2.value;
   }
-  const alpha = (time - key1.time) / diff;
+  const alpha = f32(f32(time - key1.time) / diff);
   const p0 = key1.value;
   const p3 = key2.value;
-  if (key1.interpMode === 'RCIM_Linear') return p0 + (p3 - p0) * alpha;
-  const p1 = p0 + (key1.leaveTangent * diff) / 3;
-  const p2 = p3 - (key2.arriveTangent * diff) / 3;
+  if (key1.interpMode === 'RCIM_Linear') return lerp32(p0, p3, alpha);
+  const oneThird = f32(1 / 3);
+  const p1 = f32(p0 + f32(f32(key1.leaveTangent * diff) * oneThird));
+  const p2 = f32(p3 - f32(f32(key2.arriveTangent * diff) * oneThird));
   return bezierInterp(p0, p1, p2, p3, alpha);
 }
 
+/** FMath::IsNearlyZero(float), UE_SMALL_NUMBER. */
 const isNearlyZero = (value: number): boolean => Math.abs(value) <= 1e-8;
 
-/** FRichCurve::Eval. */
+/** Linear extrapolation from key `a` with the slope from `b` to `a`. */
+function extrapolate(a: CurveKey, b: CurveKey, time: number): number {
+  const dt = f32(b.time - a.time);
+  if (isNearlyZero(dt)) return a.value;
+  const slope = f32(f32(b.value - a.value) / dt);
+  return f32(f32(slope * f32(time - a.time)) + a.value);
+}
+
+/**
+ * FRichCurve::Eval. UE evaluates in float32 (`float InTime`, float keys
+ * and locals; 09-editor.md 2.5): the time is rounded to float on the way
+ * in and every step after it, so the result is UE's bit for bit.
+ */
 export function evalCurve(
   curve: RichCurve,
-  time: number,
+  timeIn: number,
   defaultValue = 0
 ): number {
+  const time = f32(timeIn);
   const { keys } = curve;
   const n = keys.length;
-  if (n === 0) return curve.defaultValue ?? defaultValue;
+  if (n === 0) return f32(curve.defaultValue ?? defaultValue);
   if (n < 2 || time < keys[0].time) {
-    if (curve.preInfinity === 'linear' && n > 1) {
-      const dt = keys[1].time - keys[0].time;
-      if (isNearlyZero(dt)) return keys[0].value;
-      const slope = (keys[1].value - keys[0].value) / dt;
-      return slope * (time - keys[0].time) + keys[0].value;
-    }
+    if (curve.preInfinity === 'linear' && n > 1)
+      return extrapolate(keys[0], keys[1], time);
     return keys[0].value;
   }
   if (time <= keys[n - 1].time) {
@@ -169,11 +187,7 @@ export function evalCurve(
     }
     return evalForTwoKeys(keys[first - 1], keys[first], time);
   }
-  if (curve.postInfinity === 'linear') {
-    const dt = keys[n - 2].time - keys[n - 1].time;
-    if (isNearlyZero(dt)) return keys[n - 1].value;
-    const slope = (keys[n - 2].value - keys[n - 1].value) / dt;
-    return slope * (time - keys[n - 1].time) + keys[n - 1].value;
-  }
+  if (curve.postInfinity === 'linear')
+    return extrapolate(keys[n - 1], keys[n - 2], time);
   return keys[n - 1].value;
 }

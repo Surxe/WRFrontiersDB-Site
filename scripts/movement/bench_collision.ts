@@ -23,6 +23,9 @@ import {
   readDriveOptions,
 } from '../../src/scripts/map_viewer/drive/options';
 import { startPoint } from '../../src/scripts/movement/start_point';
+import { parseCharacterMovement } from '../../src/scripts/movement/data/character';
+import { parseMapPhysics } from '../../src/scripts/movement/data/map_physics';
+import { worldSetup } from '../../src/scripts/movement/world_setup';
 
 const say = (line: string): void => {
   process.stdout.write(line + '\n');
@@ -52,8 +55,9 @@ const objects = (name: string) =>
   );
 const mapTable = objects('Map') as Record<
   string,
-  { files: { collision: string; pins: string } }
+  { files: { collision: string; pins: string }; physics: unknown }
 >;
+const pawn = parseCharacterMovement(objects('Character'));
 const tables = {
   movementTypes: objects('MovementType'),
   characterModules: objects('CharacterModule'),
@@ -114,6 +118,7 @@ function benchMap(map: string): void {
   if (start.standIn)
     say('  no spawn pin: starting at the playable box centre (stand-in)');
   const spawn = start.location;
+  const engine = worldSetup(pawn, parseMapPhysics(entry.physics, map), map);
   const session = new MovementSession({
     collision: world,
     ...tables,
@@ -123,8 +128,9 @@ function benchMap(map: string): void {
     capsule: options.capsule,
     stepSeconds: null,
     spawn,
-    params: options.params,
-    values: optionValues(options),
+    params: engine.params,
+    killZ: engine.killZ,
+    values: [...optionValues(options), ...engine.values],
   });
   const idle = { forward: 0, right: 0, viewYaw: 0, viewPitch: 0 };
   for (let i = 0; i < 180; i++) session.update(1 / 60, idle);
@@ -137,13 +143,15 @@ function benchMap(map: string): void {
       for (let i = 0; i < 180; i++)
         session.update(1 / 60, { ...idle, viewYaw: heading });
       let max = 0;
+      let killed = 0;
       for (let i = 0; i < steps; i++) {
-        session.update(1 / 60, {
+        const r = session.update(1 / 60, {
           forward: 1,
           right: 0,
           viewYaw: heading,
           viewPitch: 0,
         });
+        if (r.fellOutOfWorld) killed++;
         const l = session.movement.location;
         max = Math.max(max, Math.hypot(l.x - spawn.x, l.y - spawn.y));
       }
@@ -156,7 +164,8 @@ function benchMap(map: string): void {
         l.z >= box[0][2];
       say(
         `  heading ${heading}: ends (${l.x.toFixed(0)}, ${l.y.toFixed(0)}, ${l.z.toFixed(0)}) ${session.movement.movementMode}, ` +
-          `${(max / 100).toFixed(0)} m out at most, ${inside ? 'inside' : 'OUTSIDE'} the playable box`
+          `${(max / 100).toFixed(0)} m out at most, ${inside ? 'inside' : 'OUTSIDE'} the playable box` +
+          (killed > 0 ? `; fell below KillZ ${killed} times (respawned)` : '')
       );
     }
     return;
