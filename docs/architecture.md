@@ -119,10 +119,12 @@ Planning lives outside the repo for now
 (`/srv/dev/scratch/wrf-movement-sim/`); this is the prototype stage:
 Spectrum (`CrashSite`), Loki's legs, stock UE movement plus exported tuning.
 
-- **Try it:** `/maps?map=CrashSite&drive=1` (query param only; no button).
-  Click Fly (or F) to capture the mouse; WASD, mouse look, 1-6 speed tier,
-  T respawn. Optional `tier=`, `hz=`, `capsule=radius,halfHeight` override
-  the labelled placeholders (`map_viewer/drive/options.ts`).
+- **Try it:** `/maps?map=CrashSite&drive=1` (query param only; no button;
+  any map and mode). Click Fly (or F) to capture the mouse; WASD, mouse
+  look, 1-6 speed tier, T respawn, H details. Optional `tier=`, `hz=`,
+  `capsule=radius,halfHeight` override the labelled placeholders, and
+  `lighting=<part id>` picks the lighting variant whose collision loads
+  (`map_viewer/drive/options.ts`).
 - **`src/scripts/movement/`: the simulation, plain TypeScript.** No
   three.js, no DOM, nothing from the viewers or `robot/`; ESLint
   (`no-restricted-imports`, `no-restricted-globals`) enforces it, and the
@@ -135,22 +137,41 @@ Spectrum (`CrashSite`), Loki's legs, stock UE movement plus exported tuning.
     `SCharacterMovementComponent` subclasses UE's). The prototype's
     `tuned_movement.ts` only maps exported tuning onto stock parameters,
     each mapping labelled as an assumption.
-  - `data/`: loaders for `MovementType.json` and `CharacterModule.json`
-    (and UE's `FRichCurve`); fields the simulation applies fail loudly when
-    missing. Imports nothing else from `movement/`.
-  - `collision/`: the `CollisionWorld` interface (UE scene-query semantics)
-    and its Rapier implementation, the only file that touches Rapier.
+  - `data/`: loaders for `MovementType.json`, `CharacterModule.json`,
+    UE's `FRichCurve` and the map collision export
+    (`collision_file.ts`, `Maps/<Map>.collision.bin`, with part selection);
+    fields the simulation applies fail loudly when missing. Imports
+    nothing else from `movement/`.
+  - `collision/`: the `CollisionWorld` interface (UE scene-query
+    semantics, `world.ts`) and its implementation, the exact float64 layer
+    in `exact/`: a static BVH broad phase, heightfield cell lookup, and
+    closed-form capsule sweeps against boxes, convex hulls, spheres,
+    capsules, triangle meshes and heightfield cells, with Chaos's hit rules
+    (`Normal`, per-shape `ImpactNormal`, the parallel-contact impact point,
+    one-sided meshes). `export_loader.ts` turns the export into colliders;
+    `known_gaps.ts` lists what is not established. `engine/` and `rules/`
+    depend only on `world.ts` (ESLint).
   - `input/`, `sim/`, `session.ts`, `placeholders.ts`: input as data, the
     fixed timestep, the session the adapter drives, and where each value
     comes from (data, assumed, UE default, placeholder) for the overlay.
-- **`src/scripts/map_viewer/drive/`: the adapter.** Builds collision from
-  the loaded base layer in time slices (CrashSite: 20 M triangles, ~2 GB of
-  WebAssembly memory, ~20 s), steps the session each frame, draws a capsule
-  wireframe, follow camera and debug overlay. `MapViewer` loads it (and
-  Rapier, a separate 4 MB chunk) on demand.
+- **`src/scripts/map_viewer/drive/`: the adapter.** Fetches the map's
+  collision export and builds the exact world for the shown mode (base,
+  the mode's sublevels, one lighting variant; CrashSite 0.2 s, 23 MB),
+  steps the session each frame, draws a capsule wireframe, follow camera
+  and debug overlay. `MapViewer` loads it on demand. Maps without a spawn
+  pin (the firing range) start at the playable box's centre
+  (`movement/start_point.ts`, labelled as a stand-in).
 - **Measuring:** `npm run bench:drive` drives a scripted route headless and
   prints build time, memory and collision time per step
   (`scripts/movement/bench.ts`; software WebGL, so not frame rates).
+  `npm run bench:collision -- --map <Map>|all [--containment]` does the
+  same in Node without a browser (`scripts/movement/bench_collision.ts`).
+- **Tests:** `tests/movement/`: the exact layer per shape against a float64
+  box oracle (`support/obb_oracle.ts`) and analytic cases; UE 5.4.4
+  reference traces (`reference/traces/`, imported with
+  `scripts/movement/import_traces.ts`) replayed under the tolerance
+  classes; every map's export loads and a capsule lands on it (skipped
+  when the data has no collision export).
 
 Mount-correction constants live in `src/utils/constants.ts`; see the
 `model-correction` skill and `docs/weapon_mount_findings.md`.

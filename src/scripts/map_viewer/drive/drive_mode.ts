@@ -1,32 +1,36 @@
 /**
- * Drive mode, the movement simulator's prototype on the map viewer: builds
- * collision from the loaded map, then each frame steps the movement session
- * (src/scripts/movement/) with keyboard and mouse input and draws its
- * output: a capsule wireframe, a follow camera and a debug overlay. This is
- * the only place the viewer and the simulation meet; the simulation knows
- * nothing of three.js or the page.
+ * Drive mode, the movement simulator on the map viewer: loads the map's
+ * collision export (`Maps/<Map>.collision.bin`, what the game's movement
+ * capsule blocks on) into the exact collision world, then each frame steps
+ * the movement session (src/scripts/movement/) with keyboard and mouse
+ * input and draws its output: a capsule wireframe, a follow camera and a
+ * debug overlay. This is the only place the viewer and the simulation
+ * meet; the simulation knows nothing of three.js or the page.
  *
- * Collision is built in time slices so the page keeps drawing and shows
- * progress; on CrashSite that is about 20 M triangles, ~2 GB of WebAssembly
- * memory and tens of seconds.
+ * Collision is the parts a match of the shown mode loads: `base`, the
+ * mode's sublevels and one lighting variant (`lighting=`, default the
+ * heaviest weight). On CrashSite it builds in about 0.1 s.
  */
 import * as THREE from 'three';
 import { fetchJson } from '../../data/fetch';
 import { MovementSession, type FrameStats } from '../../movement/session';
-import type { RapierCollisionWorld } from '../../movement/collision/rapier';
+import { parseCollisionFile } from '../../movement/data/collision_file';
+import { collidersFromFile } from '../../movement/collision/export_loader';
+import { ExactCollisionWorld } from '../../movement/collision/exact/world';
+import { COLLISION_KNOWN_GAPS } from '../../movement/collision/known_gaps';
+import { startPoint } from '../../movement/start_point';
 import { vec, size2D, type Vec3 } from '../../movement/math/vec';
 import type { InputState } from '../../movement/input/input_state';
-import { warnUnestablished } from '../../movement/placeholders';
+import {
+  warnUnestablished,
+  type ValueProvenance,
+} from '../../movement/placeholders';
 import { CapsuleMesh } from './capsule_mesh';
 import { placeFollowCamera } from './follow_camera';
 import { KeyboardMouseInput } from './keyboard_mouse';
 import { PROTOTYPE_CHASSIS, optionValues, type DriveOptions } from './options';
-import { countPieces, trianglePieces } from './scene_triangles';
 import { DriveOverlay } from './overlay';
 import { RollingStats, summarize, type Summary } from './stats';
-
-/** Building yields to the page after this long, ms. */
-const BUILD_SLICE_MS = 30;
 
 export interface DriveContext {
   scene: THREE.Scene;
@@ -36,22 +40,32 @@ export interface DriveContext {
   container: HTMLElement;
 }
 
+type Point = readonly [number, number, number];
+
 export interface DriveStart {
-  /** The map's base layer, already loaded. */
-  base: THREE.Object3D;
-  /** A spawn pin (UE cm, yaw degrees). */
-  spawn: { position: readonly [number, number, number]; yaw: number };
+  /** `Maps/<Map>.collision.bin`, relative to `dataRoot` (Map.json
+   * `files.collision`). */
+  collisionFile: string;
+  /** The game mode shown (a key of the file's `modes`); null: none. */
+  mode: string | null;
+  /** A spawn pin (UE cm, yaw degrees); null when the mode has none. */
+  spawn: { position: Point; yaw: number } | null;
+  /** The pins' playable box, for a start when there is no spawn. */
+  playableBox: readonly [Point, Point] | null;
   /** `/WRFrontiersDB-Data/current`. */
   dataRoot: string;
   options: DriveOptions;
 }
 
 export interface BuildInfo {
-  pieces: number;
   colliders: number;
+  /** Mesh triangles plus heightfield cell triangles. */
   triangles: number;
   seconds: number;
-  wasmBytes: number | null;
+  /** Typed-array bytes the collision world holds. */
+  bytes: number;
+  /** What was loaded (the details list shows it). */
+  parts: string;
 }
 
 /** What the measurement script reads (window.__wrfDrive). */
@@ -99,9 +113,15 @@ declare global {
   }
 }
 
+/** Fetch a binary file (the collision export). */
+async function fetchBytes(url: string): Promise<ArrayBuffer> {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`${url}: HTTP ${res.status}`);
+  return res.arrayBuffer();
+}
+
 export class DriveMode {
   private session: MovementSession | null = null;
-  private world: RapierCollisionWorld | null = null;
   private readonly overlay: DriveOverlay;
   private readonly capsuleMesh: CapsuleMesh;
   private readonly input: KeyboardMouseInput;
@@ -112,6 +132,8 @@ export class DriveMode {
   private lastFrameStats: FrameStats | null = null;
   private disposed = false;
   private scripted: InputState | null = null;
+  /** Collision and start values for the details list. */
+  private collisionValues: ValueProvenance[] = [];
 
   private constructor(
     private readonly ctx: DriveContext,
@@ -126,7 +148,7 @@ export class DriveMode {
       onRespawn: () => this.session?.respawn(),
       onToggleDetails: () => this.overlay.toggleDetails(),
     });
-    this.input.lookAt(start.spawn.yaw);
+    this.input.lookAt(start.spawn?.yaw ?? 0);
     window.__wrfDrive = {
       report: () => this.report(),
       resetStats: () => this.stats.reset(),
@@ -153,54 +175,68 @@ export class DriveMode {
   }
 
   private async load(): Promise<void> {
-    const { dataRoot, base, options } = this.start;
-    this.overlay.showStatus('Loading movement data and Rapier...');
+    const { dataRoot, options, collisionFile, mode } = this.start;
+    this.overlay.showStatus('Loading movement data and collision...');
     const table = (name: string): Promise<Record<string, unknown>> =>
       fetchJson<Record<string, unknown>>(`${dataRoot}/Objects/${name}.json`);
-    const [movementTypes, characterModules, modules, { RapierCollisionWorld }] =
+    const [movementTypes, characterModules, modules, collisionBytes] =
       await Promise.all([
         table('MovementType'),
         table('CharacterModule'),
         table('Module'),
-        import('../../movement/collision/rapier'),
+        fetchBytes(`${dataRoot}/${collisionFile}`),
       ]);
     if (this.disposed) return;
-    const world = await RapierCollisionWorld.create();
-    if (this.disposed) {
-      world.free();
-      return;
-    }
-    this.world = world;
 
-    // Build collision in slices.
-    const total = countPieces(base);
+    this.overlay.showStatus('Building collision...');
+    await new Promise((resolve) => setTimeout(resolve, 0));
     const began = performance.now();
-    let added = 0;
-    let sliceStart = performance.now();
-    for (const piece of trianglePieces(base)) {
-      world.addPiece(piece);
-      added++;
-      if (performance.now() - sliceStart > BUILD_SLICE_MS) {
-        const elapsed = (performance.now() - began) / 1000;
-        this.overlay.showStatus(
-          `Building collision: ${added.toLocaleString('en')} / ${total.pieces.toLocaleString('en')} meshes ` +
-            `(${Math.round((100 * added) / total.pieces)}%), ${total.triangles.toLocaleString('en')} triangles, ${elapsed.toFixed(1)} s`
-        );
-        await new Promise((resolve) => setTimeout(resolve, 0));
-        if (this.disposed) return;
-        sliceStart = performance.now();
-      }
-    }
-    world.finishBuild();
+    const file = parseCollisionFile(collisionBytes);
+    const loaded = collidersFromFile(file, {
+      mode,
+      lighting: options.lighting,
+    });
+    const world = new ExactCollisionWorld(loaded.set);
     const built = world.buildStats();
-    this.build = { ...built, seconds: (performance.now() - began) / 1000 };
+    const { selection } = loaded;
+    const parts =
+      `base` +
+      (selection.mode ? ` + mode ${selection.mode}` : '') +
+      (selection.lighting ? ` + lighting ${selection.lighting}` : '');
+    this.build = {
+      colliders:
+        built.boxes +
+        built.spheres +
+        built.capsules +
+        built.hulls +
+        built.meshTriangles +
+        built.heightfields,
+      triangles: built.meshTriangles + 2 * built.heightfieldCells,
+      seconds: (performance.now() - began) / 1000,
+      bytes: built.bytes,
+      parts,
+    };
+    const flagged = Object.entries(loaded.flagged)
+      .filter(([, n]) => n > 0)
+      .map(([name, n]) => `${name} ${n}`)
+      .join(', ');
+    this.collisionValues = [
+      {
+        name: 'Collision',
+        value: `${collisionFile}: ${parts}`,
+        source: 'data',
+        note: `the game's collision export; ${built.boxes} boxes, ${built.spheres} spheres, ${built.hulls} hulls, ${built.meshTriangles} mesh triangles, ${built.heightfields} heightfields; flags: ${flagged || 'none'}`,
+      },
+    ];
+    if (selection.lighting && options.lighting === null)
+      this.collisionValues.push({
+        name: 'Lighting variant',
+        value: selection.lighting,
+        source: 'assumed',
+        note: 'the game picks one per match (a launch option); default the heaviest weight, lighting= picks another',
+      });
 
-    const { position } = this.start.spawn;
-    const spawn: Vec3 = vec(
-      position[0],
-      position[1],
-      position[2] + options.capsule.halfHeight
-    );
+    const spawn = this.startPoint(world);
     this.session = new MovementSession({
       collision: world,
       movementTypes,
@@ -213,11 +249,37 @@ export class DriveMode {
       stepSeconds: options.hz === null ? null : 1 / options.hz,
       spawn,
       params: options.params,
-      values: optionValues(options),
+      values: [...optionValues(options), ...this.collisionValues],
     });
     warnUnestablished(this.session.values(), this.session.unapplied());
+    console.warn(
+      '[movement] collision known gaps:\n' +
+        COLLISION_KNOWN_GAPS.map((gap) => `  ${gap}`).join('\n')
+    );
     this.capsuleMesh.group.visible = true;
     this.lastFrame = null;
+  }
+
+  /** Where the capsule's centre starts (movement/start_point.ts); the
+   * playable-box fallback is labelled in the details list. */
+  private startPoint(world: ExactCollisionWorld): Vec3 {
+    const { spawn, playableBox, options } = this.start;
+    const start = startPoint(
+      world,
+      spawn,
+      playableBox,
+      options.capsule.halfHeight
+    );
+    if (start.standIn) {
+      const { x, y, z } = start.location;
+      this.collisionValues.push({
+        name: 'Start point',
+        value: `(${Math.round(x)}, ${Math.round(y)}, ${Math.round(z - options.capsule.halfHeight)})`,
+        source: 'placeholder',
+        note: 'no spawn pin in this map mode: the playable box centre, dropped onto the collision',
+      });
+    }
+    return start.location;
   }
 
   /** Step and draw; the viewer calls this every 3D frame while driving. */
@@ -334,8 +396,6 @@ export class DriveMode {
     this.input.dispose();
     this.overlay.dispose();
     this.capsuleMesh.dispose();
-    this.world?.free();
-    this.world = null;
     this.session = null;
     delete window.__wrfDrive;
   }

@@ -287,7 +287,7 @@ export class MapViewer extends Stage {
   }
 
   /** Turn drive mode on over the loaded base layer (see ../drive/). */
-  async startDrive(start: Omit<DriveStart, 'base'>): Promise<void> {
+  async startDrive(start: DriveStart): Promise<void> {
     this.stopDrive();
     const generation = this.driveGeneration;
     const { DriveMode } = await import('../drive/drive_mode');
@@ -299,7 +299,7 @@ export class MapViewer extends Stage {
         canvas: this.canvas,
         container: this.container,
       },
-      { ...start, base: this.layers.base }
+      start
     );
     // The drive camera looks with the mouse itself.
     this.controls.enabled = false;

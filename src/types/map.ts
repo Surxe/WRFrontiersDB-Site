@@ -32,6 +32,9 @@ export interface GameMap {
     pins: string;
     /** `Maps/<Map>.foliage.glb`: trees, bushes and grass, simplified. */
     foliage?: string;
+    /** `Maps/<Map>.collision.bin`: what a robot's movement capsule blocks
+     * on (drive mode; format in movement/data/collision_file.ts). */
+    collision?: string;
   };
   /** In the queue screen's order. */
   modes: MapMode[];

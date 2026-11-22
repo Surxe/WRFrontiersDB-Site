@@ -2,8 +2,7 @@
  * The collision queries the movement engine needs, as UE's world scene
  * queries answer them (UWorld::SweepSingleByChannel, LineTraceSingleByChannel,
  * OverlapBlockingTestByChannel). The engine depends only on this interface;
- * `rapier.ts` implements it, and the MVP's collision export can replace that
- * without touching the engine.
+ * `exact/world.ts` implements it on the map's collision export.
  *
  * Everything is in Unreal space: centimeters, Z up. Capsules are upright
  * (UE characters never tilt their capsule) and centered on their position.
@@ -34,6 +33,8 @@ export interface QueryHit {
   startPenetrating: boolean;
   /** How far to move along `normal` to get out, when `startPenetrating`. */
   penetrationDepth: number;
+  /** Debug name of the collider hit, when the backend knows it. */
+  source?: string;
 }
 
 export interface SweepOptions {

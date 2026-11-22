@@ -1,13 +1,17 @@
 /**
  * The prototype's movement done-criteria, checked against the ported stock
- * engine on the real Rapier backend: it lands, walks, climbs steps and
+ * engine on the exact collision layer: it lands, walks, climbs steps and
  * ramps, stops at walls, slides along them, and falls off ledges. Stock UE
  * defaults throughout (capsule 34 x 88, MaxStepHeight 45, walkable 44.8
- * degrees), so the expectations are UE's own behaviour.
+ * degrees), so the expectations are UE's own behaviour. The fixture solids
+ * are convex hulls.
  */
 import { describe, expect, it } from 'vitest';
-import { RapierCollisionWorld } from '../../src/scripts/movement/collision/rapier';
-import type { TrianglePiece } from '../../src/scripts/movement/collision/triangles';
+import { ExactCollisionWorld } from '../../src/scripts/movement/collision/exact/world';
+import {
+  emptyColliderSet,
+  type HullCollider,
+} from '../../src/scripts/movement/collision/exact/colliders';
 import { CharacterMovementComponent } from '../../src/scripts/movement/engine/character_movement';
 import {
   size2D,
@@ -17,11 +21,11 @@ import {
 } from '../../src/scripts/movement/math/vec';
 
 // ---- Test geometry (fixtures only: the simulator never has map geometry
-// in code). Closed solids as triangle pieces, UE cm, Z up. ----
+// in code). Convex solids, UE cm, Z up. ----
 type P = [number, number, number];
 
-/** A closed solid from 8 corners: bottom 0-3 then top 4-7, counter-clockwise. */
-function solid(corners: P[]): TrianglePiece {
+/** A convex solid from 8 corners: bottom 0-3 then top 4-7, counter-clockwise. */
+function solid(corners: P[]): HullCollider {
   const faces = [
     [0, 2, 1],
     [0, 3, 2], // bottom
@@ -37,13 +41,16 @@ function solid(corners: P[]): TrianglePiece {
     [3, 4, 7],
   ];
   return {
-    positions: new Float32Array(corners.flat()),
-    indices: new Uint32Array(faces.flat()),
+    body: { points: new Float64Array(corners.flat()), faces: faces.flat() },
+    t: [0, 0, 0],
+    q: [0, 0, 0, 1],
+    s: [1, 1, 1],
+    info: { source: 'fixture', flags: 0 },
   };
 }
 
 /** An axis-aligned box from `min` to `max`. */
-export function box(min: P, max: P): TrianglePiece {
+export function box(min: P, max: P): HullCollider {
   const [x0, y0, z0] = min;
   const [x1, y1, z1] = max;
   return solid([
@@ -68,7 +75,7 @@ export function ramp(
   z0: number,
   z1: number,
   base: number
-): TrianglePiece {
+): HullCollider {
   return solid([
     [x0, y0, base],
     [x1, y0, base],
@@ -88,7 +95,7 @@ export function wall(
   thickness: number,
   height: number,
   yawDegrees: number
-): TrianglePiece {
+): HullCollider {
   const yaw = (yawDegrees * Math.PI) / 180;
   const ax: P = [Math.cos(yaw), Math.sin(yaw), 0];
   const ay: P = [-Math.sin(yaw), Math.cos(yaw), 0];
@@ -122,13 +129,8 @@ const restingZ = (floorZ: number): number => floorZ + CAPSULE.halfHeight + 2.15;
 
 const FLOOR = box([-5000, -5000, -100], [5000, 5000, 0]);
 
-async function setup(
-  pieces: TrianglePiece[],
-  start: Vec3
-): Promise<CharacterMovementComponent> {
-  const world = await RapierCollisionWorld.create();
-  for (const piece of pieces) world.addPiece(piece);
-  world.finishBuild();
+function setup(hulls: HullCollider[], start: Vec3): CharacterMovementComponent {
+  const world = new ExactCollisionWorld({ ...emptyColliderSet(), hulls });
   const c = new CharacterMovementComponent(world, CAPSULE, start);
   c.teleport(start);
   return c;
@@ -142,9 +144,9 @@ function run(
   for (let t = 0; t < seconds; t += STEP) c.performMovement(STEP, input);
 }
 
-describe('movement scenarios (stock UE engine on Rapier)', () => {
-  it('falls onto a floor and walks', async () => {
-    const c = await setup([FLOOR], vec(0, 0, 300));
+describe('movement scenarios (stock UE engine on the exact layer)', () => {
+  it('falls onto a floor and walks', () => {
+    const c = setup([FLOOR], vec(0, 0, 300));
     run(c, 1.5, ZERO);
     expect(c.movementMode).toBe('walking');
     expect(c.location.z).toBeGreaterThan(restingZ(0) - 0.4);
@@ -152,16 +154,16 @@ describe('movement scenarios (stock UE engine on Rapier)', () => {
     expect(c.currentFloor.hitResult.impactNormal.z).toBeCloseTo(1, 3);
   });
 
-  it('accelerates to MaxWalkSpeed and brakes to a stop', async () => {
-    const c = await setup([FLOOR], vec(0, 0, restingZ(0)));
+  it('accelerates to MaxWalkSpeed and brakes to a stop', () => {
+    const c = setup([FLOOR], vec(0, 0, restingZ(0)));
     run(c, 2, FORWARD);
     expect(size2D(c.velocity)).toBeCloseTo(c.params.maxWalkSpeed, 0);
     run(c, 1, ZERO);
     expect(size2D(c.velocity)).toBe(0);
   });
 
-  it('steps up a step lower than MaxStepHeight', async () => {
-    const c = await setup(
+  it('steps up a step lower than MaxStepHeight', () => {
+    const c = setup(
       [FLOOR, box([200, -500, 0], [2000, 500, 30])],
       vec(0, 0, restingZ(0))
     );
@@ -171,8 +173,8 @@ describe('movement scenarios (stock UE engine on Rapier)', () => {
     expect(c.movementMode).toBe('walking');
   });
 
-  it('is stopped by a step higher than MaxStepHeight', async () => {
-    const c = await setup(
+  it('is stopped by a step higher than MaxStepHeight', () => {
+    const c = setup(
       [FLOOR, box([200, -500, 0], [2000, 500, 60])],
       vec(0, 0, restingZ(0))
     );
@@ -181,10 +183,10 @@ describe('movement scenarios (stock UE engine on Rapier)', () => {
     expect(c.location.z).toBeCloseTo(restingZ(0), 0);
   });
 
-  it('walks up a walkable ramp', async () => {
+  it('walks up a walkable ramp', () => {
     // 25 degrees, under the 44.8 degree walkable limit.
     const rise = Math.tan((25 * Math.PI) / 180) * 1500;
-    const c = await setup(
+    const c = setup(
       [FLOOR, ramp(200, 1700, -500, 500, 0, rise, -100)],
       vec(0, 0, restingZ(0))
     );
@@ -197,9 +199,9 @@ describe('movement scenarios (stock UE engine on Rapier)', () => {
     expect(c.location.z).toBeGreaterThan(restingZ(surfaceZ) - 20);
   });
 
-  it('cannot walk up an unwalkable ramp', async () => {
+  it('cannot walk up an unwalkable ramp', () => {
     const rise = Math.tan((60 * Math.PI) / 180) * 1000;
-    const c = await setup(
+    const c = setup(
       [FLOOR, ramp(200, 1200, -500, 500, 0, rise, -100)],
       vec(0, 0, restingZ(0))
     );
@@ -208,8 +210,8 @@ describe('movement scenarios (stock UE engine on Rapier)', () => {
     expect(c.location.x).toBeLessThan(260);
   });
 
-  it('stops at a wall it walks straight into', async () => {
-    const c = await setup(
+  it('stops at a wall it walks straight into', () => {
+    const c = setup(
       [FLOOR, wall([300, 0, 0], 2000, 40, 400, 90)],
       vec(0, 0, restingZ(0))
     );
@@ -220,9 +222,9 @@ describe('movement scenarios (stock UE engine on Rapier)', () => {
     expect(size2D(c.velocity)).toBeLessThan(1);
   });
 
-  it('slides along a wall hit at an angle', async () => {
+  it('slides along a wall hit at an angle', () => {
     // Wall along the line y = x - 300, so walking +X meets it at 45 degrees.
-    const c = await setup(
+    const c = setup(
       [FLOOR, wall([300, 0, 0], 3000, 40, 400, 45)],
       vec(0, 0, restingZ(0))
     );
@@ -233,9 +235,9 @@ describe('movement scenarios (stock UE engine on Rapier)', () => {
     expect(size2D(c.velocity)).toBeGreaterThan(300);
   });
 
-  it('falls off a ledge and lands below', async () => {
+  it('falls off a ledge and lands below', () => {
     const platform = box([-3000, -3000, 0], [200, 3000, 300]);
-    const c = await setup([FLOOR, platform], vec(0, 0, restingZ(300)));
+    const c = setup([FLOOR, platform], vec(0, 0, restingZ(300)));
     let fell = false;
     for (let t = 0; t < 3; t += STEP) {
       c.performMovement(STEP, FORWARD);

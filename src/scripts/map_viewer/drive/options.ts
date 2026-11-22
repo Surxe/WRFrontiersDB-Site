@@ -10,6 +10,9 @@
  *   hz        a fixed simulation rate instead of one update per frame (the
  *             game's way); an experiment.
  *   capsule   radius,halfHeight in cm instead of the game's 600,700.
+ *   lighting  the lighting variant part whose collision to load (e.g.
+ *             CrashSite_Sunset_Light). The game picks one per match; the
+ *             default is the heaviest weight.
  *
  * Without the last three, every value is the game's as far as the
  * reverse-engineering findings establish it. The chassis is the
@@ -50,6 +53,8 @@ export interface DriveOptions {
   hz: number | null;
   capsule: Capsule;
   params: Partial<StockParams>;
+  /** Lighting variant part id; null for the heaviest weight. */
+  lighting: string | null;
 }
 
 export function isDriveRequested(params: URLSearchParams): boolean {
@@ -81,6 +86,7 @@ export function readDriveOptions(params: URLSearchParams): DriveOptions {
     hz: positiveNumber(params.get('hz')),
     capsule,
     params: { ...BP_CHARACTER },
+    lighting: params.get('lighting') || null,
   };
 }
 

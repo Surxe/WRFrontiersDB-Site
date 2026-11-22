@@ -8,6 +8,7 @@ import { sourceLabel } from '../../movement/placeholders';
 import type { FrameStats, MovementSession } from '../../movement/session';
 import type { Summary } from './stats';
 import type { BuildInfo } from './drive_mode';
+import { COLLISION_KNOWN_GAPS } from '../../movement/collision/known_gaps';
 import type { RollingStats } from './stats';
 
 const ms = (s: Summary, digits = 2): string =>
@@ -69,12 +70,9 @@ export class DriveOverlay {
       `          ${ms(summary.collisionMsPerStep, 3)} ms/step`,
     ];
     if (build) {
-      const wasm =
-        build.wasmBytes === null
-          ? '?'
-          : `${Math.round(build.wasmBytes / 1e6)} MB`;
       lines.push(
-        `Build     ${build.triangles.toLocaleString('en')} triangles, ${build.colliders.toLocaleString('en')} colliders, ${build.seconds.toFixed(1)} s, wasm ${wasm}`
+        `Build     ${build.colliders.toLocaleString('en')} colliders, ${build.triangles.toLocaleString('en')} triangles, ${build.seconds.toFixed(2)} s, ${Math.round(build.bytes / 1e6)} MB`,
+        `          ${build.parts}`
       );
     }
     if (!this.details) {
@@ -83,7 +81,7 @@ export class DriveOverlay {
         .filter((v) => v.source !== 'data' && v.source !== 'finding');
       lines.push(
         '',
-        `${shaky.length} values not yet the game's: H lists every value's source (also in the console)`
+        `${shaky.length} values not yet the game's, ${COLLISION_KNOWN_GAPS.length} collision gaps: H lists them (also in the console)`
       );
       this.node.classList.remove('is-error');
       this.node.textContent = lines.join('\n');
@@ -95,6 +93,8 @@ export class DriveOverlay {
         `  ${sourceLabel(value.source).padEnd(11)} ${value.name}: ${value.value}  (${value.note})`
       );
     }
+    lines.push('', 'Collision known gaps:');
+    for (const gap of COLLISION_KNOWN_GAPS) lines.push(`  ${gap}`);
     lines.push(
       '',
       'Not applied yet (WRF rules for the MVP): ' +

@@ -247,7 +247,7 @@ export class MapPage {
       const spawn = firstSpawn(modePins);
       viewer.placeStart(spawn, pins.playable_box);
       el.status.textContent = '';
-      this.startDrive(spawn);
+      this.startDrive(map, spawn, pins.playable_box);
       await Promise.all([this.showMode(this.mode), this.syncFoliage()]);
     } catch (err) {
       if (generation !== this.generation) return;
@@ -257,19 +257,28 @@ export class MapPage {
     }
   }
 
-  /** Drive mode (the movement prototype), when the URL asks for it
-   * (`drive=1`; see drive/options.ts). Collision is the base layer only. */
-  private startDrive(spawn: ReturnType<typeof firstSpawn>): void {
+  /** Drive mode (the movement simulator), when the URL asks for it
+   * (`drive=1`; see drive/options.ts), on the map's collision export for
+   * the mode shown. */
+  private startDrive(
+    map: GameMap,
+    spawn: ReturnType<typeof firstSpawn>,
+    playableBox: MapPins['playable_box']
+  ): void {
     const params = new URLSearchParams(window.location.search);
     if (!isDriveRequested(params)) return;
-    if (!spawn) {
+    const collisionFile = map.files.collision;
+    if (!collisionFile) {
       this.el.status.textContent =
-        'Drive mode needs a spawn point; this map mode has none.';
+        "Drive mode needs the map's collision export (Map.json files.collision); this data has none.";
       return;
     }
     void this.viewer
       .startDrive({
+        collisionFile,
+        mode: this.mode,
         spawn,
+        playableBox,
         dataRoot: DATA_ROOT,
         options: readDriveOptions(params),
       })
