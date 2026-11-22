@@ -1,5 +1,5 @@
 /**
- * Measure drive mode (the movement prototype) on a map: collision build
+ * Measure drive mode (the movement simulator) on a map: collision build
  * time and memory, then collision and simulation time while driving a
  * scripted route. Headless Chromium has only software WebGL here, so frame
  * rates are not representative; collision and simulation times are CPU
@@ -147,7 +147,7 @@ async function main(): Promise<void> {
       [
         '',
         `Map ${values.map}, ${report.frames} frames over ~${total} s`,
-        `Build: ${built.build?.triangles.toLocaleString('en')} triangles, ${built.build?.colliders.toLocaleString('en')} colliders, ${built.build?.seconds.toFixed(1)} s, wasm ${built.build?.wasmBytes ? Math.round(built.build.wasmBytes / 1e6) : '?'} MB, JS heap ${heap ? Math.round(heap / 1e6) : '?'} MB`,
+        `Build: ${built.build?.parts}: ${built.build?.colliders.toLocaleString('en')} colliders, ${built.build?.triangles.toLocaleString('en')} triangles, ${built.build?.seconds.toFixed(2)} s, typed arrays ${built.build ? Math.round(built.build.bytes / 1e6) : '?'} MB, JS heap ${heap ? Math.round(heap / 1e6) : '?'} MB`,
         '                         mean / p95 / max',
         `collision ms per step:  ${f(s.collisionMsPerStep)}`,
         `collision ms per frame: ${f(s.collisionMs)}`,

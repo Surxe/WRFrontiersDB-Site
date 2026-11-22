@@ -43,7 +43,7 @@ src/
     robot/        # Headless robot builds, models, hitbox areas (browser + Node)
     viewer3d/     # What the 3D viewers share (stage, materials, anchored tags, ui/)
     model_viewer/ # The /models page (three.js viewer + DOM UI)
-    map_viewer/   # The /maps page (fly-through map viewer + pins; drive/ = movement prototype)
+    map_viewer/   # The /maps page (fly-through map viewer + pins; drive/ = movement simulator)
     movement/     # Movement simulator: stock UE character movement port (no three.js, no DOM)
     data/         # Runtime fetching from the data repo (fetchJson)
   types/          # TypeScript interfaces
@@ -58,7 +58,7 @@ tests/            # Test files organized by type
   robot/          # Tests for src/scripts/robot (mirrors its tree)
   model_viewer/   # Tests for src/scripts/model_viewer
   map_viewer/     # Tests for src/scripts/map_viewer
-  movement/       # Tests for src/scripts/movement (scenarios on Rapier, data loading)
+  movement/       # Tests for src/scripts/movement (exact collision layer, UE reference traces, scenarios, data)
 WRFrontiersDB-Data/  # External data repository (read-only)
   current/        # Current game data
 ```
