@@ -13,6 +13,8 @@ export interface InputState {
   viewYaw: number;
   /** Degrees, positive up. */
   viewPitch: number;
+  /** The jump input (Space) is held: the Jump Jet's activation. */
+  jump: boolean;
 }
 
 export const NO_INPUT: InputState = {
@@ -20,6 +22,7 @@ export const NO_INPUT: InputState = {
   right: 0,
   viewYaw: 0,
   viewPitch: 0,
+  jump: false,
 };
 
 /**

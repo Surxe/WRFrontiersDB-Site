@@ -103,6 +103,7 @@ async function main(): Promise<void> {
           right,
           viewYaw: yaw,
           viewPitch: -15,
+          jump: false,
         };
         await page.evaluate((i) => window.__wrfDrive!.script(i), input);
         await page.waitForTimeout(tick * 1000);

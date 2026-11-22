@@ -14,7 +14,8 @@ import { lerp, type Vec3 } from './math/vec';
 import { parseChassis } from './data/chassis';
 import { parseChassisLevel, type ChassisLevel } from './data/chassis_level';
 import { parseMovementType, type MovementType } from './data/movement_type';
-import { parseJetpackAirControl } from './data/jump_ability';
+import { parseJetpack } from './data/jump_ability';
+import type { FuelResourceDefaults } from './data/character';
 import type { Capsule, CollisionWorld, QueryStats } from './collision/world';
 import type { StockParams } from './engine/stock_params';
 import { fixupDeltaSeconds } from './engine/world_tick';
@@ -29,6 +30,8 @@ import {
   UNAPPLIED,
   type TuningInput,
 } from './rules/tuned_movement';
+import { RobotCharacter } from './rules/robot_character';
+import type { JetpackData } from './data/jump_ability';
 import type { UnappliedField, ValueProvenance } from './placeholders';
 
 export interface SessionOptions {
@@ -39,8 +42,10 @@ export interface SessionOptions {
   characterModules: Readonly<Record<string, unknown>>;
   /** Parsed `Objects/Module.json`. */
   modules: Readonly<Record<string, unknown>>;
-  /** Parsed `Objects/Ability.json` (the Jump Jet's air control). */
+  /** Parsed `Objects/Ability.json` (the Jump Jet). */
   abilities: Readonly<Record<string, unknown>>;
+  /** BP_Character's fuel resource (`Character.json`). */
+  fuel: FuelResourceDefaults;
   chassisId: string;
   /** The chassis module's upgrade level; null for its highest. */
   level: number | null;
@@ -72,6 +77,8 @@ export interface FrameStats {
 
 export class MovementSession {
   readonly movement: TunedCharacterMovement;
+  readonly robot: RobotCharacter;
+  readonly jetpack: JetpackData;
   readonly chassisId: string;
   readonly movementType: MovementType;
   readonly chassisLevel: ChassisLevel;
@@ -92,6 +99,11 @@ export class MovementSession {
       options.level
     );
     this.tierOverride = options.tierOverride;
+    this.jetpack = parseJetpack(
+      options.abilities,
+      options.characterModules,
+      options.chassisId
+    );
     this.movement = new TunedCharacterMovement(
       options.collision,
       options.capsule,
@@ -99,7 +111,13 @@ export class MovementSession {
       this.tuning(),
       options.params
     );
-    this.movement.teleport(options.spawn);
+    this.robot = new RobotCharacter(
+      this.movement,
+      options.fuel,
+      this.jetpack,
+      this.chassisLevel.fuelCapacity
+    );
+    this.robot.respawn(options.spawn);
     this.loop =
       options.stepSeconds === null ? null : new FixedStep(options.stepSeconds);
     this.previous = this.movement.location;
@@ -132,12 +150,7 @@ export class MovementSession {
             source: 'placeholder',
             note: `override; the game blends by Mobility (${level.mobility} at level ${level.level}); key 0 returns to it`,
           };
-    const airControl = parseJetpackAirControl(
-      this.options.abilities,
-      this.options.characterModules,
-      this.chassisId
-    );
-    return { properties, tierSource, airControl };
+    return { properties, tierSource, airControl: this.jetpack.airControl };
   }
 
   /** Use one tier (null: back to the game's Mobility blend). */
@@ -166,13 +179,13 @@ export class MovementSession {
       // (The experiment's own clamp, sim/fixed_step.ts, not the game's.)
       ({ steps, alpha } = this.loop.advance(frameSeconds, (step) => {
         this.previous = this.movement.location;
-        this.movement.performMovement(step, direction);
+        this.robot.update(step, direction, input);
       }));
     } else if (frameSeconds > 0) {
       // As the game: the world clamps the frame (0.4 s), then movement
       // splits it into float sub-steps.
       this.previous = this.movement.location;
-      this.movement.performMovement(fixupDeltaSeconds(frameSeconds), direction);
+      this.robot.update(fixupDeltaSeconds(frameSeconds), direction, input);
       steps = 1;
     }
     return {
@@ -190,7 +203,7 @@ export class MovementSession {
   }
 
   respawn(): void {
-    this.movement.teleport(this.options.spawn);
+    this.robot.respawn(this.options.spawn);
     this.previous = this.options.spawn;
     this.loop?.reset();
   }
@@ -205,6 +218,7 @@ export class MovementSession {
   values(): ValueProvenance[] {
     return [
       ...this.movement.provenance(),
+      ...this.robot.provenance(),
       ...this.options.values,
       {
         name: 'Below KillZ',

@@ -11,10 +11,22 @@ import type { BuildInfo } from './drive_mode';
 import { COLLISION_KNOWN_GAPS } from '../../movement/collision/known_gaps';
 import { ENGINE_KNOWN_GAPS } from '../../movement/engine/known_gaps';
 import { RULES_KNOWN_GAPS } from '../../movement/rules/tuned_movement';
+import { ABILITY_KNOWN_GAPS } from '../../movement/rules/abilities/known_gaps';
 import type { RollingStats } from './stats';
 
 const ms = (s: Summary, digits = 2): string =>
   `${s.mean.toFixed(digits)} mean / ${s.p95.toFixed(digits)} p95 / ${s.max.toFixed(digits)} max`;
+
+/** A text fuel gauge, `width` cells; marks the jump cost. */
+function fuelGauge(value: number, max: number, jumpCost: number): string {
+  const width = 32;
+  const filled = max > 0 ? Math.round((value / max) * width) : 0;
+  const mark = max > 0 ? Math.round((jumpCost / max) * width) : -1;
+  let bar = '';
+  for (let i = 0; i < width; i++)
+    bar += i < filled ? '#' : i === mark - 1 ? '|' : '.';
+  return `[${bar}]`;
+}
 
 const v3 = (v: { x: number; y: number; z: number }): string =>
   `(${v.x.toFixed(2)}, ${v.y.toFixed(2)}, ${v.z.toFixed(2)})`;
@@ -52,17 +64,20 @@ export class DriveOverlay {
     locked: boolean
   ): void {
     const m = session.movement;
+    const robot = session.robot;
     const floor = m.currentFloor;
     const fps = summary.frameMs.mean > 0 ? 1000 / summary.frameMs.mean : 0;
     const lines = [
       `DRIVE MODE (prototype): stock UE 5.4 walking/falling + exported tuning`,
       `${session.chassisId} (${session.chassisLevel.moduleId} level ${session.chassisLevel.level}) -> ${session.movementType.id}`,
       locked
-        ? 'WASD move, mouse look, 1-6 one tier / 0 game blend, T respawn, H details, Esc release'
+        ? 'WASD move, Space jump (hold to fly), mouse look, 1-6 one tier / 0 game blend, T respawn, H details, Esc release'
         : 'Click "Fly" (or press F) to capture the mouse and drive',
       '',
       `Speed     ${Math.round(size2D(m.velocity))} cm/s ground, ${Math.round(m.velocity.z)} cm/s vertical`,
       `Mode      ${m.movementMode}`,
+      `Fuel      ${fuelGauge(robot.fuel.value, robot.fuel.maxValue, session.jetpack.jumpFuelCost)} ${robot.fuel.value.toFixed(1)} / ${robot.fuel.maxValue}${robot.fuel.regenBlockers.active ? ' (no regen)' : ''}`,
+      `Jump Jet  ${robot.jetpack.state}, gravity scale ${m.params.gravityScale}`,
       `Floor     ${floor.blockingHit ? `${v3(floor.hitResult.impactNormal)} ${floor.isWalkableFloor() ? 'walkable' : 'unwalkable'}, dist ${floor.getDistanceToFloor().toFixed(2)}` : 'none'}`,
       `Tiers     ${m.properties.describe()} of 0-${session.movementType.tiers.length - 1}`,
       '',
@@ -83,7 +98,7 @@ export class DriveOverlay {
         .filter((v) => v.source !== 'data' && v.source !== 'finding');
       lines.push(
         '',
-        `${shaky.length} values not yet the game's, ${RULES_KNOWN_GAPS.length} rules, ${ENGINE_KNOWN_GAPS.length} engine and ${COLLISION_KNOWN_GAPS.length} collision gaps: H lists them (also in the console)`
+        `${shaky.length} values not yet the game's, ${RULES_KNOWN_GAPS.length} rules, ${ABILITY_KNOWN_GAPS.length} Jump Jet and fuel, ${ENGINE_KNOWN_GAPS.length} engine and ${COLLISION_KNOWN_GAPS.length} collision gaps: H lists them (also in the console)`
       );
       this.node.classList.remove('is-error');
       this.node.textContent = lines.join('\n');
@@ -97,6 +112,8 @@ export class DriveOverlay {
     }
     lines.push('', 'Rules known gaps:');
     for (const gap of RULES_KNOWN_GAPS) lines.push(`  ${gap}`);
+    lines.push('', 'Jump Jet and fuel known gaps:');
+    for (const gap of ABILITY_KNOWN_GAPS) lines.push(`  ${gap}`);
     lines.push('', 'Engine known gaps:');
     for (const gap of ENGINE_KNOWN_GAPS) lines.push(`  ${gap}`);
     lines.push('', 'Collision known gaps:');

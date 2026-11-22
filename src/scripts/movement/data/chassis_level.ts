@@ -16,6 +16,11 @@ export interface ChassisLevel {
   mobility: number;
   /** cm/s. */
   maxSpeed: number;
+  /** The chassis's `FuelCapacity` at this level (`SModuleChassis::
+   * GetFuelCapacity`: the level, else the scaler's default); null when
+   * neither has one. Not applied: the fuel maximum is BP_Character's
+   * (D21) until firing-range F1. */
+  fuelCapacity: number | null;
   /** Where the numbers came from. */
   source: 'levels' | 'default_scalars';
 }
@@ -63,5 +68,15 @@ export function parseChassisLevel(
     throw new Error(`${moduleId}: no MaxSpeed at level ${at} (${source})`);
   }
   const mobility = typeof from.Mobility === 'number' ? from.Mobility : 0;
-  return { moduleId, level: at, maxLevel, mobility, maxSpeed, source };
+  const capacity = from.FuelCapacity ?? defaults.FuelCapacity;
+  const fuelCapacity = typeof capacity === 'number' ? capacity : null;
+  return {
+    moduleId,
+    level: at,
+    maxLevel,
+    mobility,
+    maxSpeed,
+    fuelCapacity,
+    source,
+  };
 }

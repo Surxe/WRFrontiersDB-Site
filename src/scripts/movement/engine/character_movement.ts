@@ -11,18 +11,22 @@
  * - Custom gravity directions (new in 5.4): gravity is always -Z, so every
  *   RotateWorldToGravity / RotateGravityToWorld is the identity.
  * - Networking, root motion, movement bases, avoidance, path following,
- *   crouching, swimming, flying, nav walking, jumping (not in the prototype).
+ *   crouching, swimming, flying, nav walking, stock jumping (WRF jumps with
+ *   forces, the Jump Jet ability in the rules layer), LaunchCharacter.
  * - PhysicsRotation: the prototype draws a capsule, which doesn't turn.
  * - HandleImpact: only notifies and pushes physics objects.
  * - Ledge checks (GetLedgeMove): only used when bCanWalkOffLedges is false.
  */
 import {
+  add,
   clampedToMaxSize,
   dot,
   f32,
+  isZero,
   planeProject,
   safeNormal2D,
   scale,
+  SMALL_NUMBER,
   UP,
   withZ,
   ZERO,
@@ -58,6 +62,10 @@ export class CharacterMovementComponent extends MovementComponent {
   justTeleported = true;
   forceNextFloorCheck = true;
   numJumpApexAttempts = 0;
+  /** PendingImpulseToApply, cm/s (impulses already divided by Mass). */
+  pendingImpulseToApply: Vec3 = ZERO;
+  /** PendingForceToApply, cm/s^2 (forces already divided by Mass). */
+  pendingForceToApply: Vec3 = ZERO;
 
   constructor(
     collision: CollisionWorld,
@@ -84,8 +92,70 @@ export class CharacterMovementComponent extends MovementComponent {
       this.constrainInputAcceleration(inputVector)
     );
     this.analogInputModifier = this.computeAnalogInputModifier();
+    // PerformMovement: no movement in MOVE_None, and pending forces are
+    // dropped.
+    if (this.movementMode === 'none') {
+      this.clearAccumulatedForces();
+      return;
+    }
+    // Forces requested since the last update (e.g. at the end of it, in
+    // OnCharacterMovementUpdated) land now, with this update's time
+    // (09-editor.md 2.3). No root motion or pending launch in this port.
+    this.applyAccumulatedForces(deltaSeconds);
+    this.clearAccumulatedForces();
     this.numJumpApexAttempts = 0;
     this.startNewPhysics(deltaSeconds, 0);
+  }
+
+  // ---- Forces ----
+
+  /** UCharacterMovementComponent::AddForce: applied by the next update's
+   * ApplyAccumulatedForces. */
+  addForce(force: Vec3): void {
+    if (isZero(force) || this.movementMode === 'none') return;
+    if (this.params.mass > SMALL_NUMBER)
+      this.pendingForceToApply = add(
+        this.pendingForceToApply,
+        scale(force, 1 / this.params.mass)
+      );
+  }
+
+  /** UCharacterMovementComponent::AddImpulse. */
+  addImpulse(impulse: Vec3, velocityChange: boolean): void {
+    if (isZero(impulse) || this.movementMode === 'none') return;
+    let final = impulse;
+    if (!velocityChange) {
+      if (this.params.mass <= SMALL_NUMBER) return;
+      final = scale(impulse, 1 / this.params.mass);
+    }
+    this.pendingImpulseToApply = add(this.pendingImpulseToApply, final);
+  }
+
+  /** UCharacterMovementComponent::ApplyAccumulatedForces: walking turns
+   * to falling only when the upward push beats gravity over the update. */
+  applyAccumulatedForces(deltaSeconds: number): void {
+    const impulse = this.pendingImpulseToApply;
+    const force = this.pendingForceToApply;
+    if (impulse.z !== 0 || force.z !== 0) {
+      if (
+        this.isMovingOnGround() &&
+        impulse.z + force.z * deltaSeconds + this.getGravityZ() * deltaSeconds >
+          SMALL_NUMBER
+      )
+        this.setMovementMode('falling');
+    }
+    this.velocity = add(
+      this.velocity,
+      add(impulse, scale(force, deltaSeconds))
+    );
+    this.pendingImpulseToApply = ZERO;
+    this.pendingForceToApply = ZERO;
+  }
+
+  /** UCharacterMovementComponent::ClearAccumulatedForces. */
+  clearAccumulatedForces(): void {
+    this.pendingImpulseToApply = ZERO;
+    this.pendingForceToApply = ZERO;
   }
 
   /** UCharacterMovementComponent::StartNewPhysics. */
@@ -122,6 +192,7 @@ export class CharacterMovementComponent extends MovementComponent {
     this.acceleration = ZERO;
     this.justTeleported = true;
     this.forceNextFloorCheck = true;
+    this.clearAccumulatedForces();
     this.movementMode = 'none';
     this.setMovementMode('falling');
   }
