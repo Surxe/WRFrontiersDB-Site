@@ -41,6 +41,9 @@ export interface StockParams {
   maintainHorizontalGroundVelocity: boolean;
   canWalkOffLedges: boolean;
   alwaysCheckFloor: boolean;
+  /** RotationRate.Yaw, deg/s (PhysicsRotation lives in the rules layer). */
+  rotationRateYaw: number;
+  orientRotationToMovement: boolean;
 }
 
 export const UE_DEFAULTS: Readonly<StockParams> = {
@@ -71,4 +74,6 @@ export const UE_DEFAULTS: Readonly<StockParams> = {
   maintainHorizontalGroundVelocity: true,
   canWalkOffLedges: true,
   alwaysCheckFloor: true,
+  rotationRateYaw: 360,
+  orientRotationToMovement: false,
 };

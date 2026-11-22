@@ -24,6 +24,9 @@ export interface CharacterMovementDefaults {
   PerchRadiusThreshold: number;
   PerchAdditionalHeight: number;
   bMaintainHorizontalGroundVelocity: boolean;
+  /** RotationRate.Yaw, deg/s (body rotation, findings step 3). */
+  RotationRateYaw: number;
+  bOrientRotationToMovement: boolean;
 }
 
 const NUMBERS = [
@@ -63,5 +66,17 @@ export function parseCharacterMovement(
       `Character.json ${id}.movement_component.bMaintainHorizontalGroundVelocity: missing or not a boolean`
     );
   out.bMaintainHorizontalGroundVelocity = maintain;
+  const rate = raw.RotationRate as Record<string, unknown> | undefined;
+  if (!rate || typeof rate.Yaw !== 'number' || !Number.isFinite(rate.Yaw))
+    throw new Error(
+      `Character.json ${id}.movement_component.RotationRate.Yaw: missing or not a number`
+    );
+  out.RotationRateYaw = rate.Yaw;
+  const orient = raw.bOrientRotationToMovement;
+  if (typeof orient !== 'boolean')
+    throw new Error(
+      `Character.json ${id}.movement_component.bOrientRotationToMovement: missing or not a boolean`
+    );
+  out.bOrientRotationToMovement = orient;
   return out as unknown as CharacterMovementDefaults;
 }

@@ -201,6 +201,8 @@ describe('engine parameters from the exported data (D3)', () => {
           PerchRadiusThreshold: 400,
           PerchAdditionalHeight: 0,
           bMaintainHorizontalGroundVelocity: false,
+          RotationRate: { Pitch: 0, Yaw: 180, Roll: 0 },
+          bOrientRotationToMovement: true,
         },
       },
     };

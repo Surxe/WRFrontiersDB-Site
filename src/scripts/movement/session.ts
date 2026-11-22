@@ -14,6 +14,7 @@ import { lerp, type Vec3 } from './math/vec';
 import { parseChassis } from './data/chassis';
 import { parseChassisLevel, type ChassisLevel } from './data/chassis_level';
 import { parseMovementType, type MovementType } from './data/movement_type';
+import { parseJetpackAirControl } from './data/jump_ability';
 import type { Capsule, CollisionWorld, QueryStats } from './collision/world';
 import type { StockParams } from './engine/stock_params';
 import { fixupDeltaSeconds } from './engine/world_tick';
@@ -38,6 +39,8 @@ export interface SessionOptions {
   characterModules: Readonly<Record<string, unknown>>;
   /** Parsed `Objects/Module.json`. */
   modules: Readonly<Record<string, unknown>>;
+  /** Parsed `Objects/Ability.json` (the Jump Jet's air control). */
+  abilities: Readonly<Record<string, unknown>>;
   chassisId: string;
   /** The chassis module's upgrade level; null for its highest. */
   level: number | null;
@@ -129,7 +132,12 @@ export class MovementSession {
             source: 'placeholder',
             note: `override; the game blends by Mobility (${level.mobility} at level ${level.level}); key 0 returns to it`,
           };
-    return { properties, tierSource };
+    const airControl = parseJetpackAirControl(
+      this.options.abilities,
+      this.options.characterModules,
+      this.chassisId
+    );
+    return { properties, tierSource, airControl };
   }
 
   /** Use one tier (null: back to the game's Mobility blend). */

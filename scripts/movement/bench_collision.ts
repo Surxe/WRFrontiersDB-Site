@@ -62,6 +62,7 @@ const tables = {
   movementTypes: objects('MovementType'),
   characterModules: objects('CharacterModule'),
   modules: objects('Module'),
+  abilities: objects('Ability'),
 };
 
 const stat = (a: number[]) => {

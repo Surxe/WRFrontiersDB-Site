@@ -134,9 +134,13 @@ Spectrum (`CrashSite`), Loki's legs, stock UE movement plus exported tuning.
     Epic's source with function names kept; `character_movement.ts` holds
     the state and the overridable methods, the other files their bodies.
   - `rules/`: War Robots' changes on top, as a subclass (as the game's
-    `SCharacterMovementComponent` subclasses UE's). The prototype's
-    `tuned_movement.ts` only maps exported tuning onto stock parameters,
-    each mapping labelled as an assumption.
+    `SCharacterMovementComponent` subclasses UE's), from the
+    reverse-engineering findings: `tuned_movement.ts` (the overrides, the
+    capsule's facing, the blockers, `RULES_KNOWN_GAPS`),
+    `ground_velocity.ts` (WRF's ground `CalcVelocity`: steering, forced
+    turns, emergency deceleration, sideways friction, slope acceleration),
+    `rotation.ts` (body rotation), `move_along_floor.ts` (the wall-hit
+    slowdown), `movement_properties.ts` (the tier-blending provider).
   - `data/`: loaders for `MovementType.json`, `CharacterModule.json`,
     UE's `FRichCurve` and the map collision export
     (`collision_file.ts`, `Maps/<Map>.collision.bin`, with part selection);
