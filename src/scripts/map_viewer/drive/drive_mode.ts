@@ -18,6 +18,7 @@ import { parseCollisionFile } from '../../movement/data/collision_file';
 import { collidersFromFile } from '../../movement/collision/export_loader';
 import { ExactCollisionWorld } from '../../movement/collision/exact/world';
 import { COLLISION_KNOWN_GAPS } from '../../movement/collision/known_gaps';
+import { ENGINE_KNOWN_GAPS } from '../../movement/engine/known_gaps';
 import { startPoint } from '../../movement/start_point';
 import { parseCharacterMovement } from '../../movement/data/character';
 import { parseMapPhysics } from '../../movement/data/map_physics';
@@ -276,7 +277,9 @@ export class DriveMode {
     });
     warnUnestablished(this.session.values(), this.session.unapplied());
     console.warn(
-      '[movement] collision known gaps:\n' +
+      '[movement] engine known gaps:\n' +
+        ENGINE_KNOWN_GAPS.map((gap) => `  ${gap}`).join('\n') +
+        '\n[movement] collision known gaps:\n' +
         COLLISION_KNOWN_GAPS.map((gap) => `  ${gap}`).join('\n')
     );
     this.capsuleMesh.group.visible = true;

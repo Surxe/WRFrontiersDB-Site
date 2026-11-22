@@ -457,8 +457,11 @@ export function physFalling(
             c.processLanded(hit, remainingTime, iterations);
             return;
           }
-          // (The perch-radius "virtual ditch" nudge needs PerchRadiusThreshold
-          // > 0 and a random stream; with UE's default of 0 it never runs.)
+          // (Not ported: the perch-radius "virtual ditch" nudge, a random push
+          // from the character's FRandomStream when stuck on a walkable
+          // perch edge with Hit.Time 1. No UE trace reaches it (the perch
+          // scenarios at 0, 200, 400 and 550 cm match without it); listed in
+          // engine/known_gaps.ts.)
         }
       }
     }

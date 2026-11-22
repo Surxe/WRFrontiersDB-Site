@@ -4,10 +4,9 @@
  * notes, never filled in by estimate.
  */
 export const COLLISION_KNOWN_GAPS: readonly string[] = [
-  'No UE reference traces yet for convex hulls, spheres, one-sided game meshes or heightfields: their hit rules are copied from the UE 5.4.4 source only (session 2 records traces).',
-  'Parallel-contact impact point (class C, D23): the layer always reports the core top end; Chaos GJK sometimes returns an interior point (UE trace wall_45_slide, tick 132: 1.04 cm/s for one tick).',
+  'Parallel-contact impact point (class C, D23): the layer always reports the core top end; Chaos float32 GJK often returns an interior point (see the engine gaps for the effect).',
   'Ties between shapes (seams, D19) and internal triangle edges (class C) follow the exact geometry and a stable collider order, not Chaos traversal order.',
-  'Starting overlaps: exact closest-point direction and depth, or the nearest face when the capsule core is inside a solid; Chaos computes GJK/EPA penetration (no UE trace yet).',
+  'Starting overlaps: exact closest-point direction and depth, or the nearest face when the capsule core is inside a solid. Matches UE on boxes (shallow, core inside nearer either face) and the ground; not traced on hulls, meshes or heightfields (Chaos GJK/EPA).',
   'Moving platforms (SMovingPlatform) stay at their exported start position (D20).',
   'Destructible geometry is loaded intact (the start of a match).',
   'Lighting variant: the game picks one per match (a launch option); drive mode defaults to the heaviest weight (lighting= picks another).',

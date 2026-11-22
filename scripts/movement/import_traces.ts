@@ -9,6 +9,10 @@
  * Example (the box set the collision layer is gated on):
  *   npx tsx scripts/movement/import_traces.ts \
  *     /srv/dev/repos/wrf-movement-ref/out-logmoves/traces tests/movement/reference/traces/box
+ *
+ * The shape set (session 2; recorded with -set=shapes -logmoves):
+ *   npx tsx scripts/movement/import_traces.ts \
+ *     /srv/dev/repos/wrf-movement-ref/out-shapes/traces tests/movement/reference/traces/shapes
  */
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';

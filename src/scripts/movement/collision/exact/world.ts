@@ -77,6 +77,8 @@ const TIE_CM = 1e-9;
 const OPPOSING_SEARCH_CM = 1;
 /** How far along the move the touching test looks (fraction of the move). */
 const TOUCH_PROBE = 1e-6;
+/** Normal components smaller than this are exactly 0 (see snapNormal). */
+const NORMAL_ZERO = 1e-9;
 /** Golden-section iterations for the deep-penetration envelope. */
 const ENVELOPE_ITERATIONS = 100;
 const GOLD = (Math.sqrt(5) - 1) / 2;
@@ -206,6 +208,27 @@ interface Best {
 }
 
 const hullCache = new WeakMap<HullBody, Hull>();
+
+/**
+ * A hit normal with UE's exact zeros. Chaos computes a face contact's
+ * normal from the face plane in the shape's frame, so a component that is
+ * zero for the face is exactly 0 in the FHitResult (every ground hit in
+ * the UE traces is (0, 0, 1), every vertical wall's Z is 0), while its
+ * other components carry float32 noise (about 1e-7). The layer derives the
+ * normal from closest points in float64, which leaves about 1e-14 where UE
+ * has 0, and the engine branches on the sign of such components
+ * (TwoWallAdjust's `Delta.Z > 0` slide-up branch rescales by 1 - Hit.Time
+ * a second time; UE trace sphere_walk_around, tick 114). Components below
+ * NORMAL_ZERO, far under Chaos's own noise, are set to 0.
+ */
+function snapNormal(x: number, y: number, z: number): [number, number, number] {
+  const sx = Math.abs(x) < NORMAL_ZERO ? 0 : x;
+  const sy = Math.abs(y) < NORMAL_ZERO ? 0 : y;
+  const sz = Math.abs(z) < NORMAL_ZERO ? 0 : z;
+  if (sx === x && sy === y && sz === z) return [x, y, z];
+  const l = Math.sqrt(sx * sx + sy * sy + sz * sz);
+  return l > 0 ? [sx / l, sy / l, sz / l] : [x, y, z];
+}
 
 function hullOf(body: HullBody): Hull {
   let hull = hullCache.get(body);
@@ -1388,7 +1411,7 @@ export class ExactCollisionWorld implements CollisionWorld {
     const h0 = g0 - r;
     if (h0 < -PENETRATION_TOLERANCE) {
       this.dist(kind, ref, px, py, pz, limit, true);
-      const normal = this.penetrationNormal(kind, ref);
+      const normal = snapNormal(...this.penetrationNormal(kind, ref));
       if (
         this.ignoreMovingOut &&
         this.dx * normal[0] + this.dy * normal[1] + this.dz * normal[2] > 0
@@ -1458,6 +1481,7 @@ export class ExactCollisionWorld implements CollisionWorld {
     } else {
       [nx, ny, nz] = this.penetrationNormal(kind, ref);
     }
+    [nx, ny, nz] = snapNormal(nx, ny, nz);
     best.found = true;
     best.time = t;
     best.startPenetrating = false;
