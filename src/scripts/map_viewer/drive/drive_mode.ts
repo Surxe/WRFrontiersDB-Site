@@ -18,7 +18,11 @@ import { parseCollisionFile } from '../../movement/data/collision_file';
 import { collidersFromFile } from '../../movement/collision/export_loader';
 import { ExactCollisionWorld } from '../../movement/collision/exact/world';
 import { COLLISION_KNOWN_GAPS } from '../../movement/collision/known_gaps';
+import { ENGINE_KNOWN_GAPS } from '../../movement/engine/known_gaps';
 import { startPoint } from '../../movement/start_point';
+import { parseCharacterMovement } from '../../movement/data/character';
+import { parseMapPhysics } from '../../movement/data/map_physics';
+import { worldSetup } from '../../movement/world_setup';
 import { vec, size2D, type Vec3 } from '../../movement/math/vec';
 import type { InputState } from '../../movement/input/input_state';
 import {
@@ -46,6 +50,9 @@ export interface DriveStart {
   /** `Maps/<Map>.collision.bin`, relative to `dataRoot` (Map.json
    * `files.collision`). */
   collisionFile: string;
+  /** The map's `Map.json` key and its `physics` entry. */
+  mapId: string;
+  physics: unknown;
   /** The game mode shown (a key of the file's `modes`); null: none. */
   mode: string | null;
   /** A spawn pin (UE cm, yaw degrees); null when the mode has none. */
@@ -175,18 +182,30 @@ export class DriveMode {
   }
 
   private async load(): Promise<void> {
-    const { dataRoot, options, collisionFile, mode } = this.start;
+    const { dataRoot, options, collisionFile, mode, mapId, physics } =
+      this.start;
     this.overlay.showStatus('Loading movement data and collision...');
     const table = (name: string): Promise<Record<string, unknown>> =>
       fetchJson<Record<string, unknown>>(`${dataRoot}/Objects/${name}.json`);
-    const [movementTypes, characterModules, modules, collisionBytes] =
-      await Promise.all([
-        table('MovementType'),
-        table('CharacterModule'),
-        table('Module'),
-        fetchBytes(`${dataRoot}/${collisionFile}`),
-      ]);
+    const [
+      movementTypes,
+      characterModules,
+      modules,
+      characters,
+      collisionBytes,
+    ] = await Promise.all([
+      table('MovementType'),
+      table('CharacterModule'),
+      table('Module'),
+      table('Character'),
+      fetchBytes(`${dataRoot}/${collisionFile}`),
+    ]);
     if (this.disposed) return;
+    const engine = worldSetup(
+      parseCharacterMovement(characters),
+      parseMapPhysics(physics, mapId),
+      mapId
+    );
 
     this.overlay.showStatus('Building collision...');
     await new Promise((resolve) => setTimeout(resolve, 0));
@@ -248,12 +267,19 @@ export class DriveMode {
       capsule: options.capsule,
       stepSeconds: options.hz === null ? null : 1 / options.hz,
       spawn,
-      params: options.params,
-      values: [...optionValues(options), ...this.collisionValues],
+      params: engine.params,
+      killZ: engine.killZ,
+      values: [
+        ...optionValues(options),
+        ...engine.values,
+        ...this.collisionValues,
+      ],
     });
     warnUnestablished(this.session.values(), this.session.unapplied());
     console.warn(
-      '[movement] collision known gaps:\n' +
+      '[movement] engine known gaps:\n' +
+        ENGINE_KNOWN_GAPS.map((gap) => `  ${gap}`).join('\n') +
+        '\n[movement] collision known gaps:\n' +
         COLLISION_KNOWN_GAPS.map((gap) => `  ${gap}`).join('\n')
     );
     this.capsuleMesh.group.visible = true;

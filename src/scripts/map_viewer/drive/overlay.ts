@@ -9,6 +9,7 @@ import type { FrameStats, MovementSession } from '../../movement/session';
 import type { Summary } from './stats';
 import type { BuildInfo } from './drive_mode';
 import { COLLISION_KNOWN_GAPS } from '../../movement/collision/known_gaps';
+import { ENGINE_KNOWN_GAPS } from '../../movement/engine/known_gaps';
 import type { RollingStats } from './stats';
 
 const ms = (s: Summary, digits = 2): string =>
@@ -81,7 +82,7 @@ export class DriveOverlay {
         .filter((v) => v.source !== 'data' && v.source !== 'finding');
       lines.push(
         '',
-        `${shaky.length} values not yet the game's, ${COLLISION_KNOWN_GAPS.length} collision gaps: H lists them (also in the console)`
+        `${shaky.length} values not yet the game's, ${ENGINE_KNOWN_GAPS.length} engine and ${COLLISION_KNOWN_GAPS.length} collision gaps: H lists them (also in the console)`
       );
       this.node.classList.remove('is-error');
       this.node.textContent = lines.join('\n');
@@ -93,6 +94,8 @@ export class DriveOverlay {
         `  ${sourceLabel(value.source).padEnd(11)} ${value.name}: ${value.value}  (${value.note})`
       );
     }
+    lines.push('', 'Engine known gaps:');
+    for (const gap of ENGINE_KNOWN_GAPS) lines.push(`  ${gap}`);
     lines.push('', 'Collision known gaps:');
     for (const gap of COLLISION_KNOWN_GAPS) lines.push(`  ${gap}`);
     lines.push(

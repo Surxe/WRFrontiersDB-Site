@@ -181,18 +181,8 @@ export class TunedCharacterMovement extends CharacterMovementComponent {
         source: 'assumed',
         note: "FrictionVector.Y through stock CalcVelocity, standing in for WRF's sideways friction",
       },
-      {
-        name: 'World gravity',
-        value: `${s.gravityZ.toFixed(0)} cm/s2`,
-        source: 'ue-default',
-        note: 'UE default -980 x GravityScale; the WRF world gravity is unknown',
-      },
-      {
-        name: 'TerminalVelocity',
-        value: `${s.terminalVelocity} cm/s`,
-        source: 'ue-default',
-        note: 'physics volume default; WRF value unknown',
-      },
+      // World gravity, GravityScale, TerminalVelocity and the other
+      // Blueprint defaults: data, labelled by world_setup.ts.
     ];
   }
 }

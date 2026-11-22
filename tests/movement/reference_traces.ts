@@ -7,11 +7,21 @@
  * | B | every other contact, no internal triangle edge under the path | 1 cm, 1 cm/s, same mode |
  * | C | internal triangle edges, ties between shapes (D19), parallel-contact ties (D23) | reported, not gated |
  *
- * Box traces: UBoxComponent primitives (fixtures in reference/traces/box,
- * imported by scripts/movement/import_traces.ts). Mesh traces: the same
- * scenarios on UProceduralMeshComponent triangles (one-sided, UE-facing
- * winding); every box face is two triangles, so their paths cross internal
- * edges: class C, reported only. Session 2 builds the full suite.
+ * Three fixture sets (reference/traces/, imported by
+ * scripts/movement/import_traces.ts from /srv/dev/repos/wrf-movement-ref):
+ * - box: UBoxComponent primitives, gated by class A and B;
+ * - mesh: the same scenarios on UProceduralMeshComponent triangles
+ *   (double-sided: the component forces bDoubleSidedGeometry); every box
+ *   face is two triangles, so the paths cross internal edges: class C;
+ * - shapes (session 2, -set=shapes): spheres, cooked convex hulls,
+ *   one-sided meshes (a quad wall both ways, and Horizon's lake with the
+ *   export's winding), a landscape heightfield with a hole, two-wall
+ *   corners, perch radii, penetration recovery and frames over the 0.4 s
+ *   clamp; gated by class, with class C from the first tie or edge tick.
+ *
+ * Every gated tick also checks the world's frame clamp and the sub-step
+ * split (count and phases exact; times within 1e-6 s in class A, 1e-3 s
+ * in class B). The test run never needs UE.
  */
 import { describe, expect, it } from 'vitest';
 import { ExactCollisionWorld } from '../../src/scripts/movement/collision/exact/world';
@@ -23,7 +33,10 @@ import {
   describeResult,
   loadTraces,
   replay,
+  SUBSTEP_TOLERANCE_S,
+  traceWorld,
   type Trace,
+  type TraceBox,
 } from './support/reference_trace';
 
 const say = (line: string): void => {
@@ -71,17 +84,6 @@ const TIE_TICKS: Record<string, { ticks: number[]; why: string }> = {
   },
 };
 
-const boxWorld = (t: Trace) =>
-  new ExactCollisionWorld({
-    ...emptyColliderSet(),
-    boxes: t.geometry.map((b) => ({
-      center: b.center,
-      rotation: b.quat,
-      halfExtents: b.halfExtent,
-      info: { source: b.name, flags: 0 },
-    })),
-  });
-
 // The commandlet's procedural mesh (WrfMoveRefCommandlet.cpp AddMeshBox):
 // 8 corners, 12 triangles, reversed for -geom=meshflip (UE-facing winding).
 const CORNERS = [
@@ -101,7 +103,7 @@ const FACES = [
 const meshWorld = (t: Trace) =>
   new ExactCollisionWorld({
     ...emptyColliderSet(),
-    meshes: t.geometry.map((b) => {
+    meshes: (t.geometry as TraceBox[]).map((b) => {
       const vertices: number[] = [];
       for (const [x, y, z] of CORNERS) {
         const r = rotate(
@@ -128,7 +130,10 @@ const meshWorld = (t: Trace) =>
         t: [0, 0, 0],
         q: [0, 0, 0, 1],
         s: [1, 1, 1],
-        doubleSided: false,
+        // UProceduralMeshComponent::CreateBodySetupHelper sets
+        // bDoubleSidedGeometry (ProceduralMeshComponent.cpp:1032): these
+        // traces are double-sided meshes.
+        doubleSided: true,
         info: { source: b.name, flags: 0 },
       };
     }),
@@ -147,18 +152,20 @@ describe('UE box traces on the exact collision layer', () => {
     const cls = CLASS[trace.scenario];
     if (cls === 'C') {
       it(`${trace.scenario} (class C, reported)`, () => {
-        const r = replay(trace, boxWorld(trace));
+        const r = replay(trace, traceWorld(trace));
         say(`[class C] ${describeResult(r)}`);
         expect(r.ticks).toBe(trace.ticks.filter((k) => k.i >= 0).length);
       });
       continue;
     }
     it(`${trace.scenario} (class ${cls})`, () => {
-      const r = replay(trace, boxWorld(trace));
+      const r = replay(trace, traceWorld(trace), SUBSTEP_TOLERANCE_S[cls]);
       const tol = TOLERANCE[cls];
       const tie = TIE_TICKS[trace.scenario];
       for (const k of r.perTick) {
         expect(k.modeOk, `tick ${k.i}: movement mode`).toBe(true);
+        expect(k.moveDtOk, `tick ${k.i}: frame clamp (moveDt)`).toBe(true);
+        expect(k.substepsOk, `tick ${k.i}: sub-step split`).toBe(true);
         expect(k.dp, `tick ${k.i}: position (cm)`).toBeLessThanOrEqual(tol.pos);
         if (tie?.ticks.includes(k.i)) {
           if (k.dv > tol.vel)
@@ -181,6 +188,105 @@ describe('UE triangle-mesh traces on the exact collision layer (class C, reporte
       const r = replay(trace, meshWorld(trace));
       say(`[class C, mesh] ${describeResult(r)}`);
       expect(Number.isFinite(r.maxPos)).toBe(true);
+    });
+  }
+});
+
+/**
+ * Session 2's UE traces (-set=shapes): spheres, cooked convex hulls,
+ * one-sided triangle meshes (a quad wall and a game mesh with its exported
+ * winding), a landscape heightfield with a hole, two-wall corners, perch
+ * radii, penetration recovery and frames over the 0.4 s clamp.
+ */
+const SHAPE_CLASS: Record<string, 'A' | 'B'> = {
+  hitch_fall_long_frames: 'A',
+  sphere_walk_around: 'B',
+  sphere_land_walk_off: 'B',
+  hull_ramp_crest_drop: 'B',
+  hull_step_up_yawed: 'B',
+  hull_pillar_slide: 'B',
+  mesh_onesided_front: 'B',
+  mesh_onesided_behind: 'B',
+  game_mesh_lake_land_walk_off: 'B',
+  landscape_slope_hole: 'B',
+  corner_90: 'B',
+  corner_60_v: 'B',
+  ledge_walk_off_perch_0: 'B',
+  ledge_walk_off_perch_200: 'B',
+  ledge_walk_off_perch_550: 'B',
+  ledge_walk_off_perch_400_add_40: 'B',
+  penetration_wall_50: 'B',
+  penetration_wall_700: 'B',
+  penetration_wall_900: 'B',
+  penetration_floor_falling: 'B',
+};
+
+const PARALLEL =
+  'parallel-contact impact point (D23): on a contact parallel to the capsule axis Chaos float32 GJK returns an interior point ' +
+  'where the layer reports the core top end, so StepUp passes its first gate in UE and not in the port; a successful StepUp ' +
+  'keeps the step-up velocity (bJustTeleported) where the port derives it from the slide';
+
+/**
+ * Class C from a tick on: the scenario is gated (its class) before it and
+ * reported after it, since every later tick inherits the difference.
+ */
+const C_FROM: Record<string, { tick: number; why: string }> = {
+  hull_pillar_slide: {
+    tick: 131,
+    why: `${PARALLEL} (UE ImpactPoint.Z 747.47, top end 802.15; every contact with the facet)`,
+  },
+  mesh_onesided_front: {
+    tick: 142,
+    why: `${PARALLEL} (UE ImpactPoint.Z 752.02)`,
+  },
+  corner_90: { tick: 159, why: `${PARALLEL} (UE ImpactPoint.Z 757.14)` },
+  corner_60_v: {
+    tick: 146,
+    why: `a tie between two shapes at the V's apex (D19: UE reports the left wall, the layer the right one) and ${PARALLEL}`,
+  },
+  landscape_slope_hole: {
+    tick: 138,
+    why:
+      "an edge contact on the hole's rim (class C, triangle edges): perched on the rim, Chaos's float32 GJK puts the contact " +
+      '0.28 cm inside the cell (normal off by 4e-4) where the layer has the exact edge; it adds up over 30 perched ticks',
+  },
+};
+
+describe('UE shape traces on the exact collision layer (spheres, hulls, meshes, landscape, corners, perch, penetration, long frames)', () => {
+  const traces = loadTraces('shapes');
+
+  it('covers every shape scenario with a class', () => {
+    expect(traces.map((t) => t.scenario).sort()).toEqual(
+      Object.keys(SHAPE_CLASS).sort()
+    );
+  });
+
+  for (const trace of traces) {
+    const cls = SHAPE_CLASS[trace.scenario];
+    const from = C_FROM[trace.scenario];
+    it(`${trace.scenario} (class ${cls}${from ? `, class C from tick ${from.tick}` : ''})`, () => {
+      const r = replay(trace, traceWorld(trace), SUBSTEP_TOLERANCE_S[cls]);
+      const tol = TOLERANCE[cls];
+      for (const k of r.perTick) {
+        if (from && k.i >= from.tick) continue;
+        expect(k.modeOk, `tick ${k.i}: movement mode`).toBe(true);
+        expect(k.moveDtOk, `tick ${k.i}: frame clamp (moveDt)`).toBe(true);
+        expect(k.substepsOk, `tick ${k.i}: sub-step split`).toBe(true);
+        expect(k.dp, `tick ${k.i}: position (cm)`).toBeLessThanOrEqual(tol.pos);
+        expect(k.dv, `tick ${k.i}: velocity (cm/s)`).toBeLessThanOrEqual(
+          tol.vel
+        );
+      }
+      if (from) {
+        const after = r.perTick.filter((k) => k.i >= from.tick);
+        const dp = Math.max(...after.map((k) => k.dp));
+        const dv = Math.max(...after.map((k) => k.dv));
+        const modes = after.filter((k) => !k.modeOk).length;
+        say(
+          `[class C from tick ${from.tick}] ${trace.scenario}: max dpos ${dp.toFixed(4)} cm, max dvel ${dv.toFixed(4)} cm/s, ` +
+            `mode mismatches ${modes}; ${from.why}`
+        );
+      }
     });
   }
 });

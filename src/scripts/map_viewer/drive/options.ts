@@ -15,36 +15,15 @@
  *             default is the heaviest weight.
  *
  * Without the last three, every value is the game's as far as the
- * reverse-engineering findings establish it. The chassis is the
+ * reverse-engineering findings and the exported data establish it (the
+ * pawn's movement defaults and the map's physics: movement/world_setup.ts). The chassis is the
  * prototype's, Loki's legs.
  */
 import type { Capsule } from '../../movement/collision/world';
-import type { StockParams } from '../../movement/engine/stock_params';
-import { UE_DEFAULTS } from '../../movement/engine/stock_params';
 import type { ValueProvenance } from '../../movement/placeholders';
 import { ROBOT_CAPSULE } from '../../movement/rules/tuned_movement';
 
 export const PROTOTYPE_CHASSIS = 'BP_Module_Loki_Chassis.0';
-
-/**
- * `BP_Character`'s movement-component defaults (findings step 1, from a
- * 2026-09-28 export). They are Blueprint data, so under D3 they must come
- * from the exported data; the Parser doesn't export them yet. Until it does
- * they are labelled placeholders, kept here in the prototype's adapter and
- * out of the simulation code.
- */
-const BP_CHARACTER_GRAVITY_SCALE = 1.2;
-const BP_CHARACTER: Partial<StockParams> = {
-  gravityZ: UE_DEFAULTS.gravityZ * BP_CHARACTER_GRAVITY_SCALE,
-  maxStepHeight: 500,
-  walkableFloorZ: 0.71,
-  brakingFrictionFactor: 0.05,
-  airControl: 0,
-  airControlBoostMultiplier: 0,
-  perchRadiusThreshold: 400,
-  perchAdditionalHeight: 0,
-  maintainHorizontalGroundVelocity: false,
-};
 
 export interface DriveOptions {
   level: number | null;
@@ -52,7 +31,6 @@ export interface DriveOptions {
   /** Fixed rate, Hz; null for one update per frame. */
   hz: number | null;
   capsule: Capsule;
-  params: Partial<StockParams>;
   /** Lighting variant part id; null for the heaviest weight. */
   lighting: string | null;
 }
@@ -85,19 +63,13 @@ export function readDriveOptions(params: URLSearchParams): DriveOptions {
     tierOverride: wholeNumber(params.get('tier')),
     hz: positiveNumber(params.get('hz')),
     capsule,
-    params: { ...BP_CHARACTER },
     lighting: params.get('lighting') || null,
   };
 }
 
-/** The labelled values these options bring (the rest the session labels). */
+/** The labelled values these options bring (the rest the session and
+ * movement/world_setup.ts label). */
 export function optionValues(options: DriveOptions): ValueProvenance[] {
-  const bp = (name: string, value: string): ValueProvenance => ({
-    name,
-    value,
-    source: 'placeholder',
-    note: 'BP_Character default (findings step 1, 2026-09-28 export); must come from exported data (D3)',
-  });
   return [
     {
       name: 'Timestep',
@@ -106,23 +78,8 @@ export function optionValues(options: DriveOptions): ValueProvenance[] {
       source: options.hz === null ? 'finding' : 'placeholder',
       note:
         options.hz === null
-          ? 'stock variable timestep (step 3)'
+          ? 'stock variable timestep (step 3); the world clamps a frame to 0.4 s, sub-steps split in float (09-editor.md 2.6)'
           : 'URL hz= experiment; the game updates once per frame',
     },
-    bp('GravityScale', String(BP_CHARACTER_GRAVITY_SCALE)),
-    bp('MaxStepHeight', `${BP_CHARACTER.maxStepHeight} cm`),
-    bp('WalkableFloorZ', `${BP_CHARACTER.walkableFloorZ}`),
-    bp(
-      'PerchRadiusThreshold',
-      `${BP_CHARACTER.perchRadiusThreshold} cm (PerchAdditionalHeight ${BP_CHARACTER.perchAdditionalHeight})`
-    ),
-    bp(
-      'bMaintainHorizontalGroundVelocity',
-      String(BP_CHARACTER.maintainHorizontalGroundVelocity)
-    ),
-    bp(
-      'AirControl',
-      `${BP_CHARACTER.airControl} (boost ${BP_CHARACTER.airControlBoostMultiplier})`
-    ),
   ];
 }

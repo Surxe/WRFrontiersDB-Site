@@ -5,8 +5,9 @@
  * so the map viewer's adapter only draws.
  *
  * Timestep: like the game (findings step 3), one movement update per frame
- * with that frame's time, which the engine splits into substeps of at most
- * MaxSimulationTimeStep. A fixed step (with interpolation) is available for
+ * with that frame's time, clamped by the world to 0.4 s
+ * (engine/world_tick.ts), which the engine splits into float substeps of at
+ * most MaxSimulationTimeStep. A fixed step (with interpolation) is available for
  * experiments.
  */
 import { lerp, type Vec3 } from './math/vec';
@@ -15,6 +16,7 @@ import { parseChassisLevel, type ChassisLevel } from './data/chassis_level';
 import { parseMovementType, type MovementType } from './data/movement_type';
 import type { Capsule, CollisionWorld, QueryStats } from './collision/world';
 import type { StockParams } from './engine/stock_params';
+import { fixupDeltaSeconds } from './engine/world_tick';
 import { inputVector, type InputState } from './input/input_state';
 import { FixedStep } from './sim/fixed_step';
 import {
@@ -27,10 +29,6 @@ import {
   type TuningInput,
 } from './rules/tuned_movement';
 import type { UnappliedField, ValueProvenance } from './placeholders';
-
-/** Frame time spent at most in one update (a hidden tab, a stall), s. Ours,
- * not the game's: it only keeps a long pause from launching the robot. */
-const MAX_FRAME_SECONDS = 0.25;
 
 export interface SessionOptions {
   collision: CollisionWorld;
@@ -50,13 +48,18 @@ export interface SessionOptions {
   stepSeconds: number | null;
   /** Where the capsule's center starts, UE cm. */
   spawn: Vec3;
-  /** Engine parameters that differ from UE's defaults. */
+  /** Engine parameters that differ from UE's defaults (world_setup.ts). */
   params: Partial<StockParams>;
+  /** AWorldSettings::KillZ, cm (world_setup.ts). */
+  killZ: number;
   /** Labelled values the caller chose (overrides, placeholders). */
   values: readonly ValueProvenance[];
 }
 
 export interface FrameStats {
+  /** The capsule was below KillZ at the start of the update: UE's
+   * FellOutOfWorld; the session respawned it. */
+  fellOutOfWorld: boolean;
   steps: number;
   alpha: number;
   /** Time spent simulating this frame, ms (queries included). */
@@ -144,20 +147,28 @@ export class MovementSession {
   update(frameSeconds: number, input: InputState): FrameStats {
     const began = performance.now();
     const direction = inputVector(input);
-    const seconds = Math.min(Math.max(frameSeconds, 0), MAX_FRAME_SECONDS);
+    // UCharacterMovementComponent::TickComponent checks CheckStillInWorld
+    // before moving: below KillZ the pawn falls out of the world. The game
+    // then destroys the robot; respawning stands in for what follows.
+    const fellOutOfWorld = this.movement.location.z < this.options.killZ;
+    if (fellOutOfWorld) this.respawn();
     let steps = 0;
     let alpha = 1;
     if (this.loop) {
-      ({ steps, alpha } = this.loop.advance(seconds, (step) => {
+      // (The experiment's own clamp, sim/fixed_step.ts, not the game's.)
+      ({ steps, alpha } = this.loop.advance(frameSeconds, (step) => {
         this.previous = this.movement.location;
         this.movement.performMovement(step, direction);
       }));
-    } else if (seconds > 0) {
+    } else if (frameSeconds > 0) {
+      // As the game: the world clamps the frame (0.4 s), then movement
+      // splits it into float sub-steps.
       this.previous = this.movement.location;
-      this.movement.performMovement(seconds, direction);
+      this.movement.performMovement(fixupDeltaSeconds(frameSeconds), direction);
       steps = 1;
     }
     return {
+      fellOutOfWorld,
       steps,
       alpha,
       simMs: performance.now() - began,
@@ -184,7 +195,16 @@ export class MovementSession {
   }
 
   values(): ValueProvenance[] {
-    return [...this.movement.provenance(), ...this.options.values];
+    return [
+      ...this.movement.provenance(),
+      ...this.options.values,
+      {
+        name: 'Below KillZ',
+        value: 'respawn',
+        source: 'assumed',
+        note: "UE's FellOutOfWorld destroys the robot; what WRF does next (death, respawn timer) is not modelled",
+      },
+    ];
   }
 
   unapplied(): readonly UnappliedField[] {

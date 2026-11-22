@@ -14,6 +14,7 @@ import {
   clampedToMaxSize,
   dot,
   equals,
+  f32,
   isNearlyZero,
   KINDA_SMALL_NUMBER,
   mul,
@@ -52,7 +53,7 @@ export function getFallingLateralAcceleration(
     );
     fallAcceleration = clampedToMaxSize(
       fallAcceleration,
-      c.getMaxAcceleration()
+      f32(c.getMaxAcceleration())
     );
   }
   return fallAcceleration;
@@ -71,9 +72,13 @@ function getAirControl(
       c.params;
     if (
       airControlBoostMultiplier > 0 &&
-      sizeSquared2D(c.velocity) < airControlBoostVelocityThreshold ** 2
+      sizeSquared2D(c.velocity) <
+        f32(airControlBoostVelocityThreshold * airControlBoostVelocityThreshold)
     ) {
-      tickAirControl = Math.min(1, airControlBoostMultiplier * tickAirControl);
+      tickAirControl = Math.min(
+        1,
+        f32(airControlBoostMultiplier * tickAirControl)
+      );
     }
   }
   return scale(fallAcceleration, tickAirControl);
@@ -90,8 +95,8 @@ export function newFallVelocity(
   let result = initialVelocity;
   if (deltaTime > 0) {
     result = addScaled(result, gravity, deltaTime);
-    const terminalLimit = Math.abs(c.getTerminalVelocity());
-    if (sizeSquared(result) > terminalLimit * terminalLimit) {
+    const terminalLimit = f32(Math.abs(c.getTerminalVelocity()));
+    if (sizeSquared(result) > f32(terminalLimit * terminalLimit)) {
       const gravityDir = safeNormal(gravity);
       if (dot(result, gravityDir) > terminalLimit) {
         result = addScaled(
@@ -226,14 +231,16 @@ export function physFalling(
   const fallAcceleration = withZ(c.getFallingLateralAcceleration(deltaTime), 0);
   const hasLimitedAirControl = sizeSquared2D(fallAcceleration) > 0;
 
-  let remainingTime = deltaTime;
+  // float remainingTime, timeTick, GravityTime, subTimeTickRemaining
+  // (UE's types; the sub-step split is float).
+  let remainingTime = f32(deltaTime);
   while (
     remainingTime >= MIN_TICK_TIME &&
     iterations < c.params.maxSimulationIterations
   ) {
     iterations++;
-    let timeTick = c.getSimulationTimeStep(remainingTime, iterations);
-    remainingTime -= timeTick;
+    let timeTick = f32(c.getSimulationTimeStep(remainingTime, iterations));
+    remainingTime = f32(remainingTime - timeTick);
 
     c.justTeleported = false;
     const oldVelocityWithRootMotion = c.velocity;
@@ -263,8 +270,8 @@ export function physFalling(
         1 / timeTick
       );
       if (Math.abs(derivedAccel.z) > 1e-8) {
-        const timeToApex = -oldVelocityWithRootMotion.z / derivedAccel.z;
-        const apexTimeMinimum = 0.0001;
+        const timeToApex = f32(-oldVelocityWithRootMotion.z / derivedAccel.z);
+        const apexTimeMinimum = f32(0.0001);
         if (timeToApex >= apexTimeMinimum && timeToApex < timeTick) {
           const apexVelocity = addScaled(
             oldVelocityWithRootMotion,
@@ -272,7 +279,7 @@ export function physFalling(
             timeToApex
           );
           c.velocity = withZ(apexVelocity, 0);
-          remainingTime += timeTick - timeToApex;
+          remainingTime = f32(remainingTime + f32(timeTick - timeToApex));
           timeTick = timeToApex;
           iterations--;
           c.numJumpApexAttempts++;
@@ -290,11 +297,11 @@ export function physFalling(
     c.safeMoveUpdatedComponent(adjusted, hit);
 
     let lastMoveTimeSlice = timeTick;
-    let subTimeTickRemaining = timeTick * (1 - hit.time);
+    let subTimeTickRemaining = f32(timeTick * f32(1 - hit.time));
 
     if (hit.blockingHit) {
       if (c.isValidLandingSpot(c.location, hit)) {
-        remainingTime += subTimeTickRemaining;
+        remainingTime = f32(remainingTime + subTimeTickRemaining);
         c.processLanded(hit, remainingTime, iterations);
         return;
       }
@@ -313,7 +320,7 @@ export function physFalling(
           floorResult.isWalkableFloor() &&
           c.isValidLandingSpot(c.location, floorResult.hitResult)
         ) {
-          remainingTime += subTimeTickRemaining;
+          remainingTime = f32(remainingTime + subTimeTickRemaining);
           c.processLanded(floorResult.hitResult, remainingTime, iterations);
           return;
         }
@@ -380,10 +387,10 @@ export function physFalling(
         if (hit.blockingHit) {
           // Hit a second wall.
           lastMoveTimeSlice = subTimeTickRemaining;
-          subTimeTickRemaining *= 1 - hit.time;
+          subTimeTickRemaining = f32(subTimeTickRemaining * f32(1 - hit.time));
 
           if (c.isValidLandingSpot(c.location, hit)) {
-            remainingTime += subTimeTickRemaining;
+            remainingTime = f32(remainingTime + subTimeTickRemaining);
             c.processLanded(hit, remainingTime, iterations);
             return;
           }
@@ -450,8 +457,11 @@ export function physFalling(
             c.processLanded(hit, remainingTime, iterations);
             return;
           }
-          // (The perch-radius "virtual ditch" nudge needs PerchRadiusThreshold
-          // > 0 and a random stream; with UE's default of 0 it never runs.)
+          // (Not ported: the perch-radius "virtual ditch" nudge, a random push
+          // from the character's FRandomStream when stuck on a walkable
+          // perch edge with Hit.Time 1. No UE trace reaches it (the perch
+          // scenarios at 0, 200, 400 and 550 cm match without it); listed in
+          // engine/known_gaps.ts.)
         }
       }
     }

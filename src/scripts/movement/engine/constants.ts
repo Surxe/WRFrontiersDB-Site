@@ -18,3 +18,12 @@ export const VERTICAL_SLOPE_NORMAL_Z = 0.001;
  * p.PenetrationOverlapCheckInflation CVar defaults. */
 export const PENETRATION_PULLBACK_DISTANCE = 0.125;
 export const PENETRATION_OVERLAP_CHECK_INFLATION = 0.1;
+
+/** AWorldSettings Min/MaxUndilatedFrameTime (Engine/Config/BaseGame.ini:
+ * 0.0005 and 0.4 s; WRF's config doesn't override them, 09-editor.md 2.6). */
+export const MIN_UNDILATED_FRAME_TIME = 0.0005;
+export const MAX_UNDILATED_FRAME_TIME = 0.4;
+
+/** AWorldSettings::KillZ when a map sets none: -UE_OLD_HALF_WORLD_MAX1
+ * (WorldSettings.cpp:87; EngineDefines.h: 1048576 - 1). */
+export const DEFAULT_KILL_Z = -1048575;
