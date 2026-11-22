@@ -4,6 +4,100 @@ import tsParser from '@typescript-eslint/parser';
 import astroPlugin from 'eslint-plugin-astro';
 import astroParser from 'astro-eslint-parser';
 
+// The movement simulation (src/scripts/movement/) is plain TypeScript: no
+// three.js, no DOM, nothing from the viewers or robot code. The map viewer
+// depends on it, never the reverse. Inside it, data/ depends on nothing else
+// in movement/, engine/ never reaches into rules/, and only
+// collision/rapier.ts touches Rapier: everything else uses the CollisionWorld
+// interface. (Flat config replaces a rule's options per block, so each block
+// lists every pattern that applies to it.)
+const MOVEMENT = 'src/scripts/movement';
+const NOT_VIEWER = [
+  {
+    group: ['three', 'three/*'],
+    message: 'movement/ must not depend on three.js.',
+  },
+  {
+    regex: '(^|/)(map_viewer|viewer3d|robot|model_viewer)(/|$)',
+    message:
+      'movement/ must not depend on the viewers or robot code; they depend on it.',
+  },
+];
+const NOT_RAPIER = [
+  {
+    group: ['@dimforge/*'],
+    message:
+      'Only movement/collision/rapier.ts uses Rapier; depend on collision/world.',
+  },
+];
+const NOT_RAPIER_IMPL = [
+  {
+    regex: '(^|/)collision/rapier$',
+    message:
+      'Depend on the CollisionWorld interface (collision/world), not Rapier.',
+  },
+];
+const restrict = (...groups) => ['error', { patterns: groups.flat() }];
+const movementRules = [
+  {
+    files: [`${MOVEMENT}/**/*.ts`],
+    rules: {
+      'no-restricted-imports': restrict(NOT_VIEWER, NOT_RAPIER),
+      'no-restricted-globals': [
+        'error',
+        'window',
+        'document',
+        'navigator',
+        'localStorage',
+        'requestAnimationFrame',
+        'HTMLElement',
+      ],
+    },
+  },
+  {
+    files: [`${MOVEMENT}/collision/rapier.ts`],
+    rules: { 'no-restricted-imports': restrict(NOT_VIEWER) },
+  },
+  {
+    files: [`${MOVEMENT}/engine/**/*.ts`],
+    rules: {
+      'no-restricted-imports': restrict(
+        NOT_VIEWER,
+        NOT_RAPIER,
+        NOT_RAPIER_IMPL,
+        [
+          {
+            regex: '(^|/)rules(/|$)',
+            message:
+              'engine/ is stock UE; rules/ builds on it, not the reverse.',
+          },
+        ]
+      ),
+    },
+  },
+  {
+    files: [`${MOVEMENT}/rules/**/*.ts`],
+    rules: {
+      'no-restricted-imports': restrict(
+        NOT_VIEWER,
+        NOT_RAPIER,
+        NOT_RAPIER_IMPL
+      ),
+    },
+  },
+  {
+    files: [`${MOVEMENT}/data/**/*.ts`],
+    rules: {
+      'no-restricted-imports': restrict(NOT_VIEWER, NOT_RAPIER, [
+        {
+          regex: '^\\.\\./',
+          message: 'data/ depends on nothing else in movement/.',
+        },
+      ]),
+    },
+  },
+];
+
 export default [
   // Ignore patterns
   {
@@ -122,4 +216,6 @@ export default [
       'no-unused-vars': 'off',
     },
   },
+
+  ...movementRules,
 ];

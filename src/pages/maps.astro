@@ -432,6 +432,33 @@ const legend: { color: number; label: LocalizationKey }[] = [
     }
   }
 
+  /* Drive mode's debug readout (map_viewer/drive/overlay.ts), under the
+     start overlay; it takes no pointer events, so the canvas keeps the
+     mouse. */
+  :global(#map-canvas .drive-overlay) {
+    position: absolute;
+    top: 3.25rem;
+    left: var(--viewer-inset-left, 0.5rem);
+    max-width: min(48rem, calc(100% - 1rem));
+    max-height: calc(100% - 6rem);
+    margin: 0;
+    padding: 0.4rem 0.6rem;
+    overflow: hidden;
+    border: 1px solid var(--wrf-border);
+    border-radius: var(--wrf-radius-sm);
+    background: var(--wrf-overlay-bg);
+    color: var(--wrf-text);
+    font-family: var(--wrf-font-mono);
+    font-size: 0.72rem;
+    line-height: 1.35;
+    white-space: pre-wrap;
+    pointer-events: none;
+  }
+
+  :global(#map-canvas .drive-overlay.is-error) {
+    color: var(--wrf-danger);
+  }
+
   /* Pin labels (pins.ts), centered just above their pin. Cards take no
      pointer events, so the canvas keeps the mouse. */
   :global(#map-canvas .map-pin-tags) {

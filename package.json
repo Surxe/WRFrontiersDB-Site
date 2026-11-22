@@ -9,6 +9,7 @@
     "build:github-pages": "astro build",
     "sync:slugs": "tsx scripts/sync-slugs.ts",
     "screenshots": "tsx scripts/screenshots/run.ts",
+    "bench:drive": "tsx scripts/movement/bench.ts",
     "preview": "astro preview",
     "astro": "astro",
     "lint": "eslint . --ext .js,.ts,.astro --max-warnings 0",
@@ -19,6 +20,7 @@
     "format:fix": "prettier --write \"**/*.{js,ts,astro,json,md}\""
   },
   "dependencies": {
+    "@dimforge/rapier3d-compat": "^0.21.0",
     "astro": "^5.16.6",
     "three": "^0.186.1"
   },

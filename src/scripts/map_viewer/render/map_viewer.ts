@@ -11,6 +11,10 @@
  * In 3D, a left click shoots a laser where the crosshair points (lasers.ts);
  * lasers stay until cleared (R, the page's reset button, or another map).
  *
+ * Drive mode (the movement simulator's prototype, ../drive/) replaces the
+ * free-flying camera in 3D: it is loaded on demand (it brings Rapier) and,
+ * while on, owns the camera, the movement keys and the mouse look.
+ *
  * The map files are glTF (meters, Y up), drawn scaled to centimeters so they
  * line up with the pins, which are in Unreal space (toUeSpace). Frames are
  * drawn on demand, and continuously while the pointer is locked.
@@ -32,6 +36,7 @@ import { PinLayer, type PinLabelText, type PinMarker } from '../pins';
 import { HeightTint } from './height_tint';
 import { CenterPick, LaserLayer } from './lasers';
 import type { Vec3 } from '../../../types/map';
+import type { DriveMode, DriveStart } from '../drive/drive_mode';
 
 const FIELD_OF_VIEW = 70;
 /** Centimeters. Maps are up to ~2 km across. */
@@ -139,6 +144,9 @@ export class MapViewer extends Stage {
   private speed = DEFAULT_SPEED;
   private lastFrame: number | null = null;
   private speedListener: (metersPerSecond: number) => void = () => {};
+  private drive: DriveMode | null = null;
+  /** Drive starts can overlap a map switch; only the latest may land. */
+  private driveGeneration = 0;
 
   constructor(container: HTMLElement) {
     super(container, { fov: FIELD_OF_VIEW, near: NEAR, far: FAR });
@@ -172,7 +180,7 @@ export class MapViewer extends Stage {
     this.canvas.addEventListener(
       'wheel',
       (event) => {
-        if (!this.controls.isLocked) return;
+        if (!this.controls.isLocked || this.drive) return;
         event.preventDefault();
         this.setSpeed(
           this.speed * (event.deltaY < 0 ? WHEEL_STEP : 1 / WHEEL_STEP)
@@ -278,8 +286,39 @@ export class MapViewer extends Stage {
     this.requestRender();
   }
 
+  /** Turn drive mode on over the loaded base layer (see ../drive/). */
+  async startDrive(start: Omit<DriveStart, 'base'>): Promise<void> {
+    this.stopDrive();
+    const generation = this.driveGeneration;
+    const { DriveMode } = await import('../drive/drive_mode');
+    if (generation !== this.driveGeneration) return;
+    this.drive = DriveMode.create(
+      {
+        scene: this.scene,
+        camera: this.camera,
+        canvas: this.canvas,
+        container: this.container,
+      },
+      { ...start, base: this.layers.base }
+    );
+    // The drive camera looks with the mouse itself.
+    this.controls.enabled = false;
+    this.held.clear();
+    this.requestRender();
+  }
+
+  stopDrive(): void {
+    this.driveGeneration++;
+    if (!this.drive) return;
+    this.drive.dispose();
+    this.drive = null;
+    this.controls.enabled = true;
+    this.requestRender();
+  }
+
   /** Drop every layer and pin (switching maps). */
   clear(): void {
+    this.stopDrive();
     for (const layer of Object.keys(this.layers) as Layer[]) {
       this.generation[layer]++;
       clearLayer(this.layers[layer]);
@@ -360,6 +399,18 @@ export class MapViewer extends Stage {
       return;
     }
     const now = performance.now();
+    if (this.drive) {
+      // Drive mode steps every frame and places the camera itself.
+      this.drive.frame(now);
+      this.renderer.render(this.scene, this.camera);
+      const eye = this.camera.position;
+      this.pins.layout(
+        (anchor) => this.toScreen(anchor),
+        (anchor, range) => anchor.distanceTo(eye) <= range
+      );
+      this.requestRender();
+      return;
+    }
     const moving = this.controls.isLocked && this.held.size > 0;
     if (moving && this.lastFrame !== null) {
       this.fly(Math.min(MAX_FRAME_S, (now - this.lastFrame) / 1000));
@@ -481,6 +532,8 @@ export class MapViewer extends Stage {
       if (down && !event.repeat) this.clearLasers();
       return;
     }
+    // Drive mode reads its own keys.
+    if (this.drive) return;
     const isMove = event.code in MOVES || event.code.startsWith('Shift');
     if (!isMove) return;
     // Space would scroll the page, arrows too.
