@@ -1,0 +1,113 @@
+/**
+ * Drive mode's debug overlay: plain text over the canvas (English only: a
+ * developer readout for the prototype, not page UI). Styled from maps.astro
+ * (`#map-canvas .drive-overlay`).
+ */
+import { size2D } from '../../movement/math/vec';
+import { sourceLabel } from '../../movement/placeholders';
+import type { FrameStats, MovementSession } from '../../movement/session';
+import type { Summary } from './stats';
+import type { BuildInfo } from './drive_mode';
+import type { RollingStats } from './stats';
+
+const ms = (s: Summary, digits = 2): string =>
+  `${s.mean.toFixed(digits)} mean / ${s.p95.toFixed(digits)} p95 / ${s.max.toFixed(digits)} max`;
+
+const v3 = (v: { x: number; y: number; z: number }): string =>
+  `(${v.x.toFixed(2)}, ${v.y.toFixed(2)}, ${v.z.toFixed(2)})`;
+
+export class DriveOverlay {
+  private readonly node: HTMLPreElement;
+  /** Show where every value comes from (H); the console always lists them. */
+  private details = false;
+
+  constructor(container: HTMLElement) {
+    this.node = document.createElement('pre');
+    this.node.className = 'drive-overlay';
+    container.append(this.node);
+  }
+
+  toggleDetails(): void {
+    this.details = !this.details;
+  }
+
+  showStatus(text: string): void {
+    this.node.classList.remove('is-error');
+    this.node.textContent = `DRIVE MODE (prototype)\n${text}`;
+  }
+
+  showError(text: string): void {
+    this.node.classList.add('is-error');
+    this.node.textContent = `DRIVE MODE (prototype)\nFailed: ${text}`;
+  }
+
+  showStats(
+    session: MovementSession,
+    summary: ReturnType<RollingStats['summary']>,
+    build: BuildInfo | null,
+    last: FrameStats | null,
+    locked: boolean
+  ): void {
+    const m = session.movement;
+    const floor = m.currentFloor;
+    const fps = summary.frameMs.mean > 0 ? 1000 / summary.frameMs.mean : 0;
+    const lines = [
+      `DRIVE MODE (prototype): stock UE 5.4 walking/falling + exported tuning`,
+      `${session.chassisId} (${session.chassisLevel.moduleId} level ${session.chassisLevel.level}) -> ${session.movementType.id}`,
+      locked
+        ? 'WASD move, mouse look, 1-6 one tier / 0 game blend, T respawn, H details, Esc release'
+        : 'Click "Fly" (or press F) to capture the mouse and drive',
+      '',
+      `Speed     ${Math.round(size2D(m.velocity))} cm/s ground, ${Math.round(m.velocity.z)} cm/s vertical`,
+      `Mode      ${m.movementMode}`,
+      `Floor     ${floor.blockingHit ? `${v3(floor.hitResult.impactNormal)} ${floor.isWalkableFloor() ? 'walkable' : 'unwalkable'}, dist ${floor.getDistanceToFloor().toFixed(2)}` : 'none'}`,
+      `Tiers     ${m.properties.describe()} of 0-${session.movementType.tiers.length - 1}`,
+      '',
+      `Frame     ${ms(summary.frameMs)} ms (${fps.toFixed(0)} fps)`,
+      `Sim       ${ms(summary.simMs)} ms/frame, timestep ${session.describeTimestep()} (${last?.steps ?? 0} this frame)`,
+      `Collision ${ms(summary.collisionMs, 3)} ms/frame, ${summary.queries.mean.toFixed(1)} queries/frame`,
+      `          ${ms(summary.collisionMsPerStep, 3)} ms/step`,
+    ];
+    if (build) {
+      const wasm =
+        build.wasmBytes === null
+          ? '?'
+          : `${Math.round(build.wasmBytes / 1e6)} MB`;
+      lines.push(
+        `Build     ${build.triangles.toLocaleString('en')} triangles, ${build.colliders.toLocaleString('en')} colliders, ${build.seconds.toFixed(1)} s, wasm ${wasm}`
+      );
+    }
+    if (!this.details) {
+      const shaky = session
+        .values()
+        .filter((v) => v.source !== 'data' && v.source !== 'finding');
+      lines.push(
+        '',
+        `${shaky.length} values not yet the game's: H lists every value's source (also in the console)`
+      );
+      this.node.classList.remove('is-error');
+      this.node.textContent = lines.join('\n');
+      return;
+    }
+    lines.push('', "Values (the game's only when DATA or FINDING):");
+    for (const value of session.values()) {
+      lines.push(
+        `  ${sourceLabel(value.source).padEnd(11)} ${value.name}: ${value.value}  (${value.note})`
+      );
+    }
+    lines.push(
+      '',
+      'Not applied yet (WRF rules for the MVP): ' +
+        session
+          .unapplied()
+          .map((f) => f.name)
+          .join('; ')
+    );
+    this.node.classList.remove('is-error');
+    this.node.textContent = lines.join('\n');
+  }
+
+  dispose(): void {
+    this.node.remove();
+  }
+}

@@ -10,6 +10,7 @@ import { queryAll, requireElement } from '../viewer3d/ui/dom';
 import { isCameraMode, type CameraMode } from '../viewer3d/camera_mode';
 import { ToggleGroup } from '../viewer3d/ui/toggle_group';
 import { readMapUrl, resolveSelection, sortMaps, writeMapUrl } from './params';
+import { isDriveRequested, readDriveOptions } from './drive/options';
 import { describePins, firstSpawn, tintRange, type PowerupInfo } from './pins';
 import { MapViewer, type LoadProgress } from './render/map_viewer';
 import { isMapStringId, MapText, parseMapStrings } from './strings';
@@ -243,8 +244,10 @@ export class MapPage {
       const range = tintRange(pins);
       if (range) viewer.setHeightRange(...range);
       const modePins = this.mode ? (pins.modes[this.mode]?.pins ?? []) : [];
-      viewer.placeStart(firstSpawn(modePins), pins.playable_box);
+      const spawn = firstSpawn(modePins);
+      viewer.placeStart(spawn, pins.playable_box);
       el.status.textContent = '';
+      this.startDrive(spawn);
       await Promise.all([this.showMode(this.mode), this.syncFoliage()]);
     } catch (err) {
       if (generation !== this.generation) return;
@@ -252,6 +255,28 @@ export class MapPage {
       const error = err instanceof Error ? err.message : String(err);
       el.status.textContent = text.t('statusLoadFailed', { map: name, error });
     }
+  }
+
+  /** Drive mode (the movement prototype), when the URL asks for it
+   * (`drive=1`; see drive/options.ts). Collision is the base layer only. */
+  private startDrive(spawn: ReturnType<typeof firstSpawn>): void {
+    const params = new URLSearchParams(window.location.search);
+    if (!isDriveRequested(params)) return;
+    if (!spawn) {
+      this.el.status.textContent =
+        'Drive mode needs a spawn point; this map mode has none.';
+      return;
+    }
+    void this.viewer
+      .startDrive({
+        spawn,
+        dataRoot: DATA_ROOT,
+        options: readDriveOptions(params),
+      })
+      .catch((err: unknown) => {
+        console.error('drive mode failed:', err);
+        this.el.status.textContent = `Drive mode failed: ${err instanceof Error ? err.message : String(err)}`;
+      });
   }
 
   /** Show a game mode's pins and geometry on the current map. */

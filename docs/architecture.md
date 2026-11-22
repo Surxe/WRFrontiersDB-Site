@@ -112,5 +112,45 @@ Two layers:
   `params.ts`. The maps ride in the Pages artifact with the data repo; the
   build action fails above 1000 MB (the cap is 1 GB) and warns above 900.
 
+## Movement simulator (prototype)
+
+Drive a capsule around a map the way War Robots: Frontiers moves a robot.
+Planning lives outside the repo for now
+(`/srv/dev/scratch/wrf-movement-sim/`); this is the prototype stage:
+Spectrum (`CrashSite`), Loki's legs, stock UE movement plus exported tuning.
+
+- **Try it:** `/maps?map=CrashSite&drive=1` (query param only; no button).
+  Click Fly (or F) to capture the mouse; WASD, mouse look, 1-6 speed tier,
+  T respawn. Optional `tier=`, `hz=`, `capsule=radius,halfHeight` override
+  the labelled placeholders (`map_viewer/drive/options.ts`).
+- **`src/scripts/movement/`: the simulation, plain TypeScript.** No
+  three.js, no DOM, nothing from the viewers or `robot/`; ESLint
+  (`no-restricted-imports`, `no-restricted-globals`) enforces it, and the
+  per-folder rules below.
+  - `engine/`: UE 5.4.4 `UCharacterMovementComponent` walking and falling
+    (floor finding, step-up, sliding, falling, substepping), ported from
+    Epic's source with function names kept; `character_movement.ts` holds
+    the state and the overridable methods, the other files their bodies.
+  - `rules/`: War Robots' changes on top, as a subclass (as the game's
+    `SCharacterMovementComponent` subclasses UE's). The prototype's
+    `tuned_movement.ts` only maps exported tuning onto stock parameters,
+    each mapping labelled as an assumption.
+  - `data/`: loaders for `MovementType.json` and `CharacterModule.json`
+    (and UE's `FRichCurve`); fields the simulation applies fail loudly when
+    missing. Imports nothing else from `movement/`.
+  - `collision/`: the `CollisionWorld` interface (UE scene-query semantics)
+    and its Rapier implementation, the only file that touches Rapier.
+  - `input/`, `sim/`, `session.ts`, `placeholders.ts`: input as data, the
+    fixed timestep, the session the adapter drives, and where each value
+    comes from (data, assumed, UE default, placeholder) for the overlay.
+- **`src/scripts/map_viewer/drive/`: the adapter.** Builds collision from
+  the loaded base layer in time slices (CrashSite: 20 M triangles, ~2 GB of
+  WebAssembly memory, ~20 s), steps the session each frame, draws a capsule
+  wireframe, follow camera and debug overlay. `MapViewer` loads it (and
+  Rapier, a separate 4 MB chunk) on demand.
+- **Measuring:** `npm run bench:drive` drives a scripted route headless and
+  prints build time, memory and collision time per step
+  (`scripts/movement/bench.ts`; software WebGL, so not frame rates).
+
 Mount-correction constants live in `src/utils/constants.ts`; see the
 `model-correction` skill and `docs/weapon_mount_findings.md`.
