@@ -181,6 +181,7 @@ function benchMap(map: string): void {
     let queries = 0;
     let falling = 0;
     let yaw = 0;
+    world.takeChaosStats();
     for (let i = 0; i < steps; i++) {
       yaw += 0.25;
       const r = session.update(dt, {
@@ -194,11 +195,14 @@ function benchMap(map: string): void {
       queries += r.queries.sweeps + r.queries.lineTraces + r.queries.overlaps;
       if (session.movement.isFalling()) falling++;
     }
+    const cs = world.takeChaosStats();
     const l = session.movement.location;
     say(
       `  ${name}: ${steps} updates, ${falling} falling, ${(queries / steps).toFixed(1)} queries each; ` +
         `collision ms mean/p95/max ${stat(coll)}; whole update ${stat(upd)}; ` +
-        `ends (${l.x.toFixed(0)}, ${l.y.toFixed(0)}, ${l.z.toFixed(0)}) ${session.movement.movementMode}`
+        `ends (${l.x.toFixed(0)}, ${l.y.toFixed(0)}, ${l.z.toFixed(0)}) ${session.movement.movementMode}; ` +
+        `parallel contacts ${cs.contacts} (Chaos sweeps ${cs.chaosCalls}, shape switched ${cs.switched}, ` +
+        `shape ties ${cs.unresolvedTies}, no Chaos hit ${cs.noChaosHit}, of which Chaos overlaps ${cs.chaosOverlap})`
     );
   }
 }

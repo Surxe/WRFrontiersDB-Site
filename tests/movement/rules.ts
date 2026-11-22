@@ -345,9 +345,11 @@ describe('WRF MoveAlongFloor: the wall-hit slowdown (findings step 4)', () => {
     expect(c.velocity.z).toBe(0);
     // The capsule snapped to the move's direction; PhysicsRotation then
     // turns at most 180 x YawRateDependenceOnSpeed x dt back toward the
-    // steered input.
+    // steered input. The turned yaw is float32: allow one ulp at 32 to 64
+    // degrees (2^-18 = 3.8e-6). Since session 3.5 the 30-degree hit takes
+    // UE's StepUp branch first (Chaos's parallel-contact impact point).
     const allowance =
-      180 * DT * c.properties.yawRateScaleAtSpeed(size(c.velocity)) + 1e-6;
+      180 * DT * c.properties.yawRateScaleAtSpeed(size(c.velocity)) + 2 ** -18;
     expect(
       Math.abs(normalizeAxis(c.yaw - yawOf(hit.direction)))
     ).toBeLessThanOrEqual(allowance);

@@ -14,6 +14,10 @@ import {
   type V3,
 } from '../../src/scripts/movement/collision/exact/colliders';
 import { convexHull } from '../../src/scripts/movement/collision/exact/hull';
+import {
+  boxSupport,
+  chaosConvexSweep,
+} from '../../src/scripts/movement/collision/exact/chaos_gjk';
 import type { QueryHit } from '../../src/scripts/movement/collision/world';
 import { vec, type Vec3 } from '../../src/scripts/movement/math/vec';
 import { ObbOracleWorld, obbFromQuat } from './support/obb_oracle';
@@ -98,7 +102,28 @@ describe('boxes against the float64 oracle', () => {
       ).toBe(true);
     // A starting overlap's impact point is not defined by a unique closest
     // pair (and UE derives it from its own MTD); compare it for hits only.
-    if (!a.startPenetrating)
+    // On a contact parallel to the capsule axis the layer reports Chaos's
+    // float32 point (session 3.5): somewhere on the core's span of the
+    // contact line, where the oracle has its top end. Check the line. On a
+    // vertical edge Chaos's simplex is degenerate and its point lands off
+    // the edge (0.06 cm here; 0.16 cm in UE's own hull_pillar_slide), so
+    // edges get that allowance; the UE fixtures check the point bit for
+    // bit (chaos_contact.ts).
+    if (!a.startPenetrating && a.normal.z === 0) {
+      const core = CAPSULE.halfHeight - CAPSULE.radius;
+      const onFace = near(a.normal, a.impactNormal, 1e-6);
+      expect(
+        Math.hypot(
+          a.impactPoint.x - b.impactPoint.x,
+          a.impactPoint.y - b.impactPoint.y
+        ),
+        `${label}: parallel contact, impact point on the contact line`
+      ).toBeLessThan(onFace ? 1e-2 : 0.25);
+      expect(
+        Math.abs(a.impactPoint.z - a.location.z),
+        `${label}: parallel contact, impact point within the core`
+      ).toBeLessThanOrEqual(core + 1e-2);
+    } else if (!a.startPenetrating)
       expect(
         near(a.impactPoint, b.impactPoint, 1e-3),
         `${label}: impact point`
@@ -176,26 +201,37 @@ describe('boxes against the float64 oracle', () => {
     }
   });
 
-  it('a wall contact parallel to the capsule axis reports the core top end, rounded to float32', () => {
-    // Walking +X into a wall face at x = 1000 (Chaos TSegment::SupportCore).
-    const w = world({
-      boxes: [
-        {
-          center: [1100, 0, 1000],
-          rotation: [0, 0, 0, 1],
-          halfExtents: [100, 5000, 1000],
-          info,
-        },
-      ],
-    });
+  it("a wall contact parallel to the capsule axis reports Chaos's impact point", () => {
+    // Walking +X into a wall face at x = 1000: every point of the core is
+    // equally close; the layer takes the point Chaos's float32 GJK raycast
+    // reports (chaos_gjk.ts), here just below the top end.
+    const box = {
+      center: [1100, 0, 1000] as [number, number, number],
+      rotation: [0, 0, 0, 1] as [number, number, number, number],
+      halfExtents: [100, 5000, 1000] as [number, number, number],
+      info,
+    };
+    const w = world({ boxes: [box] });
     const z = 702.15;
     const hit = w.sweepCapsule(vec(0, 0, z), vec(1000, 0, z), CAPSULE)!;
     expect(hit.time).toBeCloseTo(400 / 1000, 12);
     expect(hit.normal.x).toBeCloseTo(-1, 12);
-    expect(hit.impactPoint.z).toBe(
-      Math.fround(z + CAPSULE.halfHeight - CAPSULE.radius)
+    const chaos = chaosConvexSweep(
+      boxSupport([-100, -5000, -1000], box.halfExtents),
+      { t: box.center, q: box.rotation },
+      {
+        start: [0, 0, z],
+        end: [1000, 0, z],
+        rotation: [0, 0, 0, 1],
+        radius: CAPSULE.radius,
+        halfLength: CAPSULE.halfHeight - CAPSULE.radius,
+      }
+    )!;
+    expect([hit.impactPoint.x, hit.impactPoint.y, hit.impactPoint.z]).toEqual(
+      chaos.impactPoint
     );
-    expect(hit.impactPoint.x).toBe(Math.fround(1000));
+    expect(hit.impactPoint.x).toBeCloseTo(1000, 3);
+    expect(hit.impactPoint.z).toBeCloseTo(802.15, 3);
   });
 
   it('ignores a starting overlap it moves out of, not one it moves into', () => {
