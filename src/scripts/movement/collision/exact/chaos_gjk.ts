@@ -660,6 +660,10 @@ export interface CapsuleSweepInput {
 export interface ChaosHit {
   /** The distance SweepQuery returns (what the scene query compares). */
   distance: number;
+  /** Triangles only: the visitor's own time (GJK lambda in the scaled
+   * mesh frame, float) and LengthScale (float), for meshVisitorKeeps. */
+  meshTime?: number;
+  lengthScale?: number;
   /** distance / DeltaMag (UE's FHitResult::Time before MoveComponent). */
   time: number;
   /** World impact point (SweepQuery's TransformPositionNoScale). */
@@ -724,7 +728,7 @@ export function chaosConvexSweep(
   supportA: SupportFn,
   pose: ShapePose,
   input: CapsuleSweepInput,
-  computeMTD = true
+  outcome?: { overlap: boolean }
 ): ChaosHit | null {
   const { dir, mag } = sweepDir(input);
   const rel = relative(pose, input.start, input.rotation);
@@ -742,9 +746,10 @@ export function chaosConvexSweep(
     toF3(rel.t),
     toF3(localDir),
     mag,
-    computeMTD,
+    true,
     toF3(offset)
   );
+  if (outcome) outcome.overlap = gjk.hit && !(gjk.time > 0);
   if (!gjk.hit || !(gjk.time > 0)) return null;
   return finish(pose, gjk, mag, gjk.position, gjk.normal);
 }
@@ -767,7 +772,7 @@ export function chaosTriangleSweep(
   scale3: V3,
   pose: ShapePose,
   input: CapsuleSweepInput,
-  computeMTD = true
+  outcome?: { overlap: boolean }
 ): ChaosHit | null {
   const { dir, mag } = sweepDir(input);
   const rel = relative(pose, input.start, input.rotation);
@@ -830,9 +835,10 @@ export function chaosTriangleSweep(
     toF3(scaledStart),
     toF3(scaledDir),
     f(lengthScaleF * f(lengthIn)),
-    computeMTD,
+    true,
     [1, 0, 0]
   );
+  if (outcome) outcome.overlap = gjk.hit && !(gjk.time > 0);
   if (!gjk.hit || !(gjk.time > 0)) return null;
   // TransformSweepOutputsHelper: time / LengthScale in float, position
   // times 1 / scale; then the wrapper's LengthScaleInv and scale.
@@ -849,5 +855,24 @@ export function chaosTriangleSweep(
   const hit = finish(pose, gjk, mag, pos, gjk.normal);
   hit.distance = time;
   hit.time = time / mag;
+  hit.meshTime = gjk.time;
+  hit.lengthScale = lengthScaleF;
   return hit;
+}
+
+/**
+ * FTriangleMeshSweepVisitor::VisitSweep's test for a triangle visited
+ * after `kept` (the mesh's hit so far, or null): `Time < LengthScale x
+ * OutTime` in float, where OutTime = kept Time / LengthScale (float). With
+ * a LengthScale other than 1 the round trip can swallow an ulp, so this is
+ * not the same as comparing distances.
+ */
+export function meshVisitorKeeps(
+  kept: ChaosHit | null,
+  next: ChaosHit
+): boolean {
+  if (!kept) return true;
+  const ls = next.lengthScale!;
+  const outTime = f(kept.meshTime! / ls);
+  return next.meshTime! < f(ls * outTime);
 }

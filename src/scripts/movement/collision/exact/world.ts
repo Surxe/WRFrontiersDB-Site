@@ -65,6 +65,7 @@ import {
   chaosConvexSweep,
   chaosTriangleSweep,
   convexSupport,
+  meshVisitorKeeps,
   type CapsuleSweepInput,
   type ChaosHit,
   type F3,
@@ -254,6 +255,11 @@ export interface ChaosContactStats {
   unresolvedTies: number;
   /** Chaos reported no positive-time hit; the exact point was kept. */
   noChaosHit: number;
+  /** ... of which Chaos's raycast says the capsule starts inside (UE
+   * reports those as bStartPenetrating: a touching start the layer treats
+   * as a hit at time 0, at coordinates where float32 is coarser than its
+   * 0.01 cm band). */
+  chaosOverlap: number;
 }
 
 /** The best hit so far in a sweep. */
@@ -385,6 +391,7 @@ export class ExactCollisionWorld implements CollisionWorld {
     switched: 0,
     unresolvedTies: 0,
     noChaosHit: 0,
+    chaosOverlap: 0,
   };
   /** The current triangle (mesh or heightfield cell): xyz x 3. */
   private readonly tv = new Float64Array(9);
@@ -1679,7 +1686,6 @@ export class ExactCollisionWorld implements CollisionWorld {
    * only if its own contact is parallel too.
    */
   private chaosContact(): void {
-    if (process.env.NO_CHAOS) return;
     const best = this.best;
     this.chaos.contacts++;
     const input: CapsuleSweepInput = {
@@ -1690,43 +1696,56 @@ export class ExactCollisionWorld implements CollisionWorld {
       halfLength: this.a,
     };
     const limit = best.time + this.tieWin;
-    const hits: { h: ChaosHit; kind: number; ref: number; t: number }[] = [];
+    type Cand = { h: ChaosHit; kind: number; ref: number; t: number };
+    const outcome = { overlap: false };
+    let bestOverlaps = false;
+    const isBestShape = (kind: number, ref: number) =>
+      kind === best.kind && ref === best.ref;
+    const solids: Cand[] = [];
+    const meshes = new Map<number, Cand[]>();
+    const seen = new Set<number>();
     for (let i = 0; i < this.candN; i++) {
       const t = this.candTime[i];
       if (t > limit) continue;
       const kind = this.candKind[i];
       const ref = this.candRef[i];
-      // A shape can be noted more than once (heightfield cells aside, each
-      // consider() call notes it at most once; keep the first).
-      if (hits.some((x) => x.kind === kind && x.ref === ref)) continue;
+      const id = kind === K_TRI ? -1 - ref : ref;
+      if (seen.has(id)) continue;
+      seen.add(id);
       this.chaos.chaosCalls++;
-      const h = this.chaosSweep(kind, ref, input);
-      if (h) hits.push({ h, kind, ref, t });
+      const h = this.chaosSweep(kind, ref, input, outcome);
+      if (outcome.overlap && isBestShape(kind, ref)) bestOverlaps = true;
+      if (!h) continue;
+      if (kind === K_SOLID) solids.push({ h, kind, ref, t });
+      else {
+        const m = this.triMesh[ref];
+        if (!meshes.has(m)) meshes.set(m, []);
+        meshes.get(m)!.push({ h, kind, ref, t });
+      }
     }
-    const sameMesh = (a: { kind: number; ref: number }, b: typeof a) =>
-      a.kind === K_TRI &&
-      b.kind === K_TRI &&
-      this.triMesh[a.ref] === this.triMesh[b.ref];
+    // Each mesh: its visitor's pick, faces in index order (the order within
+    // a BVH leaf; across leaves the cooked BVH decides, not exported).
+    const hits: Cand[] = solids;
+    for (const list of meshes.values()) {
+      list.sort((x, y) => this.triLocal[x.ref] - this.triLocal[y.ref]);
+      let kept: Cand | null = null;
+      for (const c of list)
+        if (meshVisitorKeeps(kept ? kept.h : null, c.h)) kept = c;
+      if (kept) hits.push(kept);
+    }
     const isBest = (x: { kind: number; ref: number }) =>
       x.kind === best.kind && x.ref === best.ref;
-    // Smallest float distance; within a mesh the lower triangle index
-    // (visited first); between shapes the layer's own choice, then its key.
+    // The scene query keeps the smallest distance; between shapes at the
+    // same distance the layer's own choice, then its key.
     hits.sort((x, y) => {
       if (x.h.distance !== y.h.distance) return x.h.distance - y.h.distance;
-      if (sameMesh(x, y)) return this.triLocal[x.ref] - this.triLocal[y.ref];
       if (isBest(x) !== isBest(y)) return isBest(x) ? -1 : 1;
       return this.keyOf(x.kind, x.ref) - this.keyOf(y.kind, y.ref);
     });
     const first = hits[0];
     const tiedShapes =
       !!first &&
-      hits.some(
-        (x) =>
-          x !== first &&
-          x.h.distance === first.h.distance &&
-          !sameMesh(x, first) &&
-          !(x.kind === first.kind && x.ref === first.ref)
-      );
+      hits.some((x) => x !== first && x.h.distance === first.h.distance);
     const win = first ? first.h : null;
     const winKind = first ? first.kind : -1;
     const winRef = first ? first.ref : -1;
@@ -1736,6 +1755,7 @@ export class ExactCollisionWorld implements CollisionWorld {
       // Chaos reports no positive-time hit (a touching start inside the
       // layer's tolerance): the exact point stays.
       this.chaos.noChaosHit++;
+      if (bestOverlaps) this.chaos.chaosOverlap++;
       return;
     }
     if (winKind !== best.kind || winRef !== best.ref) {
@@ -1769,12 +1789,13 @@ export class ExactCollisionWorld implements CollisionWorld {
   private chaosSweep(
     kind: number,
     ref: number,
-    input: CapsuleSweepInput
+    input: CapsuleSweepInput,
+    outcome: { overlap: boolean }
   ): ChaosHit | null {
     if (kind === K_SOLID) {
       const c = this.solids[ref].chaos;
       if (!c.support) c.support = c.build();
-      return chaosConvexSweep(c.support, c.pose, input);
+      return chaosConvexSweep(c.support, c.pose, input, outcome);
     }
     const mi = this.triMesh[ref];
     const mesh = this.meshes[mi];
@@ -1791,7 +1812,8 @@ export class ExactCollisionWorld implements CollisionWorld {
       [p(tri[k + 1]), p(tri[k]), p(tri[k + 2])],
       mesh.s,
       this.meshPose[mi],
-      input
+      input,
+      outcome
     );
   }
 
@@ -1819,6 +1841,7 @@ export class ExactCollisionWorld implements CollisionWorld {
       switched: 0,
       unresolvedTies: 0,
       noChaosHit: 0,
+      chaosOverlap: 0,
     };
     return out;
   }
