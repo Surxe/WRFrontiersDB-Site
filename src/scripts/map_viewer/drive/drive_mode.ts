@@ -19,6 +19,7 @@ import { collidersFromFile } from '../../movement/collision/export_loader';
 import { ExactCollisionWorld } from '../../movement/collision/exact/world';
 import { COLLISION_KNOWN_GAPS } from '../../movement/collision/known_gaps';
 import { ENGINE_KNOWN_GAPS } from '../../movement/engine/known_gaps';
+import { RULES_KNOWN_GAPS } from '../../movement/rules/tuned_movement';
 import { startPoint } from '../../movement/start_point';
 import { parseCharacterMovement } from '../../movement/data/character';
 import { parseMapPhysics } from '../../movement/data/map_physics';
@@ -192,12 +193,14 @@ export class DriveMode {
       characterModules,
       modules,
       characters,
+      abilities,
       collisionBytes,
     ] = await Promise.all([
       table('MovementType'),
       table('CharacterModule'),
       table('Module'),
       table('Character'),
+      table('Ability'),
       fetchBytes(`${dataRoot}/${collisionFile}`),
     ]);
     if (this.disposed) return;
@@ -261,6 +264,7 @@ export class DriveMode {
       movementTypes,
       characterModules,
       modules,
+      abilities,
       chassisId: PROTOTYPE_CHASSIS,
       level: options.level,
       tierOverride: options.tierOverride,
@@ -277,7 +281,9 @@ export class DriveMode {
     });
     warnUnestablished(this.session.values(), this.session.unapplied());
     console.warn(
-      '[movement] engine known gaps:\n' +
+      '[movement] rules known gaps:\n' +
+        RULES_KNOWN_GAPS.map((gap) => `  ${gap}`).join('\n') +
+        '\n[movement] engine known gaps:\n' +
         ENGINE_KNOWN_GAPS.map((gap) => `  ${gap}`).join('\n') +
         '\n[movement] collision known gaps:\n' +
         COLLISION_KNOWN_GAPS.map((gap) => `  ${gap}`).join('\n')

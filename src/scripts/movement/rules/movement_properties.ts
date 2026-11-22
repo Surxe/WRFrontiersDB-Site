@@ -49,6 +49,44 @@ export function blendForMobility(
 
 const lerp = (a: number, b: number, t: number): number => a + (b - a) * t;
 
+/** `BackwardMovementVelocityThreshold`: no tier exports it; the
+ * USMovementProperties constructor sets 500 (`0x14550af7c`, findings
+ * step 2). */
+export const BACKWARD_MOVEMENT_VELOCITY_THRESHOLD = 500;
+
+/**
+ * USMovementProperties constructor defaults (`0x14550aef0`, findings step
+ * 2) for fields a tier may leave out (cooked data omits defaults). Fields
+ * not listed here fail loudly when missing.
+ */
+const STRUCT_DEFAULTS: Partial<Record<keyof MovementTier, number>> & {
+  movingForcedTurnVelocityThreshold: number;
+  movingForcedTurnVelocityMaxSpeedRatio: number;
+} = {
+  movingForcedTurnRate: 360,
+  maxAngleToMoveForwards: 120,
+  maxAngleToMoveForwardsFalling: 100,
+  movingForcedTurnVelocityThreshold: 2500,
+  movingForcedTurnVelocityMaxSpeedRatio: 1,
+  frictionVelocityCompensationMultiplier: 0.5,
+  fallingAcceleration: 1000,
+  fallingBrakingVelocityThreshold: 3000,
+  standingVelocityThreshold: 0.1,
+};
+
+/** The wall-hit curve whose key is nearest `maxSpeed` (first on a tie). */
+function nearestWallCurve(
+  curves: readonly { speed: number; curve: RichCurve }[],
+  maxSpeed: number
+): RichCurve {
+  let best = curves[0];
+  for (const entry of curves) {
+    if (Math.abs(entry.speed - maxSpeed) < Math.abs(best.speed - maxSpeed))
+      best = entry;
+  }
+  return best.curve;
+}
+
 /** Answers the movement code's questions for one chassis. */
 export class MovementProperties {
   private readonly a: MovementTier;
@@ -65,8 +103,9 @@ export class MovementProperties {
   }
 
   private value(field: keyof MovementTier): number {
-    const a = this.a[field];
-    const b = this.b[field];
+    const fallback = STRUCT_DEFAULTS[field];
+    const a = this.a[field] ?? fallback;
+    const b = this.b[field] ?? fallback;
     if (typeof a !== 'number' || typeof b !== 'number') {
       throw new Error(
         `${this.type.id}: ${field} not exported (struct default unknown)`
@@ -115,6 +154,111 @@ export class MovementProperties {
       x: lerp(this.a.frictionVector.x, this.b.frictionVector.x, alpha),
       y: lerp(this.a.frictionVector.y, this.b.frictionVector.y, alpha),
     };
+  }
+
+  // ---- Step 3 and 4 getters (provider slots, findings step 2 table) ----
+
+  /** Slot +0x20: MaxSpeedDependenceOnDesiredYaw at `angle` degrees. */
+  speedFactorForDesiredYaw(angle: number): number {
+    return this.curve('maxSpeedDependenceOnDesiredYaw', angle);
+  }
+
+  /** Slot +0x28: AccelerationDependenceOnPitch at `pitch` degrees (the
+   * callers pass minus the slope angle, findings step 3 items 3 and 9). */
+  accelerationAtPitch(pitch: number): number {
+    return this.curve('accelerationDependenceOnPitch', pitch);
+  }
+
+  /** Slot +0x30: EmergencyDecelerationDependenceOnInputOpposition at the
+   * angle (degrees) between the velocity and the input. */
+  emergencyDecelerationAtAngle(angle: number): number {
+    return this.curve(
+      'emergencyDecelerationDependenceOnInputOpposition',
+      angle
+    );
+  }
+
+  /** Slot +0x88: YawRateDependenceOnSpeed at `speed` cm/s. */
+  yawRateScaleAtSpeed(speed: number): number {
+    return this.curve('yawRateDependenceOnSpeed', speed);
+  }
+
+  /** Slot +0x60: min(MaxWalkingSpeed x MovingForcedTurnVelocityMaxSpeedRatio,
+   * MovingForcedTurnVelocityThreshold), per tier, then blended. */
+  get forcedTurnSpeedThreshold(): number {
+    const tier = (t: MovementTier): number =>
+      Math.min(
+        this.maxWalkingSpeed *
+          (t.movingForcedTurnVelocityMaxSpeedRatio ??
+            STRUCT_DEFAULTS.movingForcedTurnVelocityMaxSpeedRatio),
+        t.movingForcedTurnVelocityThreshold ??
+          STRUCT_DEFAULTS.movingForcedTurnVelocityThreshold
+      );
+    return lerp(tier(this.a), tier(this.b), this.blend.alpha);
+  }
+
+  /** Slot +0x68 (deg/s). */
+  get movingForcedTurnRate(): number {
+    return this.value('movingForcedTurnRate');
+  }
+
+  /** Slot +0x70 (cm/s): never exported, the C++ default. */
+  get backwardMovementVelocityThreshold(): number {
+    return BACKWARD_MOVEMENT_VELOCITY_THRESHOLD;
+  }
+
+  /** Slot +0x78 (degrees). */
+  get maxAngleToMoveForwards(): number {
+    return this.value('maxAngleToMoveForwards');
+  }
+
+  /** Slot +0x80 (degrees). */
+  get maxAngleToMoveForwardsFalling(): number {
+    return this.value('maxAngleToMoveForwardsFalling');
+  }
+
+  /** Slot +0xa0. */
+  get frictionVelocityCompensationMultiplier(): number {
+    return this.value('frictionVelocityCompensationMultiplier');
+  }
+
+  /** Slot +0x98: (stiffness, damping) of the mesh spring-damper. */
+  get meshRotationStiffnessDamping(): { x: number; y: number } {
+    const a = this.a.meshRotationStiffnessDamping;
+    const b = this.b.meshRotationStiffnessDamping;
+    if (!a || !b)
+      throw new Error(
+        `${this.type.id}: MeshRotationStiffnessDamping not exported (struct default unknown)`
+      );
+    const { alpha } = this.blend;
+    return { x: lerp(a.x, b.x, alpha), y: lerp(a.y, b.y, alpha) };
+  }
+
+  /**
+   * Slot +0xa8: VelocityMultiplierOnWallAngleHit at `angle` degrees, from
+   * the curve whose map key is nearest the tier's MaxWalkingSpeed (the
+   * chassis MaxSpeed; first in map order on a tie), per tier, then blended
+   * (`0x145526cd0`, `0x145526c60`; findings steps 2 and 4).
+   */
+  wallHitMultiplier(angle: number): number {
+    const tier = (t: MovementTier): number => {
+      const curves = t.velocityMultiplierOnWallAngleHit;
+      if (!curves || curves.length === 0)
+        throw new Error(
+          `${this.type.id}: VelocityMultiplierOnWallAngleHit not exported (struct default unknown)`
+        );
+      return evalCurve(nearestWallCurve(curves, this.maxWalkingSpeed), angle);
+    };
+    return lerp(tier(this.a), tier(this.b), this.blend.alpha);
+  }
+
+  /** The wall-hit curve key the chassis uses (for the details list). */
+  wallHitCurveKey(): number | null {
+    const curves = this.a.velocityMultiplierOnWallAngleHit;
+    if (!curves || curves.length === 0) return null;
+    return curves.find(
+      (c) => c.curve === nearestWallCurve(curves, this.maxWalkingSpeed)
+    )!.speed;
   }
 
   describe(): string {

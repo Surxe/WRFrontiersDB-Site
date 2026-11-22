@@ -44,6 +44,8 @@ export function worldSetup(
       perchRadiusThreshold: pawn.PerchRadiusThreshold,
       perchAdditionalHeight: pawn.PerchAdditionalHeight,
       maintainHorizontalGroundVelocity: pawn.bMaintainHorizontalGroundVelocity,
+      rotationRateYaw: pawn.RotationRateYaw,
+      orientRotationToMovement: pawn.bOrientRotationToMovement,
     },
     killZ,
     values: [
@@ -82,9 +84,13 @@ export function worldSetup(
       ),
       data('BrakingFrictionFactor', `${pawn.BrakingFrictionFactor}`),
       data(
+        'RotationRate.Yaw',
+        `${pawn.RotationRateYaw} deg/s (bOrientRotationToMovement ${pawn.bOrientRotationToMovement})`
+      ),
+      data(
         'AirControl',
         `${pawn.AirControl} (boost ${pawn.AirControlBoostMultiplier})`,
-        `${bp}; the Jump Jet overrides it while falling (findings step 5, not ported yet)`
+        `${bp}; replaced by the chassis's Jump Jet entry when it overrides air control (findings step 5)`
       ),
     ],
   };
