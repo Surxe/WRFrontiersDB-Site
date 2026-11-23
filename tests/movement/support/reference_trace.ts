@@ -9,7 +9,10 @@ import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import type { CollisionWorld } from '../../../src/scripts/movement/collision/world';
 import { ExactCollisionWorld } from '../../../src/scripts/movement/collision/exact/world';
-import { emptyColliderSet } from '../../../src/scripts/movement/collision/exact/colliders';
+import {
+  emptyColliderSet,
+  rotate,
+} from '../../../src/scripts/movement/collision/exact/colliders';
 import { CharacterMovementComponent } from '../../../src/scripts/movement/engine/character_movement';
 import { fixupDeltaSeconds } from '../../../src/scripts/movement/engine/world_tick';
 import { vec, type Vec3 } from '../../../src/scripts/movement/math/vec';
@@ -129,6 +132,63 @@ export function traceWorld(trace: Trace): ExactCollisionWorld {
   return new ExactCollisionWorld(set);
 }
 
+// The commandlet's procedural mesh (WrfMoveRefCommandlet.cpp AddMeshBox):
+// 8 corners, 12 triangles, reversed for -geom=meshflip (UE-facing winding).
+const CORNERS = [
+  [-1, -1, -1],
+  [1, -1, -1],
+  [1, 1, -1],
+  [-1, 1, -1],
+  [-1, -1, 1],
+  [1, -1, 1],
+  [1, 1, 1],
+  [-1, 1, 1],
+];
+const FACES = [
+  0, 2, 1, 0, 3, 2, 4, 5, 6, 4, 6, 7, 0, 1, 5, 0, 5, 4, 1, 2, 6, 1, 6, 5, 2, 3,
+  7, 2, 7, 6, 3, 0, 4, 3, 4, 7,
+];
+/** The mesh traces' world: each box as the commandlet's double-sided
+ * procedural mesh. */
+export const meshWorld = (t: Trace) =>
+  new ExactCollisionWorld({
+    ...emptyColliderSet(),
+    meshes: (t.geometry as TraceBox[]).map((b) => {
+      const vertices: number[] = [];
+      for (const [x, y, z] of CORNERS) {
+        const r = rotate(
+          b.quat,
+          x * b.halfExtent[0],
+          y * b.halfExtent[1],
+          z * b.halfExtent[2]
+        );
+        vertices.push(
+          b.center[0] + r[0],
+          b.center[1] + r[1],
+          b.center[2] + r[2]
+        );
+      }
+      const triangles = FACES.slice();
+      for (let i = 0; i < triangles.length; i += 3)
+        [triangles[i + 1], triangles[i + 2]] = [
+          triangles[i + 2],
+          triangles[i + 1],
+        ];
+      return {
+        vertices,
+        triangles,
+        t: [0, 0, 0],
+        q: [0, 0, 0, 1],
+        s: [1, 1, 1],
+        // UProceduralMeshComponent::CreateBodySetupHelper sets
+        // bDoubleSidedGeometry (ProceduralMeshComponent.cpp:1032): these
+        // traces are double-sided meshes.
+        doubleSided: true,
+        info: { source: b.name, flags: 0 },
+      };
+    }),
+  });
+
 interface Tick {
   i: number;
   /** What the commandlet passed to UWorld::Tick. */
@@ -141,6 +201,9 @@ interface Tick {
   loc: V3;
   vel: V3;
   mode: string;
+  /** The capsule component's quaternion at the end of the tick (traces
+   * recorded since session 4.5). */
+  quat?: [number, number, number, number];
 }
 
 export interface Trace {
@@ -253,7 +316,9 @@ const sameSubsteps = (
 export function replay(
   trace: Trace,
   world: CollisionWorld,
-  substepTolerance: number = SUBSTEP_TOLERANCE_S.A
+  substepTolerance: number = SUBSTEP_TOLERANCE_S.A,
+  /** Debug hook after each replayed tick (local tools). */
+  onTick?: (i: number, state: { location: Vec3; velocity: Vec3 }) => void
 ): ReplayResult {
   const p = trace.params;
   const num = (k: string) => p[k] as number;
@@ -303,12 +368,22 @@ export function replay(
     ticks: 0,
     perTick: [],
   };
+  let prevQuat: [number, number, number, number] | null = null;
   for (const k of trace.ticks) {
-    if (k.i < 0) continue;
+    if (k.i < 0) {
+      if (k.quat) prevQuat = k.quat;
+      continue;
+    }
     // The world's frame clamp, then the movement update.
     const moveDt = fixupDeltaSeconds(k.dt);
     c.substeps = [];
+    // The capsule's rotation (D27): UE's PhysicsRotation runs after the
+    // moves, so this tick's sweeps use the quaternion logged at the end of
+    // the previous tick (traces recorded since session 4.5 carry it).
+    if (prevQuat) c.setComponentRotation(prevQuat);
     c.performMovement(moveDt, vec(...k.input));
+    if (k.quat) prevQuat = k.quat;
+    onTick?.(k.i, c);
     const dp = Math.hypot(
       c.location.x - k.loc[0],
       c.location.y - k.loc[1],

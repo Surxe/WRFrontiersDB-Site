@@ -327,7 +327,14 @@ describe("the exact layer's parallel-contact point against UE's oracle", () => {
       say(
         `[layer] ${o.set}: ${checked} parallel contacts exact, ${otherShape} shape ties`
       );
-      expect(otherShape).toBeLessThanOrEqual(1);
+      // The corner apex ties (D19): one sweep in the corner set, and the 12
+      // replayed apex sweeps of corner_60_v, where the scene query's
+      // co-located face rule (session 4.5) meets two equal face dots and
+      // the layer keeps the other wall (the trace itself replays bit for
+      // bit; chaos_sweeps.ts reports them).
+      expect(otherShape).toBeLessThanOrEqual(
+        o.set === 'replay_corner_60_v' ? 12 : 1
+      );
     });
   }
 });

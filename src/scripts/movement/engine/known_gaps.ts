@@ -6,8 +6,8 @@
  * covers.
  */
 export const ENGINE_KNOWN_GAPS: readonly string[] = [
-  "Parallel contacts on vertical edges (class C): on faces the layer now reports Chaos's impact point, so StepUp's first gate (it gives up when ImpactPoint.Z is above the core's top end, where the layer's float-rounded top-end point always was) passes where UE's does (UE traces wall_45_slide, corner_90, corner_60_v, mesh_onesided_front gated class B). Sliding round a convex hull's vertical edge, Chaos's degenerate-simplex distance and point depend on input bits the port doesn't share (UE's floor sweeps are float32 too), and the StepUp branch can flip (hull_pillar_slide from tick 181: 1.7 cm, 12 cm/s).",
-  "Edge contacts on triangle and heightfield edges (class C): Chaos's float32 GJK places them up to about 0.3 cm off the exact edge (UE trace landscape_slope_hole, perched on a hole rim: 9 cm over 30 ticks).",
+  "Last-bit differences in the move deltas (velocity x time): the port's velocity can differ from UE's in its last bit (about 1e-16 relative) without moving the capsule; over a few hundred ticks a handful of traces drift by up to 0.0004 cm (40 of 52 UE traces replay bit for bit).",
+  "The capsule's rotation is FRotator::Quaternion of the yaw the rules layer sets (D27); UE reads its facing back from the component (GetComponentRotation, a quaternion-to-rotator round trip) where the rules layer keeps the yaw it set: the yaw's last bits can differ, which reaches the sweeps only through the float-rounded rotation.",
   "PhysFalling's perch 'virtual ditch' nudge (a random push when stuck on a perch edge while falling, FRandomStream) is not ported; no UE trace reaches it.",
   'Movement bases are not modelled: moving platforms stay static (D20).',
 ];

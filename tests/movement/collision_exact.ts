@@ -3,6 +3,11 @@
  * oracle (support/obb_oracle.ts, the mvp-prep prototype the engine port
  * matched UE on), the other shapes against analytic cases, and the Chaos
  * hit rules (findings/engine-port-collision-queries.md item 3, 6).
+ *
+ * Since MVP session 4.5 (D26) the reported hit is Chaos's float32 one
+ * (findings/chaos-sweeps.md): it agrees with the exact geometry here to
+ * float32 noise (FLOAT_CM, FLOAT_TIME), and with UE bit for bit in
+ * chaos_contact.ts (the oracle).
  */
 import { describe, expect, it } from 'vitest';
 import { ExactCollisionWorld } from '../../src/scripts/movement/collision/exact/world';
@@ -52,6 +57,15 @@ function rng(seed: number): () => number {
 }
 
 const CAPSULE = { radius: 600, halfHeight: 700 };
+/** Chaos's float32 noise on positions and distances at these coordinates
+ * (cm), digits for toBeCloseTo, and on hit times (a fraction of moves of
+ * 50 cm or more). */
+const FLOAT_DIGITS = 3;
+const FLOAT_TIME = 1e-5;
+const FLOAT_DEPTH = 1e-3;
+/** Chaos's GJK normal on an edge or vertex contact is the search
+ * direction at its termination tolerance, good to about 1e-4. */
+const GJK_NORMAL = 1e-3;
 
 describe('boxes against the float64 oracle', () => {
   const boxes = [
@@ -85,8 +99,10 @@ describe('boxes against the float64 oracle', () => {
     expect(a.startPenetrating, label).toBe(b.startPenetrating);
     // The oracle bisects to 1e-15 of the move; normals from golden-section
     // searches are good to about 1e-6.
-    expect(Math.abs(a.time - b.time), `${label}: time`).toBeLessThan(1e-7);
-    expect(near(a.normal, b.normal, 1e-5), `${label}: normal`).toBe(true);
+    expect(Math.abs(a.time - b.time), `${label}: time`).toBeLessThan(
+      FLOAT_TIME
+    );
+    expect(near(a.normal, b.normal, GJK_NORMAL), `${label}: normal`).toBe(true);
     // A starting overlap reports ImpactNormal = Normal, the MTD direction
     // (UE ConvertOverlappedShapeToImpactHit); the oracle applies the box
     // face rule there too, so compare it with the face rule for hits only.
@@ -132,7 +148,7 @@ describe('boxes against the float64 oracle', () => {
       expect(
         Math.abs(a.penetrationDepth - b.penetrationDepth),
         `${label}: depth`
-      ).toBeLessThan(1e-6);
+      ).toBeLessThan(FLOAT_DEPTH);
   };
 
   it('sweeps agree on random moves (time, normals, impact point, overlaps)', () => {
@@ -168,6 +184,23 @@ describe('boxes against the float64 oracle', () => {
         const b = oracle.sweepCapsule(start, end, CAPSULE, {
           ignoreOverlapsMovingOut: moving,
         });
+        if (moving && !a && b) {
+          // UE's hit buffer keeps one blocking hit: when that is a
+          // starting overlap the move leaves, MoveComponent sees no hit at
+          // all (the oracle goes on to the next shape).
+          const raw = exact.sweepCapsule(start, end, CAPSULE)!;
+          expect(raw.startPenetrating, `move ${i}: an overlap`).toBe(true);
+          const d = {
+            x: end.x - start.x,
+            y: end.y - start.y,
+            z: end.z - start.z,
+          };
+          expect(
+            raw.normal.x * d.x + raw.normal.y * d.y + raw.normal.z * d.z,
+            `move ${i}: moving out of it`
+          ).toBeGreaterThan(0);
+          continue;
+        }
         compare(a, b, `move ${i}${moving ? ' (moving out)' : ''}`);
         if (a) hits++;
       }
@@ -214,8 +247,8 @@ describe('boxes against the float64 oracle', () => {
     const w = world({ boxes: [box] });
     const z = 702.15;
     const hit = w.sweepCapsule(vec(0, 0, z), vec(1000, 0, z), CAPSULE)!;
-    expect(hit.time).toBeCloseTo(400 / 1000, 12);
-    expect(hit.normal.x).toBeCloseTo(-1, 12);
+    expect(hit.time).toBeCloseTo(400 / 1000, 6);
+    expect(hit.normal.x).toBeCloseTo(-1, 6);
     const chaos = chaosConvexSweep(
       boxSupport([-100, -5000, -1000], box.halfExtents),
       { t: box.center, q: box.rotation },
@@ -255,8 +288,8 @@ describe('boxes against the float64 oracle', () => {
       ignoreOverlapsMovingOut: true,
     })!;
     expect(into.startPenetrating).toBe(true);
-    expect(into.penetrationDepth).toBeCloseTo(10, 9);
-    expect(into.normal.z).toBeCloseTo(1, 12);
+    expect(into.penetrationDepth).toBeCloseTo(10, FLOAT_DIGITS);
+    expect(into.normal.z).toBeCloseTo(1, 6);
   });
 });
 
@@ -265,9 +298,9 @@ describe('spheres and capsules (analytic)', () => {
     const w = world({ spheres: [{ center: [0, 0, 0], radius: 100, info }] });
     // Core bottom at z - 100; touch when it is r + R = 700 above the centre.
     const hit = w.sweepCapsule(vec(0, 0, 2000), vec(0, 0, 0), CAPSULE)!;
-    expect(hit.location.z).toBeCloseTo(800, 9);
-    expect(hit.normal.z).toBeCloseTo(1, 12);
-    expect(hit.impactNormal.z).toBeCloseTo(1, 12); // sphere: ImpactNormal = Normal
+    expect(hit.location.z).toBeCloseTo(800, FLOAT_DIGITS);
+    expect(hit.normal.z).toBeCloseTo(1, 6);
+    expect(hit.impactNormal.z).toBeCloseTo(1, 6); // sphere: ImpactNormal = Normal
     expect(hit.impactPoint.z).toBeCloseTo(100, 4);
   });
 
@@ -276,8 +309,8 @@ describe('spheres and capsules (analytic)', () => {
       spheres: [{ center: [2000, 0, 700], radius: 100, info }],
     });
     const hit = w.sweepCapsule(vec(0, 0, 700), vec(4000, 0, 700), CAPSULE)!;
-    expect(hit.location.x).toBeCloseTo(1300, 9);
-    expect(hit.normal.x).toBeCloseTo(-1, 12);
+    expect(hit.location.x).toBeCloseTo(1300, FLOAT_DIGITS);
+    expect(hit.normal.x).toBeCloseTo(-1, 6);
   });
 
   it('a capsule meets a lying capsule along its core', () => {
@@ -293,7 +326,7 @@ describe('spheres and capsules (analytic)', () => {
       ],
     });
     const hit = w.sweepCapsule(vec(0, 300, 3000), vec(0, 300, 0), CAPSULE)!;
-    expect(hit.location.z).toBeCloseTo(100 + 650, 9);
+    expect(hit.location.z).toBeCloseTo(100 + 650, FLOAT_DIGITS);
   });
 });
 
@@ -336,10 +369,10 @@ describe('convex hulls', () => {
       );
       const a = hull.sweepCapsule(start, end, CAPSULE);
       const b = oracle.sweepCapsule(start, end, CAPSULE);
-      expect(a === null).toBe(b === null);
+      expect(a === null, `${i}: hit or miss`).toBe(b === null);
       if (!a || !b) continue;
-      expect(Math.abs(a.time - b.time)).toBeLessThan(1e-7);
-      expect(near(a.normal, b.normal, 1e-5)).toBe(true);
+      expect(Math.abs(a.time - b.time), `${i}: time`).toBeLessThan(FLOAT_TIME);
+      expect(near(a.normal, b.normal, GJK_NORMAL), `${i}: normal`).toBe(true);
     }
   });
 
@@ -366,7 +399,7 @@ describe('convex hulls', () => {
     )!;
     expect(side.impactPoint.x).toBeCloseTo(1000, 3);
     expect(side.impactPoint.z).toBeCloseTo(1000, 3);
-    expect(side.impactNormal.x).toBeCloseTo(1, 9);
+    expect(side.impactNormal.x).toBeCloseTo(1, 6);
     // Straight down past the edge: the top face.
     const down = w.sweepCapsule(
       vec(1100, 0, 2400),
@@ -375,9 +408,9 @@ describe('convex hulls', () => {
     )!;
     expect(down.location.z).toBeCloseTo(
       1100 + Math.sqrt(600 ** 2 - 100 ** 2),
-      9
+      FLOAT_DIGITS
     );
-    expect(down.impactNormal.z).toBeCloseTo(1, 9);
+    expect(down.impactNormal.z).toBeCloseTo(1, 6);
   });
 
   it('builds flat hulls (exported without faces) as two-sided polygons', () => {
@@ -397,9 +430,9 @@ describe('convex hulls', () => {
       ],
     });
     const fromAbove = w.sweepCapsule(vec(0, 0, 1000), vec(0, 0, 0), CAPSULE)!;
-    expect(fromAbove.location.z).toBeCloseTo(700, 9);
+    expect(fromAbove.location.z).toBeCloseTo(700, FLOAT_DIGITS);
     const fromBelow = w.sweepCapsule(vec(0, 0, -1000), vec(0, 0, 0), CAPSULE)!;
-    expect(fromBelow.location.z).toBeCloseTo(-700, 9);
+    expect(fromBelow.location.z).toBeCloseTo(-700, FLOAT_DIGITS);
   });
 });
 
@@ -425,8 +458,8 @@ describe('triangle meshes', () => {
   it('a one-sided mesh blocks from its front only', () => {
     const w = quad(false);
     const down = w.sweepCapsule(vec(0, 0, 1000), vec(0, 0, 0), CAPSULE)!;
-    expect(down.location.z).toBeCloseTo(700, 9);
-    expect(down.impactNormal.z).toBeCloseTo(1, 12);
+    expect(down.location.z).toBeCloseTo(700, FLOAT_DIGITS);
+    expect(down.impactNormal.z).toBeCloseTo(1, 6);
     expect(w.sweepCapsule(vec(0, 0, -1000), vec(0, 0, 0), CAPSULE)).toBeNull();
     // Line traces cull back faces too.
     expect(w.lineTrace(vec(0, 0, 100), vec(0, 0, -100))).not.toBeNull();
@@ -443,7 +476,7 @@ describe('triangle meshes', () => {
     const w = quad(true);
     expect(
       w.sweepCapsule(vec(0, 0, -1000), vec(0, 0, 0), CAPSULE)!.location.z
-    ).toBeCloseTo(-700, 9);
+    ).toBeCloseTo(-700, FLOAT_DIGITS);
   });
 
   it('a mirroring scale keeps the outward side', () => {
@@ -494,9 +527,9 @@ describe('heightfields', () => {
     // Vertex (1, 0) is raised: only triangle (P0, P1, P3) holds it.
     const below = w.lineTrace(vec(75, 25, 500), vec(75, 25, -500))!;
     // On (P0, P1, P3): z = 80 * (x - y) / 100.
-    expect(below.impactPoint.z).toBeCloseTo(40, 9);
+    expect(below.impactPoint.z).toBeCloseTo(40, FLOAT_DIGITS);
     const above = w.lineTrace(vec(25, 75, 500), vec(25, 75, -500))!;
-    expect(above.impactPoint.z).toBeCloseTo(0, 9);
+    expect(above.impactPoint.z).toBeCloseTo(0, FLOAT_DIGITS);
   });
 
   it('hole cells have no collision', () => {
@@ -512,10 +545,10 @@ describe('heightfields', () => {
     // Cell (1, 1) is flat at 0 and more than the radius from the raised vertex.
     expect(
       w.sweepCapsule(vec(150, 150, 500), vec(150, 150, 0), small)!.location.z
-    ).toBeCloseTo(40, 9);
+    ).toBeCloseTo(40, FLOAT_DIGITS);
     expect(
       w.sweepCapsule(vec(150, 150, -500), vec(150, 150, 0), small)!.location.z
-    ).toBeCloseTo(-40, 9);
+    ).toBeCloseTo(-40, FLOAT_DIGITS);
   });
 
   it('ImpactNormal is the cell face most opposing the trace near the impact point', () => {

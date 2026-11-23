@@ -8,8 +8,10 @@
  *   sweep handling (minimum move, PullBackHit, ignoring overlaps the move
  *   exits)
  *
- * The updated component is an upright capsule; its rotation never changes
- * (the prototype has no physics rotation), so rotations are left out.
+ * The updated component is an upright capsule. Its rotation (the component
+ * quaternion, `componentRotation`) is set from outside (the rules layer's
+ * facing, D27) and reaches every move's sweep, as UE passes
+ * GetComponentQuat() to ComponentSweepMulti; the moves never change it.
  * Plane constraints (bConstrainToPlane) are off by default and left out.
  */
 import {
@@ -37,19 +39,39 @@ import {
 } from './constants';
 
 /** MoveComponentImpl: moves shorter than this (squared, cm) don't sweep. */
-const MIN_MOVEMENT_DIST_SQ = (4 * KINDA_SMALL_NUMBER) ** 2;
+/** FMath::Square(4.f * UE_KINDA_SMALL_NUMBER), a float. */
+const MIN_MOVEMENT_DIST_SQ = Math.fround(
+  Math.fround(4 * Math.fround(KINDA_SMALL_NUMBER)) ** 2
+);
+const f32 = Math.fround;
 
 /** PrimitiveComponent.cpp PullBackHit: back the hit off the surface a
  * little so the next sweep doesn't start touching it. */
+/** PrimitiveComponent.cpp PullBackHit, in float: DesiredTimeBack =
+ * Clamp(0.1f, 0.1f / Dist, 1.f / Dist) + 0.001f, Time = Clamp(Time -
+ * DesiredTimeBack, 0, 1) (FMath::Clamp: X < Min ? Min : X < Max ? X : Max). */
 function pullBackHit(hit: HitResult, distance: number): void {
-  const desiredTimeBack =
-    Math.min(Math.max(0.1, 0.1 / distance), 1 / distance) + 0.001;
-  hit.time = Math.min(Math.max(hit.time - desiredTimeBack, 0), 1);
+  const clamp = (x: number, lo: number, hi: number) =>
+    x < lo ? lo : x < hi ? x : hi;
+  const lo = f32(f32(0.1) / distance);
+  const hi = f32(1 / distance);
+  const desiredTimeBack = f32(clamp(f32(0.1), lo, hi) + f32(0.001));
+  hit.time = clamp(f32(hit.time - desiredTimeBack), 0, 1);
 }
 
 export class MovementComponent {
   /** The capsule's center, UE cm. */
   location: Vec3;
+  /** The capsule component's quaternion (x, y, z, w), with the bits UE
+   * builds (FRotator::Quaternion, math/rotator_quat.ts). Identity until
+   * the rules layer sets a facing. */
+  componentRotation: readonly [number, number, number, number] = [0, 0, 0, 1];
+
+  /** UMovementComponent::MoveUpdatedComponent with a zero delta and no
+   * sweep: the rotation only. */
+  setComponentRotation(q: readonly [number, number, number, number]): void {
+    this.componentRotation = q;
+  }
 
   constructor(
     readonly collision: CollisionWorld,
@@ -73,7 +95,10 @@ export class MovementComponent {
     neverIgnoreBlockingOverlaps = false
   ): boolean {
     const start = this.location;
+    // TraceEnd = TraceStart + Delta; the sweep, the size and the new
+    // location use TraceEnd - TraceStart (not bit-equal to Delta).
     const end = add(start, delta);
+    const traced = sub(end, start);
     if (!sweep) {
       outHit?.reset(1, false);
       if (outHit) {
@@ -83,7 +108,9 @@ export class MovementComponent {
       this.location = end;
       return !isZero(delta);
     }
-    if (sizeSquared(delta) <= MIN_MOVEMENT_DIST_SQ) {
+    // float DeltaSizeSq = (TraceEnd - TraceStart).SizeSquared().
+    const deltaSizeSq = f32(sizeSquared(traced));
+    if (deltaSizeSq <= MIN_MOVEMENT_DIST_SQ) {
       if (outHit) {
         outHit.reset(1, false);
         outHit.traceStart = start;
@@ -93,14 +120,14 @@ export class MovementComponent {
     }
     const query = this.collision.sweepCapsule(start, end, this.capsule, {
       ignoreOverlapsMovingOut: !neverIgnoreBlockingOverlaps,
+      rotation: this.componentRotation,
     });
     const hit = HitResult.fromQuery(query, start, end);
     let newLocation = end;
     if (hit.blockingHit) {
-      if (!hit.startPenetrating)
-        pullBackHit(hit, Math.sqrt(sizeSquared(delta)));
+      if (!hit.startPenetrating) pullBackHit(hit, f32(Math.sqrt(deltaSizeSq)));
       else hit.time = 0;
-      newLocation = addScaled(start, delta, hit.time);
+      newLocation = addScaled(start, traced, hit.time);
       if (sizeSquared(sub(newLocation, start)) <= MIN_MOVEMENT_DIST_SQ) {
         newLocation = start;
         hit.time = 0;
@@ -204,9 +231,11 @@ export class MovementComponent {
       // Compute a new slide normal when hitting multiple surfaces.
       slideDelta = this.twoWallAdjust(slideDelta, hit, oldHitNormal);
       // Only proceed if the new direction is significant and not reversed.
-      if (!isNearlyZero(slideDelta, 1e-3) && dot(slideDelta, delta) > 0) {
+      if (!isNearlyZero(slideDelta, f32(1e-3)) && dot(slideDelta, delta) > 0) {
         this.safeMoveUpdatedComponent(slideDelta, hit);
-        percentTimeApplied += hit.time * (1 - firstHitPercent);
+        // float SecondHitPercent, PercentTimeApplied.
+        const secondHitPercent = f32(hit.time * f32(1 - firstHitPercent));
+        percentTimeApplied = f32(percentTimeApplied + secondHitPercent);
       }
     }
     return Math.min(Math.max(percentTimeApplied, 0), 1);
@@ -220,19 +249,24 @@ export class MovementComponent {
       // A corner of 90 degrees or less: move along the crease.
       const desiredDir = delta;
       const newDir = safeNormal(cross(hitNormal, oldHitNormal));
-      let result = scale(newDir, dot(delta, newDir) * (1 - hit.time));
+      let result = scale(newDir, dot(delta, newDir) * f32(1 - hit.time));
       if (dot(desiredDir, result) < 0) result = scale(result, -1);
       return result;
     }
     const desiredDir = delta;
-    let result = this.computeSlideVector(delta, 1 - hit.time, hitNormal, hit);
+    let result = this.computeSlideVector(
+      delta,
+      f32(1 - hit.time),
+      hitNormal,
+      hit
+    );
     if (dot(result, desiredDir) <= 0) {
       result = ZERO;
     } else if (
       Math.abs(dot(hitNormal, oldHitNormal) - 1) < KINDA_SMALL_NUMBER
     ) {
       // Hit the same wall again: nudge away from it (precision issues).
-      result = addScaled(result, hitNormal, 0.01);
+      result = addScaled(result, hitNormal, f32(0.01));
     }
     return result;
   }

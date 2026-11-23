@@ -94,16 +94,16 @@ export function moveAlongFloor(
       hit.normal.z > KINDA_SMALL_NUMBER &&
       c.isWalkable(hit)
     ) {
-      const initialPercentRemaining = 1 - percentTimeApplied;
+      const initialPercentRemaining = f32(1 - percentTimeApplied);
       rampVector = c.computeGroundMovementDelta(
         scale(delta, initialPercentRemaining),
         hit,
         false
       );
       c.safeMoveUpdatedComponent(rampVector, hit);
-      const secondHitPercent = hit.time * initialPercentRemaining;
+      const secondHitPercent = f32(hit.time * initialPercentRemaining);
       percentTimeApplied = Math.min(
-        Math.max(percentTimeApplied + secondHitPercent, 0),
+        Math.max(f32(percentTimeApplied + secondHitPercent), 0),
         1
       );
     }
@@ -114,21 +114,22 @@ export function moveAlongFloor(
       if (
         !c.stepUp(
           GRAVITY_DIR,
-          scale(delta, 1 - percentTimeApplied),
+          scale(delta, f32(1 - percentTimeApplied)),
           hit,
           outStepDown
         )
       ) {
         c.slideAlongSurface(
           delta,
-          1 - percentTimeApplied,
+          f32(1 - percentTimeApplied),
           hit.normal,
           hit,
           true
         );
       } else if (!c.params.maintainHorizontalGroundVelocity) {
         c.justTeleported = true;
-        const stepUpTimeSlice = (1 - percentTimeApplied) * deltaSeconds;
+        // float StepUpTimeSlice = (1.f - PercentTimeApplied) * DeltaSeconds.
+        const stepUpTimeSlice = f32(f32(1 - percentTimeApplied) * deltaSeconds);
         if (stepUpTimeSlice >= KINDA_SMALL_NUMBER) {
           c.velocity = planeProject(
             scale(sub(c.location, preStepUpLocation), 1 / stepUpTimeSlice),

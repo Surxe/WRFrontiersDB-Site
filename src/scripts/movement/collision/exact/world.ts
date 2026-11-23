@@ -62,16 +62,28 @@ import {
 } from './colliders';
 import {
   boxSupport,
+  capsuleShape,
   chaosConvexSweep,
   chaosTriangleSweep,
   convexSupport,
   meshVisitorKeeps,
+  meshVisitStops,
+  safeNormal,
+  sphereShape,
+  sweepDir,
   type CapsuleSweepInput,
   type ChaosHit,
   type F3,
+  type ShapeA,
   type ShapePose,
   type SupportFn,
 } from './chaos_gjk';
+import { dinv, drot } from './chaos_simd';
+import {
+  chaosHeightfieldSweep,
+  heightfieldOf,
+  type ChaosHeightfield,
+} from './chaos_heightfield';
 import { convexHull, hullFromFaces, type Hull } from './hull';
 import {
   closest,
@@ -87,8 +99,8 @@ import {
 /** A starting contact closer than this (cm) counts as touching, not
  * penetrating (as the box oracle and the old Rapier world). */
 const PENETRATION_TOLERANCE = 0.01;
-/** UE_KINDA_SMALL_NUMBER: TAABB::FindGeometryOpposingNormal's threshold. */
-const KINDA_SMALL = 1e-4;
+/** UE_KINDA_SMALL_NUMBER (a float literal): TAABB::FindGeometryOpposingNormal's threshold. */
+const KINDA_SMALL = Math.fround(1e-4);
 /** Distances this close count as the same (the top-end tie rule), cm. */
 const TIE_CM = 1e-9;
 /** FindFaceIndex's search distance (PhysicsInterfaceUtilsCore.cpp:35), cm. */
@@ -105,6 +117,22 @@ const CHAOS_TIE_REL = 1e-6;
 /** Golden-section iterations for the deep-penetration envelope. */
 const ENVELOPE_ITERATIONS = 100;
 const GOLD = (Math.sqrt(5) - 1) / 2;
+/**
+ * Chaos's float32 error grows with the size of the shape it sweeps (the
+ * GJK simplex spans it): on a flat triangle with edges of length L it
+ * reports contacts, even initial overlaps, up to about 1.1e-10 x L^2 cm
+ * from the exact ones (measured: 0.0007 cm at L = 28 m, 0.09 cm at 280 m;
+ * from about 1.4 km the whole 12 cm gap of a floor sweep, as on the UE
+ * mesh traces' 4 km ground triangles). A shape's candidate band is
+ * widened by CHAOS_SIZE_ERR x L^2 (about ten times the measured worst
+ * case): negligible for map-sized pieces, so Chaos sweeps every shape that
+ * could take the hit in float.
+ */
+const CHAOS_SIZE_ERR = 1e-9;
+/** SQVisitor.h CoLocationEpsilon (cm). */
+const CO_LOCATION_CM = 1e-6;
+/** Exact passes re-run without the candidates Chaos missed, at most. */
+const MAX_CHAOS_RETRIES = 4;
 
 /** Box corners in the order built below (x major, then y, then z: index =
  * 4 ix + 2 iy + iz) as 12 triangles; hullFromFaces orients them. */
@@ -204,6 +232,10 @@ interface Sphere {
   z: number;
   radius: number;
   info: ColliderInfo;
+  /** As Chaos sweeps it: a TSphere at the particle (the export has no
+   * body rotation for spheres: identity, a listed gap). */
+  chaos: ShapeA;
+  pose: ShapePose;
 }
 
 interface CapsuleShape {
@@ -211,6 +243,10 @@ interface CapsuleShape {
   e: Float64Array;
   radius: number;
   info: ColliderInfo;
+  /** As Chaos sweeps it: an FCapsule along local Z at the collider's
+   * centre and rotation. */
+  chaos: ShapeA;
+  pose: ShapePose;
 }
 
 interface Heightfield {
@@ -223,6 +259,9 @@ interface Heightfield {
   r: Float64Array;
   s: [number, number, number];
   info: ColliderInfo;
+  /** As Chaos sweeps it (float heights, the particle pose). */
+  chaos: ChaosHeightfield;
+  pose: ShapePose;
 }
 
 export interface ExactBuildStats {
@@ -242,25 +281,47 @@ export interface ExactBuildStats {
   buildMs: number;
 }
 
-/** What the parallel-contact path did (chaosContact). */
-export interface ChaosContactStats {
-  /** Best hits that were parallel contacts on a box, hull or triangle. */
-  contacts: number;
-  /** chaos_gjk sweeps run for them (one per near-tied candidate). */
+/** What Chaos did in the sweeps (chaosResolve, MVP session 4.5, D26). */
+export interface ChaosSweepStats {
+  /** Sweeps whose hit Chaos decided (every sweep with a candidate). */
+  sweeps: number;
+  /** Chaos shape sweeps run (one per candidate box, hull, sphere,
+   * capsule, mesh or heightfield). */
   chaosCalls: number;
-  /** Times Chaos's ranking replaced the best shape by a near-tied one. */
+  /** Chaos picked another shape than the exact layer's first contact. */
   switched: number;
   /** Different shapes tied at Chaos's float distance (the scene query's
    * visit order decides in UE; not modelled). */
   unresolvedTies: number;
-  /** Chaos reported no positive-time hit; the exact point was kept. */
+  /** The exact layer had a contact, Chaos none (a miss in float). */
   noChaosHit: number;
-  /** ... of which Chaos's raycast says the capsule starts inside (UE
-   * reports those as bStartPenetrating: a touching start the layer treats
-   * as a hit at time 0, at coordinates where float32 is coarser than its
-   * 0.01 cm band). */
-  chaosOverlap: number;
+  /** The exact layer and Chaos disagreed on the initial-overlap status
+   * (touching starts: Chaos decides). */
+  overlapFlips: number;
+  /** More than one shape overlapping at the start (UE keeps the last one
+   * its acceleration structure visits; the layer the deepest). */
+  multiOverlap: number;
+  /** The reported overlap was one the move leaves, so UE's MoveComponent
+   * has no blocking hit at all (its hit buffer keeps one). */
+  movingOut: number;
+  /** Exact passes re-run because Chaos missed every candidate. */
+  retries: number;
+  /** ... and gave up after MAX_CHAOS_RETRIES (reported as no hit). */
+  retriesExhausted: number;
 }
+
+const zeroChaosStats = (): ChaosSweepStats => ({
+  sweeps: 0,
+  chaosCalls: 0,
+  switched: 0,
+  unresolvedTies: 0,
+  noChaosHit: 0,
+  overlapFlips: 0,
+  multiOverlap: 0,
+  movingOut: 0,
+  retries: 0,
+  retriesExhausted: 0,
+});
 
 /** The best hit so far in a sweep. */
 interface Best {
@@ -340,6 +401,8 @@ export class ExactCollisionWorld implements CollisionWorld {
   private readonly meshes: MeshCollider[];
   private readonly meshPose: ShapePose[] = [];
   private readonly triDouble: Uint8Array;
+  /** CHAOS_SIZE_ERR x (longest edge)^2 per mesh triangle (cm). */
+  private readonly triErr: Float64Array;
   private readonly meshInfo: ColliderInfo[] = [];
   // Broad phase items.
   private readonly itemKind: Uint8Array;
@@ -377,22 +440,29 @@ export class ExactCollisionWorld implements CollisionWorld {
   };
   /** Capsule rotation of the current sweep (SweepOptions.rotation). */
   private rot: Quat = [0, 0, 0, 1];
-  /** Contacts within the Chaos tie window of the best (boxes, hulls and
-   * mesh triangles), for the parallel-contact point. */
+  /** Candidates for Chaos (chaosResolve): every shape the sweep may hit
+   * within the tie window of the exact first contact, every touching and
+   * every overlapping one. */
   private candN = 0;
   private readonly candKind: number[] = [];
   private readonly candRef: number[] = [];
+  private readonly candOwner: number[] = [];
   private readonly candTime: number[] = [];
+  /** 0: a contact at candTime; 1: touching at the start; 2: overlapping. */
+  private readonly candStart: number[] = [];
+  /** The candidate's tie window (a fraction of the move): the sweep's,
+   * widened by its size error. */
+  private readonly candWin: number[] = [];
   /** The tie window of the current sweep, as a fraction of the move. */
   private tieWin = 0;
-  private chaos: ChaosContactStats = {
-    contacts: 0,
-    chaosCalls: 0,
-    switched: 0,
-    unresolvedTies: 0,
-    noChaosHit: 0,
-    chaosOverlap: 0,
-  };
+  /** The touching band of the current query (cm): 0.01 cm, or wider where
+   * float32 is coarser (CHAOS_TIE_REL of the coordinates). */
+  private band = PENETRATION_TOLERANCE;
+  /** The tie window of the shape being considered (a fraction). */
+  private shapeWin = 0;
+  /** Shapes Chaos missed in this sweep (keyOf), skipped on a re-run. */
+  private readonly excluded = new Set<number>();
+  private chaos: ChaosSweepStats = zeroChaosStats();
   /** The current triangle (mesh or heightfield cell): xyz x 3. */
   private readonly tv = new Float64Array(9);
   private tnx = 0;
@@ -527,6 +597,8 @@ export class ExactCollisionWorld implements CollisionWorld {
         z: sphere.center[2],
         radius: sphere.radius,
         info: sphere.info,
+        chaos: sphereShape([0, 0, 0], sphere.radius),
+        pose: chaosPose(sphere.center, [0, 0, 0, 1]),
       });
     for (const capsule of set.capsules) {
       const [ax, ay, az] = rotate(
@@ -547,6 +619,12 @@ export class ExactCollisionWorld implements CollisionWorld {
         ]),
         radius: capsule.radius,
         info: capsule.info,
+        chaos: capsuleShape(
+          [0, 0, -capsule.halfLength],
+          [0, 0, capsule.halfLength],
+          capsule.radius
+        ),
+        pose: chaosPose(capsule.center, capsule.rotation),
       });
     }
 
@@ -559,6 +637,7 @@ export class ExactCollisionWorld implements CollisionWorld {
     this.triLocal = new Int32Array(triCount);
     this.meshes = set.meshes;
     this.triDouble = new Uint8Array(triCount);
+    this.triErr = new Float64Array(triCount);
     let tri = 0;
     set.meshes.forEach((mesh, meshIndex) => {
       this.meshInfo.push(mesh.info);
@@ -603,6 +682,16 @@ export class ExactCollisionWorld implements CollisionWorld {
         this.triMesh[tri] = meshIndex;
         this.triLocal[tri] = k / 3;
         this.triDouble[tri] = mesh.doubleSided ? 1 : 0;
+        const e3x = this.triV[o + 6] - this.triV[o + 3];
+        const e3y = this.triV[o + 7] - this.triV[o + 4];
+        const e3z = this.triV[o + 8] - this.triV[o + 5];
+        this.triErr[tri] =
+          CHAOS_SIZE_ERR *
+          Math.max(
+            e1x * e1x + e1y * e1y + e1z * e1z,
+            e2x * e2x + e2y * e2y + e2z * e2z,
+            e3x * e3x + e3y * e3y + e3z * e3z
+          );
         tri++;
       }
     });
@@ -612,7 +701,8 @@ export class ExactCollisionWorld implements CollisionWorld {
       this.triN.byteLength +
       this.triMesh.byteLength +
       this.triLocal.byteLength +
-      this.triDouble.byteLength;
+      this.triDouble.byteLength +
+      this.triErr.byteLength;
 
     let cells = 0;
     for (const hf of set.heightfields) {
@@ -625,6 +715,8 @@ export class ExactCollisionWorld implements CollisionWorld {
         r: quatMatrix(hf.q),
         s: [hf.s[0], hf.s[1], hf.s[2]],
         info: hf.info,
+        chaos: heightfieldOf(hf),
+        pose: chaosPose(hf.t, hf.q),
       });
       cells += (hf.rows - 1) * (hf.cols - 1);
       bytes += hf.heights.byteLength + (hf.holes?.byteLength ?? 0);
@@ -1363,8 +1455,10 @@ export class ExactCollisionWorld implements CollisionWorld {
       this.dx * this.dx + this.dy * this.dy + this.dz * this.dz
     );
     this.r = capsule.radius;
-    this.a = Math.max(0, capsule.halfHeight - capsule.radius);
-    const m = this.r + PENETRATION_TOLERANCE + 1e-6;
+    // FCollisionShape::GetCapsuleAxisHalfLength: a float (HalfHeight -
+    // Radius), as the Chaos capsule's segment is built from it.
+    this.a = Math.max(0, Math.fround(capsule.halfHeight - capsule.radius));
+    const m = this.r + this.band + 1e-6;
     const qb = this.qb;
     qb[0] = Math.min(start.x, end.x) - m;
     qb[1] = Math.min(start.y, end.y) - m;
@@ -1380,13 +1474,6 @@ export class ExactCollisionWorld implements CollisionWorld {
     capsule: Capsule,
     ignoreMovingOut: boolean
   ): QueryHit | null {
-    this.setQuery(start, end, capsule);
-    this.ignoreMovingOut = ignoreMovingOut;
-    const best = this.best;
-    best.found = false;
-    best.time = 1;
-    best.startPenetrating = false;
-    this.candN = 0;
     const mag = Math.max(
       Math.abs(start.x),
       Math.abs(start.y),
@@ -1395,10 +1482,71 @@ export class ExactCollisionWorld implements CollisionWorld {
       Math.abs(end.y),
       Math.abs(end.z)
     );
+    this.band = Math.max(PENETRATION_TOLERANCE, mag * CHAOS_TIE_REL);
+    this.setQuery(start, end, capsule);
+    this.ignoreMovingOut = ignoreMovingOut;
+    const best = this.best;
     this.tieWin =
       this.dLen > 0
         ? Math.max(CHAOS_TIE_CM, mag * CHAOS_TIE_REL) / this.dLen
         : 0;
+    this.excluded.clear();
+    this.exactPass();
+    // Chaos decides the reported hit (D26); a zero-length query (an
+    // overlap test in UE's scene query, never a CMC move) keeps the
+    // exact layer's answer. When Chaos misses every candidate (grazes the
+    // exact layer counted), the exact pass runs again without them.
+    let found = false;
+    if (this.dLen > 0 && this.candN > 0) {
+      for (let attempt = 0; ; attempt++) {
+        const r = this.chaosResolve();
+        if (r !== 'none') {
+          found = r === 'hit';
+          break;
+        }
+        if (attempt >= MAX_CHAOS_RETRIES) {
+          this.chaos.retriesExhausted++;
+          break;
+        }
+        for (let i = 0; i < this.candN; i++) {
+          this.tOwner = this.candOwner[i];
+          this.excluded.add(this.keyOf(this.candKind[i], this.candRef[i]));
+        }
+        this.chaos.retries++;
+        this.exactPass();
+        if (this.candN === 0) break;
+      }
+    } else found = best.found && !(best.startPenetrating && this.movingOut());
+    this.band = PENETRATION_TOLERANCE;
+    if (!found) return null;
+    return {
+      time: best.time,
+      location: vec(best.loc[0], best.loc[1], best.loc[2]),
+      impactPoint: vec(
+        best.impactPoint[0],
+        best.impactPoint[1],
+        best.impactPoint[2]
+      ),
+      normal: vec(best.normal[0], best.normal[1], best.normal[2]),
+      impactNormal: vec(
+        best.impactNormal[0],
+        best.impactNormal[1],
+        best.impactNormal[2]
+      ),
+      startPenetrating: best.startPenetrating,
+      penetrationDepth: best.startPenetrating ? best.depth : 0,
+      source: best.source,
+    };
+  }
+
+  /** The exact layer's pass over the broad phase: its first contact and
+   * the Chaos candidates (consider), skipping `excluded` shapes. */
+  private exactPass(): void {
+    const best = this.best;
+    best.found = false;
+    best.time = 1;
+    best.startPenetrating = false;
+    this.candN = 0;
     const qb = this.qb;
     this.bvh.query(qb[0], qb[1], qb[2], qb[3], qb[4], qb[5], (item) => {
       const kind = this.itemKind[item];
@@ -1421,31 +1569,6 @@ export class ExactCollisionWorld implements CollisionWorld {
         this.consider(kind, ref);
       }
     });
-    if (!best.found) return null;
-    if (
-      !best.startPenetrating &&
-      best.normal[2] === 0 &&
-      (best.kind === K_SOLID || best.kind === K_TRI)
-    )
-      this.chaosContact();
-    return {
-      time: best.time,
-      location: vec(best.loc[0], best.loc[1], best.loc[2]),
-      impactPoint: vec(
-        best.impactPoint[0],
-        best.impactPoint[1],
-        best.impactPoint[2]
-      ),
-      normal: vec(best.normal[0], best.normal[1], best.normal[2]),
-      impactNormal: vec(
-        best.impactNormal[0],
-        best.impactNormal[1],
-        best.impactNormal[2]
-      ),
-      startPenetrating: best.startPenetrating,
-      penetrationDepth: best.startPenetrating ? best.depth : 0,
-      source: best.source,
-    };
   }
 
   /**
@@ -1456,7 +1579,7 @@ export class ExactCollisionWorld implements CollisionWorld {
    * the shape can neither overlap, touch nor be hit by this sweep.
    */
   private separatedBy(nx: number, ny: number, nz: number, c: number): boolean {
-    const m = this.r + PENETRATION_TOLERANCE + 1e-6;
+    const m = this.r + this.band + 1e-6;
     const base = nx * this.px + ny * this.py - c;
     const za = nz * (this.pz - this.a);
     const zb = nz * (this.pz + this.a);
@@ -1506,7 +1629,7 @@ export class ExactCollisionWorld implements CollisionWorld {
    * closes that gap. 0 when no plane gives a bound.
    */
   private lowerBound(kind: number, ref: number): number {
-    const m = this.r + PENETRATION_TOLERANCE + 1e-6;
+    const m = this.r + this.band + 1e-6;
     const bound = (nx: number, ny: number, nz: number, c: number): number => {
       const base = nx * this.px + ny * this.py + nz * this.pz - c;
       const gap = base - Math.abs(nz) * this.a - m;
@@ -1534,27 +1657,70 @@ export class ExactCollisionWorld implements CollisionWorld {
     return lb;
   }
 
-  /** The combination rule of the box oracle (exact_obb_world), per shape. */
+  /**
+   * The exact layer's pass over one shape: its first contact (the box
+   * oracle's combination rule, exact_obb_world) for the tie window, and
+   * the candidate list chaosResolve sweeps through Chaos.
+   */
   private consider(kind: number, ref: number): void {
+    const band = this.band;
+    const err = this.sizeErr(kind, ref);
+    if (err > band) {
+      this.band = err;
+      this.shapeWin = Math.max(this.tieWin, err / (this.dLen || 1));
+    } else this.shapeWin = this.tieWin;
+    try {
+      this.considerShape(kind, ref);
+    } finally {
+      this.band = band;
+    }
+  }
+
+  /** CHAOS_SIZE_ERR x the shape's longest extent squared (cm). */
+  private sizeErr(kind: number, ref: number): number {
+    if (kind === K_TRI) return this.triErr[ref];
+    if (kind === K_SOLID) {
+      const b = this.solids[ref].bounds;
+      const x = b[3] - b[0];
+      const y = b[4] - b[1];
+      const z = b[5] - b[2];
+      return CHAOS_SIZE_ERR * (x * x + y * y + z * z);
+    }
+    if (kind === K_SPHERE) {
+      const d = 2 * this.spheres[ref].radius;
+      return CHAOS_SIZE_ERR * d * d;
+    }
+    if (kind === K_CAPSULE) {
+      const c = this.capsules[ref];
+      const e = c.e;
+      const l =
+        Math.hypot(e[3] - e[0], e[4] - e[1], e[5] - e[2]) + 2 * c.radius;
+      return CHAOS_SIZE_ERR * l * l;
+    }
+    return 0; // heightfield cells: Chaos sweeps them relative to a corner
+  }
+
+  private considerShape(kind: number, ref: number): void {
     if (this.rejects(kind, ref)) return;
-    const best = this.best;
-    // Can't beat (or tie, see chaosContact) the best hit so far (a starting
-    // overlap always counts).
-    if (best.found && this.lowerBound(kind, ref) > best.time + this.tieWin)
+    if (this.excluded.size > 0 && this.excluded.has(this.keyOf(kind, ref)))
       return;
+    const best = this.best;
+    // Can't beat (or tie) the best contact so far; with an overlap only
+    // shapes within the touching band still matter.
+    if (best.found) {
+      const lb = this.lowerBound(kind, ref);
+      if (best.startPenetrating ? lb > 0 : lb > best.time + this.shapeWin)
+        return;
+    }
     const key = this.keyOf(kind, ref);
     const { px, py, pz, r } = this;
-    const limit = r + PENETRATION_TOLERANCE + 1e-6;
+    const limit = r + this.band + 1e-6;
     const g0 = this.dist(kind, ref, px, py, pz, limit, false);
     const h0 = g0 - r;
     if (h0 < -PENETRATION_TOLERANCE) {
+      this.noteCandidate(kind, ref, 0, 2);
       this.dist(kind, ref, px, py, pz, limit, true);
       const normal = snapNormal(...this.penetrationNormal(kind, ref));
-      if (
-        this.ignoreMovingOut &&
-        this.dx * normal[0] + this.dy * normal[1] + this.dz * normal[2] > 0
-      )
-        return;
       const depth = r - g0;
       if (
         !best.found ||
@@ -1582,6 +1748,10 @@ export class ExactCollisionWorld implements CollisionWorld {
       }
       return;
     }
+    // Touching (within the band, either way): Chaos decides between an
+    // initial overlap, a hit and nothing.
+    const touching = h0 <= this.band;
+    if (touching) this.noteCandidate(kind, ref, 0, 1);
     if (best.found && best.startPenetrating) return;
     if (this.dLen === 0) return;
     let t: number;
@@ -1597,17 +1767,22 @@ export class ExactCollisionWorld implements CollisionWorld {
         r + 1,
         false
       );
-      if (g1 - r >= h0) return;
-      t = 0;
+      // A touching start is a candidate (above) but doesn't anchor the
+      // tie window: Chaos may find only a graze there.
+      void g1;
+      return;
     } else {
       t = this.toi(
         kind,
         ref,
-        best.found ? Math.min(1, best.time + this.tieWin) : 1
+        best.found ? Math.min(1, best.time + this.shapeWin) : 1
       );
       if (!isFinite(t)) return;
     }
-    if (kind === K_SOLID || kind === K_TRI) this.noteCandidate(kind, ref, t);
+    if (!touching) this.noteCandidate(kind, ref, t, 0);
+    // A shape with a wide size band is a candidate but doesn't anchor the
+    // window (its own contact is Chaos's least precise).
+    if (this.shapeWin > this.tieWin) return;
     if (best.found && (best.time < t || (best.time === t && best.key < key)))
       return;
     this.setBestHit(kind, ref, t, key);
@@ -1664,30 +1839,56 @@ export class ExactCollisionWorld implements CollisionWorld {
     best.ref = ref;
   }
 
-  /** A contact within the Chaos tie window of the best so far. */
-  private noteCandidate(kind: number, ref: number, t: number): void {
+  /** A candidate for Chaos: a contact at t within the tie window of the
+   * best so far, or a touching (1) or overlapping (2) start. */
+  private noteCandidate(
+    kind: number,
+    ref: number,
+    t: number,
+    startKind: number
+  ): void {
     const best = this.best;
-    if (best.found && t > best.time + this.tieWin) return;
+    if (
+      startKind === 0 &&
+      best.found &&
+      (best.startPenetrating || t > best.time + this.shapeWin)
+    )
+      return;
     const n = this.candN++;
     this.candKind[n] = kind;
     this.candRef[n] = ref;
+    this.candOwner[n] = this.tOwner;
     this.candTime[n] = t;
+    this.candStart[n] = startKind;
+    this.candWin[n] = this.shapeWin;
   }
 
   /**
-   * The best hit is a contact parallel to the capsule's axis on a box,
-   * hull or mesh triangle: take the impact point Chaos reports
-   * (findings/chaos-contact-point.md). Every candidate within the tie
-   * window is swept through chaos_gjk; the scene query keeps the smallest
-   * float distance (SQVisitor), a mesh the first triangle with the
-   * smallest (FTriangleMeshSweepVisitor, strict <, faces in index order
-   * within a BVH leaf). The time stays the layer's exact one; ImpactNormal
-   * is recomputed from the new point. A different shape replaces the best
-   * only if its own contact is parallel too.
+   * Chaos decides the reported hit (D26, findings/chaos-sweeps.md): every
+   * candidate the exact layer found (contacts within the tie window,
+   * touching and overlapping starts) is swept through the float32 port,
+   * and the hits are ranked as UE's scene query and MoveComponent do:
+   * - per shape: a box, hull, sphere or capsule is one SweepQuery; a mesh
+   *   its visitor over the candidate triangles in index order (strictly
+   *   earlier replaces, the first initial overlap stops); a heightfield
+   *   its GridSweep visitor over the candidate cells;
+   * - across shapes: an initial overlap beats any hit (UE's sweep length
+   *   drops to 0; between several overlapping shapes UE keeps the last one
+   *   its acceleration structure visits, the layer the deepest); else the
+   *   smallest distance (ties: the exact layer's choice, then the key);
+   * - the hit buffer holds one blocking hit, so when that is an overlap
+   *   the move leaves ("ignore blocking overlaps we are moving out of"),
+   *   MoveComponent sees no hit at all: returns false.
+   * The fields are Chaos's: Time = float(Distance / DeltaMag), Location =
+   * Start + Time x Delta, Normal = GetSafeNormal (ConvertQueryImpactHit),
+   * ImpactPoint, ImpactNormal by the face rules from Chaos's point; for an
+   * overlap Normal = ImpactNormal = the MTD and PenetrationDepth =
+   * float(|Distance|) (ConvertOverlappedShapeToImpactHit).
    */
-  private chaosContact(): void {
+  private chaosResolve(): 'hit' | 'none' | 'out' {
     const best = this.best;
-    this.chaos.contacts++;
+    const stats = this.chaos;
+    stats.sweeps++;
     const input: CapsuleSweepInput = {
       start: [this.px, this.py, this.pz],
       end: [this.px + this.dx, this.py + this.dy, this.pz + this.dz],
@@ -1695,107 +1896,246 @@ export class ExactCollisionWorld implements CollisionWorld {
       radius: this.r,
       halfLength: this.a,
     };
-    const limit = best.time + this.tieWin;
-    type Cand = { h: ChaosHit; kind: number; ref: number; t: number };
-    const outcome = { overlap: false };
-    let bestOverlaps = false;
-    const isBestShape = (kind: number, ref: number) =>
-      kind === best.kind && ref === best.ref;
-    const solids: Cand[] = [];
-    const meshes = new Map<number, Cand[]>();
+    // The window's base: the earliest contact among the candidates (shapes
+    // with a wide size band don't anchor the exact first contact).
+    let base = best.found && !best.startPenetrating ? best.time : Infinity;
+    if (best.found && best.startPenetrating) base = 0;
+    for (let i = 0; i < this.candN; i++)
+      if (this.candStart[i] === 0 && this.candTime[i] < base)
+        base = this.candTime[i];
+    type Cand = { h: ChaosHit; kind: number; ref: number; owner: number };
+    const hits: Cand[] = [];
+    const meshes = new Map<number, number[]>();
+    const fields = new Map<number, Set<number>>();
     const seen = new Set<number>();
     for (let i = 0; i < this.candN; i++) {
-      const t = this.candTime[i];
-      if (t > limit) continue;
+      if (this.candStart[i] === 0 && this.candTime[i] > base + this.candWin[i])
+        continue;
       const kind = this.candKind[i];
       const ref = this.candRef[i];
-      const id = kind === K_TRI ? -1 - ref : ref;
-      if (seen.has(id)) continue;
-      seen.add(id);
-      this.chaos.chaosCalls++;
-      const h = this.chaosSweep(kind, ref, input, outcome);
-      if (outcome.overlap && isBestShape(kind, ref)) bestOverlaps = true;
-      if (!h) continue;
-      if (kind === K_SOLID) solids.push({ h, kind, ref, t });
-      else {
+      if (kind === K_TRI) {
         const m = this.triMesh[ref];
-        if (!meshes.has(m)) meshes.set(m, []);
-        meshes.get(m)!.push({ h, kind, ref, t });
+        let list = meshes.get(m);
+        if (!list) meshes.set(m, (list = []));
+        if (!list.includes(ref)) list.push(ref);
+        continue;
       }
-    }
-    // Each mesh: its visitor's pick, faces in index order (the order within
-    // a BVH leaf; across leaves the cooked BVH decides, not exported).
-    const hits: Cand[] = solids;
-    for (const list of meshes.values()) {
-      list.sort((x, y) => this.triLocal[x.ref] - this.triLocal[y.ref]);
-      let kept: Cand | null = null;
-      for (const c of list)
-        if (meshVisitorKeeps(kept ? kept.h : null, c.h)) kept = c;
-      if (kept) hits.push(kept);
-    }
-    const isBest = (x: { kind: number; ref: number }) =>
-      x.kind === best.kind && x.ref === best.ref;
-    // The scene query keeps the smallest distance; between shapes at the
-    // same distance the layer's own choice, then its key.
-    hits.sort((x, y) => {
-      if (x.h.distance !== y.h.distance) return x.h.distance - y.h.distance;
-      if (isBest(x) !== isBest(y)) return isBest(x) ? -1 : 1;
-      return this.keyOf(x.kind, x.ref) - this.keyOf(y.kind, y.ref);
-    });
-    const first = hits[0];
-    const tiedShapes =
-      !!first &&
-      hits.some((x) => x !== first && x.h.distance === first.h.distance);
-    const win = first ? first.h : null;
-    const winKind = first ? first.kind : -1;
-    const winRef = first ? first.ref : -1;
-    const winTime = first ? first.t : 0;
-    if (tiedShapes) this.chaos.unresolvedTies++;
-    if (!win) {
-      // Chaos reports no positive-time hit (a touching start inside the
-      // layer's tolerance): the exact point stays.
-      this.chaos.noChaosHit++;
-      if (bestOverlaps) this.chaos.chaosOverlap++;
-      return;
-    }
-    if (winKind !== best.kind || winRef !== best.ref) {
-      const saved = this.saveBest();
-      if (winKind === K_TRI) this.loadMeshTriangle(winRef);
-      this.setBestHit(winKind, winRef, winTime, this.keyOf(winKind, winRef));
-      if (best.normal[2] !== 0) {
-        this.restoreBest(saved);
-      } else {
-        this.chaos.switched++;
+      if (kind === K_HF) {
+        const owner = this.candOwner[i];
+        let cells = fields.get(owner);
+        if (!cells) fields.set(owner, (cells = new Set()));
+        cells.add(ref >> 1);
+        continue;
       }
+      const key = this.keyOf(kind, ref);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      stats.chaosCalls++;
+      const h = this.chaosSweep(kind, ref, input);
+      if (h) hits.push({ h, kind, ref, owner: 0 });
     }
-    if (winKind !== best.kind || winRef !== best.ref) return;
-    best.impactPoint[0] = win.impactPoint[0];
-    best.impactPoint[1] = win.impactPoint[1];
-    best.impactPoint[2] = win.impactPoint[2];
-    if (best.kind === K_TRI) this.loadMeshTriangle(best.ref);
+    for (const [m, list] of meshes) {
+      stats.chaosCalls++;
+      list.sort((x, y) => this.triLocal[x] - this.triLocal[y]);
+      let kept: ChaosHit | null = null;
+      let keptRef = -1;
+      for (const t of list) {
+        const h = this.chaosSweep(K_TRI, t, input);
+        if (!h || !meshVisitorKeeps(kept, h)) continue;
+        kept = h;
+        keptRef = t;
+        if (meshVisitStops(kept)) break;
+      }
+      if (kept) hits.push({ h: kept, kind: K_TRI, ref: keptRef, owner: m });
+    }
+    for (const [owner, cells] of fields) {
+      stats.chaosCalls++;
+      const hf = this.heightfields[owner];
+      const h = chaosHeightfieldSweep(hf.chaos, hf.pose, input, cells);
+      if (h) hits.push({ h, kind: K_HF, ref: h.face!, owner });
+    }
+    if (hits.length === 0) {
+      if (best.found) stats.noChaosHit++;
+      return 'none';
+    }
+    const keyOf = (c: Cand) => {
+      if (c.kind === K_HF) this.tOwner = c.owner;
+      return this.keyOf(c.kind, c.ref);
+    };
+    const isExact = (c: Cand) =>
+      best.found &&
+      c.kind === best.kind &&
+      (c.kind === K_HF ? keyOf(c) === best.key : c.ref === best.ref);
+    const overlaps = hits.filter((c) => c.h.overlap);
+    let win: Cand;
+    if (overlaps.length > 0) {
+      if (overlaps.length > 1) stats.multiOverlap++;
+      overlaps.sort(
+        (x, y) => x.h.distance - y.h.distance || keyOf(x) - keyOf(y)
+      );
+      win = overlaps[0];
+    } else {
+      hits.sort((x, y) => {
+        if (x.h.distance !== y.h.distance) return x.h.distance - y.h.distance;
+        if (isExact(x) !== isExact(y)) return isExact(x) ? -1 : 1;
+        return keyOf(x) - keyOf(y);
+      });
+      win = hits[0];
+      // SQVisitor's co-located rule: hits within CoLocationEpsilon of each
+      // other keep the one whose face normal (SweepQuery's OutFaceNormal)
+      // opposes the sweep most, in whatever order they are visited.
+      const { dir: d } = sweepDir(input);
+      let bestDot = Infinity;
+      let ties = 0;
+      for (const c of hits) {
+        if (Math.abs(c.h.distance - hits[0].h.distance) >= CO_LOCATION_CM)
+          break;
+        const fn = this.faceNormalOf(c.kind, c.ref, c.owner, c.h);
+        const dot = d[0] * fn[0] + d[1] * fn[1] + d[2] * fn[2];
+        if (dot < bestDot) {
+          bestDot = dot;
+          win = c;
+          ties = 0;
+        } else if (dot === bestDot) ties++;
+      }
+      if (ties > 0) stats.unresolvedTies++;
+    }
+    if (best.found && best.startPenetrating !== win.h.overlap)
+      stats.overlapFlips++;
+    if (best.found && !isExact(win)) stats.switched++;
+    const h = win.h;
+    const { dir, mag } = sweepDir(input);
+    // Fill the best from Chaos.
+    if (win.kind === K_HF) this.tOwner = win.owner;
+    best.found = true;
+    best.kind = win.kind;
+    best.ref = win.ref;
+    best.key = keyOf(win);
+    best.source = this.sourceOf(win.kind, win.ref);
+    best.impactPoint[0] = h.impactPoint[0];
+    best.impactPoint[1] = h.impactPoint[1];
+    best.impactPoint[2] = h.impactPoint[2];
+    if (h.overlap) {
+      // PrimitiveComponent's ShouldIgnoreHitResult: float MoveDot =
+      // ImpactNormal . Delta.GetSafeNormal() > 0 (p.InitialOverlapTolerance 0).
+      if (this.ignoreMovingOut) {
+        const moveDot = Math.fround(
+          h.normal[0] * dir[0] + h.normal[1] * dir[1] + h.normal[2] * dir[2]
+        );
+        if (moveDot > 0) {
+          stats.movingOut++;
+          return 'out';
+        }
+      }
+      best.time = 0;
+      best.startPenetrating = true;
+      best.depth = Math.fround(Math.abs(h.distance));
+      best.loc[0] = this.px;
+      best.loc[1] = this.py;
+      best.loc[2] = this.pz;
+      for (let k = 0; k < 3; k++)
+        best.normal[k] = best.impactNormal[k] = h.normal[k];
+      return 'hit';
+    }
+    // The hit's Distance is a float (FLocationHit), then Time = Distance /
+    // CheckLength in float (ConvertQueryImpactHit).
+    const time = Math.fround(Math.fround(h.distance) / mag);
+    best.time = time;
+    best.startPenetrating = false;
+    best.depth = 0;
+    best.loc[0] = this.px + time * this.dx;
+    best.loc[1] = this.py + time * this.dy;
+    best.loc[2] = this.pz + time * this.dz;
+    const n = safeNormal(h.normal, 1e-8);
+    best.normal[0] = n[0];
+    best.normal[1] = n[1];
+    best.normal[2] = n[2];
+    if (win.kind === K_TRI) this.loadMeshTriangle(win.ref);
+    else if (win.kind === K_HF) {
+      const hf = this.heightfields[win.owner];
+      const cell = win.ref >> 1;
+      this.loadCell(
+        hf,
+        cell % (hf.cols - 1),
+        Math.floor(cell / (hf.cols - 1)),
+        (win.ref & 1) === 1
+      );
+    }
     this.impactNormal(
-      best.kind,
-      best.ref,
-      best.normal[0],
-      best.normal[1],
-      best.normal[2],
+      win.kind,
+      win.ref,
+      n[0],
+      n[1],
+      n[2],
       best.impactPoint,
       best.impactNormal
     );
+    return 'hit';
   }
 
-  /** Chaos's sweep of the current query against one box, hull or mesh
-   * triangle. */
+  /**
+   * SweepQuery's OutFaceNormal for a hit (FindGeometryOpposingNormal with
+   * the sweep's face index): a mesh's or heightfield's hit triangle
+   * normal (GetFaceNormal), a box's face by the axis rule, a hull's face
+   * near the point, a sphere's or capsule's Normal.
+   */
+  private faceNormalOf(
+    kind: number,
+    ref: number,
+    owner: number,
+    h: ChaosHit
+  ): [number, number, number] {
+    if (kind === K_TRI) {
+      const n = this.triN;
+      return [n[ref * 3], n[ref * 3 + 1], n[ref * 3 + 2]];
+    }
+    if (kind === K_HF) {
+      const hf = this.heightfields[owner];
+      const cell = ref >> 1;
+      this.loadCell(
+        hf,
+        cell % (hf.cols - 1),
+        Math.floor(cell / (hf.cols - 1)),
+        (ref & 1) === 1
+      );
+      return [this.tnx, this.tny, this.tnz];
+    }
+    const n = safeNormal(h.normal, 1e-8);
+    if (kind !== K_SOLID) return n;
+    const out: [number, number, number] = [0, 0, 0];
+    this.impactNormal(kind, ref, n[0], n[1], n[2], h.impactPoint, out);
+    return out;
+  }
+
+  /** The exact layer's answer for a zero-length query: an overlap the
+   * move leaves is ignored like UE's (ShouldIgnoreHitResult). */
+  private movingOut(): boolean {
+    const b = this.best;
+    return (
+      this.ignoreMovingOut &&
+      this.dx * b.normal[0] + this.dy * b.normal[1] + this.dz * b.normal[2] > 0
+    );
+  }
+
+  /** Chaos's sweep of the current query against one box, hull, sphere,
+   * capsule or mesh triangle. */
   private chaosSweep(
     kind: number,
     ref: number,
-    input: CapsuleSweepInput,
-    outcome: { overlap: boolean }
+    input: CapsuleSweepInput
   ): ChaosHit | null {
     if (kind === K_SOLID) {
       const c = this.solids[ref].chaos;
       if (!c.support) c.support = c.build();
-      return chaosConvexSweep(c.support, c.pose, input, outcome);
+      return chaosConvexSweep(c.support, c.pose, input);
+    }
+    if (kind === K_SPHERE) {
+      const sp = this.spheres[ref];
+      return chaosConvexSweep(sp.chaos, sp.pose, input);
+    }
+    if (kind === K_CAPSULE) {
+      const c = this.capsules[ref];
+      return chaosConvexSweep(c.chaos, c.pose, input);
     }
     const mi = this.triMesh[ref];
     const mesh = this.meshes[mi];
@@ -1807,13 +2147,16 @@ export class ExactCollisionWorld implements CollisionWorld {
       Math.fround(v[i * 3 + 1]),
       Math.fround(v[i * 3 + 2]),
     ];
+    const s = mesh.s;
+    // One-sided: GetWindingOrder(scale) culls back faces; double-sided 0.
+    const code = mesh.doubleSided ? 0 : Math.sign(s[0] * s[1] * s[2]);
     // Cooked order: render v0 and v1 swapped (ChaosCooking.cpp:41).
     return chaosTriangleSweep(
       [p(tri[k + 1]), p(tri[k]), p(tri[k + 2])],
-      mesh.s,
+      s,
       this.meshPose[mi],
       input,
-      outcome
+      code
     );
   }
 
@@ -1832,17 +2175,10 @@ export class ExactCollisionWorld implements CollisionWorld {
     Object.assign(this.best, saved);
   }
 
-  /** Parallel-contact counters since the last call (and reset them). */
-  takeChaosStats(): ChaosContactStats {
+  /** Chaos counters since the last call (and reset them). */
+  takeChaosStats(): ChaosSweepStats {
     const out = this.chaos;
-    this.chaos = {
-      contacts: 0,
-      chaosCalls: 0,
-      switched: 0,
-      unresolvedTies: 0,
-      noChaosHit: 0,
-      chaosOverlap: 0,
-    };
+    this.chaos = zeroChaosStats();
     return out;
   }
 
@@ -1896,32 +2232,49 @@ export class ExactCollisionWorld implements CollisionWorld {
     out[0] = nx;
     out[1] = ny;
     out[2] = nz;
-    if (kind === K_SPHERE || kind === K_CAPSULE) return;
+    // CollisionConversions.cpp FindGeomOpposingNormal: in the particle's
+    // frame (ActorTM from its float rotation), then back with
+    // TransformVectorNoScale.
+    if (kind === K_SPHERE || kind === K_CAPSULE) {
+      const q =
+        kind === K_SPHERE
+          ? this.spheres[ref].pose.q
+          : this.capsules[ref].pose.q;
+      const w = drot(q, drot(dinv(q), [nx, ny, nz]));
+      out[0] = w[0];
+      out[1] = w[1];
+      out[2] = w[2];
+      return;
+    }
     if (kind === K_SOLID) {
       const s = this.solids[ref];
       if (s.axes) {
         // TAABB::FindGeometryOpposingNormal, in the box's frame.
-        const ax = s.axes;
+        const q = s.chaos.pose.q;
+        const iq = dinv(q);
+        const ln = drot(iq, [nx, ny, nz]);
+        const ld = drot(iq, [dx, dy, dz]);
+        let local: [number, number, number] = ln;
         let bestDot = Infinity;
         for (let i = 0; i < 3; i++) {
-          const ln = nx * ax[i * 3] + ny * ax[i * 3 + 1] + nz * ax[i * 3 + 2];
-          const ld = dx * ax[i * 3] + dy * ax[i * 3 + 1] + dz * ax[i * 3 + 2];
-          if (ln > KINDA_SMALL) {
-            if (ld < bestDot) {
-              bestDot = ld;
-              out[0] = ax[i * 3];
-              out[1] = ax[i * 3 + 1];
-              out[2] = ax[i * 3 + 2];
+          if (ln[i] > KINDA_SMALL) {
+            if (ld[i] < bestDot) {
+              bestDot = ld[i];
+              local = [0, 0, 0];
+              local[i] = 1;
             }
-          } else if (ln < -KINDA_SMALL) {
-            if (-ld < bestDot) {
-              bestDot = -ld;
-              out[0] = -ax[i * 3];
-              out[1] = -ax[i * 3 + 1];
-              out[2] = -ax[i * 3 + 2];
+          } else if (ln[i] < -KINDA_SMALL) {
+            if (-ld[i] < bestDot) {
+              bestDot = -ld[i];
+              local = [0, 0, 0];
+              local[i] = -1;
             }
           }
         }
+        const w = drot(q, local);
+        out[0] = w[0];
+        out[1] = w[1];
+        out[2] = w[2];
         return;
       }
       // FConvex::FindMostOpposingFaceScaled: planes within searchDist of
@@ -1957,39 +2310,8 @@ export class ExactCollisionWorld implements CollisionWorld {
     }
     // Triangle mesh or heightfield: FindMostOpposingFace over the shape's
     // triangles within 1 cm of the impact point; the hit triangle if none.
-    out[0] = this.tnx;
-    out[1] = this.tny;
-    out[2] = this.tnz;
     let bestDot = Infinity;
-    const consider = (
-      v: Float64Array,
-      tnx: number,
-      tny: number,
-      tnz: number
-    ) => {
-      const d2 = pointTriangle(
-        point[0],
-        point[1],
-        point[2],
-        v[0],
-        v[1],
-        v[2],
-        v[3],
-        v[4],
-        v[5],
-        v[6],
-        v[7],
-        v[8]
-      );
-      if (d2 >= OPPOSING_SEARCH_CM * OPPOSING_SEARCH_CM) return;
-      const dot = (tnx * dx + tny * dy + tnz * dz) / dLen;
-      if (dot < bestDot) {
-        bestDot = dot;
-        out[0] = tnx;
-        out[1] = tny;
-        out[2] = tnz;
-      }
-    };
+    let chosen = ref;
     const search = new Float64Array([
       point[0] - OPPOSING_SEARCH_CM,
       point[1] - OPPOSING_SEARCH_CM,
@@ -2004,6 +2326,11 @@ export class ExactCollisionWorld implements CollisionWorld {
     const savedDouble = this.tDouble;
     const owner = this.tOwner;
     if (kind === K_TRI) {
+      // FTriangleMeshImplicitObject::FindMostOpposingFace: in the mesh's
+      // frame, each face's normal in double from the float cooked
+      // particles, against the local trace direction; the first strictly
+      // more opposing face wins (BVH order: index order here).
+      const found: number[] = [];
       this.bvh.query(
         search[0],
         search[1],
@@ -2014,30 +2341,259 @@ export class ExactCollisionWorld implements CollisionWorld {
         (item) => {
           if (this.itemKind[item] !== K_TRI) return;
           const t = this.itemRef[item];
-          if (this.triMesh[t] !== owner) return;
-          const n = this.triN;
-          consider(
-            this.triV.subarray(t * 9, t * 9 + 9),
-            n[t * 3],
-            n[t * 3 + 1],
-            n[t * 3 + 2]
-          );
+          if (this.triMesh[t] === owner) found.push(t);
         }
       );
+      found.sort((a, b) => this.triLocal[a] - this.triLocal[b]);
+      const q = this.meshPose[owner].q;
+      const dir = drot(dinv(q), [dx / dLen, dy / dLen, dz / dLen]);
+      for (const t of found) {
+        const un = this.meshOpposingNormal(t);
+        const d2 = pointTriangle(
+          point[0],
+          point[1],
+          point[2],
+          this.triV[t * 9],
+          this.triV[t * 9 + 1],
+          this.triV[t * 9 + 2],
+          this.triV[t * 9 + 3],
+          this.triV[t * 9 + 4],
+          this.triV[t * 9 + 5],
+          this.triV[t * 9 + 6],
+          this.triV[t * 9 + 7],
+          this.triV[t * 9 + 8]
+        );
+        if (d2 >= OPPOSING_SEARCH_CM * OPPOSING_SEARCH_CM) continue;
+        const dot = un[0] * dir[0] + un[1] * dir[1] + un[2] * dir[2];
+        if (dot < bestDot) {
+          bestDot = dot;
+          chosen = t;
+        }
+      }
     } else {
-      const hf = this.heightfields[owner];
-      this.forCells(hf, search, (x, y) => {
-        // Chaos checks hole cells here too (HeightField.cpp:2349).
-        this.loadCell(hf, x, y, false);
-        consider(this.tv, this.tnx, this.tny, this.tnz);
-        this.loadCell(hf, x, y, true);
-        consider(this.tv, this.tnx, this.tny, this.tnz);
-      });
+      chosen = this.heightfieldMostOpposingFace(owner, ref, point);
     }
+    // GetFaceNormal of the chosen face, in the shape's frame, back to world.
+    const w =
+      kind === K_TRI
+        ? this.meshFaceNormal(chosen)
+        : this.heightfieldFaceNormal(owner, chosen);
+    out[0] = w[0];
+    out[1] = w[1];
+    out[2] = w[2];
     this.tv.set(saved);
     [this.tnx, this.tny, this.tnz] = savedN;
     this.tDouble = savedDouble;
     this.tOwner = owner;
+  }
+
+  /**
+   * FTriangleMeshImplicitObject::GetFaceNormal (float: Cross(B - A, C - A)
+   * of the cooked particles, SafeNormalize), through TImplicitObjectScaled::
+   * FindGeometryOpposingNormal when scaled (times 1 / scale, normalised),
+   * rotated to world by the particle's rotation.
+   */
+  private meshFaceNormal(t: number): [number, number, number] {
+    const f = Math.fround;
+    const mesh = this.meshes[this.triMesh[t]];
+    const k = this.triLocal[t] * 3;
+    const v = mesh.vertices;
+    const tri = mesh.triangles;
+    const p = (i: number): F3 => [
+      f(v[i * 3]),
+      f(v[i * 3 + 1]),
+      f(v[i * 3 + 2]),
+    ];
+    // Cooked order: render v0 and v1 swapped.
+    const a = p(tri[k + 1]);
+    const b = p(tri[k]);
+    const c = p(tri[k + 2]);
+    const ab = [f(b[0] - a[0]), f(b[1] - a[1]), f(b[2] - a[2])];
+    const ac = [f(c[0] - a[0]), f(c[1] - a[1]), f(c[2] - a[2])];
+    let n = [
+      f(f(ab[1] * ac[2]) - f(ab[2] * ac[1])),
+      f(f(ab[2] * ac[0]) - f(ab[0] * ac[2])),
+      f(f(ab[0] * ac[1]) - f(ab[1] * ac[0])),
+    ];
+    const sq = f(f(f(n[0] * n[0]) + f(n[1] * n[1])) + f(n[2] * n[2]));
+    // Chaos's TVector SafeNormalize divides each component by the size.
+    if (sq < f(1e-4)) n = [0, 0, 1];
+    else {
+      const size = f(Math.sqrt(sq));
+      n = [f(n[0] / size), f(n[1] / size), f(n[2] / size)];
+    }
+    const s = mesh.s;
+    if (s[0] !== 1 || s[1] !== 1 || s[2] !== 1) {
+      const u = [n[0] * (1 / s[0]), n[1] * (1 / s[1]), n[2] * (1 / s[2])];
+      const l = Math.sqrt(u[0] * u[0] + u[1] * u[1] + u[2] * u[2]);
+      n = l > 0 ? [u[0] / l, u[1] / l, u[2] / l] : [0, 0, 1];
+    }
+    return drot(this.meshPose[this.triMesh[t]].q, [n[0], n[1], n[2]]);
+  }
+
+  /** FindMostOpposingFace's per-face normal: Cross(B - A, C - A) in double
+   * of the float cooked particles times the scale, SafeNormalize, negated
+   * for a mirroring scale (mesh frame). */
+  private meshOpposingNormal(t: number): number[] {
+    const f = Math.fround;
+    const mesh = this.meshes[this.triMesh[t]];
+    const k = this.triLocal[t] * 3;
+    const v = mesh.vertices;
+    const tri = mesh.triangles;
+    const s = mesh.s;
+    const p = (i: number): number[] => [
+      f(v[i * 3]) * s[0],
+      f(v[i * 3 + 1]) * s[1],
+      f(v[i * 3 + 2]) * s[2],
+    ];
+    const a = p(tri[k + 1]);
+    const b = p(tri[k]);
+    const c = p(tri[k + 2]);
+    const ab = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
+    const ac = [c[0] - a[0], c[1] - a[1], c[2] - a[2]];
+    const n = [
+      ab[1] * ac[2] - ab[2] * ac[1],
+      ab[2] * ac[0] - ab[0] * ac[2],
+      ab[0] * ac[1] - ab[1] * ac[0],
+    ];
+    const sq = n[0] * n[0] + n[1] * n[1] + n[2] * n[2];
+    if (sq < 1e-4) return [0, 0, 0];
+    const l = Math.sqrt(sq);
+    const sign = s[0] * s[1] * s[2] < 0 ? -1 : 1;
+    return [(sign * n[0]) / l, (sign * n[1]) / l, (sign * n[2]) / l];
+  }
+
+  /**
+   * FHeightField::FindMostOpposingFace (HeightField.cpp:2308) in the
+   * heightfield's frame: the cells GetGridIntersections lists for the
+   * point +- 1 cm (x outer, y inner, clamped to the bounds), both faces of
+   * each (holes included), a double normal, the first strictly more
+   * opposing face within 1 cm of the point.
+   */
+  private heightfieldMostOpposingFace(
+    owner: number,
+    hint: number,
+    point: readonly number[]
+  ): number {
+    const hf = this.heightfields[owner];
+    const q = hf.pose.q;
+    const iq = dinv(q);
+    const t = hf.pose.t;
+    const pos = drot(iq, [point[0] - t[0], point[1] - t[1], point[2] - t[2]]);
+    const dir = drot(iq, [
+      this.dx / this.dLen,
+      this.dy / this.dLen,
+      this.dz / this.dLen,
+    ]);
+    const [sx, sy, sz] = hf.s;
+    const cellsX = hf.cols - 1;
+    const cellsY = hf.rows - 1;
+    const bx0 = Math.min(0, cellsX * sx);
+    const bx1 = Math.max(0, cellsX * sx);
+    const by0 = Math.min(0, cellsY * sy);
+    const by1 = Math.max(0, cellsY * sy);
+    const nudge = 1e-8; // FBounds2D::Clamp's UE_SMALL_NUMBER
+    const clamp = (v: number, lo: number, hi: number) =>
+      Math.min(Math.max(v, lo + nudge), hi - nudge);
+    const ax = clamp(pos[0] - OPPOSING_SEARCH_CM, bx0, bx1) / sx;
+    const ay = clamp(pos[1] - OPPOSING_SEARCH_CM, by0, by1) / sy;
+    const bx = clamp(pos[0] + OPPOSING_SEARCH_CM, bx0, bx1) / sx;
+    const by = clamp(pos[1] + OPPOSING_SEARCH_CM, by0, by1) / sy;
+    const cell = (v: number, n: number) => {
+      const c = Math.trunc(v);
+      return c >= n ? n - 1 : c < 0 ? 0 : c;
+    };
+    const x0 = cell(Math.min(ax, bx), cellsX);
+    const x1 = cell(Math.max(ax, bx), cellsX);
+    const y0 = cell(Math.min(ay, by), cellsY);
+    const y1 = cell(Math.max(ay, by), cellsY);
+    const h = hf.heights;
+    const P = (px: number, py: number): number[] => [
+      px * sx,
+      py * sy,
+      h[py * hf.cols + px] * sz,
+    ];
+    let bestDot = Number.MAX_VALUE;
+    let best = hint;
+    const check = (face: number, A: number[], B: number[], C: number[]) => {
+      const ab = [B[0] - A[0], B[1] - A[1], B[2] - A[2]];
+      const ac = [C[0] - A[0], C[1] - A[1], C[2] - A[2]];
+      let n = [
+        ab[1] * ac[2] - ab[2] * ac[1],
+        ab[2] * ac[0] - ab[0] * ac[2],
+        ab[0] * ac[1] - ab[1] * ac[0],
+      ];
+      const sq = n[0] * n[0] + n[1] * n[1] + n[2] * n[2];
+      if (sq < 1e-4) return;
+      const l = Math.sqrt(sq);
+      if (!(l > KINDA_SMALL)) return;
+      n = [n[0] / l, n[1] / l, n[2] / l];
+      const d2 = pointTriangle(
+        pos[0],
+        pos[1],
+        pos[2],
+        A[0],
+        A[1],
+        A[2],
+        B[0],
+        B[1],
+        B[2],
+        C[0],
+        C[1],
+        C[2]
+      );
+      if (d2 < OPPOSING_SEARCH_CM * OPPOSING_SEARCH_CM) {
+        const dot = n[0] * dir[0] + n[1] * dir[1] + n[2] * dir[2];
+        if (dot < bestDot) {
+          bestDot = dot;
+          best = face;
+        }
+      }
+    };
+    for (let x = x0; x <= x1; x++)
+      for (let y = y0; y <= y1; y++) {
+        const c = y * cellsX + x;
+        const p0 = P(x, y);
+        const p1 = P(x + 1, y);
+        const p2 = P(x, y + 1);
+        const p3 = P(x + 1, y + 1);
+        check(c * 2, p0, p1, p3);
+        check(c * 2 + 1, p0, p3, p2);
+      }
+    return best;
+  }
+
+  /** FHeightField::FindGeometryOpposingNormal (double: the scaled cell
+   * points, Cross(B - A, C - A) x the scale signs, SafeNormalize), rotated
+   * to world by the particle's rotation. */
+  private heightfieldFaceNormal(
+    owner: number,
+    face: number
+  ): [number, number, number] {
+    const hf = this.heightfields[owner];
+    const cell = face >> 1;
+    const x = cell % (hf.cols - 1);
+    const y = Math.floor(cell / (hf.cols - 1));
+    const [sx, sy, sz] = hf.s;
+    const h = hf.heights;
+    const P = (px: number, py: number): number[] => [
+      px * sx,
+      py * sy,
+      h[py * hf.cols + px] * sz,
+    ];
+    const A = P(x, y);
+    const B = face & 1 ? P(x + 1, y + 1) : P(x + 1, y);
+    const C = face & 1 ? P(x, y + 1) : P(x + 1, y + 1);
+    const ab = [B[0] - A[0], B[1] - A[1], B[2] - A[2]];
+    const ac = [C[0] - A[0], C[1] - A[1], C[2] - A[2]];
+    const inv = Math.sign(sx) * Math.sign(sy) * Math.sign(sz);
+    const n = [
+      (ab[1] * ac[2] - ab[2] * ac[1]) * inv,
+      (ab[2] * ac[0] - ab[0] * ac[2]) * inv,
+      (ab[0] * ac[1] - ab[1] * ac[0]) * inv,
+    ];
+    const l = Math.sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
+    return drot(hf.pose.q, [n[0] / l, n[1] / l, n[2] / l]);
   }
 
   private sourceOf(kind: number, ref: number): string {

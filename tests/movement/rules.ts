@@ -334,13 +334,16 @@ describe('WRF MoveAlongFloor: the wall-hit slowdown (findings step 4)', () => {
     }
     const hit = c.lastWallHit!;
     expect(hit).not.toBeNull();
-    expect(hit.angle).toBeCloseTo(angle, 6);
+    // Hit.Normal is Chaos's float32 normal (D26): the angle carries its
+    // noise (about 1e-6 degrees on a face).
+    expect(hit.angle).toBeCloseTo(angle, 4);
     const mul = f32(0.35 + (0.65 * angle) / 90);
-    expect(hit.multiplier).toBeCloseTo(mul, 6);
+    expect(hit.multiplier).toBeCloseTo(mul, 5);
     expect(hit.speedAfter).toBeCloseTo(f32(f32(LOKI_MAX_SPEED) * mul), 2);
     // bJustTeleported: the slowed velocity survives PhysWalking
     // (09-editor.md 2.1), pointed along the capsule's actual move.
-    expect(size2D(c.velocity)).toBe(hit.speedAfter);
+    // (The direction times the speed, measured back: equal to an ulp.)
+    expect(size2D(c.velocity)).toBeCloseTo(hit.speedAfter, 9);
     expect(dot(safeNormal2D(c.velocity), hit.direction)).toBeCloseTo(1, 12);
     expect(c.velocity.z).toBe(0);
     // The capsule snapped to the move's direction; PhysicsRotation then

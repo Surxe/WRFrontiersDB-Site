@@ -4,6 +4,10 @@
  * IsWithinEdgeTolerance, ShouldComputePerchResult, ComputePerchResult,
  * GetValidPerchRadius). bUseFlatBaseForFloorChecks (off by default) and
  * per-component walkable slope overrides are left out.
+ *
+ * UE's float locals and FFindFloorResult's float fields are float here
+ * (MVP session 4.5): the floor sweeps' inputs, and so the capsule's
+ * resting height, are bit for bit UE's.
  */
 import {
   addScaled,
@@ -23,6 +27,7 @@ import { FindFloorResult, HitResult } from './hit';
 import type { CharacterMovementComponent } from './character_movement';
 
 const DOWN = vec(0, 0, -1);
+const f = Math.fround;
 
 /** UCharacterMovementComponent::IsWalkable. */
 export function isWalkable(
@@ -41,12 +46,14 @@ export function isWithinEdgeTolerance(
   testImpactPoint: Vec3,
   capsuleRadius: number
 ): boolean {
-  const distFromCenterSq = sizeSquared2D(sub(testImpactPoint, capsuleLocation));
-  const reducedRadius = Math.max(
-    SWEEP_EDGE_REJECT_DISTANCE + KINDA_SMALL_NUMBER,
-    capsuleRadius - SWEEP_EDGE_REJECT_DISTANCE
+  const distFromCenterSq = f(
+    sizeSquared2D(sub(testImpactPoint, capsuleLocation))
   );
-  return distFromCenterSq < reducedRadius * reducedRadius;
+  const reducedRadius = Math.max(
+    f(SWEEP_EDGE_REJECT_DISTANCE + KINDA_SMALL_NUMBER),
+    f(capsuleRadius - SWEEP_EDGE_REJECT_DISTANCE)
+  );
+  return distFromCenterSq < f(reducedRadius * reducedRadius);
 }
 
 /** UCharacterMovementComponent::FloorSweepTest: a plain world sweep. */
@@ -93,7 +100,7 @@ export function computeFloorDist(
       ) {
         skipSweep = true;
         const walkable = c.isWalkable(downwardSweep);
-        const floorDist = capsuleLocation.z - downwardSweep.location.z;
+        const floorDist = f(capsuleLocation.z - downwardSweep.location.z);
         out.setFromSweep(downwardSweep, floorDist, walkable);
         if (walkable) return;
       }
@@ -106,13 +113,13 @@ export function computeFloorDist(
   if (!skipSweep && sweepDistance > 0 && sweepRadius > 0) {
     // A shorter capsule avoids odd results when starting on a surface, and
     // lets us adjust out of penetrations.
-    const shrinkScale = 0.9;
-    const shrinkScaleOverlap = 0.1;
-    let shrinkHeight = (pawnHalfHeight - pawnRadius) * (1 - shrinkScale);
-    let traceDist = sweepDistance + shrinkHeight;
+    const shrinkScale = f(0.9);
+    const shrinkScaleOverlap = f(0.1);
+    let shrinkHeight = f(f(pawnHalfHeight - pawnRadius) * f(1 - shrinkScale));
+    let traceDist = f(sweepDistance + shrinkHeight);
     let shape: Capsule = {
-      radius: sweepRadius,
-      halfHeight: pawnHalfHeight - shrinkHeight,
+      radius: f(sweepRadius),
+      halfHeight: f(pawnHalfHeight - shrinkHeight),
     };
 
     let hit = floorSweepTest(
@@ -132,13 +139,15 @@ export function computeFloorDist(
         // half height rules out.)
         const radius = Math.max(
           0,
-          shape.radius - SWEEP_EDGE_REJECT_DISTANCE - KINDA_SMALL_NUMBER
+          f(f(shape.radius - SWEEP_EDGE_REJECT_DISTANCE) - KINDA_SMALL_NUMBER)
         );
-        shrinkHeight = (pawnHalfHeight - pawnRadius) * (1 - shrinkScaleOverlap);
-        traceDist = sweepDistance + shrinkHeight;
+        shrinkHeight = f(
+          f(pawnHalfHeight - pawnRadius) * f(1 - shrinkScaleOverlap)
+        );
+        traceDist = f(sweepDistance + shrinkHeight);
         shape = {
           radius,
-          halfHeight: Math.max(pawnHalfHeight - shrinkHeight, radius),
+          halfHeight: Math.max(f(pawnHalfHeight - shrinkHeight), radius),
         };
         hit = floorSweepTest(
           c,
@@ -152,7 +161,7 @@ export function computeFloorDist(
       const maxPenetrationAdjust = Math.max(MAX_FLOOR_DIST, pawnRadius);
       const sweepResult = Math.max(
         -maxPenetrationAdjust,
-        hit.time * traceDist - shrinkHeight
+        f(f(hit.time * traceDist) - shrinkHeight)
       );
       out.setFromSweep(hit, sweepResult, false);
       if (
@@ -174,8 +183,8 @@ export function computeFloorDist(
   }
 
   if (lineDistance > 0) {
-    const shrinkHeight = pawnHalfHeight;
-    const traceDist = lineDistance + shrinkHeight;
+    const shrinkHeight = f(pawnHalfHeight);
+    const traceDist = f(lineDistance + shrinkHeight);
     const end = addScaled(capsuleLocation, DOWN, traceDist);
     const hit = HitResult.fromQuery(
       c.collision.lineTrace(capsuleLocation, end),
@@ -186,7 +195,7 @@ export function computeFloorDist(
       const maxPenetrationAdjust = Math.max(MAX_FLOOR_DIST, pawnRadius);
       const lineResult = Math.max(
         -maxPenetrationAdjust,
-        hit.time * traceDist - shrinkHeight
+        f(f(hit.time * traceDist) - shrinkHeight)
       );
       out.blockingHit = true;
       if (lineResult <= lineDistance && c.isWalkable(hit)) {
@@ -202,10 +211,10 @@ export function computeFloorDist(
 /** UCharacterMovementComponent::GetValidPerchRadius. */
 function getValidPerchRadius(c: CharacterMovementComponent): number {
   const pawnRadius = c.capsule.radius;
-  return Math.min(
-    Math.max(pawnRadius - c.getPerchRadiusThreshold(), 0.11),
-    pawnRadius
-  );
+  // FMath::Clamp(PawnRadius - PerchRadiusThreshold, 0.11f, PawnRadius).
+  const x = f(pawnRadius - c.getPerchRadiusThreshold());
+  const lo = f(0.11);
+  return x < lo ? lo : x < pawnRadius ? x : pawnRadius;
 }
 
 /** UCharacterMovementComponent::ShouldComputePerchResult. */
@@ -218,9 +227,12 @@ function shouldComputePerchResult(
   // Don't perch if the edge radius is very small.
   if (c.getPerchRadiusThreshold() <= SWEEP_EDGE_REJECT_DISTANCE) return false;
   if (checkRadius) {
-    const distFromCenterSq = sizeSquared2D(sub(hit.impactPoint, hit.location));
+    const distFromCenterSq = f(
+      sizeSquared2D(sub(hit.impactPoint, hit.location))
+    );
     const standOnEdgeRadius = getValidPerchRadius(c);
-    if (distFromCenterSq <= standOnEdgeRadius * standOnEdgeRadius) return false;
+    if (distFromCenterSq <= f(standOnEdgeRadius * standOnEdgeRadius))
+      return false;
   }
   return true;
 }
@@ -238,11 +250,11 @@ function computePerchResult(
   const capsuleLocation = hit.location;
   const hitAboveBase = Math.max(
     0,
-    hit.impactPoint.z - capsuleLocation.z + pawnHalfHeight
+    f(hit.impactPoint.z - capsuleLocation.z + pawnHalfHeight)
   );
-  const perchLineDist = Math.max(0, maxFloorDist - hitAboveBase);
+  const perchLineDist = Math.max(0, f(maxFloorDist - hitAboveBase));
   const perchSweepDist = Math.max(0, maxFloorDist);
-  const actualSweepDist = perchSweepDist + pawnRadius;
+  const actualSweepDist = f(perchSweepDist + pawnRadius);
   c.computeFloorDist(
     capsuleLocation,
     perchLineDist,
@@ -251,7 +263,7 @@ function computePerchResult(
     testRadius
   );
   if (!out.isWalkableFloor()) return false;
-  if (hitAboveBase + out.floorDist > maxFloorDist) {
+  if (f(hitAboveBase + out.floorDist) > maxFloorDist) {
     out.walkableFloor = false;
     return false;
   }
@@ -269,11 +281,11 @@ export function findFloor(
   // Check a bit further when walking, so the floor height adjustment can't
   // invalidate the result later.
   const heightCheckAdjust = c.isMovingOnGround()
-    ? MAX_FLOOR_DIST + KINDA_SMALL_NUMBER
+    ? f(MAX_FLOOR_DIST + KINDA_SMALL_NUMBER)
     : -MAX_FLOOR_DIST;
   const floorSweepTraceDist = Math.max(
     MAX_FLOOR_DIST,
-    c.params.maxStepHeight + heightCheckAdjust
+    f(c.params.maxStepHeight + heightCheckAdjust)
   );
   const floorLineTraceDist = floorSweepTraceDist;
 
@@ -300,10 +312,12 @@ export function findFloor(
   ) {
     let maxPerchFloorDist = Math.max(
       MAX_FLOOR_DIST,
-      c.params.maxStepHeight + heightCheckAdjust
+      f(c.params.maxStepHeight + heightCheckAdjust)
     );
     if (c.isMovingOnGround())
-      maxPerchFloorDist += Math.max(0, c.params.perchAdditionalHeight);
+      maxPerchFloorDist = f(
+        maxPerchFloorDist + Math.max(0, c.params.perchAdditionalHeight)
+      );
     const perchFloorResult = new FindFloorResult();
     if (
       computePerchResult(
@@ -315,9 +329,9 @@ export function findFloor(
       )
     ) {
       // Don't let the floor adjustment push us beyond the perch distance.
-      const avgFloorDist = (MIN_FLOOR_DIST + MAX_FLOOR_DIST) * 0.5;
-      const moveUpDist = avgFloorDist - out.floorDist;
-      if (moveUpDist + perchFloorResult.floorDist >= maxPerchFloorDist)
+      const avgFloorDist = f(f(MIN_FLOOR_DIST + MAX_FLOOR_DIST) * 0.5);
+      const moveUpDist = f(avgFloorDist - out.floorDist);
+      if (f(moveUpDist + perchFloorResult.floorDist) >= maxPerchFloorDist)
         out.floorDist = avgFloorDist;
       // An unwalkable regular floor with a walkable perch: use the perch.
       if (!out.walkableFloor) {

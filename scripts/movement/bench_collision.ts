@@ -213,8 +213,9 @@ function benchMap(map: string): void {
       `  ${name}: ${steps} updates, ${falling} falling, ${(queries / steps).toFixed(1)} queries each; ` +
         `collision ms mean/p95/max ${stat(coll)}; whole update ${stat(upd)}; ` +
         `ends (${l.x.toFixed(0)}, ${l.y.toFixed(0)}, ${l.z.toFixed(0)}) ${session.movement.movementMode}; ` +
-        `parallel contacts ${cs.contacts} (Chaos sweeps ${cs.chaosCalls}, shape switched ${cs.switched}, ` +
-        `shape ties ${cs.unresolvedTies}, no Chaos hit ${cs.noChaosHit}, of which Chaos overlaps ${cs.chaosOverlap})`
+        `Chaos: ${cs.sweeps} sweeps decided, ${cs.chaosCalls} shape sweeps (${(cs.chaosCalls / steps).toFixed(1)} per update), ` +
+        `shape switched ${cs.switched}, shape ties ${cs.unresolvedTies}, no Chaos hit ${cs.noChaosHit}, ` +
+        `overlap flips ${cs.overlapFlips}, multi-overlap ${cs.multiOverlap}, moving out ${cs.movingOut}`
     );
   }
 }

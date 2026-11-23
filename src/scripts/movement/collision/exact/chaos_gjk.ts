@@ -1,161 +1,69 @@
 /**
  * Chaos's capsule sweep (GJKRaycast2ImplSimd) in float32, operation for
- * operation, to take the impact point Chaos reports on contacts parallel to
- * the capsule's axis (findings/chaos-contact-point.md).
- *
- * On such a contact every point of the capsule's core segment is equally
- * close, so the point depends on the simplex GJK ends on: the barycentric
- * mix of the capsule's two segment ends it last kept. Only a replay of the
- * raycast in the engine's float arithmetic lands on the same simplex.
+ * operation: since MVP session 4.5 (D26) the reported hit of every capsule
+ * sweep (time, point, normal, the initial-overlap status and depth;
+ * findings/chaos-sweeps.md), first ported by session 3.5 for the impact
+ * point on parallel contacts (findings/chaos-contact-point.md).
  *
  * Source: UE 5.4.4
- * - Experimental/Chaos/Public/Chaos/GJK.h: GJKRaycast2ImplSimd (:1536),
- *   GJKRaycast2Impl (:1900), FGeomGJKHelperSIMD (:42);
- * - SimplexVectorized.h: VectorSimplexFindClosestToOrigin and its line,
- *   triangle and tetrahedron cases;
+ * - Experimental/Chaos/Public/Chaos/GJK.h: GJKRaycast2ImplSimd (:1536,
+ *   with its bComputeMTD exit: GJK's closest points, or VectorEPA when the
+ *   cores overlap), GJKRaycast2Impl (:1900), FGeomGJKHelperSIMD (:42);
  * - GeometryQueries.h SweepQuery (:156): the double-precision set-up
  *   (BToATM, LocalDir, InitialDir = ATM.Location - BTM.Location) and the
- *   way back to world space;
- * - TriangleMeshImplicitObject.cpp: ComputeScaledSweepInputs (:1546) and
- *   FTriangleMeshSweepVisitor::VisitSweep (:1272), InitialDir (1, 0, 0);
+ *   way back to world space (the normal's GetSafeNormal);
+ * - TriangleMeshImplicitObject.cpp: ComputeScaledSweepInputs (:1546),
+ *   FTriangleMeshSweepVisitor::VisitSweep (:1272), TransformSweepOutputsHelper
+ *   (:72); ImplicitObjectScaled.h LowLevelSweepGeom (:638);
  * - the supports: TAABB::SupportCore (AABB.h:352), FConvex::GetSupportVertex
  *   (Convex.h:549, float dot, first maximum), FTriangleRegister
- *   (TriangleRegister.h:26), TSegment::SupportCore (Segment.h:53);
- * - Core/Public/Math/UnrealMathSSE.h, UnrealMathVectorCommon.h,
- *   TransformVectorized.h: the vector and transform primitives.
- *
- * Float semantics of the build: the Linux editor compiles with -msse4.2,
- * no AVX or FMA (MinCpuArchX64 defaults to None, LinuxToolChain.cs:345)
- * and -ffp-contract=off (ClangToolChain.cs:617), so VectorMultiplyAdd is a
- * rounded multiply then a rounded add. Every float operation below rounds
- * once with Math.fround; float +, -, *, / and sqrt computed in double and
- * rounded once equal the float operation exactly (53 >= 2 x 24 + 2).
- * VectorReciprocalSqrt is 1 / sqrt (VectorDivide of VectorSqrt), not the
- * hardware estimate. All geometric vectors keep W = 0, so VectorDot4
- * equals VectorDot3 here ((xx + yy) + (zz + 0) = (xx + yy) + zz).
- *
- * The double-precision steps (the relative transform, the direction, the
- * transform back) copy UE's VectorRegister4Double formulas; JavaScript
- * numbers are IEEE doubles without contraction, as is that code.
+ *   (TriangleRegister.h:26), TSphere::SupportCoreSimd (Sphere.h:209, the
+ *   centre), FCapsule::SupportCoreSimd (Capsule.h:371, TSegment::SupportCore
+ *   in double), the swept capsule's TSegment::SupportCore (Segment.h:53).
+ * The float primitives and the simplex solver are in chaos_simd.ts, EPA in
+ * chaos_epa.ts, the heightfield visitor in chaos_heightfield.ts.
  */
 import type { V3 } from './colliders';
+import { vectorEpa } from './chaos_epa';
+import {
+  add,
+  closestToOrigin,
+  dinv,
+  dmul,
+  dot3,
+  drot,
+  EPS2,
+  f,
+  FLT_MAX,
+  madd,
+  neg,
+  normalize,
+  qnormalizeSafe,
+  qrot,
+  scale,
+  sub,
+  ZERO,
+  type DQ,
+  type F3,
+  type FQ,
+  type SimplexState,
+} from './chaos_simd';
 
-const f = Math.fround;
-
-/** A float32 3-vector (W = 0). */
-export type F3 = [number, number, number];
-
-const FLT_MAX = f(3.4028234663852886e38);
-const FLT_MIN = f(1.1754943508222875e-38);
-const EPS2 = f(1e-6);
-const SMALL_LENGTH = f(1e-8);
-
-// ---- float32 vector primitives (UnrealMathSSE.h) ----
-
-const add = (a: F3, b: F3): F3 => [
-  f(a[0] + b[0]),
-  f(a[1] + b[1]),
-  f(a[2] + b[2]),
-];
-const sub = (a: F3, b: F3): F3 => [
-  f(a[0] - b[0]),
-  f(a[1] - b[1]),
-  f(a[2] - b[2]),
-];
-const neg = (a: F3): F3 => [-a[0], -a[1], -a[2]];
-const scale = (a: F3, s: number): F3 => [f(a[0] * s), f(a[1] * s), f(a[2] * s)];
-/** VectorMultiplyAdd(A, B, C) = A * B + C, two roundings (no FMA). */
-const madd = (a: F3, s: number, c: F3): F3 => [
-  f(f(a[0] * s) + c[0]),
-  f(f(a[1] * s) + c[1]),
-  f(f(a[2] * s) + c[2]),
-];
-/** InternalVectorDot3X: (x + y) + z of the rounded products. */
-const dot3 = (a: F3, b: F3): number =>
-  f(f(f(a[0] * b[0]) + f(a[1] * b[1])) + f(a[2] * b[2]));
-/** VectorCross: x = v1.y v2.z - v1.z v2.y, and so on. */
-const cross = (a: F3, b: F3): F3 => [
-  f(f(a[1] * b[2]) - f(a[2] * b[1])),
-  f(f(a[2] * b[0]) - f(a[0] * b[2])),
-  f(f(a[0] * b[1]) - f(a[1] * b[0])),
-];
-/** VectorNormalize: V * (1 / sqrt(Dot4(V, V))). */
-const normalize = (a: F3): F3 => {
-  const inv = f(1 / f(Math.sqrt(dot3(a, a))));
-  return scale(a, inv);
-};
-
-/** A float32 quaternion x, y, z, w. */
-type FQ = [number, number, number, number];
-
-/** VectorQuaternionRotateVector (float): V + w T + Q x T, T = 2 (Q x V). */
-function qrot(q: FQ, v: F3): F3 {
-  const qv: F3 = [q[0], q[1], q[2]];
-  let t = cross(qv, v);
-  t = add(t, t);
-  const v0 = madd(t, q[3], v);
-  const v1 = cross(qv, t);
-  return add(v0, v1);
-}
-
-/** VectorNormalizeSafe(Q, (0, 0, 0, 1)) with VectorDot4. */
-function qnormalizeSafe(q: FQ): FQ {
-  const s = f(
-    f(f(q[0] * q[0]) + f(q[1] * q[1])) + f(f(q[2] * q[2]) + f(q[3] * q[3]))
-  );
-  if (!(s >= SMALL_LENGTH)) return [0, 0, 0, 1];
-  const inv = f(1 / f(Math.sqrt(s)));
-  return [f(inv * q[0]), f(inv * q[1]), f(inv * q[2]), f(inv * q[3])];
-}
-
-// ---- double primitives (VectorRegister4Double) ----
-
-type DQ = readonly [number, number, number, number];
-
-function dcross(
-  ax: number,
-  ay: number,
-  az: number,
-  bx: number,
-  by: number,
-  bz: number
-): [number, number, number] {
-  return [ay * bz - az * by, az * bx - ax * bz, ax * by - ay * bx];
-}
-
-/** VectorQuaternionRotateVector (double). */
-export function drot(q: DQ, v: V3): [number, number, number] {
-  const t = dcross(q[0], q[1], q[2], v[0], v[1], v[2]);
-  t[0] += t[0];
-  t[1] += t[1];
-  t[2] += t[2];
-  const u = dcross(q[0], q[1], q[2], t[0], t[1], t[2]);
-  return [
-    q[3] * t[0] + v[0] + u[0],
-    q[3] * t[1] + v[1] + u[1],
-    q[3] * t[2] + v[2] + u[2],
-  ];
-}
-
-const dinv = (q: DQ): DQ => [-q[0], -q[1], -q[2], q[3]];
-
-/** VectorQuaternionMultiply2 (double), lane order as UnrealMathSSE.h:2722. */
-function dmul(a: DQ, b: DQ): DQ {
-  const [x1, y1, z1, w1] = a;
-  const [x2, y2, z2, w2] = b;
-  return [
-    w1 * x2 + x1 * w2 + y1 * z2 + -(z1 * y2),
-    w1 * y2 + -(x1 * z2) + y1 * w2 + z1 * x2,
-    w1 * z2 + x1 * y2 + -(y1 * x2) + z1 * w2,
-    w1 * w2 + -(x1 * x2) + -(y1 * y2) + -(z1 * z2),
-  ];
-}
+export type { F3 } from './chaos_simd';
+export { drot } from './chaos_simd';
 
 // ---- shapes (A, the static geometry, in its local frame) ----
 
-/** A's support in float32 for a float32 direction (SupportCoreSimd with
- * margin 0: a capsule sweep never adds a margin to the other shape). */
+/** A's support in float32 for a float32 direction (SupportCoreSimd: a
+ * capsule sweep never adds a sweep margin to the other shape). */
 export type SupportFn = (d: F3) => F3;
+
+/** A static shape as GJK sees it: its core support and its margin (the
+ * radius for spheres and capsules, 0 for boxes, hulls and triangles). */
+export interface ShapeA {
+  support: SupportFn;
+  margin: number;
+}
 
 /** TBox / TAABB::SupportCore, margin 0: per axis the min corner when the
  * direction is negative, else the max (so -0 picks the max). */
@@ -218,244 +126,68 @@ export function triangleSupport(a: F3, b: F3, c: F3): SupportFn {
   };
 }
 
+/** TSphere::SupportCoreSimd: the centre (the radius is the margin). */
+export function sphereShape(center: V3, radius: number): ShapeA {
+  const c: F3 = [f(center[0]), f(center[1]), f(center[2])];
+  return { support: () => c, margin: f(radius) };
+}
+
+/**
+ * FCapsule::SupportCoreSimd: TSegment::SupportCore in double (X2 when the
+ * direction's dot with the axis is >= 0, else X1), rounded to float. The
+ * segment is MPoint = x1, MAxis = (x2 - x1) normalised, MLength its
+ * length (TSegment's constructor, SafeNormalize).
+ */
+export function capsuleShape(x1: V3, x2: V3, radius: number): ShapeA {
+  const ax = x2[0] - x1[0];
+  const ay = x2[1] - x1[1];
+  const az = x2[2] - x1[2];
+  const sq = ax * ax + ay * ay + az * az;
+  const len = Math.sqrt(sq);
+  // TVector::SafeNormalize(Epsilon 1e-8): returns the length.
+  const axis: V3 = sq > 1e-8 ? [ax / len, ay / len, az / len] : [0, 0, 0];
+  const length = sq > 1e-8 ? len : 0;
+  const top: F3 = [
+    f(x1[0] + axis[0] * length),
+    f(x1[1] + axis[1] * length),
+    f(x1[2] + axis[2] * length),
+  ];
+  const bottom: F3 = [f(x1[0]), f(x1[1]), f(x1[2])];
+  return {
+    support: (d) =>
+      d[0] * axis[0] + d[1] * axis[1] + d[2] * axis[2] >= 0 ? top : bottom,
+    margin: f(radius),
+  };
+}
+
 // ---- the raycast ----
 
 export interface GjkResult {
   hit: boolean;
-  /** OutTime (float): the distance along RayDir, 0 for an initial overlap. */
+  /** OutTime (float): the distance along RayDir; for an initial overlap
+   * (bComputeMTD) minus the penetration depth, <= 0. */
   time: number;
-  /** OutPosition in A's frame (float), valid when time > 0. */
+  /** OutPosition in A's frame (float). */
   position: F3;
+  /** OutNormal in A's frame (float). */
   normal: F3;
   numVerts: number;
   barycentric: [number, number, number, number];
   iterations: number;
+  /** How the initial-overlap exit ended: 'gjk' (closest points), the EPA
+   * result, 'touch' (no GJK iteration) or undefined for a positive time. */
+  mtd?: string;
 }
 
-type Simplex = [F3, F3, F3, F3];
-
-const ZERO: F3 = [0, 0, 0];
-
-interface SimplexState {
-  s: Simplex;
-  as: Simplex;
-  bs: Simplex;
-  n: number;
-  bary: [number, number, number, number];
-}
-
-/** VectorLineSimplexFindOrigin<true>. */
-function lineSimplex(st: SimplexState): F3 {
-  const x0 = st.s[0];
-  const x1 = st.s[1];
-  const x0to1 = sub(x1, x0);
-  const dot = dot3(neg(x0), x0to1);
-  const isX0 = 0 >= dot;
-  const sq = dot3(x0to1, x0to1);
-  const isX1 = dot >= sq || FLT_MIN >= sq;
-  if (isX1) {
-    st.s[0] = st.s[1];
-    st.as[0] = st.as[1];
-    st.bs[0] = st.bs[1];
-  }
-  let ratio = f(dot / sq);
-  // VectorMax(Ratio, 0) then VectorMin(Ratio, 1) (NaN keeps the second
-  // operand in SSE maxps / minps).
-  ratio = ratio > 0 ? ratio : 0;
-  ratio = ratio < 1 ? ratio : 1;
-  // X0 here is Simplex[0] after the select (a reference in the source).
-  let closest = madd(x0to1, ratio, st.s[0]);
-  const omr = f(1 - ratio);
-  closest = isX0 ? st.s[0] : isX1 ? x1 : closest;
-  if (isX0 || isX1) {
-    st.n = 1;
-    st.bary = [1, 0, 0, 0];
-  } else {
-    st.bary = [omr, ratio, omr, ratio]; // VectorUnpackLo
-  }
-  return closest;
-}
-
-/** TriangleSimplexFindOriginFast<true>. */
-function triangleSimplex(st: SimplexState): F3 {
-  const A = st.s[0];
-  const B = st.s[1];
-  const C = st.s[2];
-  const AB = sub(B, A);
-  const AC = sub(C, A);
-  const triNormal = cross(AB, AC);
-  const triNormal2 = dot3(triNormal, triNormal);
-  const aMin = scale(A, FLT_MIN);
-  const eps2 = dot3(aMin, aMin);
-  if (eps2 >= triNormal2) {
-    st.n = 2;
-    return lineSimplex(st);
-  }
-  const AO = neg(A);
-  const d1 = dot3(AB, AO);
-  const d2 = dot3(AC, AO);
-  if (0 >= d1 && 0 >= d2) {
-    st.n = 1;
-    st.bary = [1, 0, 0, 0];
-    return A;
-  }
-  const BO = neg(B);
-  const d3 = dot3(AB, BO);
-  const d4 = dot3(AC, BO);
-  if (d3 >= 0 && d3 >= d4) {
-    st.n = 1;
-    st.bary = [1, 0, 0, 0];
-    st.s[0] = B;
-    st.as[0] = st.as[1];
-    st.bs[0] = st.bs[1];
-    return B;
-  }
-  const vc = f(f(d1 * d4) - f(d3 * d2));
-  const ndAB = f(d1 - d3);
-  if (0 >= vc && d1 >= 0 && 0 >= d3 && ndAB > 0) {
-    st.n = 2;
-    const v = f(d1 / ndAB);
-    st.bary = [f(1 - v), v, f(1 - v), v];
-    return madd(AB, v, A);
-  }
-  const CO = neg(C);
-  const d5 = dot3(AB, CO);
-  const d6 = dot3(AC, CO);
-  if (d6 >= 0 && d6 >= d5) {
-    st.n = 1;
-    st.bary = [1, 0, 0, 0];
-    st.s[0] = C;
-    st.as[0] = st.as[2];
-    st.bs[0] = st.bs[2];
-    return C;
-  }
-  const vb = f(f(d5 * d2) - f(d1 * d6));
-  const ndAC = f(d2 - d6);
-  if (0 >= vb && d2 >= 0 && 0 >= d6 && ndAC > 0) {
-    const w = f(d2 / ndAC);
-    st.n = 2;
-    st.bary = [f(1 - w), w, f(1 - w), w];
-    st.s[1] = C;
-    st.as[1] = st.as[2];
-    st.bs[1] = st.bs[2];
-    return madd(AC, w, A);
-  }
-  const va = f(f(d3 * d6) - f(d5 * d4));
-  const d4m3 = f(d4 - d3);
-  const d5m6 = f(d5 - d6);
-  const ndBC = f(d4m3 + d5m6);
-  if (0 >= va && d4m3 >= 0 && d5m6 >= 0 && ndBC > 0) {
-    st.n = 2;
-    const w = f(d4m3 / ndBC);
-    st.bary = [f(1 - w), w, f(1 - w), w];
-    const result = madd(sub(C, B), w, B);
-    st.s[0] = B;
-    st.s[1] = C;
-    st.as[0] = st.as[1];
-    st.bs[0] = st.bs[1];
-    st.as[1] = st.as[2];
-    st.bs[1] = st.bs[2];
-    return result;
-  }
-  const denom = f(1 / f(va + f(vb + vc)));
-  const v = f(vb * denom);
-  const w = f(vc * denom);
-  st.n = 3;
-  st.bary = [f(f(1 - v) - w), v, w, v]; // two VectorUnpackLo
-  const over = [
-    f(triNormal[0] / triNormal2),
-    f(triNormal[1] / triNormal2),
-    f(triNormal[2] / triNormal2),
-  ] as F3;
-  const signed = dot3(A, over);
-  return scale(triNormal, signed);
-}
-
-/** VectorSignMatch: same sign bits and neither product zero. */
-function signMatch(a: number, b: number): boolean {
-  if (f(a * b) === 0) return false;
-  const sa = a < 0 || Object.is(a, -0);
-  const sb = b < 0 || Object.is(b, -0);
-  return sa === sb;
-}
-
-/** VectorTetrahedronSimplexFindOrigin<true>. */
-function tetraSimplex(st: SimplexState): F3 {
-  const [x0, x1, x2, x3] = st.s;
-  const cof = [
-    -dot3(x1, cross(x2, x3)),
-    dot3(x0, cross(x2, x3)),
-    -dot3(x0, cross(x1, x3)),
-    dot3(x0, cross(x1, x2)),
-  ];
-  const detM = f(f(cof[0] + cof[1]) + f(cof[2] + cof[3]));
-  const subIdx = [
-    [1, 2, 3],
-    [0, 2, 3],
-    [0, 1, 3],
-    [0, 1, 2],
-  ];
-  let inside = true;
-  let closestIdx = -1;
-  let minDist2 = 0;
-  const subs: SimplexState[] = [];
-  const closest: F3[] = [];
-  for (let i = 0; i < 4; i++) {
-    if (signMatch(detM, cof[i])) continue;
-    inside = false;
-    const ix = subIdx[i];
-    const sst: SimplexState = {
-      s: [st.s[ix[0]], st.s[ix[1]], st.s[ix[2]], ZERO],
-      as: [st.as[ix[0]], st.as[ix[1]], st.as[ix[2]], ZERO],
-      bs: [st.bs[ix[0]], st.bs[ix[1]], st.bs[ix[2]], ZERO],
-      n: 3,
-      bary: [0, 0, 0, 0],
-    };
-    const c = triangleSimplex(sst);
-    subs[i] = sst;
-    closest[i] = c;
-    const d2 = dot3(c, c);
-    if (minDist2 > d2 || closestIdx === -1) {
-      minDist2 = d2;
-      closestIdx = i;
-    }
-  }
-  if (inside) {
-    const inv = f(1 / detM);
-    st.bary = [
-      f(cof[0] * inv),
-      f(cof[1] * inv),
-      f(cof[2] * inv),
-      f(cof[3] * inv),
-    ];
-    return [0, 0, 0];
-  }
-  const sst = subs[closestIdx];
-  st.n = sst.n;
-  st.bary = sst.bary;
-  for (let i = 0; i < 3; i++) {
-    st.s[i] = sst.s[i];
-    st.as[i] = sst.as[i];
-    st.bs[i] = sst.bs[i];
-  }
-  return closest[closestIdx];
-}
-
-function closestToOrigin(st: SimplexState): F3 {
-  switch (st.n) {
-    case 1:
-      st.bary = [1, 0, 0, 0];
-      return st.s[0];
-    case 2:
-      return lineSimplex(st);
-    case 3:
-      return triangleSimplex(st);
-    case 4:
-      return tetraSimplex(st);
-    default:
-      return [0, 0, 0];
-  }
-}
+const MISS = (n: number, bary: GjkResult['barycentric'], it: number) => ({
+  hit: false,
+  time: 0,
+  position: [0, 0, 0] as F3,
+  normal: [0, 0, 1] as F3,
+  numVerts: n,
+  barycentric: bary,
+  iterations: it,
+});
 
 /**
  * GJKRaycast2ImplSimd for a static shape A and a capsule B (core segment
@@ -463,8 +195,8 @@ function closestToOrigin(st: SimplexState): F3 {
  * input already in float32 and in A's frame, as GJKRaycast2Impl passes
  * them.
  */
-export function gjkRaycastCapsule(
-  supportA: SupportFn,
+export function gjkRaycast(
+  a: ShapeA,
   radius: number,
   halfLength: number,
   bToARotation: FQ,
@@ -474,8 +206,10 @@ export function gjkRaycastCapsule(
   computeMTD: boolean,
   initialDir: F3
 ): GjkResult {
+  const supportA = a.support;
+  const marginA = f(a.margin);
   const marginB = f(radius);
-  const inflation = marginB; // MarginA = 0 (no radius on A, no sweep margins)
+  const inflation = f(marginA + marginB);
   const inflation2 = f(f(inflation * inflation) + EPS2);
   const aToB: FQ = [
     -bToARotation[0],
@@ -530,31 +264,11 @@ export function gjkRaycastCapsule(
     const vDotW = dot3(v, w);
     if (vDotW > inflation) {
       const vDotRay = dot3(v, rayDir);
-      if (vDotRay >= 0) {
-        return {
-          hit: false,
-          time: 0,
-          position: [0, 0, 0],
-          normal: [0, 0, 1],
-          numVerts: st.n,
-          barycentric: st.bary,
-          iterations,
-        };
-      }
+      if (vDotRay >= 0) return MISS(st.n, st.bary, iterations);
       const preLambda = lambda;
       lambda = f(lambda - f(f(vDotW - inflation) / vDotRay));
       if (lambda > preLambda) {
-        if (lambda > rayLength) {
-          return {
-            hit: false,
-            time: 0,
-            position: [0, 0, 0],
-            normal: [0, 0, 1],
-            numVerts: st.n,
-            barycentric: st.bary,
-            iterations,
-          };
-        }
+        if (lambda > rayLength) return MISS(st.n, st.bary, iterations);
         const oldX = x;
         x = madd(rayDir, lambda, startPoint);
         normal = v;
@@ -594,6 +308,12 @@ export function gjkRaycastCapsule(
   }
 
   const time = lambda;
+  const base = {
+    hit: true,
+    numVerts: st.n,
+    barycentric: st.bary,
+    iterations,
+  };
   if (time > 0) {
     const b = st.bary;
     const c1 = madd(st.bs[0], b[0], ZERO);
@@ -614,26 +334,109 @@ export function gjkRaycastCapsule(
     // + StartPoint + ClosestLocal.
     const closestLocal = sub(closestB, scale(normal, marginB));
     const position = add(madd(rayDir, lambda, startPoint), closestLocal);
-    return {
-      hit: true,
-      time,
-      position,
-      normal,
-      numVerts: st.n,
-      barycentric: st.bary,
-      iterations,
-    };
+    return { ...base, time, position, normal };
   }
-  // Initial overlap: the caller keeps its own (exact) start-overlap result.
+  if (!computeMTD) {
+    return { ...base, time, position: [0, 0, 0], normal: [0, 0, 1] };
+  }
+  // The initial-overlap exit (bComputeMTD).
+  const isDone = inflation > 0 && gjkPreDist2 > EPS2 && FLT_MAX > gjkPreDist2;
+  let closestA: F3 = [0, 0, 0];
+  let closestB: F3 = [0, 0, 0];
+  if (iterations) {
+    for (let i = 0; i < st.n; i++) {
+      closestA = madd(st.as[i], st.bary[i], closestA);
+      closestB = madd(st.bs[i], st.bary[i], closestB);
+    }
+  } else {
+    closestA = st.as[0];
+    closestB = st.bs[0];
+  }
+  if (isDone) {
+    const outNormal = normalize(v);
+    const dist = f(Math.sqrt(gjkPreDist2));
+    let pen = f(f(marginA + marginB) - dist);
+    pen = pen < FLT_MAX ? pen : FLT_MAX;
+    pen = pen > 0 ? pen : 0;
+    // VectorNegateMultiplyAdd(N, MarginB, ClosestB) = ClosestB - N * MarginB.
+    const closestLocal = sub(closestB, scale(outNormal, marginB));
+    const position = add(madd(outNormal, pen, startPoint), closestLocal);
+    return { ...base, time: -pen, position, normal: outNormal, mtd: 'gjk' };
+  }
+  if (iterations) {
+    const va: F3[] = [];
+    const vb: F3[] = [];
+    for (let i = 0; i < st.n; i++) {
+      va.push(st.as[i]);
+      vb.push(add(st.bs[i], x));
+    }
+    const epa = vectorEpa(va, vb, supportA, (d) =>
+      add(supportB(d), startPoint)
+    );
+    const margins = f(marginA + marginB);
+    if (epa.result === 'Ok' || epa.result === 'MaxIterations') {
+      return {
+        ...base,
+        time: f(f(-epa.penetration) - margins),
+        position: epa.witnessA,
+        normal: epa.dir,
+        mtd: epa.result,
+      };
+    }
+    if (epa.result === 'BadInitialSimplex') {
+      return {
+        ...base,
+        time: f(f(-epa.penetration) - margins),
+        position: madd(epa.dir, marginA, closestA),
+        normal: epa.dir,
+        mtd: epa.result,
+      };
+    }
+    if (epa.result === 'Degenerate') {
+      return {
+        ...base,
+        time: -margins,
+        position: madd(normal, marginA, closestA),
+        normal,
+        mtd: epa.result,
+      };
+    }
+    return { ...MISS(st.n, st.bary, iterations), mtd: epa.result };
+  }
+  // No GJK iteration: a touching hit.
+  const n0: F3 = [0, 0, 1];
   return {
-    hit: true,
-    time: 0,
-    position: [0, 0, 0],
-    normal: [0, 0, 1],
-    numVerts: st.n,
-    barycentric: st.bary,
-    iterations,
+    ...base,
+    time: -f(marginA + marginB),
+    position: madd(n0, marginA, st.as[0]),
+    normal: n0,
+    mtd: 'touch',
   };
+}
+
+/** The session 3.5 entry point: a margin-0 shape. */
+export function gjkRaycastCapsule(
+  supportA: SupportFn,
+  radius: number,
+  halfLength: number,
+  bToARotation: FQ,
+  startPoint: F3,
+  rayDir: F3,
+  rayLength: number,
+  computeMTD: boolean,
+  initialDir: F3
+): GjkResult {
+  return gjkRaycast(
+    { support: supportA, margin: 0 },
+    radius,
+    halfLength,
+    bToARotation,
+    startPoint,
+    rayDir,
+    rayLength,
+    computeMTD,
+    initialDir
+  );
 }
 
 // ---- the double-precision set-up around it ----
@@ -658,24 +461,48 @@ export interface CapsuleSweepInput {
 }
 
 export interface ChaosHit {
-  /** The distance SweepQuery returns (what the scene query compares). */
+  /** The distance SweepQuery returns (what the scene query compares);
+   * minus the penetration depth for an initial overlap. */
   distance: number;
+  /** An initial overlap (distance <= 0, FHitResult::bStartPenetrating). */
+  overlap: boolean;
   /** Triangles only: the visitor's own time (GJK lambda in the scaled
    * mesh frame, float) and LengthScale (float), for meshVisitorKeeps. */
   meshTime?: number;
   lengthScale?: number;
-  /** distance / DeltaMag (UE's FHitResult::Time before MoveComponent). */
+  /** Heightfields: the hit triangle (cell x 2 + 0 or 1). */
+  face?: number;
+  /** Triangles only: the visitor's back-face test (one-sided meshes). */
+  backFace?: boolean;
+  /** distance / DeltaMag (UE's FHitResult::Time before MoveComponent);
+   * 0 for an overlap. */
   time: number;
   /** World impact point (SweepQuery's TransformPositionNoScale). */
   impactPoint: [number, number, number];
-  /** Chaos's normal (world, before UE normalises it). */
+  /** SweepQuery's world normal: ATM.TransformVectorNoScale(LocalNormal)
+   * .GetSafeNormal(UE_KINDA_SMALL_NUMBER, (0, 0, 0)). */
   normal: [number, number, number];
   gjk: GjkResult;
 }
 
+/** FVector::GetSafeNormal (double): SquareSum == 1 returns the vector;
+ * below Tolerance the zero vector; else times 1 / sqrt (InvSqrt). */
+export function safeNormal(
+  v: readonly number[],
+  tolerance: number
+): [number, number, number] {
+  const sq = v[0] * v[0] + v[1] * v[1] + v[2] * v[2];
+  if (sq === 1) return [v[0], v[1], v[2]];
+  if (sq < tolerance) return [0, 0, 0];
+  const s = 1 / Math.sqrt(sq);
+  return [v[0] * s, v[1] * s, v[2] * s];
+}
+
+const KINDA_SMALL = 1e-4;
+
 /** TSceneCastCommonImp: Delta = End - Start, DeltaMag = float(|Delta|),
  * Dir = Delta x (1 / DeltaMag) (TVector::operator/). */
-function sweepDir(input: CapsuleSweepInput): {
+export function sweepDir(input: CapsuleSweepInput): {
   dir: [number, number, number];
   mag: number;
 } {
@@ -688,7 +515,7 @@ function sweepDir(input: CapsuleSweepInput): {
 }
 
 /** FTransform::GetRelativeTransform (scale 1), B relative to A. */
-function relative(
+export function relative(
   a: ShapePose,
   bT: V3,
   bQ: DQ
@@ -698,38 +525,43 @@ function relative(
   return { t: drot(ia, d), q: dmul(ia, bQ) };
 }
 
-const toF3 = (v: V3): F3 => [f(v[0]), f(v[1]), f(v[2])];
-const toFQ = (q: DQ): FQ => [f(q[0]), f(q[1]), f(q[2]), f(q[3])];
+export const toF3 = (v: V3): F3 => [f(v[0]), f(v[1]), f(v[2])];
+export const toFQ = (q: DQ): FQ => [f(q[0]), f(q[1]), f(q[2]), f(q[3])];
 
+/** SweepQuery's way back to world space, for a hit or an overlap. */
 function finish(
   pose: ShapePose,
   gjk: GjkResult,
   mag: number,
+  distance: number,
   localPosition: V3,
   localNormal: V3
 ): ChaosHit {
   const p = drot(pose.q, localPosition);
   const n = drot(pose.q, localNormal);
+  const overlap = !(distance > 0);
   return {
-    distance: gjk.time,
-    time: gjk.time / mag,
+    distance,
+    overlap,
+    time: overlap ? 0 : distance / mag,
     impactPoint: [p[0] + pose.t[0], p[1] + pose.t[1], p[2] + pose.t[2]],
-    normal: n,
+    normal: safeNormal(n, KINDA_SMALL),
     gjk,
   };
 }
 
 /**
- * SweepQuery for a convex A (box or hull): GJKRaycast2 with
- * InitialDir = ATM.Location - BTM.Location (world), then the position back
- * through ATM. Returns null when Chaos reports no hit.
+ * SweepQuery for a convex A (box, hull, sphere or capsule): GJKRaycast2
+ * with InitialDir = ATM.Location - BTM.Location (world), then the result
+ * back through ATM. Returns null when Chaos reports no hit.
  */
 export function chaosConvexSweep(
-  supportA: SupportFn,
+  shape: ShapeA | SupportFn,
   pose: ShapePose,
-  input: CapsuleSweepInput,
-  outcome?: { overlap: boolean }
+  input: CapsuleSweepInput
 ): ChaosHit | null {
+  const a: ShapeA =
+    typeof shape === 'function' ? { support: shape, margin: 0 } : shape;
   const { dir, mag } = sweepDir(input);
   const rel = relative(pose, input.start, input.rotation);
   const localDir = drot(dinv(pose.q), dir);
@@ -738,8 +570,8 @@ export function chaosConvexSweep(
     pose.t[1] - input.start[1],
     pose.t[2] - input.start[2],
   ];
-  const gjk = gjkRaycastCapsule(
-    supportA,
+  const gjk = gjkRaycast(
+    a,
     input.radius,
     input.halfLength,
     qnormalizeSafe(toFQ(rel.q)),
@@ -749,9 +581,8 @@ export function chaosConvexSweep(
     true,
     toF3(offset)
   );
-  if (outcome) outcome.overlap = gjk.hit && !(gjk.time > 0);
-  if (!gjk.hit || !(gjk.time > 0)) return null;
-  return finish(pose, gjk, mag, gjk.position, gjk.normal);
+  if (!gjk.hit) return null;
+  return finish(pose, gjk, mag, gjk.time, gjk.position, gjk.normal);
 }
 
 /**
@@ -765,14 +596,17 @@ export function chaosConvexSweep(
  * the scale), and the visitor (VisitSweep, :1272) casts against the cooked
  * triangle times the scale in float, with InitialDir (1, 0, 0).
  * `cooked` are the float32 mesh-local vertices in Chaos's cooked order
- * (render v0 and v1 swapped, ChaosCooking.cpp:41).
+ * (render v0 and v1 swapped, ChaosCooking.cpp:41). `windingCode` is
+ * GetWindingOrder(scale) for one-sided meshes (back faces culled), 0 for
+ * double-sided ones. A back face's positive-time hit is dropped (the
+ * visitor's rule); its initial overlap is kept.
  */
 export function chaosTriangleSweep(
   cooked: [F3, F3, F3],
   scale3: V3,
   pose: ShapePose,
   input: CapsuleSweepInput,
-  outcome?: { overlap: boolean }
+  windingCode = 0
 ): ChaosHit | null {
   const { dir, mag } = sweepDir(input);
   const rel = relative(pose, input.start, input.rotation);
@@ -826,9 +660,15 @@ export function chaosTriangleSweep(
           f(cooked[2][2] * sf[2]),
         ],
       ];
+  // The visitor's back-face test: Dot3(TriNormal, ScaledDir) x code > 0.
+  let backFace = false;
+  if (windingCode !== 0) {
+    const tn = crossF(sub(tri[1], tri[0]), sub(tri[2], tri[0]));
+    backFace = f(dot3(tn, toF3(scaledDir)) * windingCode) > 0;
+  }
   const lengthScaleF = f(lengthScale);
-  const gjk = gjkRaycastCapsule(
-    triangleSupport(tri[0], tri[1], tri[2]),
+  const gjk = gjkRaycast(
+    { support: triangleSupport(tri[0], tri[1], tri[2]), margin: 0 },
     input.radius,
     input.halfLength,
     qnormalizeSafe(toFQ(rel.q)),
@@ -838,11 +678,20 @@ export function chaosTriangleSweep(
     true,
     [1, 0, 0]
   );
-  if (outcome) outcome.overlap = gjk.hit && !(gjk.time > 0);
-  if (!gjk.hit || !(gjk.time > 0)) return null;
-  // TransformSweepOutputsHelper: time / LengthScale in float, position
-  // times 1 / scale; then the wrapper's LengthScaleInv and scale.
+  if (!gjk.hit) return null;
+  if (gjk.time > 0 && backFace) return null;
+  // TransformSweepOutputsHelper: time / LengthScale in float, normal
+  // (scale x normal).GetSafeNormal(), position times 1 / scale; then the
+  // wrapper's LengthScaleInv, scale and (1 / scale x normal).GetSafeNormal().
   let time = f(gjk.time / lengthScaleF);
+  let normal = safeNormal(
+    [
+      scale3[0] * gjk.normal[0],
+      scale3[1] * gjk.normal[1],
+      scale3[2] * gjk.normal[2],
+    ],
+    1e-8
+  );
   let pos: V3 = [
     (1 / scale3[0]) * gjk.position[0],
     (1 / scale3[1]) * gjk.position[1],
@@ -851,13 +700,29 @@ export function chaosTriangleSweep(
   if (!unit) {
     time = outerInv * time;
     pos = [scale3[0] * pos[0], scale3[1] * pos[1], scale3[2] * pos[2]];
+    normal = safeNormal(
+      [
+        (1 / scale3[0]) * normal[0],
+        (1 / scale3[1]) * normal[1],
+        (1 / scale3[2]) * normal[2],
+      ],
+      1e-8
+    );
   }
-  const hit = finish(pose, gjk, mag, pos, gjk.normal);
-  hit.distance = time;
-  hit.time = time / mag;
+  const hit = finish(pose, gjk, mag, time, pos, normal);
   hit.meshTime = gjk.time;
   hit.lengthScale = lengthScaleF;
+  hit.backFace = backFace;
   return hit;
+}
+
+/** VectorCross (float), local to keep chaos_simd's exports small. */
+function crossF(a: F3, b: F3): F3 {
+  return [
+    f(f(a[1] * b[2]) - f(a[2] * b[1])),
+    f(f(a[2] * b[0]) - f(a[0] * b[2])),
+    f(f(a[0] * b[1]) - f(a[1] * b[0])),
+  ];
 }
 
 /**
@@ -865,7 +730,8 @@ export function chaosTriangleSweep(
  * after `kept` (the mesh's hit so far, or null): `Time < LengthScale x
  * OutTime` in float, where OutTime = kept Time / LengthScale (float). With
  * a LengthScale other than 1 the round trip can swallow an ulp, so this is
- * not the same as comparing distances.
+ * not the same as comparing distances. An initial overlap stops the visit
+ * (`meshVisitStops`).
  */
 export function meshVisitorKeeps(
   kept: ChaosHit | null,
@@ -876,3 +742,7 @@ export function meshVisitorKeeps(
   const outTime = f(kept.meshTime! / ls);
   return next.meshTime! < f(ls * outTime);
 }
+
+/** The visitor stops at its first kept initial overlap (Time <= 0). */
+export const meshVisitStops = (kept: ChaosHit): boolean =>
+  !(kept.meshTime! > 0);

@@ -150,9 +150,12 @@ Spectrum (`CrashSite`), Loki's legs, stock UE movement plus exported tuning.
     semantics, `world.ts`) and its implementation, the exact float64 layer
     in `exact/`: a static BVH broad phase, heightfield cell lookup, and
     closed-form capsule sweeps against boxes, convex hulls, spheres,
-    capsules, triangle meshes and heightfield cells, with Chaos's hit rules
-    (`Normal`, per-shape `ImpactNormal`, the parallel-contact impact point,
-    one-sided meshes). `export_loader.ts` turns the export into colliders;
+    capsules, triangle meshes and heightfield cells that find the
+    candidates; a float32 port of Chaos's sweep (`chaos_gjk.ts`, with
+    `chaos_simd.ts`, `chaos_epa.ts`, `chaos_heightfield.ts`) then decides
+    every reported hit, bit for bit against UE (time, point, normals,
+    initial overlaps, the scene query's ranking; MVP session 4.5).
+    `export_loader.ts` turns the export into colliders;
     `known_gaps.ts` lists what is not established. `engine/` and `rules/`
     depend only on `world.ts` (ESLint).
   - `input/`, `sim/`, `session.ts`, `placeholders.ts`: input as data, the
