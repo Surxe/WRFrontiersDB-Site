@@ -84,7 +84,7 @@ export const RULES_KNOWN_GAPS: readonly string[] = [
   "Body rotation target: whether ComputeOrientToMovementRotation re-runs DesiredYaw after the move or keeps CalcVelocity's choice is unread; the port re-runs it.",
   "CalcVelocity's integrate limit is ported as the finding writes it (|V| > MaxInputSpeed); stock uses IsExceedingMaxSpeed's 1 % tolerance there. Not re-read.",
   "GetMaxSpeed's slope bonus is also gated on `FUN_1455956a0` returning false (unread); the port takes it as false.",
-  'Stat channels (MaxSpeed, MaxAcceleration, RotationRateYaw, Friction) pass values through unchanged: no buffs in the MVP (findings step 2).',
+  "Stat channels (MaxSpeed, MaxAcceleration, RotationRateYaw, Friction) pass values through unchanged apart from the dash's MaxSpeedModifier: no buffs in the MVP (findings step 2).",
   "Spawn facing: the capsule starts at yaw 0 (the spawn pin's rotation is session 6's).",
   "Capsule rotation is kept as a yaw in doubles; UE stores the component's quaternion (rotator round trip, SCENECOMPONENT_QUAT_TOLERANCE): differences below 1e-6 degrees.",
 ];
@@ -119,6 +119,9 @@ export class TunedCharacterMovement extends CharacterMovementComponent {
   readonly airControlBlockers = new Blockers();
   readonly walkingModeBlockers = new Blockers();
   readonly movementInputBlockers = new Blockers();
+  /** `MaxSpeedChannel`'s modifiers by holder (`CMC+0x1cb8`): the dash's
+   * `MaxSpeedModifier` (Add) while its action runs (findings step 6). */
+  readonly maxSpeedModifiers = new Map<string, number>();
   /** OnCharacterMovementUpdated, which PerformMovement broadcasts at its
    * end: WRF binds `ASCharacter::CharacterMovementUpdated` to it (fuel
    * regeneration, ability ticks; robot_character.ts). */
@@ -229,14 +232,23 @@ export class TunedCharacterMovement extends CharacterMovementComponent {
 
   // ---- Getters (steps 2 to 4) ----
 
-  /** WRF GetMaxSpeed (`0x145591a80`): the chassis MaxSpeed on the ground
-   * plus the downhill bonus, MaxFallingSpeed in the air, times the
-   * desired-yaw factor (+0xf88). */
+  /** `MaxSpeedChannel` (`Channel::Apply` `0x1453ede60`): each modifier in
+   * turn. Add is taken to add its value (D2, unconfirmed: the channel's
+   * operators are unread; firing range D2). */
+  applyMaxSpeedChannel(value: number): number {
+    let v = f32(value);
+    for (const add of this.maxSpeedModifiers.values()) v = f32(v + f32(add));
+    return v;
+  }
+
+  /** WRF GetMaxSpeed (`0x145591a80`): MaxSpeedChannel of the chassis
+   * MaxSpeed on the ground plus the downhill bonus, MaxSpeedChannel of
+   * MaxFallingSpeed in the air, times the desired-yaw factor (+0xf88). */
   override getMaxSpeed(): number {
     const p = this.properties;
     let base: number;
     if (this.movementMode === 'walking') {
-      base = f32(p.maxWalkingSpeed);
+      base = this.applyMaxSpeedChannel(p.maxWalkingSpeed);
       const n = this.currentFloor.hitResult.impactNormal.z;
       if (
         this.currentFloor.isWalkableFloor() &&
@@ -249,7 +261,7 @@ export class TunedCharacterMovement extends CharacterMovementComponent {
         );
       }
     } else if (this.movementMode === 'falling') {
-      base = f32(p.maxFallingSpeed);
+      base = this.applyMaxSpeedChannel(p.maxFallingSpeed);
     } else {
       return 0;
     }

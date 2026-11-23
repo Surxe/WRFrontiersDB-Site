@@ -288,7 +288,7 @@ export class DriveMode {
     console.warn(
       '[movement] rules known gaps:\n' +
         RULES_KNOWN_GAPS.map((gap) => `  ${gap}`).join('\n') +
-        '\n[movement] Jump Jet and fuel known gaps:\n' +
+        '\n[movement] Jump Jet, dash and fuel known gaps:\n' +
         ABILITY_KNOWN_GAPS.map((gap) => `  ${gap}`).join('\n') +
         '\n[movement] engine known gaps:\n' +
         ENGINE_KNOWN_GAPS.map((gap) => `  ${gap}`).join('\n') +
@@ -334,7 +334,7 @@ export class DriveMode {
     const input =
       this.scripted || this.input.locked
         ? view
-        : { ...view, forward: 0, right: 0, jump: false };
+        : { ...view, forward: 0, right: 0, jump: false, dash: false };
     const result = session.update(frameSeconds, input);
     this.lastFrameStats = result;
     if (frameMs > 0) {
@@ -400,6 +400,7 @@ export class DriveMode {
         viewYaw: yaw,
         viewPitch: 0,
         jump: false,
+        dash: false,
       });
       collision.push(result.queries.ms);
       update.push(result.simMs);

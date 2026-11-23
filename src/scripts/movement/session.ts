@@ -15,11 +15,12 @@ import { parseChassis } from './data/chassis';
 import { parseChassisLevel, type ChassisLevel } from './data/chassis_level';
 import { parseMovementType, type MovementType } from './data/movement_type';
 import { parseJetpack } from './data/jump_ability';
+import { parseDash, type DashData } from './data/dash_ability';
 import type { FuelResourceDefaults } from './data/character';
 import type { Capsule, CollisionWorld, QueryStats } from './collision/world';
 import type { StockParams } from './engine/stock_params';
 import { fixupDeltaSeconds } from './engine/world_tick';
-import { inputVector, type InputState } from './input/input_state';
+import { aimVector, inputVector, type InputState } from './input/input_state';
 import { FixedStep } from './sim/fixed_step';
 import {
   blendForMobility,
@@ -42,7 +43,7 @@ export interface SessionOptions {
   characterModules: Readonly<Record<string, unknown>>;
   /** Parsed `Objects/Module.json`. */
   modules: Readonly<Record<string, unknown>>;
-  /** Parsed `Objects/Ability.json` (the Jump Jet). */
+  /** Parsed `Objects/Ability.json` (the Jump Jet and the dash). */
   abilities: Readonly<Record<string, unknown>>;
   /** BP_Character's fuel resource (`Character.json`). */
   fuel: FuelResourceDefaults;
@@ -79,6 +80,7 @@ export class MovementSession {
   readonly movement: TunedCharacterMovement;
   readonly robot: RobotCharacter;
   readonly jetpack: JetpackData;
+  readonly dash: DashData;
   readonly chassisId: string;
   readonly movementType: MovementType;
   readonly chassisLevel: ChassisLevel;
@@ -104,6 +106,11 @@ export class MovementSession {
       options.characterModules,
       options.chassisId
     );
+    this.dash = parseDash(
+      options.abilities,
+      options.characterModules,
+      options.chassisId
+    );
     this.movement = new TunedCharacterMovement(
       options.collision,
       options.capsule,
@@ -115,6 +122,7 @@ export class MovementSession {
       this.movement,
       options.fuel,
       this.jetpack,
+      this.dash,
       this.chassisLevel.fuelCapacity
     );
     this.robot.respawn(options.spawn);
@@ -168,6 +176,11 @@ export class MovementSession {
   update(frameSeconds: number, input: InputState): FrameStats {
     const began = performance.now();
     const direction = inputVector(input);
+    const abilities = {
+      jump: input.jump,
+      dash: input.dash,
+      aim: aimVector(input),
+    };
     // UCharacterMovementComponent::TickComponent checks CheckStillInWorld
     // before moving: below KillZ the pawn falls out of the world. The game
     // then destroys the robot; respawning stands in for what follows.
@@ -179,13 +192,13 @@ export class MovementSession {
       // (The experiment's own clamp, sim/fixed_step.ts, not the game's.)
       ({ steps, alpha } = this.loop.advance(frameSeconds, (step) => {
         this.previous = this.movement.location;
-        this.robot.update(step, direction, input);
+        this.robot.update(step, direction, abilities);
       }));
     } else if (frameSeconds > 0) {
       // As the game: the world clamps the frame (0.4 s), then movement
       // splits it into float sub-steps.
       this.previous = this.movement.location;
-      this.robot.update(fixupDeltaSeconds(frameSeconds), direction, input);
+      this.robot.update(fixupDeltaSeconds(frameSeconds), direction, abilities);
       steps = 1;
     }
     return {

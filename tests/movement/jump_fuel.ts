@@ -29,6 +29,7 @@ import {
 
 const DT = 1 / 60;
 const STILL = vec(0, 0, 0);
+const AIM = vec(1, 0, 0);
 const TWO_LEGS = 'DA_MovementType_TwoLegs_Agile.6';
 
 /** Loki standing on the flat floor, settled, fuel full. */
@@ -39,11 +40,13 @@ function standing(options: Parameters<typeof lokiRobot>[2] = {}) {
 }
 
 function idle(r: RobotCharacter, ticks: number): void {
-  for (let i = 0; i < ticks; i++) r.update(DT, STILL, { jump: false });
+  for (let i = 0; i < ticks; i++)
+    r.update(DT, STILL, { jump: false, dash: false, aim: AIM });
 }
 
 function hold(r: RobotCharacter, ticks: number, jump = true): void {
-  for (let i = 0; i < ticks; i++) r.update(DT, STILL, { jump });
+  for (let i = 0; i < ticks; i++)
+    r.update(DT, STILL, { jump, dash: false, aim: AIM });
 }
 
 /** The two-legged chassis of the MVP: the movement type's 39 minus
@@ -72,7 +75,7 @@ function flight(
   let poweredEnd = -1;
   for (let i = 1; i <= 1500; i++) {
     const before = r.jetpack.state;
-    r.update(DT, STILL, { jump: i <= holdTicks });
+    r.update(DT, STILL, { jump: i <= holdTicks, dash: false, aim: AIM });
     if (takeoff < 0 && r.jetpack.state === 'jump') takeoff = i;
     // The first cut: held on, Fly restarts once regeneration reaches
     // FuelCostToStartAirborne again (2.5 s later).

@@ -23,6 +23,7 @@ import {
   parseJetpackAirControl,
 } from '../../../src/scripts/movement/data/jump_ability';
 import { RobotCharacter } from '../../../src/scripts/movement/rules/robot_character';
+import { parseDash } from '../../../src/scripts/movement/data/dash_ability';
 import { parseMapPhysics } from '../../../src/scripts/movement/data/map_physics';
 import { parseMovementType } from '../../../src/scripts/movement/data/movement_type';
 import { vec, type Vec3 } from '../../../src/scripts/movement/math/vec';
@@ -63,12 +64,21 @@ export function lokiProperties(
   level: number | null = null,
   maxSpeedOverride?: number
 ): MovementProperties {
-  const chassis = parseChassis(readTable('CharacterModule'), LOKI);
+  return chassisProperties(LOKI, level, maxSpeedOverride);
+}
+
+/** A chassis's provider at `level` (null: its highest). */
+export function chassisProperties(
+  chassisId: string,
+  level: number | null = null,
+  maxSpeedOverride?: number
+): MovementProperties {
+  const chassis = parseChassis(readTable('CharacterModule'), chassisId);
   const type = parseMovementType(
     readTable('MovementType'),
     chassis.movementTypeId
   );
-  const lvl = parseChassisLevel(readTable('Module'), LOKI, level);
+  const lvl = parseChassisLevel(readTable('Module'), chassisId, level);
   return new MovementProperties(
     type,
     blendForMobility(type, lvl.mobility),
@@ -92,18 +102,28 @@ export function lokiOn(
   location: Vec3,
   level: number | null = null
 ): TunedCharacterMovement {
+  return chassisOn(LOKI, hulls, location, level);
+}
+
+/** A chassis on a fixture world, walking at `location` (capsule centre). */
+export function chassisOn(
+  chassisId: string,
+  hulls: HullCollider[],
+  location: Vec3,
+  level: number | null = null
+): TunedCharacterMovement {
   const world = new ExactCollisionWorld({ ...emptyColliderSet(), hulls });
   const c = new TunedCharacterMovement(
     world,
     { ...ROBOT_CAPSULE },
     location,
     {
-      properties: lokiProperties(level),
+      properties: chassisProperties(chassisId, level),
       tierSource: { name: 'Tiers', value: '', source: 'finding', note: '' },
       airControl: parseJetpackAirControl(
         readTable('Ability'),
         readTable('CharacterModule'),
-        LOKI
+        chassisId
       ),
     },
     lokiParams()
@@ -230,7 +250,17 @@ export function lokiRobot(
   location: Vec3,
   options: { gravityScale?: number; fuelMax?: number } = {}
 ): RobotCharacter {
-  const c = lokiOn(hulls, location);
+  return chassisRobot(LOKI, hulls, location, options);
+}
+
+/** A chassis as a robot (Jump Jet, dash and fuel) on fixture geometry. */
+export function chassisRobot(
+  chassis: string,
+  hulls: HullCollider[],
+  location: Vec3,
+  options: { gravityScale?: number; fuelMax?: number } = {}
+): RobotCharacter {
+  const c = chassisOn(chassis, hulls, location);
   if (options.gravityScale !== undefined)
     c.params.gravityScale = Math.fround(options.gravityScale);
   const fuel = parseFuelResource(readTable('Character'));
@@ -239,7 +269,8 @@ export function lokiRobot(
     options.fuelMax === undefined
       ? fuel
       : { ...fuel, MaxValue: options.fuelMax },
-    parseJetpack(readTable('Ability'), readTable('CharacterModule'), LOKI)
+    parseJetpack(readTable('Ability'), readTable('CharacterModule'), chassis),
+    parseDash(readTable('Ability'), readTable('CharacterModule'), chassis)
   );
   robot.respawn(location);
   return robot;

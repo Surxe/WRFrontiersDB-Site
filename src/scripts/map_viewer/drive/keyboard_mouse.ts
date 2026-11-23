@@ -1,7 +1,8 @@
 /**
  * Keyboard and mouse to the movement's plain input state, while the pointer
  * is locked on the viewer's canvas (the same lock fly mode uses):
- * WASD / arrows move, the mouse looks, Space (held) is the Jump Jet. Number
+ * WASD / arrows move, the mouse looks, Space (held) is the Jump Jet, Left
+ * Shift is Dash Thrusters (the game's default bindings, BINDINGS). Number
  * keys pick a speed tier (0: the game's blend) and T respawns; both are
  * reported through callbacks.
  *
@@ -16,12 +17,25 @@ import type { InputState } from '../../movement/input/input_state';
 const MOUSE_DEGREES_PER_PIXEL = 0.15;
 const MAX_PITCH = 80;
 
-const FORWARD = new Set(['KeyW', 'ArrowUp']);
-const BACK = new Set(['KeyS', 'ArrowDown']);
-const RIGHT = new Set(['KeyD', 'ArrowRight']);
-const LEFT = new Set(['KeyA', 'ArrowLeft']);
-/** The game's default jump binding. */
-const JUMP = 'Space';
+/**
+ * The game's default bindings for the movement inputs, in one table.
+ * Dash: Left Shift (firing-range item K1, recorded by Ethan 2026-11-22).
+ */
+export const BINDINGS = {
+  forward: ['KeyW', 'ArrowUp'],
+  back: ['KeyS', 'ArrowDown'],
+  right: ['KeyD', 'ArrowRight'],
+  left: ['KeyA', 'ArrowLeft'],
+  jump: ['Space'],
+  dash: ['ShiftLeft'],
+} as const;
+
+const FORWARD = new Set<string>(BINDINGS.forward);
+const BACK = new Set<string>(BINDINGS.back);
+const RIGHT = new Set<string>(BINDINGS.right);
+const LEFT = new Set<string>(BINDINGS.left);
+const JUMP = new Set<string>(BINDINGS.jump);
+const DASH = new Set<string>(BINDINGS.dash);
 
 export interface InputCallbacks {
   /** A digit key: 1-9 use tier 0-8 alone, 0 returns to the game's blend. */
@@ -82,7 +96,8 @@ export class KeyboardMouseInput {
       right: axis(RIGHT, LEFT),
       viewYaw: this.yaw,
       viewPitch: this.pitch,
-      jump: this.held.has(JUMP),
+      jump: [...JUMP].some((k) => this.held.has(k)),
+      dash: [...DASH].some((k) => this.held.has(k)),
     };
   }
 
@@ -98,7 +113,8 @@ export class KeyboardMouseInput {
       BACK.has(code) ||
       RIGHT.has(code) ||
       LEFT.has(code) ||
-      code === JUMP
+      JUMP.has(code) ||
+      DASH.has(code)
     ) {
       event.preventDefault();
       if (down) this.held.add(code);
