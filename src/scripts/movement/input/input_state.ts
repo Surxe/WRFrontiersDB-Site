@@ -15,6 +15,8 @@ export interface InputState {
   viewPitch: number;
   /** The jump input (Space) is held: the Jump Jet's activation. */
   jump: boolean;
+  /** The dash input (Left Shift, the game's default, K1) is held. */
+  dash: boolean;
 }
 
 export const NO_INPUT: InputState = {
@@ -23,6 +25,7 @@ export const NO_INPUT: InputState = {
   viewYaw: 0,
   viewPitch: 0,
   jump: false,
+  dash: false,
 };
 
 /**
@@ -38,4 +41,17 @@ export function inputVector({ forward, right, viewYaw }: InputState): Vec3 {
     vec(cos * forward - sin * right, sin * forward + cos * right, 0),
     1
   );
+}
+
+/**
+ * Where the dash aims: the view's forward (FRotator(pitch, yaw, 0).Vector()).
+ * The game aims from the capsule at its aim component's target point
+ * (ASCharacter+0x1010, unread); the view ray's direction is that target
+ * taken infinitely far along the view (a labelled known gap).
+ */
+export function aimVector({ viewYaw, viewPitch }: InputState): Vec3 {
+  const yaw = (viewYaw * Math.PI) / 180;
+  const pitch = (viewPitch * Math.PI) / 180;
+  const cp = Math.cos(pitch);
+  return vec(cp * Math.cos(yaw), cp * Math.sin(yaw), Math.sin(pitch));
 }

@@ -143,6 +143,7 @@ function benchMap(map: string): void {
     viewYaw: 0,
     viewPitch: 0,
     jump: false,
+    dash: false,
   };
   for (let i = 0; i < 180; i++) session.update(1 / 60, idle);
 
@@ -162,6 +163,7 @@ function benchMap(map: string): void {
           viewYaw: heading,
           viewPitch: 0,
           jump: false,
+          dash: false,
         });
         if (r.fellOutOfWorld) killed++;
         const l = session.movement.location;
@@ -201,6 +203,7 @@ function benchMap(map: string): void {
         viewYaw: yaw,
         viewPitch: 0,
         jump: false,
+        dash: false,
       });
       coll.push(r.queries.ms);
       upd.push(r.simMs);
