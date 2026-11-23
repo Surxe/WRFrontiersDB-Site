@@ -204,16 +204,16 @@ export function moveAlongFloor(
       c.isWalkable(hit)
     ) {
       // Another walkable ramp.
-      const initialPercentRemaining = 1 - percentTimeApplied;
+      const initialPercentRemaining = f32(1 - percentTimeApplied);
       rampVector = c.computeGroundMovementDelta(
         scale(delta, initialPercentRemaining),
         hit,
         false
       );
       c.safeMoveUpdatedComponent(rampVector, hit);
-      const secondHitPercent = hit.time * initialPercentRemaining;
+      const secondHitPercent = f32(hit.time * initialPercentRemaining);
       percentTimeApplied = Math.min(
-        Math.max(percentTimeApplied + secondHitPercent, 0),
+        Math.max(f32(percentTimeApplied + secondHitPercent), 0),
         1
       );
     }
@@ -225,14 +225,14 @@ export function moveAlongFloor(
         if (
           !c.stepUp(
             GRAVITY_DIR,
-            scale(delta, 1 - percentTimeApplied),
+            scale(delta, f32(1 - percentTimeApplied)),
             hit,
             outStepDown
           )
         ) {
           c.slideAlongSurface(
             delta,
-            1 - percentTimeApplied,
+            f32(1 - percentTimeApplied),
             hit.normal,
             hit,
             true
@@ -240,7 +240,10 @@ export function moveAlongFloor(
         } else if (!c.params.maintainHorizontalGroundVelocity) {
           // Only horizontal movement counts toward velocity.
           c.justTeleported = true;
-          const stepUpTimeSlice = (1 - percentTimeApplied) * deltaSeconds;
+          // float StepUpTimeSlice = (1.f - PercentTimeApplied) * DeltaSeconds.
+          const stepUpTimeSlice = f32(
+            f32(1 - percentTimeApplied) * deltaSeconds
+          );
           if (stepUpTimeSlice >= KINDA_SMALL_NUMBER) {
             c.velocity = planeProject(
               scale(sub(c.location, preStepUpLocation), 1 / stepUpTimeSlice),
@@ -271,10 +274,12 @@ export function computeGroundMovementDelta(
     c.isWalkable(rampHit)
   ) {
     // Project the horizontal movement onto the ramp.
-    const floorDotDelta =
+    // float FloorDotDelta.
+    const floorDotDelta = f32(
       floorNormal.x * delta.x +
-      floorNormal.y * delta.y +
-      floorNormal.z * delta.z;
+        floorNormal.y * delta.y +
+        floorNormal.z * delta.z
+    );
     const rampMovement = vec(delta.x, delta.y, -floorDotDelta / floorNormal.z);
     return c.params.maintainHorizontalGroundVelocity
       ? rampMovement
@@ -309,16 +314,19 @@ export function adjustFloorHeight(c: CharacterMovementComponent): void {
   if (oldFloorDist >= MIN_FLOOR_DIST && oldFloorDist <= MAX_FLOOR_DIST) return;
 
   const adjustHit = new HitResult(1);
-  const initialZ = c.location.z;
-  const avgFloorDist = (MIN_FLOOR_DIST + MAX_FLOOR_DIST) * 0.5;
-  const moveDist = avgFloorDist - oldFloorDist;
+  const initialZ = c.location.z; // double InitialZ
+  // float AvgFloorDist, MoveDist; FFindFloorResult::FloorDist is a float.
+  const avgFloorDist = f32(f32(MIN_FLOOR_DIST + MAX_FLOOR_DIST) * 0.5);
+  const moveDist = f32(avgFloorDist - oldFloorDist);
   c.safeMoveUpdatedComponent(vec(0, 0, moveDist), adjustHit);
   if (!adjustHit.isValidBlockingHit()) {
-    c.currentFloor.floorDist += moveDist;
+    c.currentFloor.floorDist = f32(c.currentFloor.floorDist + moveDist);
   } else if (moveDist > 0) {
-    c.currentFloor.floorDist += c.location.z - initialZ;
+    c.currentFloor.floorDist = f32(
+      c.currentFloor.floorDist + (c.location.z - initialZ)
+    );
   } else {
-    c.currentFloor.floorDist = c.location.z - adjustHit.location.z;
+    c.currentFloor.floorDist = f32(c.location.z - adjustHit.location.z);
     if (c.isWalkable(adjustHit))
       c.currentFloor.setFromSweep(adjustHit, c.currentFloor.floorDist, true);
   }

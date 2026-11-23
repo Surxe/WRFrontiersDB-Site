@@ -12,9 +12,11 @@ export interface Vec3 {
 }
 
 /** UE_SMALL_NUMBER, UE_KINDA_SMALL_NUMBER and UE_DELTA (UnrealMathUtility.h). */
-export const SMALL_NUMBER = 1e-8;
-export const KINDA_SMALL_NUMBER = 1e-4;
-export const DELTA = 0.00001;
+// UE's macros are float literals (UE_SMALL_NUMBER (1.e-8f),
+// UE_KINDA_SMALL_NUMBER (1.e-4f), UE_DELTA (0.00001f); UnrealMathUtility.h).
+export const SMALL_NUMBER = Math.fround(1e-8);
+export const KINDA_SMALL_NUMBER = Math.fround(1e-4);
+export const DELTA = Math.fround(0.00001);
 
 /**
  * Round to float32. UE 5.4 keeps positions and velocities in doubles

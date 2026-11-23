@@ -582,17 +582,20 @@ export class CharacterMovementComponent extends MovementComponent {
         const hitNormal = hit.normal;
         if (
           (hitNormal.z >= this.params.walkableFloorZ || this.isWalkable(hit)) &&
-          hitNormal.z > 1e-4
+          hitNormal.z > Math.fround(1e-4)
         ) {
-          // Maintain horizontal velocity.
-          const time = 1 - hit.time;
+          // Maintain horizontal velocity (float Time).
+          const time = Math.fround(1 - hit.time);
           delta = scale(
             { x: delta.x, y: delta.y, z: delta.z / hitNormal.z },
             time
           );
           // Never exceed MaxStepHeight vertically.
           if (delta.z > this.params.maxStepHeight) {
-            delta = scale(delta, this.params.maxStepHeight / delta.z);
+            delta = scale(
+              delta,
+              Math.fround(this.params.maxStepHeight / delta.z)
+            );
           }
         } else {
           delta = withZ(delta, 0);

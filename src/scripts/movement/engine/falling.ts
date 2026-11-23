@@ -146,11 +146,11 @@ export function handleSlopeBoosting(
 ): Vec3 {
   let result = slideResult;
   if (result.z > 0) {
-    const zLimit = delta.z * time;
+    const zLimit = f32(delta.z * time); // float ZLimit
     if (result.z - zLimit > KINDA_SMALL_NUMBER) {
       if (zLimit > 0) {
         // Rescale the whole vector, so we don't head back into the impact.
-        result = scale(result, zLimit / result.z);
+        result = scale(result, f32(zLimit / result.z));
       } else {
         // Heading down but deflecting up: make the deflection horizontal.
         result = ZERO;
@@ -368,7 +368,7 @@ export function physFalling(
       const oldHitImpactNormal = hit.impactNormal;
       let delta = c.computeSlideVector(
         adjusted,
-        1 - hit.time,
+        f32(1 - hit.time),
         oldHitNormal,
         hit
       );

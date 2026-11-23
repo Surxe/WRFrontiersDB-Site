@@ -100,7 +100,7 @@ export class FindFloorResult {
     this.blockingHit = hit.isValidBlockingHit();
     this.walkableFloor = isWalkableFloor;
     this.lineTrace = false;
-    this.floorDist = sweepFloorDist;
+    this.floorDist = Math.fround(sweepFloorDist); // float FloorDist
     this.lineDist = 0;
     this.hitResult = hit.clone();
   }
@@ -122,8 +122,8 @@ export class FindFloorResult {
     merged.traceEnd = old.traceEnd;
     this.hitResult = merged;
     this.lineTrace = true;
-    this.floorDist = sweepFloorDist;
-    this.lineDist = lineDist;
+    this.floorDist = Math.fround(sweepFloorDist);
+    this.lineDist = Math.fround(lineDist);
     this.walkableFloor = isWalkableFloor;
   }
 

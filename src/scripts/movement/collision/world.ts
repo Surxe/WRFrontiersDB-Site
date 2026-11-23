@@ -44,9 +44,9 @@ export interface SweepOptions {
    * report every starting overlap. */
   ignoreOverlapsMovingOut?: boolean;
   /** The capsule's rotation (x, y, z, w; UE passes the component's
-   * quaternion). It enters only Chaos's float32 impact point on parallel
-   * contacts, and there only on shapes rotated out of the horizontal plane
-   * (findings/chaos-contact-point.md). Default: identity. */
+   * quaternion to MoveComponent's sweeps, identity to the floor sweeps).
+   * It enters Chaos's float32 sweep (D27, findings/chaos-sweeps.md).
+   * Default: identity. */
   rotation?: readonly [number, number, number, number];
 }
 

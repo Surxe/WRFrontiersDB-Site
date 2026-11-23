@@ -47,6 +47,7 @@ import {
 import { MovementProperties } from './movement_properties';
 import { moveAlongFloor, type WallHit } from './move_along_floor';
 import { physicsRotation } from './rotation';
+import { rotatorQuaternion } from '../math/rotator_quat';
 import { normalizeAxis, yawVector } from './rotator';
 
 /**
@@ -176,6 +177,9 @@ export class TunedCharacterMovement extends CharacterMovementComponent {
    * and no sweep: rotation only, 09-editor.md 2.2). */
   setYaw(yaw: number): void {
     this.yaw = normalizeAxis(yaw);
+    // The component quaternion every move sweeps with (D27): the rotator
+    // UE hands MoveUpdatedComponent, converted by FRotator::Quaternion.
+    this.setComponentRotation(rotatorQuaternion(0, yaw, 0));
   }
 
   startForcedTurn(dir: Vec3): void {

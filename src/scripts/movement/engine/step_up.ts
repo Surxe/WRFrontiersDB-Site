@@ -4,7 +4,7 @@
  * up (CanCharacterStepUp and CanBeBaseForCharacter default to true), so
  * CanStepUp reduces to its hit and movement-mode checks.
  */
-import { dot, neg, scale, type Vec3 } from '../math/vec';
+import { dot, f32, neg, scale, type Vec3 } from '../math/vec';
 import { MAX_FLOOR_DIST, MAX_STEP_SIDE_Z } from './constants';
 import { FindFloorResult, HitResult } from './hit';
 import type {
@@ -35,33 +35,35 @@ export function stepUp(
   const oldLocation = c.location;
   const { radius: pawnRadius, halfHeight: pawnHalfHeight } = c.capsule;
 
+  // UE's float locals are float here (session 4.5: the step's sweeps are
+  // bit for bit then).
   // Don't bother if the top of the capsule is hitting something.
-  const initialImpactZ = inHit.impactPoint.z;
-  if (initialImpactZ > oldLocation.z + (pawnHalfHeight - pawnRadius))
+  const initialImpactZ = f32(inHit.impactPoint.z);
+  if (initialImpactZ > oldLocation.z + f32(pawnHalfHeight - pawnRadius))
     return false;
 
-  let stepTravelUpHeight = maxStepHeight;
+  let stepTravelUpHeight = f32(maxStepHeight);
   let stepTravelDownHeight = stepTravelUpHeight;
-  const stepSideZ = -dot(inHit.impactNormal, gravDir);
-  let pawnInitialFloorBaseZ = oldLocation.z - pawnHalfHeight;
+  const stepSideZ = f32(-dot(inHit.impactNormal, gravDir));
+  let pawnInitialFloorBaseZ = f32(oldLocation.z - pawnHalfHeight);
   let pawnFloorPointZ = pawnInitialFloorBaseZ;
 
   if (c.isMovingOnGround() && c.currentFloor.isWalkableFloor()) {
     // We float a variable amount off the floor: measure the step height
     // from the actual floor contact.
-    const floorDist = Math.max(0, c.currentFloor.getDistanceToFloor());
-    pawnInitialFloorBaseZ -= floorDist;
-    stepTravelUpHeight = Math.max(stepTravelUpHeight - floorDist, 0);
-    stepTravelDownHeight = maxStepHeight + MAX_FLOOR_DIST * 2;
+    const floorDist = f32(Math.max(0, c.currentFloor.getDistanceToFloor()));
+    pawnInitialFloorBaseZ = f32(pawnInitialFloorBaseZ - floorDist);
+    stepTravelUpHeight = Math.max(f32(stepTravelUpHeight - floorDist), 0);
+    stepTravelDownHeight = f32(f32(maxStepHeight) + f32(MAX_FLOOR_DIST * 2));
     const hitVerticalFace = !c.isWithinEdgeTolerance(
       inHit.location,
       inHit.impactPoint,
       pawnRadius
     );
     if (!c.currentFloor.lineTrace && !hitVerticalFace) {
-      pawnFloorPointZ = c.currentFloor.hitResult.impactPoint.z;
+      pawnFloorPointZ = f32(c.currentFloor.hitResult.impactPoint.z);
     } else {
-      pawnFloorPointZ -= c.currentFloor.floorDist;
+      pawnFloorPointZ = f32(pawnFloorPointZ - c.currentFloor.floorDist);
     }
   }
 
@@ -93,7 +95,7 @@ export function stepUp(
     const forwardHitTime = hit.time;
     const forwardSlideAmount = c.slideAlongSurface(
       delta,
-      1 - hit.time,
+      f32(1 - hit.time),
       hit.normal,
       hit,
       true
@@ -113,7 +115,7 @@ export function stepUp(
   };
   if (hit.isValidBlockingHit()) {
     // Would this have taken us higher than MaxStepHeight?
-    const deltaZ = hit.impactPoint.z - pawnFloorPointZ;
+    const deltaZ = f32(hit.impactPoint.z - pawnFloorPointZ);
     if (deltaZ > maxStepHeight) return revert();
 
     if (!c.isWalkable(hit)) {
